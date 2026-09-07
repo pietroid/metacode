@@ -8,6 +8,11 @@ import (
 	"github.com/pietroid/metacode/engine/internal/core/ir"
 	"github.com/pietroid/metacode/engine/internal/core/log"
 	"github.com/pietroid/metacode/engine/internal/core/spec"
+	"github.com/pietroid/metacode/engine/internal/modules/data"
+	"github.com/pietroid/metacode/engine/internal/modules/codegen/flutter"
+	"github.com/pietroid/metacode/engine/internal/modules/project"
+	"github.com/pietroid/metacode/engine/internal/modules/ui"
+	"github.com/pietroid/metacode/engine/internal/modules/ui/catalog"
 )
 
 // Execute parses CLI arguments and runs the requested command.
@@ -91,6 +96,37 @@ func runCommand(verbose bool, args []string) error {
 	}
 	logger.Infof("built IR for project %q", app.Project.Name)
 	reporter.End("Building IR", nil)
+
+	reporter.Start("Resolving symbols")
+	cat := catalog.New()
+	if err := app.Resolve(cat); err != nil {
+		reporter.End("Resolving symbols", err)
+		return err
+	}
+	for _, err := range project.Validate(app.Project) {
+		logger.Warnf("project rule: %s", err)
+	}
+	for _, err := range data.Validate(app.Stores) {
+		logger.Warnf("data rule: %s", err)
+	}
+	for _, err := range ui.Validate(app.UI, cat) {
+		logger.Warnf("ui rule: %s", err)
+	}
+	logger.Debugf("resolved stores: %d", len(app.Symbols.Stores))
+	logger.Debugf("resolved widgets: %d", len(app.Symbols.Widgets))
+	logger.Debugf("resolved actions: %d", len(app.Symbols.Actions))
+	logger.Debugf("resolved events: %d", len(app.Symbols.Events))
+	logger.Debugf("resolved variables: %d", len(app.Symbols.Variables))
+	logger.Infof("resolved symbols")
+	reporter.End("Resolving symbols", nil)
+
+	reporter.Start("Generating Flutter project")
+	if err := flutter.GenerateAll(&app, paths.Root); err != nil {
+		reporter.End("Generating Flutter project", err)
+		return err
+	}
+	logger.Infof("generated flutter project")
+	reporter.End("Generating Flutter project", nil)
 
 	_ = args
 	return nil

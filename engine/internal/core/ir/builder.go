@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/pietroid/metacode/engine/internal/core/spec"
+	"github.com/pietroid/metacode/engine/internal/modules/ui/catalog"
 )
 
 // Build converts raw specs into the internal representation.
@@ -195,7 +196,7 @@ func buildComponent(name string, raw any, symbols SymbolTable) (UIComponent, err
 			comp.Variables = append(comp.Variables, child.Variables...)
 		}
 	case map[string]any:
-		if comp.Kind == name && isCatalogSymbol(name) {
+		if comp.Kind == name && catalog.New().IsKnown(name) {
 			// The key itself is the catalog symbol; value is a map of props.
 			if err := applyProps(&comp, v, symbols); err != nil {
 				return UIComponent{}, err
@@ -286,8 +287,9 @@ func applyProps(comp *UIComponent, raw map[string]any, symbols SymbolTable) erro
 }
 
 func extractSingleKind(m map[string]any, symbols SymbolTable) (string, map[string]any, error) {
+	cat := catalog.New()
 	for key, val := range m {
-		if isCatalogSymbol(key) {
+		if cat.IsKnown(key) {
 			rest, ok := val.(map[string]any)
 			if !ok {
 				rest = map[string]any{defaultContentProp(key): val}
@@ -308,18 +310,14 @@ func extractSingleKind(m map[string]any, symbols SymbolTable) (string, map[strin
 }
 
 func defaultContentProp(kind string) string {
-	switch kind {
-	case "text":
-		return "data"
-	case "column", "row", "stack", "listView":
-		return "children"
-	default:
-		return "child"
+	if s, ok := catalog.New().Find(kind); ok {
+		return s.DefaultProp
 	}
+	return catalog.PropChild
 }
 
 func classifyKind(name string, symbols SymbolTable) string {
-	if isCatalogSymbol(name) {
+	if catalog.New().IsKnown(name) {
 		return name
 	}
 	if sym, ok := symbols.Lookup(name); ok {
@@ -329,7 +327,7 @@ func classifyKind(name string, symbols SymbolTable) string {
 }
 
 func isVariableReference(name string, symbols SymbolTable) bool {
-	return isLowerCamelIdentifier(name) && !isCatalogSymbol(name) && !isRegisteredSymbol(name, symbols)
+	return isLowerCamelIdentifier(name) && !catalog.New().IsKnown(name) && !isRegisteredSymbol(name, symbols)
 }
 
 func isRegisteredSymbol(name string, symbols SymbolTable) bool {
@@ -372,50 +370,50 @@ func isLowerCamelIdentifier(s string) bool {
 	return true
 }
 
-func isCatalogSymbol(name string) bool {
-	switch name {
-	case "appBar", "scaffold", "text", "elevatedButton", "textButton", "iconButton",
-		"floatingActionButton", "card", "listTile", "listView", "column", "row", "stack",
-		"container", "padding", "center", "sizedBox", "expanded", "icon", "image",
-		"textField", "checkbox", "radio", "switch", "slider", "dropdownButton",
-		"bottomNavigationBar", "tabBar", "alertDialog", "circularProgressIndicator":
-		return true
-	}
-	return false
-}
 
 func buildBehaviors(raw map[string]any) ([]BehaviorScenario, error) {
 	var scenarios []BehaviorScenario
 	for group, val := range raw {
-		appendBehaviorScenarios(group, val, nil, &scenarios)
+		if err := appendBehaviorScenarios(group, val, nil, &scenarios); err != nil {
+			return nil, err
+		}
 	}
 	return scenarios, nil
 }
 
-func appendBehaviorScenarios(key string, raw any, path []string, out *[]BehaviorScenario) {
+func appendBehaviorScenarios(key string, raw any, path []string, out *[]BehaviorScenario) error {
 	switch v := raw.(type) {
 	case map[string]any:
 		if looksLikeScenario(v) {
 			id := strings.Join(append(path, key), "/")
-			*out = append(*out, BehaviorScenario{
-				ID:          id,
-				Description: key,
-				GroupPath:   path,
-				Given:       stringValue(v, "given"),
-				When:        stringValue(v, "when"),
-				Then:        stringValue(v, "then"),
-			})
-		} else {
-			newPath := append(path, key)
-			for k, val := range v {
-				appendBehaviorScenarios(k, val, newPath, out)
+			scenario, err := ParseBehaviorScenario(
+				id,
+				key,
+				path,
+				stringValue(v, "given"),
+				stringValue(v, "when"),
+				stringValue(v, "then"),
+			)
+			if err != nil {
+				return err
+			}
+			*out = append(*out, scenario)
+			return nil
+		}
+		newPath := append(path, key)
+		for k, val := range v {
+			if err := appendBehaviorScenarios(k, val, newPath, out); err != nil {
+				return err
 			}
 		}
 	case []any:
 		for _, item := range v {
-			appendBehaviorScenarios(key, item, path, out)
+			if err := appendBehaviorScenarios(key, item, path, out); err != nil {
+				return err
+			}
 		}
 	}
+	return nil
 }
 
 func looksLikeScenario(m map[string]any) bool {
