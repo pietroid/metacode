@@ -20,7 +20,7 @@ func BuildWrapperPrompt(app *ir.IR, task PromptTask, outDir string) (string, err
 		return "", err
 	}
 
-	widgetName, member, err := widgetAndMemberForTask(scenario, task)
+	widgetName, member, err := widgetAndMemberForTask(app, scenario, task)
 	if err != nil {
 		return "", err
 	}
@@ -81,23 +81,26 @@ func findScenario(app *ir.IR, id string) (ir.BehaviorScenario, error) {
 	return ir.BehaviorScenario{}, fmt.Errorf("scenario %q not found", id)
 }
 
-func widgetAndMemberForTask(scenario ir.BehaviorScenario, task PromptTask) (string, string, error) {
+func widgetAndMemberForTask(app *ir.IR, scenario ir.BehaviorScenario, task PromptTask) (string, string, error) {
 	if scenario.Then != nil {
-		if w, m, ok := splitWidgetRef(scenario.Then.Target); ok {
+		if w, m, ok := splitWidgetRef(app, scenario.Then.Target); ok {
 			return w, m, nil
 		}
 	}
 	if scenario.When != "" {
-		if w, m, ok := splitWidgetRef(scenario.When); ok {
+		if w, m, ok := splitWidgetRef(app, scenario.When); ok {
 			return w, m, nil
 		}
 	}
 	return "", "", fmt.Errorf("task %q does not reference a widget", task.ScenarioID)
 }
 
-func splitWidgetRef(ref string) (string, string, bool) {
+func splitWidgetRef(app *ir.IR, ref string) (string, string, bool) {
 	parts := strings.SplitN(ref, ".", 2)
 	if len(parts) != 2 {
+		return "", "", false
+	}
+	if sym, ok := app.Symbols.Lookup(parts[0]); !ok || sym.Kind != "widget" {
 		return "", "", false
 	}
 	return parts[0], parts[1], true

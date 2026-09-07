@@ -9,14 +9,15 @@ import (
 	"github.com/pietroid/metacode/engine/internal/core/ir"
 	"github.com/pietroid/metacode/engine/internal/core/log"
 	"github.com/pietroid/metacode/engine/internal/core/spec"
-	"github.com/pietroid/metacode/engine/internal/llm"
-	"github.com/pietroid/metacode/engine/internal/modules/data"
-	"github.com/pietroid/metacode/engine/internal/modules/codegen/flutter"
 	generatorsflutter "github.com/pietroid/metacode/engine/internal/generators/flutter"
+	"github.com/pietroid/metacode/engine/internal/llm"
+	"github.com/pietroid/metacode/engine/internal/modules/codegen/flutter"
+	"github.com/pietroid/metacode/engine/internal/modules/data"
 	"github.com/pietroid/metacode/engine/internal/modules/project"
 	"github.com/pietroid/metacode/engine/internal/modules/ui"
 	"github.com/pietroid/metacode/engine/internal/modules/ui/catalog"
 	"github.com/pietroid/metacode/engine/internal/planner"
+	"github.com/pietroid/metacode/engine/internal/runner"
 )
 
 // Execute parses CLI arguments and runs the requested command.
@@ -157,6 +158,55 @@ func runCommand(verbose bool, args []string) error {
 		reporter.End("Generating AI wrappers", nil)
 	}
 
+	reporter.Start("Generating tests")
+	if err := generatorsflutter.GenerateTests(&app, tasks, paths.Root); err != nil {
+		reporter.End("Generating tests", err)
+		return err
+	}
+	logger.Infof("generated tests")
+	reporter.End("Generating tests", nil)
+
+	testRunner := runner.NewTestRunner(paths.Root, &loggerReporter{logger: logger})
+
+	if err == nil {
+		reporter.Start("Running tests with fix loop")
+		fixLoop := &runner.FixLoop{
+			MaxIterations: 3,
+			Runner:        testRunner,
+			Client:        llm.NewClient(llmCfg, logger),
+			ProjectDir:    paths.Root,
+			Reporter:      &loggerReporter{logger: logger},
+		}
+		if err := fixLoop.Run(context.Background(), tasks); err != nil {
+			reporter.End("Running tests with fix loop", err)
+			return err
+		}
+		logger.Infof("tests passed")
+		reporter.End("Running tests with fix loop", nil)
+	} else {
+		reporter.Start("Running tests")
+		result, err := testRunner.Run(context.Background())
+		if err != nil {
+			reporter.End("Running tests", err)
+			return err
+		}
+		if !result.Success {
+			err := fmt.Errorf("tests failed: %d failure(s)", len(result.Failures))
+			reporter.End("Running tests", err)
+			return err
+		}
+		logger.Infof("tests passed")
+		reporter.End("Running tests", nil)
+	}
+
 	_ = args
 	return nil
+}
+
+type loggerReporter struct {
+	logger log.Logger
+}
+
+func (l loggerReporter) Logf(format string, args ...any) {
+	l.logger.Infof(format, args...)
 }

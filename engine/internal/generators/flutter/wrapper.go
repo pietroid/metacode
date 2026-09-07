@@ -86,14 +86,14 @@ func wrapperClassNameForTask(app *ir.IR, task planner.Task) string {
 	if err != nil {
 		return ""
 	}
-	widgetName, _, err := widgetAndMemberForTask(scenario, PromptTask{ScenarioID: task.ScenarioID})
+	widgetName, _, err := widgetAndMemberForTask(app, scenario, PromptTask{ScenarioID: task.ScenarioID})
 	if err != nil {
 		return ""
 	}
 	return wrapperClassName(widgetName)
 }
 
-var dartFence = regexp.MustCompile("```(?:dart)?\s*\n(?s)(.*?)\n```")
+var dartFence = regexp.MustCompile("```(?:dart)?\\s*\\n(?s)(.*?)\\n```")
 var classDecl = regexp.MustCompile(`class\s+(\w+)\s+extends\s+StatelessWidget`)
 
 func extractClassName(code string) string {
