@@ -48,21 +48,26 @@ func counterAppSpecs() spec.RawSpecs {
 			},
 		},
 		Behaviors: map[string]any{
-			"counter": map[string]any{
+			"counterStore": map[string]any{
 				"increments from 0": map[string]any{
-					"given": "counter.value is 0",
+					"given": "counterStore.value is 0",
 					"when":  "counterButton.onPressed",
-					"then":  "counter.value should be 1",
+					"then":  "counterStore.value should be 1",
 				},
 				"increments from 1": map[string]any{
-					"given": "counter.value is 1",
+					"given": "counterStore.value is 1",
 					"when":  "counterButton.onPressed",
-					"then":  "counter.value should be 2",
+					"then":  "counterStore.value should be 2",
 				},
 				"increments from 2": map[string]any{
-					"given": "counter.value is 2",
+					"given": "counterStore.value is 2",
 					"when":  "counterButton.onPressed",
-					"then":  "counter.value should be 3",
+					"then":  "counterStore.value should be 3",
+				},
+				"Show counter value on the home page": map[string]any{
+					"given": "counterStore.value = 5",
+					"when":  "",
+					"then":  "homePage.counterValue = 5",
 				},
 			},
 		},
@@ -87,7 +92,7 @@ func TestBuildCounterApp(t *testing.T) {
 		t.Fatalf("expected 1 store, got %d", len(ir.Stores))
 	}
 	store := ir.Stores[0]
-	if store.Name != "counter" || store.ValueType != "int" || store.Strategy != "ephemeral" {
+	if store.Name != "counterStore" || store.ValueType != "int" || store.Strategy != "ephemeral" {
 		t.Errorf("unexpected store: %+v", store)
 	}
 	if store.InitialValue != 0 {
@@ -105,16 +110,16 @@ func TestBuildCounterApp(t *testing.T) {
 		t.Errorf("expected homePage and counterButton widgets, got: %+v", names)
 	}
 
-	if len(ir.Behaviors) != 3 {
-		t.Fatalf("expected 3 behavior scenarios, got %d", len(ir.Behaviors))
+	if len(ir.Behaviors) != 4 {
+		t.Fatalf("expected 4 behavior scenarios, got %d", len(ir.Behaviors))
 	}
 	for _, s := range ir.Behaviors {
-		if s.When != "counterButton.onPressed" {
+		if s.ID != "counterStore/Show counter value on the home page" && s.When != "counterButton.onPressed" {
 			t.Errorf("unexpected when for scenario %q: %q", s.ID, s.When)
 		}
 	}
 
-	sym, ok := ir.Symbols.Lookup("counter")
+	sym, ok := ir.Symbols.Lookup("counterStore")
 	if !ok || sym.Kind != "store" {
 		t.Errorf("expected counter to be registered as store")
 	}
