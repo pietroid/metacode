@@ -1,0 +1,13 @@
+counter:
+  increments from 0:
+    given: counter.value is 0
+    when: counterButton.onPressed
+    then: counter.value should be 1
+  increments from 1:
+    given: counter.value is 1
+    when: counterButton.onPressed
+    then: counter.value should be 2
+  increments from 2:
+    given: counter.value is 2
+    when: counterButton.onPressed
+    then: counter.value should be 3

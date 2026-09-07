@@ -1,0 +1,4 @@
+counterStore:
+    value: int
+    initialValue: 0
+    type: ephemeral

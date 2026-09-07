@@ -1,0 +1,13 @@
+widgets:
+  homePage:
+    scaffold:
+      appBar:
+        title: "Counter App"
+      body:
+        center:
+          column:
+            - text: counterValue
+            - counterButton
+  counterButton:
+    elevatedButton:
+      child: "Increment"

@@ -1,0 +1,14 @@
+When button is tapped, increment counter:
+    given:
+    when: homePage.counterButton.onPressed
+    then: counterStore.increment
+
+When counter is incremented, increment the store:
+    given: counterStore.value = 2
+    when: counterStore.increment
+    then: counterStore.value = 3
+
+Show counter value on the home page:
+    given: counterStore.value = 5
+    when:
+    then: homePage.counterValue = 5

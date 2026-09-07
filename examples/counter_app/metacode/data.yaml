@@ -1,0 +1,5 @@
+stores:
+  counter:
+    value: int
+    initialValue: 0
+    strategy: ephemeral

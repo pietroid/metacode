@@ -1,0 +1,270 @@
+package ir
+
+import (
+	"fmt"
+	"strings"
+	"testing"
+
+	"github.com/pietroid/metacode/engine/internal/spec"
+)
+
+func counterAppSpecs() spec.RawSpecs {
+	return spec.RawSpecs{
+		Project: map[string]any{
+			"name":        "counter_app",
+			"description": "A simple counter app",
+		},
+		Data: map[string]any{
+			"stores": map[string]any{
+				"counter": map[string]any{
+					"value":        "int",
+					"initialValue": 0,
+					"strategy":     "ephemeral",
+				},
+			},
+		},
+		UI: map[string]any{
+			"widgets": map[string]any{
+				"homePage": map[string]any{
+					"scaffold": map[string]any{
+						"appBar": map[string]any{
+							"title": "Counter App",
+						},
+						"body": map[string]any{
+							"center": map[string]any{
+								"column": []any{
+									map[string]any{"text": "counterValue"},
+									"counterButton",
+								},
+							},
+						},
+					},
+				},
+				"counterButton": map[string]any{
+					"elevatedButton": map[string]any{
+						"child": "Increment",
+					},
+				},
+			},
+		},
+		Behaviors: map[string]any{
+			"counter": map[string]any{
+				"increments from 0": map[string]any{
+					"given": "counter.value is 0",
+					"when":  "counterButton.onPressed",
+					"then":  "counter.value should be 1",
+				},
+				"increments from 1": map[string]any{
+					"given": "counter.value is 1",
+					"when":  "counterButton.onPressed",
+					"then":  "counter.value should be 2",
+				},
+				"increments from 2": map[string]any{
+					"given": "counter.value is 2",
+					"when":  "counterButton.onPressed",
+					"then":  "counter.value should be 3",
+				},
+			},
+		},
+	}
+}
+
+func TestBuildCounterApp(t *testing.T) {
+	raw := counterAppSpecs()
+	ir, err := Build(raw)
+	if err != nil {
+		t.Fatalf("build failed: %v", err)
+	}
+
+	if ir.Project.Name != "counter_app" {
+		t.Errorf("expected project name counter_app, got %q", ir.Project.Name)
+	}
+	if ir.Project.Description != "A simple counter app" {
+		t.Errorf("unexpected project description: %q", ir.Project.Description)
+	}
+
+	if len(ir.Stores) != 1 {
+		t.Fatalf("expected 1 store, got %d", len(ir.Stores))
+	}
+	store := ir.Stores[0]
+	if store.Name != "counter" || store.ValueType != "int" || store.Strategy != "ephemeral" {
+		t.Errorf("unexpected store: %+v", store)
+	}
+	if store.InitialValue != 0 {
+		t.Errorf("expected initial value 0, got %v", store.InitialValue)
+	}
+
+	if len(ir.UI) != 2 {
+		t.Fatalf("expected 2 UI components, got %d", len(ir.UI))
+	}
+	names := map[string]bool{}
+	for _, comp := range ir.UI {
+		names[comp.Name] = true
+	}
+	if !names["homePage"] || !names["counterButton"] {
+		t.Errorf("expected homePage and counterButton widgets, got: %+v", names)
+	}
+
+	if len(ir.Behaviors) != 3 {
+		t.Fatalf("expected 3 behavior scenarios, got %d", len(ir.Behaviors))
+	}
+	for _, s := range ir.Behaviors {
+		if s.When != "counterButton.onPressed" {
+			t.Errorf("unexpected when for scenario %q: %q", s.ID, s.When)
+		}
+	}
+
+	sym, ok := ir.Symbols.Lookup("counter")
+	if !ok || sym.Kind != "store" {
+		t.Errorf("expected counter to be registered as store")
+	}
+	sym, ok = ir.Symbols.Lookup("homePage")
+	if !ok || sym.Kind != "widget" {
+		t.Errorf("expected homePage to be registered as widget")
+	}
+}
+
+func TestBuildEmptySpecs(t *testing.T) {
+	raw := spec.RawSpecs{
+		Project:   map[string]any{},
+		Data:      map[string]any{},
+		UI:        map[string]any{},
+		Behaviors: map[string]any{},
+	}
+	ir, err := Build(raw)
+	if err != nil {
+		t.Fatalf("build failed: %v", err)
+	}
+	if len(ir.Stores) != 0 || len(ir.UI) != 0 || len(ir.Behaviors) != 0 {
+		t.Errorf("expected empty IR from empty specs, got stores=%d ui=%d behaviors=%d", len(ir.Stores), len(ir.UI), len(ir.Behaviors))
+	}
+}
+
+func TestBuildFromCounterAppYAML(t *testing.T) {
+	paths, err := spec.Discover("../../../examples/counter_app")
+	if err != nil {
+		t.Fatalf("discover: %v", err)
+	}
+	raw, err := spec.Parse(paths)
+	if err != nil {
+		t.Fatalf("parse: %v", err)
+	}
+	ir, err := Build(raw)
+	if err != nil {
+		t.Fatalf("build failed: %v", err)
+	}
+
+	if ir.Project.Name != "counter_app" {
+		t.Errorf("expected project name counter_app, got %q", ir.Project.Name)
+	}
+	if len(ir.Stores) != 1 || ir.Stores[0].Name != "counter" {
+		t.Errorf("expected one counter store, got %+v", ir.Stores)
+	}
+	if len(ir.UI) != 2 {
+		t.Errorf("expected 2 UI components, got %d", len(ir.UI))
+	}
+	if len(ir.Behaviors) != 3 {
+		t.Errorf("expected 3 behavior scenarios, got %d", len(ir.Behaviors))
+	}
+
+	homePage := findComponent(ir.UI, "homePage")
+	if homePage == nil {
+		t.Fatalf("expected homePage component")
+	}
+	foundVar := false
+	for _, v := range homePage.Variables {
+		if v == "counterValue" {
+			foundVar = true
+			break
+		}
+	}
+	if !foundVar {
+		t.Errorf("expected counterValue variable in homePage, got %+v", homePage.Variables)
+	}
+}
+
+func findComponent(components []UIComponent, name string) *UIComponent {
+	for i := range components {
+		if components[i].Name == name {
+			return &components[i]
+		}
+	}
+	return nil
+}
+
+func TestBuildIRPrintable(t *testing.T) {
+	raw := counterAppSpecs()
+	ir, err := Build(raw)
+	if err != nil {
+		t.Fatalf("build failed: %v", err)
+	}
+	// fmt.Sprintf on the full IR should not panic.
+	_ = fmt.Sprintf("%+v", ir)
+}
+
+func TestBuildWarnsUnknownTopLevelKeys(t *testing.T) {
+	raw := spec.RawSpecs{
+		Project: map[string]any{
+			"name":   "app",
+			"author": "metacode",
+		},
+		Data: map[string]any{
+			"stores":  map[string]any{},
+			"unknown": "value",
+		},
+		UI: map[string]any{
+			"widgets": map[string]any{},
+		},
+		Behaviors: map[string]any{},
+	}
+	ir, err := Build(raw)
+	if err != nil {
+		t.Fatalf("build failed: %v", err)
+	}
+
+	foundProject := false
+	foundData := false
+	for _, w := range ir.Warnings {
+		if strings.Contains(w, "author") {
+			foundProject = true
+		}
+		if strings.Contains(w, "unknown") {
+			foundData = true
+		}
+	}
+	if !foundProject {
+		t.Errorf("expected warning for unknown project key author, got %+v", ir.Warnings)
+	}
+	if !foundData {
+		t.Errorf("expected warning for unknown data key unknown, got %+v", ir.Warnings)
+	}
+}
+
+func TestBuildDetectsVariables(t *testing.T) {
+	raw := spec.RawSpecs{
+		UI: map[string]any{
+			"widgets": map[string]any{
+				"homePage": map[string]any{
+					"text": "counterValue",
+				},
+			},
+		},
+	}
+	ir, err := Build(raw)
+	if err != nil {
+		t.Fatalf("build failed: %v", err)
+	}
+	if len(ir.UI) != 1 {
+		t.Fatalf("expected 1 UI component, got %d", len(ir.UI))
+	}
+	found := false
+	for _, v := range ir.UI[0].Variables {
+		if v == "counterValue" {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Errorf("expected counterValue to be detected as variable, got %+v", ir.UI[0].Variables)
+	}
+}
