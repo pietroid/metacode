@@ -87,6 +87,14 @@ func StoreBaseName(s string) string {
 	return s
 }
 
+// IsPageName reports whether name follows the page naming convention.
+func IsPageName(name string) bool {
+	if strings.EqualFold(name, "homePage") {
+		return true
+	}
+	return strings.HasSuffix(name, "Page")
+}
+
 // FirstPageName selects the symbol to use as the application's home page.
 // It prefers a component named "homePage" (case-insensitive) or one whose name
 // ends with "Page", falling back to the first declared component.

@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"os"
@@ -8,11 +9,14 @@ import (
 	"github.com/pietroid/metacode/engine/internal/core/ir"
 	"github.com/pietroid/metacode/engine/internal/core/log"
 	"github.com/pietroid/metacode/engine/internal/core/spec"
+	"github.com/pietroid/metacode/engine/internal/llm"
 	"github.com/pietroid/metacode/engine/internal/modules/data"
 	"github.com/pietroid/metacode/engine/internal/modules/codegen/flutter"
+	generatorsflutter "github.com/pietroid/metacode/engine/internal/generators/flutter"
 	"github.com/pietroid/metacode/engine/internal/modules/project"
 	"github.com/pietroid/metacode/engine/internal/modules/ui"
 	"github.com/pietroid/metacode/engine/internal/modules/ui/catalog"
+	"github.com/pietroid/metacode/engine/internal/planner"
 )
 
 // Execute parses CLI arguments and runs the requested command.
@@ -127,6 +131,31 @@ func runCommand(verbose bool, args []string) error {
 	}
 	logger.Infof("generated flutter project")
 	reporter.End("Generating Flutter project", nil)
+
+	reporter.Start("Planning wrappers")
+	tasks, err := planner.Plan(&app)
+	if err != nil {
+		reporter.End("Planning wrappers", err)
+		return err
+	}
+	logger.Debugf("planned tasks: %d", len(tasks))
+	reporter.End("Planning wrappers", nil)
+
+	reporter.Start("Generating AI wrappers")
+	llmCfg, err := llm.ConfigFromEnv()
+	if err != nil {
+		logger.Warnf("skipping AI wrapper generation: %s", err)
+		logger.Warnf("set METACODE_LLM_BASE_URL and METACODE_LLM_API_KEY to enable wrappers")
+		reporter.End("Generating AI wrappers", nil)
+	} else {
+		client := llm.NewClient(llmCfg, logger)
+		if err := generatorsflutter.GenerateWrappers(context.Background(), &app, tasks, client, paths.Root); err != nil {
+			reporter.End("Generating AI wrappers", err)
+			return err
+		}
+		logger.Infof("generated AI wrappers")
+		reporter.End("Generating AI wrappers", nil)
+	}
 
 	_ = args
 	return nil
