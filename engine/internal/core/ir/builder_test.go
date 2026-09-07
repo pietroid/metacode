@@ -121,7 +121,7 @@ func TestBuildCounterApp(t *testing.T) {
 
 	sym, ok := ir.Symbols.Lookup("counterStore")
 	if !ok || sym.Kind != "store" {
-		t.Errorf("expected counter to be registered as store")
+		t.Errorf("expected counterStore to be registered as store")
 	}
 	sym, ok = ir.Symbols.Lookup("homePage")
 	if !ok || sym.Kind != "widget" {
