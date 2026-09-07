@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/pietroid/metacode/engine/internal/spec"
+	"github.com/pietroid/metacode/engine/internal/core/spec"
 )
 
 func counterAppSpecs() spec.RawSpecs {
@@ -16,7 +16,7 @@ func counterAppSpecs() spec.RawSpecs {
 		},
 		Data: map[string]any{
 			"stores": map[string]any{
-				"counter": map[string]any{
+				"counterStore": map[string]any{
 					"value":        "int",
 					"initialValue": 0,
 					"strategy":     "ephemeral",
@@ -141,7 +141,7 @@ func TestBuildEmptySpecs(t *testing.T) {
 }
 
 func TestBuildFromCounterAppYAML(t *testing.T) {
-	paths, err := spec.Discover("../../../examples/counter_app")
+	paths, err := spec.Discover("../../../../examples/counter_app")
 	if err != nil {
 		t.Fatalf("discover: %v", err)
 	}
@@ -157,14 +157,14 @@ func TestBuildFromCounterAppYAML(t *testing.T) {
 	if ir.Project.Name != "counter_app" {
 		t.Errorf("expected project name counter_app, got %q", ir.Project.Name)
 	}
-	if len(ir.Stores) != 1 || ir.Stores[0].Name != "counter" {
-		t.Errorf("expected one counter store, got %+v", ir.Stores)
+	if len(ir.Stores) != 1 || ir.Stores[0].Name != "counterStore" {
+		t.Errorf("expected one counterStore, got %+v", ir.Stores)
 	}
 	if len(ir.UI) != 2 {
 		t.Errorf("expected 2 UI components, got %d", len(ir.UI))
 	}
-	if len(ir.Behaviors) != 3 {
-		t.Errorf("expected 3 behavior scenarios, got %d", len(ir.Behaviors))
+	if len(ir.Behaviors) != 4 {
+		t.Errorf("expected 4 behavior scenarios, got %d", len(ir.Behaviors))
 	}
 
 	homePage := findComponent(ir.UI, "homePage")

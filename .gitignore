@@ -1,0 +1,18 @@
+# Local tooling
+.tools/
+
+# Build artifacts
+bin/
+/tmp/
+*.exe
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,10 +1,14 @@
+// Package ir builds the typed internal representation from raw specs.
+//
+// It is part of the engine core and defines the domain objects (project, stores,
+// UI components, behaviors, symbols) that all code-generation modules consume.
 package ir
 
 import (
 	"fmt"
 	"strings"
 
-	"github.com/pietroid/metacode/engine/internal/spec"
+	"github.com/pietroid/metacode/engine/internal/core/spec"
 )
 
 // Build converts raw specs into the internal representation.

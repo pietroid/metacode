@@ -1,3 +1,4 @@
+// Package spec implements spec discovery and raw YAML parsing for the engine core.
 package spec
 
 import (

@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/pietroid/metacode/engine/internal/ir"
-	"github.com/pietroid/metacode/engine/internal/log"
-	"github.com/pietroid/metacode/engine/internal/spec"
+	"github.com/pietroid/metacode/engine/internal/core/ir"
+	"github.com/pietroid/metacode/engine/internal/core/log"
+	"github.com/pietroid/metacode/engine/internal/core/spec"
 )
 
 // Execute parses CLI arguments and runs the requested command.

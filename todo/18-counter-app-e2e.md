@@ -57,42 +57,49 @@ description: Counter app example for Metacode.
 
 `metacode/data.yaml`:
 ```yaml
-counterStore:
-  value: int
-  initialValue: 0
-  strategy: ephemeral
+stores:
+  counterStore:
+    value: int
+    initialValue: 0
+    strategy: ephemeral
 ```
 
 `metacode/ui.yaml`:
 ```yaml
-homePage:
-  scaffold:
-    body:
-      center:
-        text: counterValue
-    floatingActionButton: counterButton
-
-counterButton:
-  floatingActionButton:
-    child:
-      text: "Add"
+widgets:
+  homePage:
+    scaffold:
+      appBar:
+        title: "Counter App"
+      body:
+        center:
+          column:
+            - text: counterValue
+            - counterButton
+  counterButton:
+    elevatedButton:
+      child: "Increment"
 ```
 
 `metacode/behaviors.yaml`:
 ```yaml
-When button is tapped, increment counter:
-  when: counterButton.onPressed
-  then: counterStore.value should be 1
-
-When counter is incremented, increment the store:
-  given: counterStore.value is 2
-  when: counterStore.increment
-  then: counterStore.value should be 3
-
-Show counter value on the home page:
-  given: counterStore.value is 5
-  when:
-  then: homePage.counterValue should be "5"
+counterStore:
+  increments from 0:
+    given: counterStore.value is 0
+    when: counterButton.onPressed
+    then: counterStore.value should be 1
+  increments from 1:
+    given: counterStore.value is 1
+    when: counterButton.onPressed
+    then: counterStore.value should be 2
+  increments from 2:
+    given: counterStore.value is 2
+    when: counterButton.onPressed
+    then: counterStore.value should be 3
+  Show counter value on the home page:
+    given: counterStore.value = 5
+    when: # always
+    then: homePage.counterValue = 5
 ```
 
 ## Layering notes

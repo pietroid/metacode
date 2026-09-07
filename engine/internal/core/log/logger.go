@@ -1,3 +1,5 @@
+// Package log provides the centralized logging and progress-reporting primitives
+// used by the spec-agnostic engine core.
 package log
 
 import (
