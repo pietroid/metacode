@@ -200,6 +200,11 @@ func updateAppDart(app *ir.IR, outDir string, wrappers map[string]string) error 
 		updated = wrapWithBlocProvider(updated, cubitClass)
 	}
 
+	// Remove the now-unused page import.
+	pageImport := fmt.Sprintf("import 'pages/%s.dart';", shared.SnakeCase(pageName))
+	updated = strings.Replace(updated, pageImport+"\n", "", 1)
+	updated = strings.Replace(updated, pageImport, "", 1)
+
 	if updated == string(content) {
 		return nil
 	}

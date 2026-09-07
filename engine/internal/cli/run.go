@@ -142,13 +142,14 @@ func runCommand(verbose bool, args []string) error {
 	logger.Debugf("planned tasks: %d", len(tasks))
 	reporter.End("Planning wrappers", nil)
 
-	reporter.Start("Generating AI wrappers")
-	llmCfg, err := llm.ConfigFromEnv()
-	if err != nil {
-		logger.Warnf("skipping AI wrapper generation: %s", err)
-		logger.Warnf("set METACODE_LLM_BASE_URL and METACODE_LLM_API_KEY to enable wrappers")
-		reporter.End("Generating AI wrappers", nil)
-	} else {
+	llmCfg, llmErr := llm.ConfigFromEnv()
+	if llmErr != nil {
+		logger.Warnf("LLM not configured: %s", llmErr)
+		logger.Warnf("set METACODE_LLM_BASE_URL and METACODE_LLM_API_KEY to enable AI wrappers")
+	}
+
+	if llmErr == nil {
+		reporter.Start("Generating AI wrappers")
 		client := llm.NewClient(llmCfg, logger)
 		if err := generatorsflutter.GenerateWrappers(context.Background(), &app, tasks, client, paths.Root); err != nil {
 			reporter.End("Generating AI wrappers", err)
@@ -156,6 +157,14 @@ func runCommand(verbose bool, args []string) error {
 		}
 		logger.Infof("generated AI wrappers")
 		reporter.End("Generating AI wrappers", nil)
+	} else {
+		reporter.Start("Generating deterministic wrappers")
+		if err := generatorsflutter.GenerateDeterministicWrappers(&app, tasks, paths.Root); err != nil {
+			reporter.End("Generating deterministic wrappers", err)
+			return err
+		}
+		logger.Infof("generated deterministic wrappers")
+		reporter.End("Generating deterministic wrappers", nil)
 	}
 
 	reporter.Start("Generating tests")
@@ -168,7 +177,7 @@ func runCommand(verbose bool, args []string) error {
 
 	testRunner := runner.NewTestRunner(paths.Root, &loggerReporter{logger: logger})
 
-	if err == nil {
+	if llmErr == nil {
 		reporter.Start("Running tests with fix loop")
 		fixLoop := &runner.FixLoop{
 			MaxIterations: 3,
@@ -199,7 +208,6 @@ func runCommand(verbose bool, args []string) error {
 		reporter.End("Running tests", nil)
 	}
 
-	_ = args
 	return nil
 }
 

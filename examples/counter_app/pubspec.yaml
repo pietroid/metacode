@@ -2,7 +2,7 @@
 # Source spec: project.yaml
 
 name: counter_app
-description: A simple counter app
+description: Counter app example for Metacode.
 publish_to: 'none'
 version: 1.0.0+1
 

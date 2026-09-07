@@ -2,16 +2,23 @@
 // Source spec: ui.yaml > homePage
 
 import 'package:flutter/material.dart';
-import 'pages/home_page.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'wrappers/home_page_wrapper.dart';
+import 'stores/counter_cubit.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'counter_app',
-      home: const HomePage(counterValue: ''),
+    return BlocProvider(
+      create: (_) => CounterCubit(),
+      child: MaterialApp(
+
+              title: 'counter_app',
+              home: const HomePageWrapper(),
+            
+      ),
     );
   }
 }

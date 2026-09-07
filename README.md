@@ -119,3 +119,29 @@ For now, the command is very simple, as all options should be in the YAML.
 `metacode run`
 
 Any errors in any stage will be reported and the progress of the code generation will also be very beatifully reported by the tool, with the all the details on what is happening.
+
+## Counter app example
+
+A complete working example is available under `examples/counter_app`.
+
+### Prerequisites
+
+- [Go](https://go.dev/) (the engine uses a workspace, see `go.work`)
+- [Flutter SDK](https://flutter.dev/) with `flutter` on your `PATH`
+
+### Run
+
+```bash
+cd examples/counter_app
+go run ../../engine/cmd/metacode run
+```
+
+This discovers the Metacode specs, generates the Flutter project under `lib/` and `test/`, runs `flutter test`, and fixes failures automatically when an LLM is configured.
+
+### Verify
+
+```bash
+flutter test
+```
+
+All generated tests should pass.
