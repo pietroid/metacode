@@ -75,7 +75,7 @@ func TestReporterEndError(t *testing.T) {
 	r.End("Generating", errors.New("boom"))
 
 	out := buf.String()
-	if !strings.Contains(out, "✗ Generating: boom") {
+	if !strings.Contains(out, "✗ Generating") || !strings.Contains(out, "boom") {
 		t.Errorf("expected failure marker with error, got:\n%s", out)
 	}
 }

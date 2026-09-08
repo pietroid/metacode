@@ -16,10 +16,18 @@ import (
 	"github.com/pietroid/metacode/engine/internal/core/log"
 )
 
+// Call is a single request to a model. Label is a short, human-readable name
+// for what the call is for ("implement", "repair 1"); it exists so the trace
+// log can say which stage of a run each request came from.
+type Call struct {
+	Label  string
+	Prompt string
+}
+
 // Client is the abstract interface implemented by the LLM client.
 // It exists so callers can swap in caching, retry, streaming, or test doubles.
 type Client interface {
-	Complete(ctx context.Context, prompt string) (string, error)
+	Complete(ctx context.Context, call Call) (string, error)
 }
 
 // NewClient creates a concrete Client for the provider named in cfg.
@@ -64,7 +72,8 @@ type choice struct {
 
 // Complete sends a single user message to the configured chat completions
 // endpoint and returns the assistant message content.
-func (c *openAIClient) Complete(ctx context.Context, prompt string) (string, error) {
+func (c *openAIClient) Complete(ctx context.Context, call Call) (string, error) {
+	prompt := call.Prompt
 	reqBody := chatRequest{
 		Model: c.cfg.Model,
 		Messages: []message{
@@ -76,7 +85,7 @@ func (c *openAIClient) Complete(ctx context.Context, prompt string) (string, err
 		return "", fmt.Errorf("marshal request: %w", err)
 	}
 
-	c.logger.Debugf("llm request: POST %s/chat/completions model=%s", c.cfg.BaseURL, c.cfg.Model)
+	c.logger.Debugf("llm request [%s]: POST %s/chat/completions model=%s prompt_len=%d", call.Label, c.cfg.BaseURL, c.cfg.Model, len(prompt))
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.cfg.BaseURL+"/chat/completions", bytes.NewReader(jsonBody))
 	if err != nil {
@@ -96,7 +105,7 @@ func (c *openAIClient) Complete(ctx context.Context, prompt string) (string, err
 		return "", fmt.Errorf("read response body: %w", err)
 	}
 
-	c.logger.Debugf("llm response: status=%d len=%d", resp.StatusCode, len(respBody))
+	c.logger.Debugf("llm response [%s]: status=%d len=%d", call.Label, resp.StatusCode, len(respBody))
 
 	if resp.StatusCode != http.StatusOK {
 		return "", fmt.Errorf("unexpected status %d: %s", resp.StatusCode, string(respBody))

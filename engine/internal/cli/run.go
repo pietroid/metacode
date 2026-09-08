@@ -5,11 +5,13 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/pietroid/metacode/engine/internal/core/env"
 	"github.com/pietroid/metacode/engine/internal/core/ir"
 	"github.com/pietroid/metacode/engine/internal/core/log"
 	"github.com/pietroid/metacode/engine/internal/core/spec"
+	"github.com/pietroid/metacode/engine/internal/implementer"
 	"github.com/pietroid/metacode/engine/internal/llm"
 	"github.com/pietroid/metacode/engine/internal/modules/codegen/flutter"
 	"github.com/pietroid/metacode/engine/internal/modules/data"
@@ -23,7 +25,8 @@ import (
 // Execute parses CLI arguments and runs the requested command.
 func Execute() error {
 	fs := flag.NewFlagSet("metacode", flag.ContinueOnError)
-	verbose := fs.Bool("v", false, "enable verbose (debug) output")
+	verbose := fs.Bool("v", false, "log every LLM prompt and response in full")
+	quiet := fs.Bool("q", false, "log stage results only")
 
 	if err := fs.Parse(os.Args[1:]); err != nil {
 		return err
@@ -31,29 +34,38 @@ func Execute() error {
 
 	args := fs.Args()
 	if len(args) == 0 {
-		fmt.Fprintln(os.Stderr, "Usage: metacode <command> [options]")
-		fmt.Fprintln(os.Stderr, "Commands:")
-		fmt.Fprintln(os.Stderr, "  run   run the Metacode generator")
+		usage(os.Stderr)
 		return fmt.Errorf("no command provided")
 	}
 
 	switch args[0] {
 	case "run":
-		return runCommand(*verbose, args[1:])
+		return runCommand(*verbose, *quiet)
 	case "help", "--help", "-h":
-		fmt.Println("Usage: metacode <command> [options]")
-		fmt.Println("Commands:")
-		fmt.Println("  run   run the Metacode generator")
+		usage(os.Stdout)
 		return nil
 	default:
 		return fmt.Errorf("unknown command: %s", args[0])
 	}
 }
 
-func runCommand(verbose bool, args []string) error {
+func usage(w *os.File) {
+	fmt.Fprintln(w, "Usage: metacode [-v|-q] <command>")
+	fmt.Fprintln(w, "Commands:")
+	fmt.Fprintln(w, "  run   run the Metacode generator")
+	fmt.Fprintln(w, "Options:")
+	fmt.Fprintln(w, "  -v    log every LLM prompt and response in full")
+	fmt.Fprintln(w, "  -q    log stage results only")
+	fmt.Fprintf(w, "\nEvery run writes one file per LLM call to %s.\n", llm.TraceDirName)
+}
+
+func runCommand(verbose, quiet bool) error {
 	minLevel := log.InfoLevel
-	if verbose {
+	switch {
+	case verbose:
 		minLevel = log.DebugLevel
+	case quiet:
+		minLevel = log.WarnLevel
 	}
 	logger := log.New(os.Stdout, minLevel)
 	reporter := log.NewReporter(os.Stdout, logger)
@@ -70,146 +82,187 @@ func runCommand(verbose bool, args []string) error {
 		logger.Debugf("loaded environment from %s", envPath)
 	}
 
+	started := time.Now()
 	reporter.Start("Metacode run")
-	defer func() { reporter.End("Metacode run", nil) }()
+	defer func() {
+		logger.Infof("total time %s", time.Since(started).Round(time.Millisecond))
+		reporter.End("Metacode run", nil)
+	}()
 
-	logger.Debugf("verbose mode enabled")
-
-	reporter.Start("Discovering specs")
-	paths, err := spec.Discover("")
+	paths, err := stage(reporter, "Discovering specs", func() (spec.Paths, error) {
+		p, err := spec.Discover("")
+		if err == nil {
+			logger.Debugf("metacode root: %s", p.Root)
+			logger.Infof("specs found at %s", p.Metacode)
+		}
+		return p, err
+	})
 	if err != nil {
-		reporter.End("Discovering specs", err)
 		return err
 	}
-	logger.Debugf("discovered metacode root: %s", paths.Root)
-	logger.Infof("specs found at %s", paths.Metacode)
-	reporter.End("Discovering specs", nil)
 
-	reporter.Start("Parsing specs")
-	raw, err := spec.Parse(paths)
+	raw, err := stage(reporter, "Parsing specs", func() (spec.RawSpecs, error) {
+		r, err := spec.Parse(paths)
+		if err == nil {
+			logger.Infof("parsed specs: %d project key(s), %d data key(s), %d ui key(s), %d behavior group(s)",
+				len(r.Project), len(r.Data), len(r.UI), len(r.Behaviors))
+		}
+		return r, err
+	})
 	if err != nil {
-		reporter.End("Parsing specs", err)
 		return err
 	}
-	logger.Debugf("project keys: %d", len(raw.Project))
-	logger.Debugf("data keys: %d", len(raw.Data))
-	logger.Debugf("ui keys: %d", len(raw.UI))
-	logger.Debugf("behavior keys: %d", len(raw.Behaviors))
-	logger.Infof("parsed 4 spec files")
-	reporter.End("Parsing specs", nil)
 
-	reporter.Start("Building IR")
-	app, err := ir.Build(raw)
+	app, err := stage(reporter, "Building IR", func() (ir.IR, error) {
+		a, err := ir.Build(raw)
+		if err != nil {
+			return a, err
+		}
+		for _, w := range a.Warnings {
+			logger.Warnf("%s", w)
+		}
+		logger.Infof("built IR for %q: %d store(s), %d widget(s), %d scenario(s)",
+			a.Project.Name, len(a.Stores), len(a.UI), len(a.Behaviors))
+		for _, s := range a.Behaviors {
+			logger.Debugf("scenario %s", s.ID)
+		}
+		return a, nil
+	})
 	if err != nil {
-		reporter.End("Building IR", err)
 		return err
 	}
-	logger.Debugf("stores: %d", len(app.Stores))
-	logger.Debugf("widgets: %d", len(app.UI))
-	logger.Debugf("scenarios: %d", len(app.Behaviors))
-	logger.Debugf("symbols: %d", len(app.Symbols.Symbols))
-	for _, w := range app.Warnings {
-		logger.Warnf("%s", w)
-	}
-	logger.Infof("built IR for project %q", app.Project.Name)
-	reporter.End("Building IR", nil)
 
-	reporter.Start("Resolving symbols")
 	cat := catalog.New()
-	if err := app.Resolve(cat); err != nil {
-		reporter.End("Resolving symbols", err)
+	if _, err := stage(reporter, "Resolving symbols", func() (struct{}, error) {
+		if err := app.Resolve(cat); err != nil {
+			return struct{}{}, err
+		}
+		for _, err := range project.Validate(app.Project) {
+			logger.Warnf("project rule: %s", err)
+		}
+		for _, err := range data.Validate(app.Stores) {
+			logger.Warnf("data rule: %s", err)
+		}
+		for _, err := range ui.Validate(app.UI, cat) {
+			logger.Warnf("ui rule: %s", err)
+		}
+		logger.Infof("resolved %d store(s), %d widget(s), %d binding(s)",
+			len(app.Symbols.Stores), len(app.Symbols.Widgets), len(app.Symbols.Bindings))
+		for _, b := range app.Symbols.Bindings {
+			logger.Infof("binding: %s -> %s.%s (%d scenario(s))", b.FullPath(), b.Store, b.Action, len(b.ScenarioIDs))
+		}
+		return struct{}{}, nil
+	}); err != nil {
 		return err
 	}
-	for _, err := range project.Validate(app.Project) {
-		logger.Warnf("project rule: %s", err)
-	}
-	for _, err := range data.Validate(app.Stores) {
-		logger.Warnf("data rule: %s", err)
-	}
-	for _, err := range ui.Validate(app.UI, cat) {
-		logger.Warnf("ui rule: %s", err)
-	}
-	logger.Debugf("resolved stores: %d", len(app.Symbols.Stores))
-	logger.Debugf("resolved widgets: %d", len(app.Symbols.Widgets))
-	logger.Debugf("resolved actions: %d", len(app.Symbols.Actions))
-	logger.Debugf("resolved events: %d", len(app.Symbols.Events))
-	logger.Debugf("resolved variables: %d", len(app.Symbols.Variables))
-	logger.Infof("resolved symbols")
-	reporter.End("Resolving symbols", nil)
 
-	reporter.Start("Generating Flutter project")
-	if err := flutter.GenerateAll(&app, paths.Root); err != nil {
-		reporter.End("Generating Flutter project", err)
+	if _, err := stage(reporter, "Scaffolding Flutter project", func() (struct{}, error) {
+		return struct{}{}, flutter.GenerateAll(&app, paths.Root)
+	}); err != nil {
 		return err
 	}
-	logger.Infof("generated flutter project")
-	reporter.End("Generating Flutter project", nil)
 
-	reporter.Start("Planning wrappers")
-	tasks, err := planner.Plan(&app)
+	tasks, err := stage(reporter, "Planning", func() ([]planner.Task, error) {
+		t, err := planner.Plan(&app)
+		if err == nil {
+			logger.Infof("planned %d task(s)", len(t))
+			for _, task := range t {
+				logger.Debugf("task %s -> %s", task.ID, task.TargetFile)
+			}
+		}
+		return t, err
+	})
 	if err != nil {
-		reporter.End("Planning wrappers", err)
 		return err
 	}
-	logger.Debugf("planned tasks: %d", len(tasks))
-	reporter.End("Planning wrappers", nil)
 
-	// A nil client means no LLM is configured. Every strategy choice below is
-	// made from this one value.
-	var client llm.Client
-	if llmCfg, err := llm.ConfigFromEnv(); err != nil {
-		logger.Warnf("LLM not configured: %s", err)
-		logger.Warnf("set ANTHROPIC_API_KEY in a .env file (see .env.example) to enable AI wrappers, or METACODE_LLM_PROVIDER=openai with METACODE_LLM_BASE_URL and METACODE_LLM_API_KEY")
-	} else {
-		client = llm.NewClient(llmCfg, logger)
-	}
-
-	wrapperGen := flutter.NewWrapperGenerator(client)
-
-	reporter.Start("Generating wrappers")
-	if err := wrapperGen.Generate(context.Background(), &app, tasks, paths.Root); err != nil {
-		reporter.End("Generating wrappers", err)
+	wrapperGen := flutter.NewWrapperGenerator()
+	if _, err := stage(reporter, "Scaffolding wrappers", func() (struct{}, error) {
+		return struct{}{}, wrapperGen.Generate(context.Background(), &app, tasks, paths.Root)
+	}); err != nil {
 		return err
 	}
-	logger.Infof("generated %s wrappers", wrapperGen.Name())
-	reporter.End("Generating wrappers", nil)
 
-	reporter.Start("Generating tests")
-	if err := flutter.GenerateTests(&app, tasks, paths.Root); err != nil {
-		reporter.End("Generating tests", err)
+	// Tests come before the implement stage on purpose: they are derived from
+	// the specs, they are the definition of done, and the one request that
+	// implements the app is shown all of them.
+	if _, err := stage(reporter, "Generating tests", func() (struct{}, error) {
+		return struct{}{}, flutter.GenerateTests(&app, tasks, paths.Root)
+	}); err != nil {
 		return err
 	}
-	logger.Infof("generated tests")
-	reporter.End("Generating tests", nil)
 
-	reporter.Start("Removing stale output")
-	removed, err := flutter.PruneStaleOutput(&app, tasks, paths.Root)
-	if err != nil {
-		reporter.End("Removing stale output", err)
+	if _, err := stage(reporter, "Removing stale output", func() (struct{}, error) {
+		removed, err := flutter.PruneStaleOutput(&app, tasks, paths.Root)
+		for _, path := range removed {
+			logger.Infof("removed stale %s", path)
+		}
+		return struct{}{}, err
+	}); err != nil {
 		return err
 	}
-	for _, path := range removed {
-		logger.Infof("removed stale %s", path)
-	}
-	logger.Debugf("stale files removed: %d", len(removed))
-	reporter.End("Removing stale output", nil)
 
+	client := newLLMClient(logger, paths.Root)
+
+	var impl *implementer.Implementer
+	if client != nil {
+		impl = implementer.New(client, logger, &app, tasks, paths.Root)
+		if _, err := stage(reporter, "Implementing behavior", func() (struct{}, error) {
+			return struct{}{}, impl.Implement(context.Background())
+		}); err != nil {
+			return err
+		}
+	}
+
+	// A nil implementer leaves the verifier with nothing to repair with, so it
+	// runs the suite once and reports what it finds.
+	var repairer runner.Repairer
+	if impl != nil {
+		repairer = impl
+	}
 	verifier := runner.NewVerifier(
 		runner.NewTestRunner(paths.Root, &loggerReporter{logger: logger}),
-		client,
-		paths.Root,
+		repairer,
 		&loggerReporter{logger: logger},
 	)
 
-	reporter.Start("Running tests")
-	if err := verifier.Run(context.Background(), tasks); err != nil {
-		reporter.End("Running tests", err)
+	if _, err := stage(reporter, "Running tests", func() (struct{}, error) {
+		return struct{}{}, verifier.Run(context.Background())
+	}); err != nil {
 		return err
 	}
 	logger.Infof("tests passed (%s)", verifier.Name())
-	reporter.End("Running tests", nil)
 
 	return nil
+}
+
+// newLLMClient builds the traced client, or returns nil when no LLM is
+// configured. Every call it makes is logged and written to a transcript under
+// the project root.
+func newLLMClient(logger log.Logger, projectDir string) llm.Client {
+	cfg, err := llm.ConfigFromEnv()
+	if err != nil {
+		logger.Warnf("LLM not configured: %s", err)
+		logger.Warnf("set ANTHROPIC_API_KEY in a .env file (see .env.example) to enable generation, or METACODE_LLM_PROVIDER=openai with METACODE_LLM_BASE_URL and METACODE_LLM_API_KEY")
+		return nil
+	}
+
+	logger.Infof("llm: provider=%s model=%s max_tokens=%d", cfg.Provider, cfg.Model, cfg.MaxTokens)
+	if err := llm.ResetTraceDir(projectDir); err != nil {
+		logger.Warnf("could not clear the LLM trace directory: %s", err)
+	}
+	logger.Infof("llm transcripts: %s", llm.TraceDirName)
+
+	return llm.NewTracer(llm.NewClient(cfg, logger), logger, projectDir)
+}
+
+// stage runs one pipeline step under the reporter, so a step cannot be started
+// without its result being reported.
+func stage[T any](reporter log.Reporter, name log.Stage, fn func() (T, error)) (T, error) {
+	reporter.Start(name)
+	out, err := fn()
+	reporter.End(name, err)
+	return out, err
 }
 
 type loggerReporter struct {

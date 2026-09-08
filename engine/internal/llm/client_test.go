@@ -160,7 +160,7 @@ func TestCompleteSendsCorrectRequestAndExtractsContent(t *testing.T) {
 	cfg := Config{BaseURL: server.URL, APIKey: "test-key", Model: "test-model"}
 	client := NewClientWithHTTP(cfg, log.Nop(), server.Client())
 
-	result, err := client.Complete(context.Background(), "say hello")
+	result, err := client.Complete(context.Background(), Call{Label: "test", Prompt: "say hello"})
 	if err != nil {
 		t.Fatalf("complete failed: %v", err)
 	}
@@ -191,7 +191,7 @@ func TestCompleteNonOKStatus(t *testing.T) {
 	cfg := Config{BaseURL: server.URL, APIKey: "key", Model: "model"}
 	client := NewClientWithHTTP(cfg, log.Nop(), server.Client())
 
-	_, err := client.Complete(context.Background(), "prompt")
+	_, err := client.Complete(context.Background(), Call{Label: "test", Prompt: "prompt"})
 	if err == nil || !strings.Contains(err.Error(), "401") {
 		t.Fatalf("expected 401 error, got %v", err)
 	}
@@ -212,15 +212,15 @@ func TestCompleteDebugLogs(t *testing.T) {
 	cfg := Config{BaseURL: server.URL, APIKey: "key", Model: "model"}
 	client := NewClientWithHTTP(cfg, logger, server.Client())
 
-	_, err := client.Complete(context.Background(), "prompt")
+	_, err := client.Complete(context.Background(), Call{Label: "test", Prompt: "prompt"})
 	if err != nil {
 		t.Fatalf("complete failed: %v", err)
 	}
 	logs := buf.String()
-	if !strings.Contains(logs, "llm request:") {
-		t.Errorf("expected debug request log, got %q", logs)
+	if !strings.Contains(logs, "llm request [test]:") {
+		t.Errorf("expected debug request log naming the call, got %q", logs)
 	}
-	if !strings.Contains(logs, "llm response:") {
-		t.Errorf("expected debug response log, got %q", logs)
+	if !strings.Contains(logs, "llm response [test]:") {
+		t.Errorf("expected debug response log naming the call, got %q", logs)
 	}
 }

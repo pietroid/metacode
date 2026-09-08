@@ -16,7 +16,8 @@ import (
 //go:embed templates/*.tmpl
 var templates embed.FS
 
-// Generate writes one Dart test file per TestCase into outDir/test.
+// Generate writes one Dart test file per TestCase into outDir/test. One
+// scenario produces one file.
 func Generate(cases []tests.TestCase, outDir string) error {
 	testDir := filepath.Join(outDir, "test")
 	if err := os.MkdirAll(testDir, 0755); err != nil {
@@ -36,17 +37,9 @@ func Generate(cases []tests.TestCase, outDir string) error {
 			return fmt.Errorf("create test target dir: %w", err)
 		}
 
-		var templateName string
-		switch tc.Type {
-		case tests.TestTypeCubit:
-			templateName = "cubit_test.dart.tmpl"
-		case tests.TestTypeWidget:
-			templateName = "widget_test.dart.tmpl"
-		default:
-			return fmt.Errorf("unknown test type %q for %s", tc.Type, tc.ID)
-		}
-
-		if err := codegen.ExecuteTemplate(tmpl, templateName, path, tc); err != nil {
+		// One template, because there is one kind of test: a scenario is a
+		// behavior of the whole app, so it is verified against the whole app.
+		if err := codegen.ExecuteTemplate(tmpl, "widget_test.dart.tmpl", path, tc); err != nil {
 			return fmt.Errorf("test %s: %w", tc.ID, err)
 		}
 	}

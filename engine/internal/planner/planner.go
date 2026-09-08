@@ -10,9 +10,14 @@ import (
 	"github.com/pietroid/metacode/engine/internal/modules/shared"
 )
 
-// Plan analyzes the resolved IR and returns an ordered list of generation tasks.
-// Wrappers are emitted before tests so later stages can generate runnable code
-// before verifying it.
+// Plan analyzes the resolved IR and returns an ordered list of generation tasks:
+// which wrappers exist, and which tests exist.
+//
+// One scenario produces exactly one test task. The planner does not decide
+// which layer a scenario belongs to, and it no longer emits a task per store
+// action per scenario. Working out "this failing test means that Cubit method"
+// was the engine's job only because the repair stage asked about one file at a
+// time; it now sees the whole app at once and does not need to be told.
 func Plan(app *ir.IR) ([]Task, error) {
 	if app == nil {
 		return nil, fmt.Errorf("ir is nil")
@@ -27,10 +32,18 @@ func Plan(app *ir.IR) ([]Task, error) {
 		}
 	}
 
-	stores := buildStoreTasks(app)
+	// Every test pumps the page wrapper, because every scenario is a behavior
+	// of the whole app. So the page wrapper always exists, even when no
+	// scenario happens to name the page: without this, an app whose scenarios
+	// only mention buttons generated tests importing a wrapper that was never
+	// written.
+	if task, ok := buildPageWrapperTask(app); ok {
+		if _, exists := wrappers[task.ID]; !exists {
+			wrappers[task.ID] = task
+		}
+	}
 
-	ordered := make([]Task, 0, len(stores)+len(wrappers)+len(tests))
-	ordered = append(ordered, stores...)
+	ordered := make([]Task, 0, len(wrappers)+len(tests))
 	for _, id := range sortedKeys(wrappers) {
 		ordered = append(ordered, wrappers[id])
 	}
@@ -38,61 +51,26 @@ func Plan(app *ir.IR) ([]Task, error) {
 	return ordered, nil
 }
 
-// buildStoreTasks emits one task per store action, so a failing test can be
-// traced back to the Cubit method that has to change. Without these the fix
-// loop can only edit wrappers, which is what drove generated wrappers to reach
-// through cubit.emit for logic that belonged in the store.
-func buildStoreTasks(app *ir.IR) []Task {
-	var tasks []Task
-	for _, binding := range app.Symbols.Bindings {
-		base := shared.StoreBaseName(binding.Store)
-		targetFile := fmt.Sprintf("lib/stores/%s_cubit.dart", shared.SnakeCase(base))
-
-		ctx := strings.Builder{}
-		ctx.WriteString(fmt.Sprintf("Scenario ID: %s\n", binding.ScenarioIDs[0]))
-		ctx.WriteString(fmt.Sprintf("Store: %s\n", binding.Store))
-		ctx.WriteString(fmt.Sprintf("Action: %s\n", binding.Action))
-		ctx.WriteString(fmt.Sprintf("Triggered by: %s\n", binding.FullPath()))
-		ctx.WriteString("Scenarios this action must satisfy:\n")
-		for _, id := range binding.ScenarioIDs {
-			scenario, ok := findScenario(app, id)
-			if !ok {
-				continue
-			}
-			ctx.WriteString(fmt.Sprintf("  - %s\n", scenario.ID))
-			if scenario.Given != nil {
-				ctx.WriteString(fmt.Sprintf("      Given: %s %s %s\n", scenario.Given.Target, scenario.Given.Op, scenario.Given.Value))
-			}
-			if scenario.Then != nil {
-				ctx.WriteString(fmt.Sprintf("      Then: %s %s %s\n", scenario.Then.Target, scenario.Then.Op, scenario.Then.Value))
-			}
-		}
-
-		// One task per scenario, all targeting the same Cubit file. A failing
-		// test is traced back through its scenario, so an action specified by
-		// three scenarios has to be reachable from any of the three.
-		for _, id := range binding.ScenarioIDs {
-			tasks = append(tasks, Task{
-				ID:              fmt.Sprintf("store-%s-%s-%s", shared.SnakeCase(base), shared.SnakeCase(binding.Action), pathToID(id)),
-				Type:            TaskStore,
-				TargetFile:      targetFile,
-				ScenarioID:      id,
-				Description:     fmt.Sprintf("Implement %s.%s", binding.Store, binding.Action),
-				PromptContext:   ctx.String(),
-				ExpectedOutcome: fmt.Sprintf("%s.%s satisfies every scenario that triggers it", binding.Store, binding.Action),
-			})
-		}
+// buildPageWrapperTask returns the wrapper task for the app's page.
+func buildPageWrapperTask(app *ir.IR) (Task, bool) {
+	pageName := shared.FirstPageName(app.UI)
+	if pageName == "" {
+		return Task{}, false
 	}
-	return tasks
-}
 
-func findScenario(app *ir.IR, id string) (ir.BehaviorScenario, bool) {
-	for _, s := range app.Behaviors {
-		if s.ID == id {
-			return s, true
-		}
-	}
-	return ir.BehaviorScenario{}, false
+	ctx := strings.Builder{}
+	ctx.WriteString(fmt.Sprintf("Widget: %s\n", pageName))
+	ctx.WriteString("This is the page every scenario test pumps.\n")
+
+	return Task{
+		ID:              fmt.Sprintf("wrapper-%s-page", shared.SnakeCase(pageName)),
+		Type:            TaskWrapper,
+		Widget:          pageName,
+		TargetFile:      fmt.Sprintf("lib/wrappers/%s_wrapper.dart", shared.SnakeCase(pageName)),
+		Description:     fmt.Sprintf("Wire the page %q", pageName),
+		PromptContext:   ctx.String(),
+		ExpectedOutcome: fmt.Sprintf("%s composes the app and every scenario test can pump it", pageName),
+	}, true
 }
 
 func planScenario(app *ir.IR, scenario ir.BehaviorScenario, wrappers map[string]Task, tests *[]Task) error {
@@ -164,6 +142,7 @@ func buildWidgetWrapperTask(app *ir.IR, scenario ir.BehaviorScenario, target str
 	return Task{
 		ID:              id,
 		Type:            TaskWrapper,
+		Widget:          root,
 		TargetFile:      targetFile,
 		ScenarioID:      scenario.ID,
 		Description:     description,

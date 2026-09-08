@@ -1,11 +1,13 @@
 // Package flutter generates the wrapper widgets that connect the generated
 // dumb widgets to the generated Cubits.
 //
-// Two strategies produce wrapper bodies: a deterministic one that renders from
-// the IR alone, and an LLM one that asks a model. They share everything else —
-// which wrappers exist, what they are called, where they are written, and how
-// lib/app.dart is rewritten — so the two produce the same file set and the same
-// class names for the same specs. Only the body of each wrapper differs.
+// Generation here is deterministic and renders from the IR alone: which
+// wrappers exist, what they are called, where they are written, and how
+// lib/app.dart is rewritten. The result compiles and is the baseline an LLM
+// then refines, in one request covering the whole app, in the implementer
+// stage. Asking a model for each wrapper body separately, as this package used
+// to, spent a request per widget on a file the next stage would look at again
+// anyway.
 package flutter
 
 import (
@@ -143,4 +145,26 @@ func withMarker(code string) string {
 
 func wrapperClassName(widgetName string) string {
 	return shared.PascalCase(widgetName) + "Wrapper"
+}
+
+// findScenario returns the scenario with the given id.
+func findScenario(app *ir.IR, id string) (ir.BehaviorScenario, error) {
+	for _, s := range app.Behaviors {
+		if s.ID == id {
+			return s, nil
+		}
+	}
+	return ir.BehaviorScenario{}, fmt.Errorf("scenario %q not found", id)
+}
+
+// splitWidgetRef splits "widget.member" when the root resolves to a widget.
+func splitWidgetRef(app *ir.IR, ref string) (string, string, bool) {
+	parts := strings.SplitN(ref, ".", 2)
+	if len(parts) != 2 {
+		return "", "", false
+	}
+	if sym, ok := app.Symbols.Lookup(parts[0]); !ok || sym.Kind != "widget" {
+		return "", "", false
+	}
+	return parts[0], parts[1], true
 }

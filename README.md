@@ -94,9 +94,20 @@ Also, we want to be simple enough so we delegate the harder parts that code can 
 
 But for that, we should have a loop, which is very simple and is just a Test-Driven-Development approach.
 
-1. For each spec, the code is generated using a LLM tool
-2. We test that spec
-3. If the test does not pass, adjustments are done until the test passes.
+1. Every behavior scenario becomes exactly one test, against the whole app.
+   A scenario is never split by layer: one behavior, one test, whatever the
+   trigger happens to be.
+2. Everything derivable from the specs is scaffolded deterministically: the
+   stores, the widgets, the wrappers, the tests, their names and their paths.
+3. What is left is behavior, and it is generated in a single LLM request that
+   carries the whole spec, every test, and every file the model may write.
+4. `flutter test` runs. Each fix iteration is one more request, carrying every
+   failure at once.
+
+Asking once matters. Generating a wrapper at a time and then repairing a test
+at a time meant every request saw one slice of the problem, which is how a
+Cubit came back with placeholder method bodies: the request that wrote it had
+never been shown the tests those methods had to satisfy.
 
 ### Code generation optimization
 
@@ -118,7 +129,10 @@ For now, the command is very simple, as all options should be in the YAML.
 
 `metacode run`
 
-Any errors in any stage will be reported and the progress of the code generation will also be very beatifully reported by the tool, with the all the details on what is happening.
+Every stage reports its result and how long it took. Each LLM call is logged
+with its label, size and duration, and every prompt and response is written in
+full to `.metacode/llm/` under the project, one file per call. Add `-v` to log
+prompts and responses to the terminal as well, or `-q` for stage results only.
 
 ## Configuring the LLM
 

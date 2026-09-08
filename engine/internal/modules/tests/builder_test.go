@@ -91,9 +91,6 @@ func TestBuildTestCasesProducesWidgetTests(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		if tc.Type != TestTypeWidget {
-			t.Errorf("expected widget test, got %q", tc.Type)
-		}
 		if tc.PageWrapperClass != "HomePageWrapper" {
 			t.Errorf("expected HomePageWrapper, got %q", tc.PageWrapperClass)
 		}
@@ -114,7 +111,7 @@ func TestBuildWidgetTestSeedsAndAssertsText(t *testing.T) {
 
 	var found bool
 	for _, tc := range cases {
-		if tc.Type != TestTypeWidget || !strings.Contains(tc.AssertionExpression, "find.text") {
+		if !strings.Contains(tc.AssertionExpression, "find.text") {
 			continue
 		}
 		found = true
@@ -130,9 +127,12 @@ func TestBuildWidgetTestSeedsAndAssertsText(t *testing.T) {
 	}
 }
 
-func TestBuildCubitTestAssertsState(t *testing.T) {
+// TestStoreActionScenarioStaysOneWidgetTest covers the 1:1 rule: a scenario
+// whose trigger is a store action is still one test against the whole app, not
+// a Cubit unit test. Compiling that scenario down to a bloc_test let it pass
+// while the widget that was meant to call the action was wired to nothing.
+func TestStoreActionScenarioStaysOneWidgetTest(t *testing.T) {
 	app := counterAppIR()
-	// Replace the widget event with a direct store action scenario.
 	for i := range app.Behaviors {
 		if app.Behaviors[i].ID == "counterStore/increments from 0" {
 			app.Behaviors[i].When = "counterStore.increment"
@@ -149,15 +149,20 @@ func TestBuildCubitTestAssertsState(t *testing.T) {
 		t.Fatalf("build test cases failed: %v", err)
 	}
 
+	var found bool
 	for _, tc := range cases {
-		if tc.Type != TestTypeCubit {
+		if tc.ID != "counterStore/increments from 0" {
 			continue
 		}
-		if tc.ActionExpression != "act: (cubit) => cubit.increment()," {
-			t.Errorf("expected increment action, got %q", tc.ActionExpression)
+		found = true
+		if tc.PageWrapperClass != "HomePageWrapper" {
+			t.Errorf("expected the test to pump the page wrapper, got %q", tc.PageWrapperClass)
 		}
-		if tc.AssertionExpression != "expect: () => [CounterState(value: 1)]," {
-			t.Errorf("expected state assertion, got %q", tc.AssertionExpression)
+		if tc.ActionExpression != "cubit.increment();" {
+			t.Errorf("expected a direct cubit call, got %q", tc.ActionExpression)
 		}
+	}
+	if !found {
+		t.Fatal("no test case for the store-action scenario")
 	}
 }

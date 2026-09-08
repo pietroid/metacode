@@ -119,7 +119,10 @@ func TestGenerateTestsWidgetTestTapsButton(t *testing.T) {
 	}
 }
 
-func TestGenerateTestsCubitTest(t *testing.T) {
+// TestGenerateTestsStoreActionStaysAWidgetTest covers the 1:1 rule end to end:
+// a scenario triggered by a store action is one test against the composed app,
+// not a Cubit unit test alongside it.
+func TestGenerateTestsStoreActionStaysAWidgetTest(t *testing.T) {
 	app := counterAppFullIR()
 	// Replace the widget event with a direct store action scenario.
 	for i := range app.Behaviors {
@@ -145,14 +148,17 @@ func TestGenerateTestsCubitTest(t *testing.T) {
 	}
 
 	want := []string{
-		"import 'package:bloc_test/bloc_test.dart';",
-		"blocTest<CounterCubit, CounterState>",
-		"act: (cubit) => cubit.increment(),",
-		"expect: () => [CounterState(value: 1)],",
+		"testWidgets(",
+		"home: HomePageWrapper()",
+		"cubit.increment();",
+		"expect(cubit.state.value, 1);",
 	}
 	for _, w := range want {
 		if !strings.Contains(string(content), w) {
-			t.Errorf("expected cubit test to contain %q, got:\n%s", w, string(content))
+			t.Errorf("expected the test to contain %q, got:\n%s", w, string(content))
 		}
+	}
+	if strings.Contains(string(content), "blocTest") {
+		t.Errorf("expected no separate cubit unit test, got:\n%s", string(content))
 	}
 }

@@ -2,23 +2,16 @@
 // and the logic to build that representation from the resolved IR.
 package tests
 
-// TestType classifies a generated test.
-type TestType string
-
-const (
-	// TestTypeCubit is a unit test for a store Cubit using bloc_test.
-	TestTypeCubit TestType = "cubit"
-	// TestTypeWidget is a widget test using WidgetTester.
-	TestTypeWidget TestType = "widget"
-)
-
 // TestCase is the language-agnostic representation of a single behavior test.
-// Target-language code generators consume a slice of TestCases and render the
-// appropriate test files.
+//
+// One scenario in behaviors.yaml produces exactly one TestCase, and that test
+// runs against the whole app: it pumps the composed page and drives it the way
+// a user would. Tests are never split by layer. A scenario that used to compile
+// down to a Cubit unit test could pass while the button that was supposed to
+// call the Cubit was wired to nothing.
 type TestCase struct {
 	ID          string
 	Description string
-	Type        TestType
 
 	// Project context.
 	PackageName string

@@ -100,3 +100,58 @@ func TestRenameClassLeavesOtherIdentifiersAlone(t *testing.T) {
 		t.Errorf("expected Whatever2 to survive, got: %s", got)
 	}
 }
+
+// TestBalancedIgnoresComments covers the bug that made three consecutive runs
+// discard correct code: an apostrophe in a doc comment opened a string literal
+// that never closed, so every bracket after it stopped counting.
+func TestBalancedIgnoresComments(t *testing.T) {
+	cases := []struct {
+		name string
+		code string
+		want bool
+	}{
+		{
+			name: "apostrophe in a line comment",
+			code: "// seed a scenario's Given state\nclass A {\n  void f() {}\n}\n",
+			want: true,
+		},
+		{
+			name: "brackets in a line comment do not count",
+			code: "class A {\n  // } ) ]\n  void f() {}\n}\n",
+			want: true,
+		},
+		{
+			name: "apostrophe in a block comment",
+			code: "/* the model's reply */\nclass A {}\n",
+			want: true,
+		},
+		{
+			name: "escaped quote in a string",
+			code: "class A {\n  final s = 'it\\'s fine';\n}\n",
+			want: true,
+		},
+		{
+			name: "brackets in a string do not count",
+			code: "class A {\n  final s = '}';\n}\n",
+			want: true,
+		},
+		{
+			name: "genuinely unbalanced",
+			code: "class A {\n  void f() {\n}\n",
+			want: false,
+		},
+		{
+			name: "closes too many",
+			code: "class A {}}\n",
+			want: false,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := Balanced(tc.code); got != tc.want {
+				t.Errorf("Balanced() = %v, want %v for:\n%s", got, tc.want, tc.code)
+			}
+		})
+	}
+}

@@ -145,7 +145,11 @@ func TestPlanOrdersWrappersBeforeTests(t *testing.T) {
 	}
 }
 
-func TestPlanTasksReferenceScenario(t *testing.T) {
+// TestPlanTasksAreTraceable checks each task carries what its consumer needs:
+// a test task names the scenario it verifies, a wrapper task names the widget
+// it wraps. The page wrapper is the one task with no single scenario behind it,
+// because every scenario test pumps it.
+func TestPlanTasksAreTraceable(t *testing.T) {
 	app := counterAppIR()
 	tasks, err := Plan(app)
 	if err != nil {
@@ -153,13 +157,44 @@ func TestPlanTasksReferenceScenario(t *testing.T) {
 	}
 
 	for _, task := range tasks {
-		if task.ScenarioID == "" {
-			t.Errorf("task %q missing scenario id", task.ID)
-		}
-		if !strings.Contains(task.PromptContext, "Scenario ID:") {
-			t.Errorf("task %q missing scenario context", task.ID)
+		switch task.Type {
+		case TaskTest:
+			if task.ScenarioID == "" {
+				t.Errorf("test task %q names no scenario", task.ID)
+			}
+			if !strings.Contains(task.PromptContext, "Scenario ID:") {
+				t.Errorf("test task %q carries no scenario context", task.ID)
+			}
+		case TaskWrapper:
+			if task.Widget == "" {
+				t.Errorf("wrapper task %q names no widget", task.ID)
+			}
 		}
 	}
+}
+
+// TestPlanAlwaysWrapsThePage covers the case that used to generate tests
+// importing a wrapper nothing wrote: no scenario names the page, every test
+// pumps it anyway.
+func TestPlanAlwaysWrapsThePage(t *testing.T) {
+	app := counterAppIR()
+	for i := range app.Behaviors {
+		if app.Behaviors[i].Then != nil && strings.HasPrefix(app.Behaviors[i].Then.Target, "homePage.") {
+			app.Behaviors[i].Then.Target = "counterStore.value"
+		}
+	}
+
+	tasks, err := Plan(app)
+	if err != nil {
+		t.Fatalf("plan failed: %v", err)
+	}
+
+	for _, task := range tasks {
+		if task.Type == TaskWrapper && task.TargetFile == "lib/wrappers/home_page_wrapper.dart" {
+			return
+		}
+	}
+	t.Error("no wrapper task for the page")
 }
 
 func TestPlanDeduplicatesWrapperTasks(t *testing.T) {
@@ -189,36 +224,30 @@ func TestPlanNilIR(t *testing.T) {
 	}
 }
 
-// TestPlanEmitsStoreTasksForEveryScenario covers the reason store tasks exist:
-// the fix loop maps a failing test to its scenario and then to the files it may
-// rewrite. An action specified by three scenarios has to be reachable from any
-// of the three, or two of those failures repair nothing.
-func TestPlanEmitsStoreTasksForEveryScenario(t *testing.T) {
+// TestPlanEmitsOneTestPerScenario covers the 1:1 rule: one scenario, one test,
+// whatever layers it happens to touch. The planner used to also emit a task per
+// store action per scenario so a failing test could be traced back to a file to
+// rewrite; the implement stage sees the whole app at once and needs no such map.
+func TestPlanEmitsOneTestPerScenario(t *testing.T) {
 	app := counterAppIR()
 	tasks, err := Plan(app)
 	if err != nil {
 		t.Fatalf("plan failed: %v", err)
 	}
 
-	byScenario := make(map[string]bool)
+	byScenario := make(map[string]int)
 	for _, task := range tasks {
-		if task.Type != TaskStore {
-			continue
+		if task.Type == TaskTest {
+			byScenario[task.ScenarioID]++
 		}
-		if task.TargetFile != "lib/stores/counter_cubit.dart" {
-			t.Errorf("store task %q targets %q", task.ID, task.TargetFile)
-		}
-		byScenario[task.ScenarioID] = true
 	}
 
-	if len(byScenario) == 0 {
-		t.Fatal("expected store tasks, got none")
+	if len(byScenario) != len(app.Behaviors) {
+		t.Fatalf("expected %d test tasks, got %d", len(app.Behaviors), len(byScenario))
 	}
-	for _, binding := range app.Symbols.Bindings {
-		for _, id := range binding.ScenarioIDs {
-			if !byScenario[id] {
-				t.Errorf("no store task reachable from scenario %q", id)
-			}
+	for _, s := range app.Behaviors {
+		if byScenario[s.ID] != 1 {
+			t.Errorf("scenario %q has %d test tasks, want exactly 1", s.ID, byScenario[s.ID])
 		}
 	}
 }

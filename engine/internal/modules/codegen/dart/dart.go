@@ -60,35 +60,111 @@ func RenameClass(code, want string) string {
 	return regexp.MustCompile(`\b`+regexp.QuoteMeta(got)+`\b`).ReplaceAllString(code, want)
 }
 
-// Balanced reports whether brackets outside string literals are balanced.
+// Balanced reports whether brackets are balanced, ignoring anything inside a
+// string literal or a comment.
+//
+// Comments have to be skipped, not just strings. A doc comment reading
+// "seed a scenario's Given state" opens a string that never closes, and every
+// bracket after it stops counting: a correct file came back from the model,
+// failed this check, and was silently discarded, three times in a row, while
+// the run reported the scaffolded placeholder as the model's work.
 func Balanced(code string) bool {
 	depth := 0
-	inString := false
-	stringChar := rune(0)
-	for i, r := range code {
-		if inString {
-			if r == stringChar {
-				inString = false
-			} else if r == '\\' && i+1 < len(code) {
-				// Skip escaped character.
-				_ = code[i+1]
+	runes := []rune(code)
+
+	for i := 0; i < len(runes); i++ {
+		r := runes[i]
+
+		switch {
+		case r == '/' && i+1 < len(runes) && runes[i+1] == '/':
+			i = skipLineComment(runes, i)
+		case r == '/' && i+1 < len(runes) && runes[i+1] == '*':
+			end := skipBlockComment(runes, i)
+			if end < 0 {
+				return false // unterminated comment
 			}
-			continue
-		}
-		if r == '"' || r == '\'' {
-			inString = true
-			stringChar = r
-			continue
-		}
-		switch r {
-		case '{', '(', '[':
+			i = end
+		case r == '"' || r == '\'':
+			end := skipString(runes, i)
+			if end < 0 {
+				return false // unterminated string
+			}
+			i = end
+		case r == '{' || r == '(' || r == '[':
 			depth++
-		case '}', ')', ']':
+		case r == '}' || r == ')' || r == ']':
 			depth--
 			if depth < 0 {
 				return false
 			}
 		}
 	}
-	return depth == 0 && !inString
+
+	return depth == 0
+}
+
+// skipLineComment returns the index of the last rune of the comment.
+func skipLineComment(runes []rune, start int) int {
+	for i := start; i < len(runes); i++ {
+		if runes[i] == '\n' {
+			return i
+		}
+	}
+	return len(runes) - 1
+}
+
+// skipBlockComment returns the index of the closing slash, or -1 if the comment
+// is unterminated. Dart block comments nest.
+func skipBlockComment(runes []rune, start int) int {
+	depth := 0
+	for i := start; i < len(runes)-1; i++ {
+		switch {
+		case runes[i] == '/' && runes[i+1] == '*':
+			depth++
+			i++
+		case runes[i] == '*' && runes[i+1] == '/':
+			depth--
+			i++
+			if depth == 0 {
+				return i
+			}
+		}
+	}
+	return -1
+}
+
+// skipString returns the index of the closing quote, or -1 if the literal is
+// unterminated. It handles escapes and the triple-quoted form.
+func skipString(runes []rune, start int) int {
+	quote := runes[start]
+
+	triple := start+2 < len(runes) && runes[start+1] == quote && runes[start+2] == quote
+	if triple {
+		for i := start + 3; i < len(runes)-2; i++ {
+			if runes[i] == '\\' {
+				i++
+				continue
+			}
+			if runes[i] == quote && runes[i+1] == quote && runes[i+2] == quote {
+				return i + 2
+			}
+		}
+		return -1
+	}
+
+	for i := start + 1; i < len(runes); i++ {
+		switch runes[i] {
+		case '\\':
+			i++
+		case quote:
+			return i
+		case '\n':
+			// A single-quoted Dart string cannot span lines. Treating it as
+			// unterminated here would reject a whole file over one stray
+			// apostrophe; stopping at the newline keeps the check to what it
+			// is for, which is brackets.
+			return i
+		}
+	}
+	return -1
 }

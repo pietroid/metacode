@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/pietroid/metacode/engine/internal/core/ir"
-	"github.com/pietroid/metacode/engine/internal/llm"
 	dataflutter "github.com/pietroid/metacode/engine/internal/modules/data/codegen/flutter"
 	projectflutter "github.com/pietroid/metacode/engine/internal/modules/project/codegen/flutter"
 	"github.com/pietroid/metacode/engine/internal/modules/tests"
@@ -33,14 +32,11 @@ func GenerateAll(app *ir.IR, outDir string) error {
 	return nil
 }
 
-// NewWrapperGenerator selects the wrapper strategy. A nil client means no LLM
-// is configured, so wrappers are rendered from the IR alone. This is the only
-// place the choice is made.
-func NewWrapperGenerator(client llm.Client) WrapperGenerator {
-	if client == nil {
-		return wrappersflutter.NewDeterministicGenerator()
-	}
-	return wrappersflutter.NewLLMGenerator(client)
+// NewWrapperGenerator returns the wrapper generator. There is one: wrappers are
+// scaffolded from the IR so the project compiles, and the implementer stage
+// rewrites them together with the stores in a single request.
+func NewWrapperGenerator() WrapperGenerator {
+	return wrappersflutter.NewDeterministicGenerator()
 }
 
 // GenerateTests emits Cubit and widget tests for every test task in tasks.

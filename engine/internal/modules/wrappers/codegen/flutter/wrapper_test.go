@@ -2,7 +2,6 @@ package flutter
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -10,44 +9,12 @@ import (
 
 	"github.com/pietroid/metacode/engine/internal/core/ir"
 	"github.com/pietroid/metacode/engine/internal/core/spec"
-	"github.com/pietroid/metacode/engine/internal/llm"
 	dataflutter "github.com/pietroid/metacode/engine/internal/modules/data/codegen/flutter"
 	projectflutter "github.com/pietroid/metacode/engine/internal/modules/project/codegen/flutter"
 	"github.com/pietroid/metacode/engine/internal/modules/ui/catalog"
 	uiflutter "github.com/pietroid/metacode/engine/internal/modules/ui/codegen/flutter"
 	"github.com/pietroid/metacode/engine/internal/planner"
 )
-
-type mockClient struct {
-	lastPrompt string
-	prompts    []string
-	response   string
-}
-
-// promptFor returns the prompt built for the wrapper of the named widget.
-func (m *mockClient) promptFor(widget string) string {
-	needle := fmt.Sprintf("wrapper widget for %q", widget)
-	for _, p := range m.prompts {
-		if strings.Contains(p, needle) {
-			return p
-		}
-	}
-	return ""
-}
-
-func (m *mockClient) Complete(ctx context.Context, prompt string) (string, error) {
-	m.lastPrompt = prompt
-	m.prompts = append(m.prompts, prompt)
-	resp := m.response
-	if resp == "" {
-		class := "IncrementButtonWrapper"
-		if strings.Contains(prompt, "homePage") {
-			class = "HomePageWrapper"
-		}
-		resp = "```dart\nclass " + class + " extends StatelessWidget {\n  const " + class + "({super.key});\n  @override\n  Widget build(BuildContext context) {\n    return Container();\n  }\n}\n```"
-	}
-	return resp, nil
-}
 
 func counterAppFullIR() *ir.IR {
 	raw := spec.RawSpecs{
@@ -138,9 +105,7 @@ func TestGenerateWrappersWritesFiles(t *testing.T) {
 		t.Fatalf("plan failed: %v", err)
 	}
 
-	mock := &mockClient{}
-
-	if err := NewLLMGenerator(mock).Generate(context.Background(), app, tasks, dir); err != nil {
+	if err := NewDeterministicGenerator().Generate(context.Background(), app, tasks, dir); err != nil {
 		t.Fatalf("generate wrappers failed: %v", err)
 	}
 
@@ -166,47 +131,3 @@ func TestGenerateWrappersWritesFiles(t *testing.T) {
 		t.Errorf("expected app.dart to import flutter_bloc, got:\n%s", content)
 	}
 }
-
-// TestPageWrapperPromptCoversWholeSubtree pins the fix for a page that came
-// back with one button wired and the other dead: the page wrapper is the only
-// widget in the composed tree, so its prompt has to carry every scenario the
-// page is responsible for, not the one scenario its first planner task
-// happened to name.
-func TestPageWrapperPromptCoversWholeSubtree(t *testing.T) {
-	app := counterAppFullIR()
-	dir := setupGeneratedFiles(t, app)
-
-	tasks, err := planner.Plan(app)
-	if err != nil {
-		t.Fatalf("plan failed: %v", err)
-	}
-
-	mock := &mockClient{}
-	if err := NewLLMGenerator(mock).Generate(context.Background(), app, tasks, dir); err != nil {
-		t.Fatalf("generate wrappers failed: %v", err)
-	}
-
-	prompt := mock.promptFor("homePage")
-	if prompt == "" {
-		t.Fatalf("no prompt was built for homePage, got %d prompts", len(mock.prompts))
-	}
-
-	for _, want := range []string{
-		// The page's own scenario.
-		"homePage.counterValue",
-		// The scenario of the button the page embeds.
-		"incrementButton.onPressed",
-		// The resolved binding, so the model calls the Cubit rather than emit.
-		"incrementButton.onPressed -> counterStore.increment",
-		// The generated code it must compose.
-		"class CounterCubit",
-		"class HomePage",
-	} {
-		if !strings.Contains(prompt, want) {
-			t.Errorf("expected the homePage prompt to contain %q, got:\n%s", want, prompt)
-		}
-	}
-}
-
-// Ensure mockClient implements llm.Client at compile time.
-var _ llm.Client = (*mockClient)(nil)

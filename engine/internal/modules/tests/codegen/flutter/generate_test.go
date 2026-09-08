@@ -9,26 +9,29 @@ import (
 	"github.com/pietroid/metacode/engine/internal/modules/tests"
 )
 
-func TestGenerateWritesCubitAndWidgetTests(t *testing.T) {
+// TestGenerateWritesOneFilePerCase covers the 1:1 rule at the codegen edge:
+// every case renders through the same widget-test template, including one whose
+// action drives a Cubit directly. There is no second template to pick.
+func TestGenerateWritesOneFilePerCase(t *testing.T) {
 	dir := t.TempDir()
 	cases := []tests.TestCase{
 		{
 			ID:                  "counterStore/increments from 0",
 			Description:         "increment changes state",
-			Type:                tests.TestTypeCubit,
 			PackageName:         "counter_app",
 			CubitClass:          "CounterCubit",
 			StateClass:          "CounterState",
 			CubitFile:           "stores/counter_cubit.dart",
 			StateFile:           "stores/counter_state.dart",
+			PageWrapperClass:    "HomePageWrapper",
+			PageWrapperFile:     "wrappers/home_page_wrapper.dart",
 			TargetFile:          "test/counter_store_increments_from_0_test.dart",
-			ActionExpression:    "act: (cubit) => cubit.increment(),",
-			AssertionExpression: "expect: () => [CounterState(value: 1)],",
+			ActionExpression:    "cubit.increment();",
+			AssertionExpression: "expect(cubit.state.value, 1);",
 		},
 		{
 			ID:                  "counterStore/Show counter value on the home page",
 			Description:         "show counter value",
-			Type:                tests.TestTypeWidget,
 			PackageName:         "counter_app",
 			CubitClass:          "CounterCubit",
 			StateClass:          "CounterState",
@@ -54,21 +57,24 @@ func TestGenerateWritesCubitAndWidgetTests(t *testing.T) {
 		}
 	}
 
-	cubitPath := filepath.Join(dir, "test", "counter_store_increments_from_0_test.dart")
-	cubitContent, err := os.ReadFile(cubitPath)
+	actionPath := filepath.Join(dir, "test", "counter_store_increments_from_0_test.dart")
+	actionContent, err := os.ReadFile(actionPath)
 	if err != nil {
-		t.Fatalf("read cubit test: %v", err)
+		t.Fatalf("read store-action test: %v", err)
 	}
-	wantCubit := []string{
-		"import 'package:bloc_test/bloc_test.dart';",
-		"blocTest<CounterCubit, CounterState>(",
-		"act: (cubit) => cubit.increment(),",
-		"expect: () => [CounterState(value: 1)],",
+	wantAction := []string{
+		"testWidgets(",
+		"home: HomePageWrapper()",
+		"cubit.increment();",
+		"expect(cubit.state.value, 1);",
 	}
-	for _, w := range wantCubit {
-		if !strings.Contains(string(cubitContent), w) {
-			t.Errorf("expected cubit test to contain %q, got:\n%s", w, string(cubitContent))
+	for _, w := range wantAction {
+		if !strings.Contains(string(actionContent), w) {
+			t.Errorf("expected store-action test to contain %q, got:\n%s", w, string(actionContent))
 		}
+	}
+	if strings.Contains(string(actionContent), "bloc_test") {
+		t.Errorf("expected no bloc_test unit test, got:\n%s", string(actionContent))
 	}
 
 	widgetPath := filepath.Join(dir, "test", "counter_store_show_counter_value_test.dart")
@@ -96,7 +102,6 @@ func TestGenerateOmitsEmptyActionAndSeed(t *testing.T) {
 		{
 			ID:                  "s1",
 			Description:         "render only",
-			Type:                tests.TestTypeWidget,
 			PackageName:         "counter_app",
 			CubitClass:          "CounterCubit",
 			StateClass:          "CounterState",

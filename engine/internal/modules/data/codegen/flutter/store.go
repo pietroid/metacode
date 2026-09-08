@@ -134,14 +134,14 @@ func findScenario(app *ir.IR, id string) (ir.BehaviorScenario, bool) {
 // buildMethods emits one method per action the specs bind to this store.
 //
 // The bodies are deliberately absent. An action body is business logic, and in
-// this engine business logic comes from the behavior scenarios through the fix
-// loop, not from a lookup table in the generator. Hardcoding "increment" and
-// "decrement" here made the counter app work and made every other app quietly
-// wrong, and it pushed real rules into the wrapper layer, where a generated
+// this engine business logic comes from the behavior scenarios through the
+// implement stage, not from a lookup table in the generator. Hardcoding
+// "increment" and "decrement" here made the counter app work and made every
+// other app quietly wrong, and it pushed real rules into the wrapper layer, where a generated
 // wrapper reached through cubit.emit because the Cubit had no method to call.
 //
-// Each method carries the scenarios that specify it, so the fix loop and a
-// human reader see the same requirement in the same place.
+// Each method carries the scenarios that specify it, so the implement stage and
+// a human reader see the same requirement in the same place.
 func buildMethods(app *ir.IR, store ir.Store) string {
 	var b strings.Builder
 	for _, action := range collectActions(app, store) {

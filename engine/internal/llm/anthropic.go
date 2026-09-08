@@ -37,15 +37,16 @@ func newAnthropicClient(cfg Config, logger log.Logger) Client {
 // default, which is what we want for code generation, and not naming the
 // parameter keeps this call compatible with models that reject an explicit
 // thinking config.
-func (c *anthropicClient) Complete(ctx context.Context, prompt string) (string, error) {
+func (c *anthropicClient) Complete(ctx context.Context, call Call) (string, error) {
 	client := anthropic.NewClient(c.opts...)
+	prompt := call.Prompt
 
 	maxTokens := c.cfg.MaxTokens
 	if maxTokens <= 0 {
 		maxTokens = DefaultMaxTokens
 	}
 
-	c.logger.Debugf("llm request: anthropic messages model=%s max_tokens=%d prompt_len=%d", c.cfg.Model, maxTokens, len(prompt))
+	c.logger.Debugf("llm request [%s]: anthropic messages model=%s max_tokens=%d prompt_len=%d", call.Label, c.cfg.Model, maxTokens, len(prompt))
 
 	resp, err := client.Messages.New(ctx, anthropic.MessageNewParams{
 		Model:     anthropic.Model(c.cfg.Model),
@@ -71,8 +72,8 @@ func (c *anthropicClient) Complete(ctx context.Context, prompt string) (string, 
 		}
 	}
 
-	c.logger.Debugf("llm response: stop_reason=%s input_tokens=%d output_tokens=%d len=%d",
-		resp.StopReason, resp.Usage.InputTokens, resp.Usage.OutputTokens, len(out))
+	c.logger.Debugf("llm response [%s]: stop_reason=%s input_tokens=%d output_tokens=%d len=%d",
+		call.Label, resp.StopReason, resp.Usage.InputTokens, resp.Usage.OutputTokens, len(out))
 
 	if out == "" {
 		return "", fmt.Errorf("anthropic returned no text content (stop reason %q)", resp.StopReason)

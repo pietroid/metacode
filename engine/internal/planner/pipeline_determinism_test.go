@@ -105,7 +105,7 @@ func generateOnce(t *testing.T, outDir string) []string {
 	if err != nil {
 		t.Fatalf("plan: %v", err)
 	}
-	if err := codegenflutter.NewWrapperGenerator(nil).Generate(context.Background(), &app, tasks, outDir); err != nil {
+	if err := codegenflutter.NewWrapperGenerator().Generate(context.Background(), &app, tasks, outDir); err != nil {
 		t.Fatalf("generate wrappers: %v", err)
 	}
 	if err := codegenflutter.GenerateTests(&app, tasks, outDir); err != nil {

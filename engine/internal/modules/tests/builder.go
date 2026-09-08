@@ -53,15 +53,6 @@ func buildTestCase(app *ir.IR, scenario ir.BehaviorScenario) (TestCase, error) {
 		StateFile:   fmt.Sprintf("stores/%s_state.dart", shared.SnakeCase(base)),
 	}
 
-	if isCubitTest(app, scenario) {
-		tc.Type = TestTypeCubit
-		if err := buildCubitTestCase(app, scenario, &tc, store); err != nil {
-			return TestCase{}, err
-		}
-		return tc, nil
-	}
-
-	tc.Type = TestTypeWidget
 	pageName := shared.FirstPageName(app.UI)
 	if pageName == "" {
 		return TestCase{}, fmt.Errorf("scenario %q requires a page for a widget test", scenario.ID)
@@ -73,17 +64,6 @@ func buildTestCase(app *ir.IR, scenario ir.BehaviorScenario) (TestCase, error) {
 		return TestCase{}, err
 	}
 	return tc, nil
-}
-
-func buildCubitTestCase(app *ir.IR, scenario ir.BehaviorScenario, tc *TestCase, store ir.Store) error {
-	_, action := data.SplitDot(scenario.When)
-	expectedValue, err := dartLiteralForAssertion(scenario.Then, store)
-	if err != nil {
-		return err
-	}
-	tc.ActionExpression = fmt.Sprintf("act: (cubit) => cubit.%s(),", action)
-	tc.AssertionExpression = fmt.Sprintf("expect: () => [%s(value: %s)],", tc.StateClass, expectedValue)
-	return nil
 }
 
 func buildWidgetTestCase(app *ir.IR, scenario ir.BehaviorScenario, tc *TestCase, store ir.Store) error {
@@ -111,20 +91,6 @@ func buildWidgetTestCase(app *ir.IR, scenario ir.BehaviorScenario, tc *TestCase,
 	return nil
 }
 
-func isCubitTest(app *ir.IR, scenario ir.BehaviorScenario) bool {
-	if scenario.When == "" {
-		return false
-	}
-	store, action := data.SplitDot(scenario.When)
-	if action == "" {
-		return false
-	}
-	if _, ok := app.Symbols.Stores[store]; ok {
-		return true
-	}
-	return false
-}
-
 func seedExpression(given *ir.Assertion, stateClass string, store ir.Store) (string, error) {
 	storeName, field := data.SplitDot(given.Target)
 	if _, ok := storeNameMap(storeName, store); !ok {
@@ -140,11 +106,23 @@ func seedExpression(given *ir.Assertion, stateClass string, store ir.Store) (str
 	return fmt.Sprintf("cubit.emit(%s(value: %s));", stateClass, val), nil
 }
 
+// renderAction turns a scenario's "when" into the statement that drives the
+// app under test.
+//
+// A store action is driven by calling the Cubit, a widget event by interacting
+// with the widget. Both land in the same test: the scenario is one behavior of
+// one app, so it gets one test, whatever layer its trigger happens to sit in.
 func renderAction(when string, app *ir.IR) (string, error) {
-	widgetName, event := data.SplitDot(when)
-	if event == "" {
+	root, member := data.SplitDot(when)
+	if member == "" {
 		return "", nil
 	}
+
+	if _, ok := app.Symbols.Stores[root]; ok {
+		return fmt.Sprintf("cubit.%s();", member), nil
+	}
+
+	widgetName, event := root, member
 	comp, ok := app.Symbols.Widgets[widgetName]
 	if !ok {
 		return "", fmt.Errorf("widget %q not found", widgetName)

@@ -51,23 +51,12 @@ func (g *DeterministicGenerator) body(_ context.Context, app *ir.IR, plan Plan, 
 	}
 }
 
-func widgetNameForWrapperTask(task planner.Task, app *ir.IR) string {
-	scenario, err := findScenario(app, task.ScenarioID)
-	if err != nil {
-		// Fallback to task ID: wrapper-<widget>-<member>
-		parts := strings.Split(task.ID, "-")
-		if len(parts) >= 2 {
-			return shared.PascalCase(strings.Join(parts[1:len(parts)-1], "_"))
-		}
-		return ""
-	}
-	if w, _, ok := splitWidgetRef(app, scenario.Then.Target); ok {
-		return w
-	}
-	if w, _, ok := splitWidgetRef(app, scenario.When); ok {
-		return w
-	}
-	return ""
+// widgetNameForWrapperTask reads the widget off the task. The planner records
+// it there because a task ID is a slug: recovering "homePage" from
+// "wrapper-home-page-counter-value" is guesswork that got the casing wrong and
+// then failed every symbol lookup that used the result.
+func widgetNameForWrapperTask(task planner.Task, _ *ir.IR) string {
+	return task.Widget
 }
 
 func isButtonKind(kind string) bool {
