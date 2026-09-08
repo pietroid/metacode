@@ -2,6 +2,7 @@ package flutter
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -19,14 +20,27 @@ import (
 
 type mockClient struct {
 	lastPrompt string
+	prompts    []string
 	response   string
+}
+
+// promptFor returns the prompt built for the wrapper of the named widget.
+func (m *mockClient) promptFor(widget string) string {
+	needle := fmt.Sprintf("wrapper widget for %q", widget)
+	for _, p := range m.prompts {
+		if strings.Contains(p, needle) {
+			return p
+		}
+	}
+	return ""
 }
 
 func (m *mockClient) Complete(ctx context.Context, prompt string) (string, error) {
 	m.lastPrompt = prompt
+	m.prompts = append(m.prompts, prompt)
 	resp := m.response
 	if resp == "" {
-		class := "CounterButtonWrapper"
+		class := "IncrementButtonWrapper"
 		if strings.Contains(prompt, "homePage") {
 			class = "HomePageWrapper"
 		}
@@ -61,13 +75,13 @@ func counterAppFullIR() *ir.IR {
 							"center": map[string]any{
 								"column": []any{
 									map[string]any{"text": "counterValue"},
-									"counterButton",
+									"incrementButton",
 								},
 							},
 						},
 					},
 				},
-				"counterButton": map[string]any{
+				"incrementButton": map[string]any{
 					"elevatedButton": map[string]any{
 						"child": "Increment",
 					},
@@ -78,7 +92,7 @@ func counterAppFullIR() *ir.IR {
 			"counterStore": map[string]any{
 				"increments from 0": map[string]any{
 					"given": "counterStore.value is 0",
-					"when":  "counterButton.onPressed",
+					"when":  "incrementButton.onPressed",
 					"then":  "counterStore.value should be 1",
 				},
 				"Show counter value on the home page": map[string]any{
@@ -130,7 +144,7 @@ func TestGenerateWrappersWritesFiles(t *testing.T) {
 		t.Fatalf("generate wrappers failed: %v", err)
 	}
 
-	for _, name := range []string{"lib/wrappers/counter_button_wrapper.dart", "lib/wrappers/home_page_wrapper.dart"} {
+	for _, name := range []string{"lib/wrappers/increment_button_wrapper.dart", "lib/wrappers/home_page_wrapper.dart"} {
 		path := filepath.Join(dir, name)
 		if _, err := os.Stat(path); err != nil {
 			t.Errorf("expected %s to exist: %v", name, err)
@@ -153,7 +167,12 @@ func TestGenerateWrappersWritesFiles(t *testing.T) {
 	}
 }
 
-func TestGenerateWrappersPromptContainsBehaviorAndCode(t *testing.T) {
+// TestPageWrapperPromptCoversWholeSubtree pins the fix for a page that came
+// back with one button wired and the other dead: the page wrapper is the only
+// widget in the composed tree, so its prompt has to carry every scenario the
+// page is responsible for, not the one scenario its first planner task
+// happened to name.
+func TestPageWrapperPromptCoversWholeSubtree(t *testing.T) {
 	app := counterAppFullIR()
 	dir := setupGeneratedFiles(t, app)
 
@@ -162,92 +181,29 @@ func TestGenerateWrappersPromptContainsBehaviorAndCode(t *testing.T) {
 		t.Fatalf("plan failed: %v", err)
 	}
 
-	mock := &mockClient{
-		response: "```dart\nclass CounterButtonWrapper extends StatelessWidget {\n  const CounterButtonWrapper({super.key});\n  @override\n  Widget build(BuildContext context) {\n    return Container();\n  }\n}\n```",
-	}
-
+	mock := &mockClient{}
 	if err := NewLLMGenerator(mock).Generate(context.Background(), app, tasks, dir); err != nil {
 		t.Fatalf("generate wrappers failed: %v", err)
 	}
 
-	if !strings.Contains(mock.lastPrompt, "homePage.counterValue") {
-		t.Errorf("expected prompt to contain behavior assertion, got:\n%s", mock.lastPrompt)
+	prompt := mock.promptFor("homePage")
+	if prompt == "" {
+		t.Fatalf("no prompt was built for homePage, got %d prompts", len(mock.prompts))
 	}
-	if !strings.Contains(mock.lastPrompt, "class CounterCubit") {
-		t.Errorf("expected prompt to contain cubit code, got:\n%s", mock.lastPrompt)
-	}
-	if !strings.Contains(mock.lastPrompt, "class HomePage") {
-		t.Errorf("expected prompt to contain dumb widget code, got:\n%s", mock.lastPrompt)
-	}
-}
 
-func TestExtractDartCode(t *testing.T) {
-	cases := []struct {
-		name     string
-		input    string
-		expected string
-	}{
-		{
-			name:     "simple fence",
-			input:    "```dart\nclass A {}\n```",
-			expected: "class A {}",
-		},
-		{
-			name:     "no language tag",
-			input:    "```\nclass A {}\n```",
-			expected: "class A {}",
-		},
-		{
-			name:     "explanatory text around fence",
-			input:    "Here is the code:\n```dart\nclass A {}\n```\nDone.",
-			expected: "class A {}",
-		},
-	}
-	for _, tc := range cases {
-		t.Run(tc.name, func(t *testing.T) {
-			got, err := extractDartCode(tc.input)
-			if err != nil {
-				t.Fatalf("extract failed: %v", err)
-			}
-			if got != tc.expected {
-				t.Errorf("expected %q, got %q", tc.expected, got)
-			}
-		})
-	}
-}
-
-func TestExtractDartCodeMissingFence(t *testing.T) {
-	_, err := extractDartCode("no fence here")
-	if err == nil {
-		t.Fatal("expected error for missing fence")
-	}
-}
-
-func TestValidateDartSyntax(t *testing.T) {
-	if err := validateDartSyntax("class A { const A(); }"); err != nil {
-		t.Errorf("expected valid code, got %v", err)
-	}
-	if err := validateDartSyntax("class A { const A();"); err == nil {
-		t.Error("expected error for unbalanced braces")
-	}
-	if err := validateDartSyntax("var x = 1;"); err == nil {
-		t.Error("expected error for missing class")
-	}
-}
-
-func TestExtractClassName(t *testing.T) {
-	cases := []struct {
-		code string
-		want string
-	}{
-		{"class HomePageWrapper extends StatelessWidget { }", "HomePageWrapper"},
-		{"class _PrivateWrapper extends StatelessWidget { }", "_PrivateWrapper"},
-		{"not a class", ""},
-	}
-	for _, tc := range cases {
-		got := extractClassName(tc.code)
-		if got != tc.want {
-			t.Errorf("extractClassName(%q) = %q, want %q", tc.code, got, tc.want)
+	for _, want := range []string{
+		// The page's own scenario.
+		"homePage.counterValue",
+		// The scenario of the button the page embeds.
+		"incrementButton.onPressed",
+		// The resolved binding, so the model calls the Cubit rather than emit.
+		"incrementButton.onPressed -> counterStore.increment",
+		// The generated code it must compose.
+		"class CounterCubit",
+		"class HomePage",
+	} {
+		if !strings.Contains(prompt, want) {
+			t.Errorf("expected the homePage prompt to contain %q, got:\n%s", want, prompt)
 		}
 	}
 }

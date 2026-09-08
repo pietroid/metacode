@@ -20,6 +20,7 @@ func (ir *IR) Resolve(c *catalog.Catalog) error {
 	ir.Symbols.Actions = make(map[string]ActionRef)
 	ir.Symbols.Events = make(map[string]EventRef)
 	ir.Symbols.Variables = make(map[string]VariableRef)
+	ir.Symbols.Bindings = nil
 
 	for _, s := range ir.Stores {
 		ir.Symbols.Stores[s.Name] = s
@@ -38,7 +39,8 @@ func (ir *IR) Resolve(c *catalog.Catalog) error {
 		}
 	}
 
-	return nil
+	// Bindings need the symbol table complete, so they resolve last.
+	return ir.resolveBindings()
 }
 
 func (ir *IR) resolveBehavior(b BehaviorScenario, c *catalog.Catalog) error {

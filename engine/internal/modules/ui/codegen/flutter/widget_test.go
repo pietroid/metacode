@@ -26,7 +26,7 @@ func TestGenerateWidgetsCounterApp(t *testing.T) {
 		t.Fatalf("generate widgets failed: %v", err)
 	}
 
-	for _, name := range []string{"lib/pages/home_page.dart", "lib/widgets/counter_button.dart"} {
+	for _, name := range []string{"lib/pages/home_page.dart", "lib/widgets/increment_button.dart"} {
 		path := filepath.Join(dir, name)
 		if _, err := os.Stat(path); err != nil {
 			t.Errorf("expected %s to exist: %v", name, err)
@@ -57,30 +57,30 @@ func TestHomePageContents(t *testing.T) {
 	if !strings.Contains(content, "Text(counterValue)") {
 		t.Errorf("expected Text(counterValue), got:\n%s", content)
 	}
-	if !strings.Contains(content, "const CounterButton()") {
-		t.Errorf("expected CounterButton reference, got:\n%s", content)
+	if !strings.Contains(content, "const IncrementButton()") {
+		t.Errorf("expected IncrementButton reference, got:\n%s", content)
 	}
-	if !strings.Contains(content, "import '../widgets/counter_button.dart'") {
-		t.Errorf("expected import for counter_button.dart, got:\n%s", content)
+	if !strings.Contains(content, "import '../widgets/increment_button.dart'") {
+		t.Errorf("expected import for increment_button.dart, got:\n%s", content)
 	}
 	if !strings.Contains(content, "Key('homePage')") {
 		t.Errorf("expected Key('homePage'), got:\n%s", content)
 	}
 }
 
-func TestCounterButtonContents(t *testing.T) {
+func TestIncrementButtonContents(t *testing.T) {
 	dir := t.TempDir()
 	app := counterIR()
 	if err := Generate(app, catalog.New(), dir); err != nil {
 		t.Fatalf("generate widgets failed: %v", err)
 	}
-	data, err := os.ReadFile(filepath.Join(dir, "lib", "widgets", "counter_button.dart"))
+	data, err := os.ReadFile(filepath.Join(dir, "lib", "widgets", "increment_button.dart"))
 	if err != nil {
-		t.Fatalf("read counter_button.dart: %v", err)
+		t.Fatalf("read increment_button.dart: %v", err)
 	}
 	content := string(data)
-	if !strings.Contains(content, "class CounterButton extends StatelessWidget") {
-		t.Errorf("expected CounterButton class, got:\n%s", content)
+	if !strings.Contains(content, "class IncrementButton extends StatelessWidget") {
+		t.Errorf("expected IncrementButton class, got:\n%s", content)
 	}
 	if !strings.Contains(content, "ElevatedButton(") {
 		t.Errorf("expected ElevatedButton, got:\n%s", content)
@@ -97,8 +97,8 @@ func TestIsPage(t *testing.T) {
 	if !isPage("settingsPage") {
 		t.Error("expected settingsPage to be a page")
 	}
-	if isPage("counterButton") {
-		t.Error("expected counterButton to be a widget")
+	if isPage("incrementButton") {
+		t.Error("expected incrementButton to be a widget")
 	}
 }
 
@@ -128,13 +128,13 @@ func counterAppSpecs() spec.RawSpecs {
 							"center": map[string]any{
 								"column": []any{
 									map[string]any{"text": "counterValue"},
-									"counterButton",
+									"incrementButton",
 								},
 							},
 						},
 					},
 				},
-				"counterButton": map[string]any{
+				"incrementButton": map[string]any{
 					"elevatedButton": map[string]any{
 						"child": "Increment",
 					},
@@ -145,7 +145,7 @@ func counterAppSpecs() spec.RawSpecs {
 			"counterStore": map[string]any{
 				"increments from 0": map[string]any{
 					"given": "counterStore.value is 0",
-					"when":  "counterButton.onPressed",
+					"when":  "incrementButton.onPressed",
 					"then":  "counterStore.value should be 1",
 				},
 			},
@@ -182,15 +182,15 @@ func generateAndRead(t *testing.T, app *ir.IR, rel string) string {
 }
 
 // TestDeclaredEventBecomesConstructorParameter is the regression test for a
-// dumb widget that could not be wired at all: counterButton.onPressed is
+// dumb widget that could not be wired at all: incrementButton.onPressed is
 // declared in behaviors.yaml, but the button was generated with
 // `onPressed: null`, so it rendered permanently disabled and no wrapper — LLM
 // or deterministic — could make a tap reach the Cubit.
 func TestDeclaredEventBecomesConstructorParameter(t *testing.T) {
-	content := generateAndRead(t, counterResolvedIR(t), "lib/widgets/counter_button.dart")
+	content := generateAndRead(t, counterResolvedIR(t), "lib/widgets/increment_button.dart")
 
 	for _, want := range []string{
-		"const CounterButton({super.key, this.onPressed});",
+		"const IncrementButton({super.key, this.onPressed});",
 		"final VoidCallback? onPressed;",
 		"onPressed: onPressed",
 	} {
@@ -210,9 +210,9 @@ func TestParentForwardsChildEvents(t *testing.T) {
 	content := generateAndRead(t, counterResolvedIR(t), "lib/pages/home_page.dart")
 
 	for _, want := range []string{
-		"this.counterButtonOnPressed",
-		"final VoidCallback? counterButtonOnPressed;",
-		"CounterButton(onPressed: counterButtonOnPressed)",
+		"this.incrementButtonOnPressed",
+		"final VoidCallback? incrementButtonOnPressed;",
+		"IncrementButton(onPressed: incrementButtonOnPressed)",
 	} {
 		if !strings.Contains(content, want) {
 			t.Errorf("expected %q, got:\n%s", want, content)
@@ -235,7 +235,7 @@ func TestUndeclaredEventStaysDisabled(t *testing.T) {
 		t.Fatalf("resolve: %v", err)
 	}
 
-	content := generateAndRead(t, &app, "lib/widgets/counter_button.dart")
+	content := generateAndRead(t, &app, "lib/widgets/increment_button.dart")
 	if !strings.Contains(content, "onPressed: null") {
 		t.Errorf("expected onPressed: null with no behavior declared, got:\n%s", content)
 	}

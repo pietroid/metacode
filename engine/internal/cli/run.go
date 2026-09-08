@@ -182,6 +182,18 @@ func runCommand(verbose bool, args []string) error {
 	logger.Infof("generated tests")
 	reporter.End("Generating tests", nil)
 
+	reporter.Start("Removing stale output")
+	removed, err := flutter.PruneStaleOutput(&app, tasks, paths.Root)
+	if err != nil {
+		reporter.End("Removing stale output", err)
+		return err
+	}
+	for _, path := range removed {
+		logger.Infof("removed stale %s", path)
+	}
+	logger.Debugf("stale files removed: %d", len(removed))
+	reporter.End("Removing stale output", nil)
+
 	verifier := runner.NewVerifier(
 		runner.NewTestRunner(paths.Root, &loggerReporter{logger: logger}),
 		client,

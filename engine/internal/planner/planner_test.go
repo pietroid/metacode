@@ -35,13 +35,13 @@ func counterAppIR() *ir.IR {
 							"center": map[string]any{
 								"column": []any{
 									map[string]any{"text": "counterValue"},
-									"counterButton",
+									"incrementButton",
 								},
 							},
 						},
 					},
 				},
-				"counterButton": map[string]any{
+				"incrementButton": map[string]any{
 					"elevatedButton": map[string]any{
 						"child": "Increment",
 					},
@@ -52,12 +52,12 @@ func counterAppIR() *ir.IR {
 			"counterStore": map[string]any{
 				"increments from 0": map[string]any{
 					"given": "counterStore.value is 0",
-					"when":  "counterButton.onPressed",
+					"when":  "incrementButton.onPressed",
 					"then":  "counterStore.value should be 1",
 				},
 				"increments from 1": map[string]any{
 					"given": "counterStore.value is 1",
-					"when":  "counterButton.onPressed",
+					"when":  "incrementButton.onPressed",
 					"then":  "counterStore.value should be 2",
 				},
 				"Show counter value on the home page": map[string]any{
@@ -106,8 +106,8 @@ func TestPlanCounterAppProducesWrappersAndTests(t *testing.T) {
 	for _, w := range wrappers {
 		wrapperIDs[w.ID] = true
 	}
-	if !wrapperIDs["wrapper-counter_button-on_pressed"] {
-		t.Errorf("expected wrapper for counterButton.onPressed, got ids: %v", wrapperIDs)
+	if !wrapperIDs["wrapper-increment_button-on_pressed"] {
+		t.Errorf("expected wrapper for incrementButton.onPressed, got ids: %v", wrapperIDs)
 	}
 	if !wrapperIDs["wrapper-home_page-counter_value"] {
 		t.Errorf("expected wrapper for homePage.counterValue, got ids: %v", wrapperIDs)
@@ -186,5 +186,56 @@ func TestPlanNilIR(t *testing.T) {
 	_, err := Plan(nil)
 	if err == nil {
 		t.Fatal("expected error for nil ir")
+	}
+}
+
+// TestPlanEmitsStoreTasksForEveryScenario covers the reason store tasks exist:
+// the fix loop maps a failing test to its scenario and then to the files it may
+// rewrite. An action specified by three scenarios has to be reachable from any
+// of the three, or two of those failures repair nothing.
+func TestPlanEmitsStoreTasksForEveryScenario(t *testing.T) {
+	app := counterAppIR()
+	tasks, err := Plan(app)
+	if err != nil {
+		t.Fatalf("plan failed: %v", err)
+	}
+
+	byScenario := make(map[string]bool)
+	for _, task := range tasks {
+		if task.Type != TaskStore {
+			continue
+		}
+		if task.TargetFile != "lib/stores/counter_cubit.dart" {
+			t.Errorf("store task %q targets %q", task.ID, task.TargetFile)
+		}
+		byScenario[task.ScenarioID] = true
+	}
+
+	if len(byScenario) == 0 {
+		t.Fatal("expected store tasks, got none")
+	}
+	for _, binding := range app.Symbols.Bindings {
+		for _, id := range binding.ScenarioIDs {
+			if !byScenario[id] {
+				t.Errorf("no store task reachable from scenario %q", id)
+			}
+		}
+	}
+}
+
+// TestPathToIDProducesFileSafeSlugs pins the fix for generated names like
+// "not decrements when is 0_test.dart". Spaces in a test path broke the Flutter
+// output parser, which broke the mapping from failure to scenario, which
+// silently disabled the fix loop.
+func TestPathToIDProducesFileSafeSlugs(t *testing.T) {
+	cases := map[string]string{
+		"counterStore/increments from 0": "counterStore_increments_from_0",
+		"not decrements when is 0":       "not_decrements_when_is_0",
+		"a//b  c":                        "a_b_c",
+	}
+	for in, want := range cases {
+		if got := pathToID(in); got != want {
+			t.Errorf("pathToID(%q) = %q, want %q", in, got, want)
+		}
 	}
 }

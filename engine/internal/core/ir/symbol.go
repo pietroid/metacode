@@ -8,6 +8,9 @@ type SymbolTable struct {
 	Actions   map[string]ActionRef
 	Events    map[string]EventRef
 	Variables map[string]VariableRef
+
+	// Bindings link widget events to the store actions they run. See binding.go.
+	Bindings []Binding
 }
 
 // Symbol is a named entity referenced by the specs.

@@ -24,15 +24,15 @@ func TestResolveCounterApp(t *testing.T) {
 	if _, ok := app.Symbols.Widgets["homePage"]; !ok {
 		t.Error("expected homePage in symbol table widgets")
 	}
-	if _, ok := app.Symbols.Widgets["counterButton"]; !ok {
-		t.Error("expected counterButton in symbol table widgets")
+	if _, ok := app.Symbols.Widgets["incrementButton"]; !ok {
+		t.Error("expected incrementButton in symbol table widgets")
 	}
 	if _, ok := app.Symbols.Variables["counterValue"]; !ok {
 		t.Errorf("expected counterValue variable, got %+v", app.Symbols.Variables)
 	}
 
-	if _, ok := app.Symbols.Events["counterButton.onPressed"]; !ok {
-		t.Errorf("expected counterButton.onPressed event, got %+v", app.Symbols.Events)
+	if _, ok := app.Symbols.Events["incrementButton.onPressed"]; !ok {
+		t.Errorf("expected incrementButton.onPressed event, got %+v", app.Symbols.Events)
 	}
 }
 

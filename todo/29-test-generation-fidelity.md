@@ -1,5 +1,13 @@
 # 29 — Test Generation Fidelity
 
+> **Partly done in [31](../done/31-store-logic-and-vacuous-tests.md).** Tap targets
+> are found by key, filenames are slugs, `parseFailures` maps every generated
+> name back to its scenario, an event with no known idiom is an error rather than
+> an empty action, the `renderAssertion` fallback is gone, and the fix loop now
+> knows which files it may edit. What remains is the catalog-driven event table
+> (`onChanged`, `onTap`, `onSubmitted` beyond erroring), a fixture proving the
+> suite is not vacuous, and the `MaxIterations` off-by-one.
+
 ## Goal
 
 A generated test that does not actually test its scenario should be impossible to

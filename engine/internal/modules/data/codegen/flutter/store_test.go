@@ -8,11 +8,18 @@ import (
 
 	"github.com/pietroid/metacode/engine/internal/core/ir"
 	"github.com/pietroid/metacode/engine/internal/core/spec"
+	"github.com/pietroid/metacode/engine/internal/modules/ui/catalog"
 )
 
+// counterIR builds and resolves the counter app. Resolution is what turns
+// "when: incrementButton.onPressed" into a store action, so a store generated
+// from an unresolved IR has no methods at all.
 func counterIR() *ir.IR {
 	app, err := ir.Build(counterAppSpecs())
 	if err != nil {
+		panic(err)
+	}
+	if err := app.Resolve(catalog.New()); err != nil {
 		panic(err)
 	}
 	return &app
@@ -69,11 +76,20 @@ func TestCounterCubitContents(t *testing.T) {
 	if !strings.Contains(content, "void increment()") {
 		t.Errorf("expected increment method, got:\n%s", content)
 	}
+	if !strings.Contains(content, "UnimplementedError") {
+		t.Errorf("expected the body to be left to the fix loop, got:\n%s", content)
+	}
+	if !strings.Contains(content, "/// Specified by:") {
+		t.Errorf("expected the scenarios that specify the action, got:\n%s", content)
+	}
 	if !strings.Contains(content, "CounterCubit() : super(const CounterState(value: 0))") {
 		t.Errorf("expected constructor with initial value, got:\n%s", content)
 	}
 }
 
+// TestGenerateStoresWithoutActions pins the rule that a store's API comes from
+// the specs and nowhere else. The generator used to add "increment" to every
+// numeric store, which put a method on the Cubit that no scenario asked for.
 func TestGenerateStoresWithoutActions(t *testing.T) {
 	dir := t.TempDir()
 	app, err := ir.Build(counterAppSpecs())
@@ -81,6 +97,9 @@ func TestGenerateStoresWithoutActions(t *testing.T) {
 		t.Fatalf("build failed: %v", err)
 	}
 	app.Behaviors = nil
+	if err := app.Resolve(catalog.New()); err != nil {
+		t.Fatalf("resolve: %v", err)
+	}
 	if err := Generate(&app, dir); err != nil {
 		t.Fatalf("generate stores failed: %v", err)
 	}
@@ -88,8 +107,8 @@ func TestGenerateStoresWithoutActions(t *testing.T) {
 	if err != nil {
 		t.Fatalf("read cubit: %v", err)
 	}
-	if !strings.Contains(string(data), "void increment()") {
-		t.Error("expected default increment action for numeric value store")
+	if strings.Contains(string(data), "void increment()") {
+		t.Errorf("expected no action for a store no scenario drives, got:\n%s", data)
 	}
 }
 
@@ -119,13 +138,13 @@ func counterAppSpecs() spec.RawSpecs {
 							"center": map[string]any{
 								"column": []any{
 									map[string]any{"text": "counterValue"},
-									"counterButton",
+									"incrementButton",
 								},
 							},
 						},
 					},
 				},
-				"counterButton": map[string]any{
+				"incrementButton": map[string]any{
 					"elevatedButton": map[string]any{
 						"child": "Increment",
 					},
@@ -136,7 +155,7 @@ func counterAppSpecs() spec.RawSpecs {
 			"counterStore": map[string]any{
 				"increments from 0": map[string]any{
 					"given": "counterStore.value is 0",
-					"when":  "counterButton.onPressed",
+					"when":  "incrementButton.onPressed",
 					"then":  "counterStore.value should be 1",
 				},
 			},

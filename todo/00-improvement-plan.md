@@ -15,11 +15,12 @@ structural work discovered by reading the engine against its own specification.
 | 22 | [Reproducible output](../done/22-reproducible-output.md) | Correctness | 23 (lock/diff) | **done** |
 | 24 | [Collapse the duplicate generator layer](../done/24-collapse-generator-layers.md) | Structure | everything | **done** |
 | 25 | [Enforce the core/module boundary](25-core-module-boundary.md) | Structure | multi-target | — |
-| 26 | [Generalize wrapper generation](26-generalize-wrappers.md) | Correctness | 20, 21 | — |
+| 26 | [Generalize wrapper generation](../done/26-generalize-wrappers.md) | Correctness | 20, 21 | items 2, 3 done in [31](../done/31-store-logic-and-vacuous-tests.md) |
 | 27 | [Multi-store support](27-multi-store-support.md) | Correctness | 20, 21 | — |
 | 28 | [Diagnostics with source positions](28-diagnostics-and-source-positions.md) | UX | — | — |
-| 29 | [Test generation fidelity](29-test-generation-fidelity.md) | Correctness | 19 | — |
+| 29 | [Test generation fidelity](29-test-generation-fidelity.md) | Correctness | 19 | partly done in [31](../done/31-store-logic-and-vacuous-tests.md) |
 | 30 | [Golden-file harness and CI](30-golden-harness-and-ci.md) | Infrastructure | all | — |
+| 31 | [Store logic, stale output, vacuous tests](../done/31-store-logic-and-vacuous-tests.md) | Correctness | — | **done** |
 
 ## Phases
 
@@ -45,6 +46,12 @@ they agree on file names and class names by construction. 25 is next.
 
 **Phase C — remove counter-app-shaped assumptions.** 26, 27, 29. These are the
 things that will produce wrong code, silently, on the second example.
+
+The second example arrived early, as a second button on the first one, and 31
+is what it cost. Store actions now come from resolved bindings rather than from
+arithmetic on scenario values, Cubit bodies come from the fix loop rather than a
+table in the generator, stale output is pruned, and the fix loop is no longer
+silently disabled by a filename with a space in it.
 
 **Phase D — grow capability.** 19, 20, 21, then 23. The existing roadmap, which
 becomes safe to execute once A–C are done.

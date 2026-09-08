@@ -21,7 +21,7 @@ func TestGenerateTestsCreatesFiles(t *testing.T) {
 		t.Fatalf("generate tests failed: %v", err)
 	}
 
-	for _, name := range []string{"test/counterStore_increments from 0_test.dart", "test/counterStore_Show counter value on the home page_test.dart"} {
+	for _, name := range []string{"test/counterStore_increments_from_0_test.dart", "test/counterStore_Show_counter_value_on_the_home_page_test.dart"} {
 		path := filepath.Join(dir, name)
 		if _, err := os.Stat(path); err != nil {
 			t.Errorf("expected %s to exist: %v", name, err)
@@ -42,7 +42,7 @@ func TestGenerateTestsWidgetTestImports(t *testing.T) {
 		t.Fatalf("generate tests failed: %v", err)
 	}
 
-	path := filepath.Join(dir, "test", "counterStore_Show counter value on the home page_test.dart")
+	path := filepath.Join(dir, "test", "counterStore_Show_counter_value_on_the_home_page_test.dart")
 	content, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatalf("read test file: %v", err)
@@ -76,7 +76,7 @@ func TestGenerateTestsWidgetTestSeedsAndAsserts(t *testing.T) {
 		t.Fatalf("generate tests failed: %v", err)
 	}
 
-	path := filepath.Join(dir, "test", "counterStore_Show counter value on the home page_test.dart")
+	path := filepath.Join(dir, "test", "counterStore_Show_counter_value_on_the_home_page_test.dart")
 	content, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatalf("read test file: %v", err)
@@ -103,14 +103,16 @@ func TestGenerateTestsWidgetTestTapsButton(t *testing.T) {
 		t.Fatalf("generate tests failed: %v", err)
 	}
 
-	path := filepath.Join(dir, "test", "counterStore_increments from 0_test.dart")
+	path := filepath.Join(dir, "test", "counterStore_increments_from_0_test.dart")
 	content, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatalf("read test file: %v", err)
 	}
 
-	if !strings.Contains(string(content), "await tester.tap(find.byType(ElevatedButton));") {
-		t.Errorf("expected test to tap ElevatedButton, got:\n%s", string(content))
+	// By key, not by type: two buttons on a page make find.byType ambiguous and
+	// tap() fails outright.
+	if !strings.Contains(string(content), "await tester.tap(find.byKey(const Key('incrementButton')));") {
+		t.Errorf("expected test to tap incrementButton by key, got:\n%s", string(content))
 	}
 	if !strings.Contains(string(content), "expect(cubit.state.value, 1);") {
 		t.Errorf("expected test to assert cubit state value 1, got:\n%s", string(content))
@@ -136,7 +138,7 @@ func TestGenerateTestsCubitTest(t *testing.T) {
 		t.Fatalf("generate tests failed: %v", err)
 	}
 
-	path := filepath.Join(dir, "test", "counterStore_increments from 0_test.dart")
+	path := filepath.Join(dir, "test", "counterStore_increments_from_0_test.dart")
 	content, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatalf("read test file: %v", err)

@@ -5,10 +5,11 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strings"
 
 	"github.com/pietroid/metacode/engine/internal/llm"
+	"github.com/pietroid/metacode/engine/internal/modules/codegen"
+	"github.com/pietroid/metacode/engine/internal/modules/codegen/dart"
 	"github.com/pietroid/metacode/engine/internal/planner"
 )
 
@@ -90,9 +91,11 @@ func (fl *FixLoop) fixFailure(ctx context.Context, tasks []planner.Task, failure
 		return nil
 	}
 
-	wrapperTasks := findWrapperTasksForScenario(tasks, scenarioID)
-	if len(wrapperTasks) == 0 {
-		fl.reportf("  no wrapper task found for scenario %q", scenarioID)
+	// A failing scenario can be wrong in two places: the wiring in the wrapper,
+	// or the business logic in the store action it triggers. Both are candidates.
+	repairable := findRepairableTasks(tasks, scenarioID)
+	if len(repairable) == 0 {
+		fl.reportf("  no wrapper or store task found for scenario %q", scenarioID)
 		return nil
 	}
 
@@ -101,11 +104,11 @@ func (fl *FixLoop) fixFailure(ctx context.Context, tasks []planner.Task, failure
 		return fmt.Errorf("read test file %q: %w", failure.File, err)
 	}
 
-	for _, task := range wrapperTasks {
-		wrapperPath := filepath.Join(fl.ProjectDir, task.TargetFile)
-		currentCode, err := os.ReadFile(wrapperPath)
+	for _, task := range repairable {
+		targetPath := filepath.Join(fl.ProjectDir, task.TargetFile)
+		currentCode, err := os.ReadFile(targetPath)
 		if err != nil {
-			return fmt.Errorf("read wrapper file %q: %w", task.TargetFile, err)
+			return fmt.Errorf("read %q: %w", task.TargetFile, err)
 		}
 
 		fixTask := buildFixTask(task, string(testCode), failure.Message)
@@ -114,13 +117,37 @@ func (fl *FixLoop) fixFailure(ctx context.Context, tasks []planner.Task, failure
 			return fmt.Errorf("generate fix for %s: %w", task.TargetFile, err)
 		}
 
-		if err := os.WriteFile(wrapperPath, []byte(newCode), 0644); err != nil {
-			return fmt.Errorf("write wrapper file %q: %w", wrapperPath, err)
+		// A fix that is not a plausible Dart file is discarded rather than
+		// written. Without this the loop wrote whatever came back: a fix for a
+		// wrapper once arrived as two bare Cubit methods with no class, and
+		// replaced the wrapper with a file that could not compile.
+		if err := dart.Validate(newCode); err != nil {
+			fl.reportf("  discarded fix for %s: %s", task.TargetFile, err)
+			continue
+		}
+
+		if err := os.WriteFile(targetPath, []byte(preserveMarker(string(currentCode), newCode)), 0644); err != nil {
+			return fmt.Errorf("write %q: %w", targetPath, err)
 		}
 		fl.reportf("  regenerated %s", task.TargetFile)
 	}
 
 	return nil
+}
+
+// preserveMarker keeps the generated-file header when a fix drops it. Stale
+// output is pruned by that marker, so an unmarked file is one nothing can
+// clean up later.
+func preserveMarker(oldCode, newCode string) string {
+	if strings.Contains(newCode, codegen.Marker) {
+		return newCode
+	}
+	for _, line := range strings.Split(oldCode, "\n") {
+		if strings.Contains(line, codegen.Marker) {
+			return line + "\n" + newCode
+		}
+	}
+	return newCode
 }
 
 func (fl *FixLoop) generate(ctx context.Context, task planner.Task, code string) (string, error) {
@@ -135,7 +162,7 @@ func (fl *FixLoop) generate(ctx context.Context, task planner.Task, code string)
 	if err != nil {
 		return "", err
 	}
-	return extractFixDartCode(raw)
+	return dart.ExtractCode(raw)
 }
 
 func buildFixTask(task planner.Task, testCode, message string) planner.Task {
@@ -159,9 +186,14 @@ func buildFixPrompt(task planner.Task, code string) string {
 	var b strings.Builder
 	b.WriteString("The following Flutter test is failing.\n")
 	b.WriteString(task.PromptContext)
-	b.WriteString("\nCurrent wrapper code:\n")
+	b.WriteString("\nCurrent contents of ")
+	b.WriteString(task.TargetFile)
+	b.WriteString(":\n")
 	b.WriteString(code)
-	b.WriteString("\nFix the wrapper code so the test passes. Return only the corrected Dart code in a ```dart fence.\n")
+	b.WriteString("\nRewrite this file so the test passes.\n")
+	b.WriteString("Keep every declaration the file already has, including methods this test does not exercise.\n")
+	b.WriteString("Business rules belong in the store, not in a widget: a wrapper must not call emit.\n")
+	b.WriteString("Return only the corrected Dart code for the whole file, in a ```dart fence.\n")
 	return b.String()
 }
 
@@ -178,24 +210,29 @@ func findScenarioIDForTest(tasks []planner.Task, testFile string) (string, error
 	return "", fmt.Errorf("no test task for file %q", testFile)
 }
 
-func findWrapperTasksForScenario(tasks []planner.Task, scenarioID string) []planner.Task {
+// findRepairableTasks returns the tasks whose output the fix loop may rewrite
+// for a failing scenario: the store actions the scenario drives, then the
+// wrappers that wire it. Stores come first so a wiring fix is judged against
+// business logic that has already had its chance to be right.
+//
+// The same file can back several tasks, so each target is offered once.
+func findRepairableTasks(tasks []planner.Task, scenarioID string) []planner.Task {
 	var out []planner.Task
-	for _, task := range tasks {
-		if task.Type == planner.TaskWrapper && task.ScenarioID == scenarioID {
+	seen := make(map[string]bool)
+
+	for _, wanted := range []planner.TaskType{planner.TaskStore, planner.TaskWrapper} {
+		for _, task := range tasks {
+			if task.Type != wanted || task.ScenarioID != scenarioID {
+				continue
+			}
+			if seen[task.TargetFile] {
+				continue
+			}
+			seen[task.TargetFile] = true
 			out = append(out, task)
 		}
 	}
 	return out
-}
-
-var dartFence = regexp.MustCompile("```(?:dart)?\\s*\\n(?s)(.*?)\\n```")
-
-func extractFixDartCode(raw string) (string, error) {
-	matches := dartFence.FindAllStringSubmatch(raw, -1)
-	if len(matches) == 0 {
-		return "", fmt.Errorf("no dart code fence found")
-	}
-	return strings.TrimSpace(matches[len(matches)-1][1]), nil
 }
 
 func (fl *FixLoop) reportf(format string, args ...any) {

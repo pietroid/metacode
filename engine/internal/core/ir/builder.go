@@ -172,7 +172,7 @@ func buildUI(raw map[string]any, symbols SymbolTable) ([]UIComponent, error) {
 }
 
 // buildComponent converts a single widget declaration into a UIComponent.
-// The name argument is the symbol key from the parent (e.g. "text", "counterButton").
+// The name argument is the symbol key from the parent (e.g. "text", "incrementButton").
 func buildComponent(name string, raw any, symbols SymbolTable) (UIComponent, error) {
 	comp := UIComponent{
 		Name:  name,
@@ -207,7 +207,7 @@ func buildComponent(name string, raw any, symbols SymbolTable) (UIComponent, err
 			}
 		} else {
 			// The key names a custom/widget symbol; the value is a map whose
-			// single key is the actual catalog kind, e.g. counterButton: {elevatedButton: ...}.
+			// single key is the actual catalog kind, e.g. incrementButton: {elevatedButton: ...}.
 			kind, rest, err := extractSingleKind(v, symbols)
 			if err != nil {
 				return UIComponent{}, err

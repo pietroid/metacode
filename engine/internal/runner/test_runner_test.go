@@ -171,3 +171,26 @@ func TestParseFailuresMultipleTests(t *testing.T) {
 		t.Errorf("unexpected second failure: %+v", failures[1])
 	}
 }
+
+// TestParseFailuresHandlesPathsWithSpaces is the regression test for a bug that
+// disabled the fix loop without reporting anything. The file pattern used to be
+// \S+_test.dart, which stops at whitespace, so a path containing a space was
+// truncated to its last word. Every failure then failed to map back to a
+// scenario, the loop logged "could not map failure to scenario", repaired
+// nothing, and reported itself exhausted.
+func TestParseFailuresHandlesPathsWithSpaces(t *testing.T) {
+	output := "00:03 +2 -1: /project/test/not decrements when is 0_test.dart: not decrements when is 0 [E]\n" +
+		"  Expected: <0>\n" +
+		"    Actual: <1>\n"
+
+	failures := parseFailures(output)
+	if len(failures) != 1 {
+		t.Fatalf("expected 1 failure, got %d: %+v", len(failures), failures)
+	}
+	if got, want := failures[0].File, "/project/test/not decrements when is 0_test.dart"; got != want {
+		t.Errorf("file: got %q, want %q", got, want)
+	}
+	if got, want := failures[0].Name, "not decrements when is 0"; got != want {
+		t.Errorf("name: got %q, want %q", got, want)
+	}
+}

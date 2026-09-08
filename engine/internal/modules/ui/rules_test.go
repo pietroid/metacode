@@ -23,7 +23,7 @@ func TestValidateUnknownProp(t *testing.T) {
 
 func TestValidateCustomWidgetIgnored(t *testing.T) {
 	comp := ir.UIComponent{
-		Name: "counterButton",
+		Name: "incrementButton",
 		Kind: "custom",
 	}
 	errs := Validate([]ir.UIComponent{comp}, catalog.New())

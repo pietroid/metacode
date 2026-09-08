@@ -233,13 +233,40 @@ func TestBuildFixPromptContainsRequiredSections(t *testing.T) {
 
 	required := []string{
 		"The following Flutter test is failing.",
-		"Current wrapper code:",
-		"Fix the wrapper code so the test passes.",
+		"Current contents of ",
+		"Rewrite this file so the test passes.",
+		"a wrapper must not call emit",
 		"class Wrapper {}",
 	}
 	for _, r := range required {
 		if !strings.Contains(prompt, r) {
 			t.Errorf("expected prompt to contain %q, got:\n%s", r, prompt)
 		}
+	}
+}
+
+// TestFindRepairableTasksIncludesStores pins the fix for a generated wrapper
+// that reached through cubit.emit to change state. The fix loop could only
+// rewrite wrappers, so when the Cubit was missing the method a scenario needed,
+// the only file the loop was allowed to touch was the wrong one.
+func TestFindRepairableTasksIncludesStores(t *testing.T) {
+	tasks := []planner.Task{
+		{ID: "wrapper-a", Type: planner.TaskWrapper, ScenarioID: "s1", TargetFile: "lib/wrappers/a_wrapper.dart"},
+		{ID: "store-a", Type: planner.TaskStore, ScenarioID: "s1", TargetFile: "lib/stores/a_cubit.dart"},
+		{ID: "store-a-dup", Type: planner.TaskStore, ScenarioID: "s1", TargetFile: "lib/stores/a_cubit.dart"},
+		{ID: "wrapper-b", Type: planner.TaskWrapper, ScenarioID: "s2", TargetFile: "lib/wrappers/b_wrapper.dart"},
+	}
+
+	got := findRepairableTasks(tasks, "s1")
+	if len(got) != 2 {
+		t.Fatalf("expected 2 repairable tasks, got %d: %+v", len(got), got)
+	}
+	// Business logic first: a wiring fix should be judged against a store that
+	// has already had its chance to be right.
+	if got[0].TargetFile != "lib/stores/a_cubit.dart" {
+		t.Errorf("expected the store first, got %q", got[0].TargetFile)
+	}
+	if got[1].TargetFile != "lib/wrappers/a_wrapper.dart" {
+		t.Errorf("expected the wrapper second, got %q", got[1].TargetFile)
 	}
 }

@@ -44,6 +44,12 @@ and re-derived by a second renderer. Two renderers for the same tree is why
 
 ### 1. Wrap, do not re-render
 
+**Still open.** Dumb widgets now expose their values and callbacks as
+constructor parameters, and the LLM page wrapper composes `HomePage` rather than
+rebuilding it. The deterministic page wrapper still rebuilds the tree, so the
+two strategies produce structurally different pages and the per-widget wrappers
+are dead code on the LLM path. The `renderWrapper*` block is what remains.
+
 The wrapper should compose the generated dumb widget and inject bound values,
 not rebuild its tree:
 
@@ -72,6 +78,12 @@ wrapper, which is where the ~200 lines of `renderWrapper*` live.
 
 ### 2. Derive actions from behaviors, not from arithmetic
 
+**Done, in [31](31-store-logic-and-vacuous-tests.md).** `ir.Binding` resolves the
+widget event to its store action during `Resolve`, and the store, wrapper and
+test generators all read it. The name comes from the widget rather than from
+comparing the scenario's values. An event that drives two stores is an error.
+What follows was the plan; it is kept for the record.
+
 The action name is already in the spec. `when: counterStore.increment` names it.
 When the `when` is a widget event (`counterButton.onPressed`), the action is
 whatever store action the same scenario's `then` implies, and that link should be
@@ -92,6 +104,12 @@ If the pair cannot be resolved, that is an error to report, not a default to
 guess.
 
 ### 3. Store actions need a body source
+
+**Done, in [31](31-store-logic-and-vacuous-tests.md), by the third option.** The
+generator scaffolds signatures with `UnimplementedError` and the fix loop fills
+the bodies, which required teaching `fixFailure` that store files are editable.
+Without an LLM the actions stay unimplemented and the run says so. What follows
+was the plan; it is kept for the record.
 
 `increment`/`decrement` hard-coded in `buildMethods` is a placeholder. Options,
 in increasing order of ambition:

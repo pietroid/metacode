@@ -3,6 +3,7 @@ package runner
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/pietroid/metacode/engine/internal/llm"
 	"github.com/pietroid/metacode/engine/internal/planner"
@@ -45,8 +46,27 @@ func (s *singleRun) Run(ctx context.Context, _ []planner.Task) error {
 	if err != nil {
 		return err
 	}
-	if !result.Success {
-		return fmt.Errorf("tests failed: %d failure(s)", len(result.Failures))
+	if result.Success {
+		return nil
 	}
-	return nil
+	if unimplemented := unimplementedActions(result.Failures); len(unimplemented) > 0 {
+		return fmt.Errorf(
+			"tests failed: %d failure(s), %d of them because store actions have no implementation yet.\n"+
+				"Store action bodies are business logic and come from the behavior scenarios via the fix loop, "+
+				"which needs an LLM. Set ANTHROPIC_API_KEY in a .env file, or implement the actions by hand",
+			len(result.Failures), len(unimplemented))
+	}
+	return fmt.Errorf("tests failed: %d failure(s)", len(result.Failures))
+}
+
+// unimplementedActions returns the failures caused by a scaffolded store action
+// that nothing has filled in yet, as opposed to genuinely wrong code.
+func unimplementedActions(failures []Failure) []Failure {
+	var out []Failure
+	for _, f := range failures {
+		if strings.Contains(f.Message, "UnimplementedError") {
+			out = append(out, f)
+		}
+	}
+	return out
 }

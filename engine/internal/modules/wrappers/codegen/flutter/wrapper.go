@@ -13,9 +13,11 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/pietroid/metacode/engine/internal/core/ir"
 	"github.com/pietroid/metacode/engine/internal/core/order"
+	"github.com/pietroid/metacode/engine/internal/modules/codegen"
 	"github.com/pietroid/metacode/engine/internal/modules/shared"
 	"github.com/pietroid/metacode/engine/internal/planner"
 )
@@ -96,6 +98,8 @@ func generate(ctx context.Context, app *ir.IR, tasks []planner.Task, outDir stri
 			return fmt.Errorf("wrapper %s: %w", plan.WidgetName, err)
 		}
 
+		code = withMarker(code)
+
 		path := filepath.Join(outDir, plan.TargetFile)
 		if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
 			return fmt.Errorf("create target dir: %w", err)
@@ -124,6 +128,17 @@ func childWrapperClasses(plans []Plan) map[string]string {
 		out[plan.WidgetName] = plan.ClassName
 	}
 	return out
+}
+
+// withMarker guarantees every wrapper file is identifiable as generated
+// output. The deterministic strategy writes the header itself; a model writes
+// whatever header it likes, and an unmarked file is one that stale-output
+// pruning cannot safely delete.
+func withMarker(code string) string {
+	if strings.Contains(code, codegen.Marker) {
+		return code
+	}
+	return "// " + codegen.Marker + " - DO NOT EDIT BY HAND\n" + code
 }
 
 func wrapperClassName(widgetName string) string {

@@ -10,18 +10,16 @@ import (
 	"github.com/pietroid/metacode/engine/internal/modules/shared"
 )
 
-// BuildWrapperPrompt assembles the prompt sent to the LLM for a wrapper task.
-// It includes the behavior scenario, the generated Cubit and state classes, the
-// dumb widget code, and explicit constraints.
-func BuildWrapperPrompt(app *ir.IR, task PromptTask, outDir string) (string, error) {
-	scenario, err := findScenario(app, task.ScenarioID)
-	if err != nil {
-		return "", err
-	}
-
-	widgetName, member, err := widgetAndMemberForTask(app, scenario, task)
-	if err != nil {
-		return "", err
+// BuildWrapperPrompt assembles the prompt sent to the LLM for one wrapper.
+//
+// It carries every scenario the wrapper is responsible for, not just one. A
+// page wrapper is the only widget in the composed tree, so it wires the whole
+// subtree: showing it a single scenario left it guessing at the rest, and a
+// page with two buttons came back with one of them wired and the other dead.
+func BuildWrapperPrompt(app *ir.IR, plan Plan, outDir string) (string, error) {
+	scenarios := scenariosForWidget(app, plan.WidgetName)
+	if len(scenarios) == 0 {
+		return "", fmt.Errorf("no scenario references widget %q", plan.WidgetName)
 	}
 
 	var b strings.Builder
@@ -30,22 +28,36 @@ func BuildWrapperPrompt(app *ir.IR, task PromptTask, outDir string) (string, err
 	b.WriteString("The dumb widget exposes every value and every callback it needs as a constructor parameter.\n")
 	b.WriteString("Wire the behavior by passing those parameters. Do not reimplement the widget, do not wrap it\n")
 	b.WriteString("in a GestureDetector or InkWell, and do not add extra classes to the file.\n")
+	b.WriteString("Pass every callback parameter the widget declares. A parameter you leave out is a dead control.\n")
+	b.WriteString("Business rules live in the Cubit. Call its methods; never call emit from a widget.\n")
 	b.WriteString("Use flutter_bloc. Prefer BlocSelector. Read Cubits with context.read.\n")
 	b.WriteString("Use relative imports (../widgets/, ../pages/, ../stores/), never package: imports of this project.\n")
-	b.WriteString("Make the code compile and satisfy this behavior.\n")
+	b.WriteString("Make the code compile and satisfy every behavior below.\n")
 	b.WriteString("Return only the Dart code, wrapped in a ```dart ... ``` fence.\n\n")
 
-	b.WriteString("=== Behavior scenario ===\n")
-	b.WriteString(fmt.Sprintf("ID: %s\n", scenario.ID))
-	b.WriteString(fmt.Sprintf("Description: %s\n", scenario.Description))
-	if scenario.Given != nil {
-		b.WriteString(fmt.Sprintf("Given: %s %s %s\n", scenario.Given.Target, scenario.Given.Op, scenario.Given.Value))
+	b.WriteString("=== Behavior scenarios ===\n")
+	for _, s := range scenarios {
+		b.WriteString(fmt.Sprintf("ID: %s\n", s.ID))
+		b.WriteString(fmt.Sprintf("Description: %s\n", s.Description))
+		if s.Given != nil {
+			b.WriteString(fmt.Sprintf("Given: %s %s %s\n", s.Given.Target, s.Given.Op, s.Given.Value))
+		}
+		if s.When != "" {
+			b.WriteString(fmt.Sprintf("When: %s\n", s.When))
+		}
+		if s.Then != nil {
+			b.WriteString(fmt.Sprintf("Then: %s %s %s\n", s.Then.Target, s.Then.Op, s.Then.Value))
+		}
+		b.WriteString("\n")
 	}
-	b.WriteString(fmt.Sprintf("When: %s\n", scenario.When))
-	if scenario.Then != nil {
-		b.WriteString(fmt.Sprintf("Then: %s %s %s\n", scenario.Then.Target, scenario.Then.Op, scenario.Then.Value))
+
+	if bindings := bindingsForWidget(app, plan.WidgetName); len(bindings) > 0 {
+		b.WriteString("=== Widget events and the store actions they run ===\n")
+		for _, binding := range bindings {
+			b.WriteString(fmt.Sprintf("%s -> %s.%s\n", binding.FullPath(), binding.Store, binding.Action))
+		}
+		b.WriteString("\n")
 	}
-	b.WriteString("\n")
 
 	b.WriteString("=== Generated Cubit and state classes ===\n")
 	for _, store := range app.Stores {
@@ -56,24 +68,95 @@ func BuildWrapperPrompt(app *ir.IR, task PromptTask, outDir string) (string, err
 	b.WriteString("\n")
 
 	b.WriteString("=== Dumb widget to wrap ===\n")
-	if err := appendWidgetCode(&b, outDir, widgetName); err != nil {
+	if err := appendWidgetCode(&b, outDir, plan.WidgetName); err != nil {
 		return "", err
 	}
 	b.WriteString("\n")
 
 	b.WriteString("=== Instructions ===\n")
-	b.WriteString(fmt.Sprintf("Create a stateless wrapper widget for %q.\n", widgetName))
-	b.WriteString(fmt.Sprintf("Wire %q so the scenario above is satisfied, by passing the matching\n", member))
-	b.WriteString("constructor parameter of the dumb widget shown above.\n")
-	b.WriteString(fmt.Sprintf("Name the wrapper class %s and declare exactly one class.\n", wrapperClassName(widgetName)))
+	b.WriteString(fmt.Sprintf("Create a stateless wrapper widget for %q.\n", plan.WidgetName))
+	b.WriteString("Wire it by passing the constructor parameters of the dumb widget shown above.\n")
+	b.WriteString(fmt.Sprintf("Name the wrapper class %s and declare exactly one class.\n", plan.ClassName))
 	b.WriteString("The file goes in lib/wrappers, so the dumb widget is one directory up.\n")
 
 	return b.String(), nil
 }
 
-// PromptTask is the subset of planner.Task used by the prompt builder.
-type PromptTask struct {
-	ScenarioID string
+// scenariosForWidget returns every scenario that names the widget or any widget
+// it embeds, in spec order. A page is responsible for its whole subtree.
+func scenariosForWidget(app *ir.IR, widgetName string) []ir.BehaviorScenario {
+	owned := widgetSubtree(app, widgetName)
+
+	var out []ir.BehaviorScenario
+	for _, s := range app.Behaviors {
+		if scenarioTouches(app, s, owned) {
+			out = append(out, s)
+		}
+	}
+	return out
+}
+
+// bindingsForWidget returns the widget-event bindings the wrapper must wire,
+// including those of the widgets it embeds.
+func bindingsForWidget(app *ir.IR, widgetName string) []ir.Binding {
+	owned := widgetSubtree(app, widgetName)
+
+	var out []ir.Binding
+	for _, binding := range app.Symbols.Bindings {
+		if owned[binding.Widget] {
+			out = append(out, binding)
+		}
+	}
+	return out
+}
+
+// widgetSubtree returns the widget and every declared widget reachable from it.
+func widgetSubtree(app *ir.IR, widgetName string) map[string]bool {
+	owned := map[string]bool{widgetName: true}
+
+	comp := shared.FindComponent(app.UI, widgetName)
+	if comp == nil {
+		return owned
+	}
+
+	// Only a page composes other declared widgets today, and it does so by
+	// name, so a single pass over the props finds them.
+	var walk func(raw any)
+	walk = func(raw any) {
+		switch v := raw.(type) {
+		case string:
+			if sym, ok := app.Symbols.Lookup(v); ok && sym.Kind == "widget" {
+				owned[v] = true
+			}
+		case map[string]any:
+			for key, val := range v {
+				if sym, ok := app.Symbols.Lookup(key); ok && sym.Kind == "widget" {
+					owned[key] = true
+				}
+				walk(val)
+			}
+		case []any:
+			for _, item := range v {
+				walk(item)
+			}
+		}
+	}
+	walk(comp.Props)
+	return owned
+}
+
+func scenarioTouches(app *ir.IR, s ir.BehaviorScenario, owned map[string]bool) bool {
+	if s.Then != nil {
+		if w, _, ok := splitWidgetRef(app, s.Then.Target); ok && owned[w] {
+			return true
+		}
+	}
+	if s.When != "" {
+		if w, _, ok := splitWidgetRef(app, s.When); ok && owned[w] {
+			return true
+		}
+	}
+	return false
 }
 
 func findScenario(app *ir.IR, id string) (ir.BehaviorScenario, error) {
@@ -83,20 +166,6 @@ func findScenario(app *ir.IR, id string) (ir.BehaviorScenario, error) {
 		}
 	}
 	return ir.BehaviorScenario{}, fmt.Errorf("scenario %q not found", id)
-}
-
-func widgetAndMemberForTask(app *ir.IR, scenario ir.BehaviorScenario, task PromptTask) (string, string, error) {
-	if scenario.Then != nil {
-		if w, m, ok := splitWidgetRef(app, scenario.Then.Target); ok {
-			return w, m, nil
-		}
-	}
-	if scenario.When != "" {
-		if w, m, ok := splitWidgetRef(app, scenario.When); ok {
-			return w, m, nil
-		}
-	}
-	return "", "", fmt.Errorf("task %q does not reference a widget", task.ScenarioID)
 }
 
 func splitWidgetRef(app *ir.IR, ref string) (string, string, bool) {

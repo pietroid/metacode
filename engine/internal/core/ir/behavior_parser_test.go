@@ -81,7 +81,7 @@ func TestParseBehaviorScenario(t *testing.T) {
 		"increments from 0",
 		[]string{"counterStore"},
 		"counterStore.value is 0",
-		"counterButton.onPressed",
+		"incrementButton.onPressed",
 		"counterStore.value should be 1",
 	)
 	if err != nil {
@@ -90,7 +90,7 @@ func TestParseBehaviorScenario(t *testing.T) {
 	if scenario.ID != "counterStore/increments from 0" {
 		t.Errorf("unexpected id: %q", scenario.ID)
 	}
-	if scenario.When != "counterButton.onPressed" {
+	if scenario.When != "incrementButton.onPressed" {
 		t.Errorf("unexpected when: %q", scenario.When)
 	}
 	if scenario.Given == nil || scenario.Given.Value != "0" {

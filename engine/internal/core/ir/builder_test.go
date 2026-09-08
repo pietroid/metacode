@@ -34,13 +34,13 @@ func counterAppSpecs() spec.RawSpecs {
 							"center": map[string]any{
 								"column": []any{
 									map[string]any{"text": "counterValue"},
-									"counterButton",
+									"incrementButton",
 								},
 							},
 						},
 					},
 				},
-				"counterButton": map[string]any{
+				"incrementButton": map[string]any{
 					"elevatedButton": map[string]any{
 						"child": "Increment",
 					},
@@ -51,17 +51,17 @@ func counterAppSpecs() spec.RawSpecs {
 			"counterStore": map[string]any{
 				"increments from 0": map[string]any{
 					"given": "counterStore.value is 0",
-					"when":  "counterButton.onPressed",
+					"when":  "incrementButton.onPressed",
 					"then":  "counterStore.value should be 1",
 				},
 				"increments from 1": map[string]any{
 					"given": "counterStore.value is 1",
-					"when":  "counterButton.onPressed",
+					"when":  "incrementButton.onPressed",
 					"then":  "counterStore.value should be 2",
 				},
 				"increments from 2": map[string]any{
 					"given": "counterStore.value is 2",
-					"when":  "counterButton.onPressed",
+					"when":  "incrementButton.onPressed",
 					"then":  "counterStore.value should be 3",
 				},
 				"Show counter value on the home page": map[string]any{
@@ -106,15 +106,15 @@ func TestBuildCounterApp(t *testing.T) {
 	for _, comp := range ir.UI {
 		names[comp.Name] = true
 	}
-	if !names["homePage"] || !names["counterButton"] {
-		t.Errorf("expected homePage and counterButton widgets, got: %+v", names)
+	if !names["homePage"] || !names["incrementButton"] {
+		t.Errorf("expected homePage and incrementButton widgets, got: %+v", names)
 	}
 
 	if len(ir.Behaviors) != 4 {
 		t.Fatalf("expected 4 behavior scenarios, got %d", len(ir.Behaviors))
 	}
 	for _, s := range ir.Behaviors {
-		if s.ID != "counterStore/Show counter value on the home page" && s.When != "counterButton.onPressed" {
+		if s.ID != "counterStore/Show counter value on the home page" && s.When != "incrementButton.onPressed" {
 			t.Errorf("unexpected when for scenario %q: %q", s.ID, s.When)
 		}
 	}
@@ -165,11 +165,13 @@ func TestBuildFromCounterAppYAML(t *testing.T) {
 	if len(ir.Stores) != 1 || ir.Stores[0].Name != "counterStore" {
 		t.Errorf("expected one counterStore, got %+v", ir.Stores)
 	}
-	if len(ir.UI) != 2 {
-		t.Errorf("expected 2 UI components, got %d", len(ir.UI))
+	// This test reads examples/counter_app, which grows as the example does, so
+	// it checks that the pieces it needs are present rather than counting them.
+	if len(ir.UI) < 2 {
+		t.Errorf("expected at least 2 UI components, got %d", len(ir.UI))
 	}
-	if len(ir.Behaviors) != 4 {
-		t.Errorf("expected 4 behavior scenarios, got %d", len(ir.Behaviors))
+	if len(ir.Behaviors) < 4 {
+		t.Errorf("expected at least 4 behavior scenarios, got %d", len(ir.Behaviors))
 	}
 
 	homePage := findComponent(ir.UI, "homePage")

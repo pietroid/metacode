@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"os/exec"
+	"path/filepath"
 	"regexp"
 	"strings"
 )
@@ -79,7 +80,7 @@ func (r *TestRunner) Run(ctx context.Context) (TestResult, error) {
 			}
 		}
 		if !result.Success {
-			result.Failures = parseFailures(output)
+			result.Failures = r.relativeFailures(parseFailures(output))
 		}
 		return result, nil
 	}
@@ -97,7 +98,31 @@ func (r *TestRunner) logOutput(output string) {
 }
 
 var failureLine = regexp.MustCompile(`^\d+:\d+\s+[+\d]+\s+-\d+:\s+(.+?)\s+\[E\]`)
-var fileInLine = regexp.MustCompile(`(\S+_test\.dart)`)
+
+// fileAndName splits Flutter's "<path>_test.dart: <test name>" into its two
+// halves. The path is matched greedily so a directory or scenario name
+// containing a space still yields the whole path: matching \S+ instead
+// silently truncated "increments from 1_test.dart" to "1_test.dart", and every
+// failure then failed to map back to a scenario, which disabled the fix loop
+// without reporting anything.
+var fileAndName = regexp.MustCompile(`^(.*_test\.dart):\s*(.*)$`)
+
+// relativeFailures rewrites failure paths to be relative to the project, since
+// Flutter reports absolute paths and every consumer joins the path onto the
+// project directory.
+func (r *TestRunner) relativeFailures(failures []Failure) []Failure {
+	for i, f := range failures {
+		if !filepath.IsAbs(f.File) {
+			continue
+		}
+		rel, err := filepath.Rel(r.ProjectDir, f.File)
+		if err != nil {
+			continue
+		}
+		failures[i].File = rel
+	}
+	return failures
+}
 
 func parseFailures(output string) []Failure {
 	lines := strings.Split(output, "\n")
@@ -111,11 +136,9 @@ func parseFailures(output string) []Failure {
 			}
 			description := m[1]
 			file := ""
-			if fm := fileInLine.FindStringSubmatch(description); fm != nil {
-				file = fm[1]
-				description = strings.TrimSpace(strings.Replace(description, file, "", 1))
-				description = strings.TrimPrefix(description, ":")
-				description = strings.TrimSpace(description)
+			if fm := fileAndName.FindStringSubmatch(description); fm != nil {
+				file = strings.TrimSpace(fm[1])
+				description = strings.TrimSpace(fm[2])
 			}
 			current = &Failure{
 				File:    file,

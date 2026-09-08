@@ -27,12 +27,72 @@ func Plan(app *ir.IR) ([]Task, error) {
 		}
 	}
 
-	ordered := make([]Task, 0, len(wrappers)+len(tests))
+	stores := buildStoreTasks(app)
+
+	ordered := make([]Task, 0, len(stores)+len(wrappers)+len(tests))
+	ordered = append(ordered, stores...)
 	for _, id := range sortedKeys(wrappers) {
 		ordered = append(ordered, wrappers[id])
 	}
 	ordered = append(ordered, tests...)
 	return ordered, nil
+}
+
+// buildStoreTasks emits one task per store action, so a failing test can be
+// traced back to the Cubit method that has to change. Without these the fix
+// loop can only edit wrappers, which is what drove generated wrappers to reach
+// through cubit.emit for logic that belonged in the store.
+func buildStoreTasks(app *ir.IR) []Task {
+	var tasks []Task
+	for _, binding := range app.Symbols.Bindings {
+		base := shared.StoreBaseName(binding.Store)
+		targetFile := fmt.Sprintf("lib/stores/%s_cubit.dart", shared.SnakeCase(base))
+
+		ctx := strings.Builder{}
+		ctx.WriteString(fmt.Sprintf("Scenario ID: %s\n", binding.ScenarioIDs[0]))
+		ctx.WriteString(fmt.Sprintf("Store: %s\n", binding.Store))
+		ctx.WriteString(fmt.Sprintf("Action: %s\n", binding.Action))
+		ctx.WriteString(fmt.Sprintf("Triggered by: %s\n", binding.FullPath()))
+		ctx.WriteString("Scenarios this action must satisfy:\n")
+		for _, id := range binding.ScenarioIDs {
+			scenario, ok := findScenario(app, id)
+			if !ok {
+				continue
+			}
+			ctx.WriteString(fmt.Sprintf("  - %s\n", scenario.ID))
+			if scenario.Given != nil {
+				ctx.WriteString(fmt.Sprintf("      Given: %s %s %s\n", scenario.Given.Target, scenario.Given.Op, scenario.Given.Value))
+			}
+			if scenario.Then != nil {
+				ctx.WriteString(fmt.Sprintf("      Then: %s %s %s\n", scenario.Then.Target, scenario.Then.Op, scenario.Then.Value))
+			}
+		}
+
+		// One task per scenario, all targeting the same Cubit file. A failing
+		// test is traced back through its scenario, so an action specified by
+		// three scenarios has to be reachable from any of the three.
+		for _, id := range binding.ScenarioIDs {
+			tasks = append(tasks, Task{
+				ID:              fmt.Sprintf("store-%s-%s-%s", shared.SnakeCase(base), shared.SnakeCase(binding.Action), pathToID(id)),
+				Type:            TaskStore,
+				TargetFile:      targetFile,
+				ScenarioID:      id,
+				Description:     fmt.Sprintf("Implement %s.%s", binding.Store, binding.Action),
+				PromptContext:   ctx.String(),
+				ExpectedOutcome: fmt.Sprintf("%s.%s satisfies every scenario that triggers it", binding.Store, binding.Action),
+			})
+		}
+	}
+	return tasks
+}
+
+func findScenario(app *ir.IR, id string) (ir.BehaviorScenario, bool) {
+	for _, s := range app.Behaviors {
+		if s.ID == id {
+			return s, true
+		}
+	}
+	return ir.BehaviorScenario{}, false
 }
 
 func planScenario(app *ir.IR, scenario ir.BehaviorScenario, wrappers map[string]Task, tests *[]Task) error {
@@ -161,8 +221,27 @@ func inferStoreField(app *ir.IR, scenario ir.BehaviorScenario) (string, string) 
 	return "", ""
 }
 
+// pathToID turns a scenario path into a slug usable as a file name and a task
+// id. Scenario names are prose, so they carry spaces and punctuation; leaving
+// those in produced test files like "not decrements when is 0_test.dart",
+// which every tool that takes a path had to be careful with, and which the
+// Flutter test output parser could not read back.
 func pathToID(path string) string {
-	return strings.ReplaceAll(path, "/", "_")
+	var b strings.Builder
+	lastUnderscore := true // never start with a separator
+	for _, r := range path {
+		switch {
+		case r >= 'a' && r <= 'z', r >= 'A' && r <= 'Z', r >= '0' && r <= '9':
+			b.WriteRune(r)
+			lastUnderscore = false
+		default:
+			if !lastUnderscore {
+				b.WriteByte('_')
+				lastUnderscore = true
+			}
+		}
+	}
+	return strings.TrimSuffix(b.String(), "_")
 }
 
 func sortedKeys(m map[string]Task) []string {

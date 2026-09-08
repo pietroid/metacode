@@ -152,39 +152,27 @@ func renderAction(when string, app *ir.IR) (string, error) {
 
 	switch event {
 	case "onPressed":
-		tapTarget := findTapTarget(comp)
-		return fmt.Sprintf("await tester.tap(%s);", tapTarget), nil
+		return fmt.Sprintf("await tester.tap(%s);", tapTarget(comp)), nil
 	default:
-		return "", nil
+		// An event with no known tester idiom used to return an empty action,
+		// which produced a test that pumped the widget and asserted without
+		// ever interacting. It passed whenever the initial state happened to
+		// match, and reported the scenario as covered.
+		return "", fmt.Errorf("no test idiom for event %q on widget %q", event, widgetName)
 	}
 }
 
-func findTapTarget(comp ir.UIComponent) string {
-	widgetClass := flutterWidgetClass(comp.Kind)
-	if widgetClass != "" {
-		return fmt.Sprintf("find.byType(%s)", widgetClass)
-	}
-	return "find.byType(ElevatedButton)"
-}
-
-func flutterWidgetClass(kind string) string {
-	switch kind {
-	case "floatingActionButton":
-		return "FloatingActionButton"
-	case "elevatedButton":
-		return "ElevatedButton"
-	case "textButton":
-		return "TextButton"
-	case "iconButton":
-		return "IconButton"
-	default:
-		return ""
-	}
+// tapTarget finds the widget to tap by its key rather than by its Flutter type.
+// The generated dumb widget carries key: Key("<name>"), and finding by type
+// fails the moment a page has two buttons: tap() reports "ambiguously found
+// multiple matching widgets" and every tap scenario in the spec fails at once.
+func tapTarget(comp ir.UIComponent) string {
+	return fmt.Sprintf("find.byKey(const Key(%s))", shared.DartStringLiteral(comp.Name))
 }
 
 func renderAssertion(then *ir.Assertion, app *ir.IR, store ir.Store) (string, error) {
 	if then == nil {
-		return "expect(find.byType(Container), findsOneWidget);", nil
+		return "", fmt.Errorf("scenario has no then to assert")
 	}
 
 	root, member := data.SplitDot(then.Target)
@@ -200,7 +188,10 @@ func renderAssertion(then *ir.Assertion, app *ir.IR, store ir.Store) (string, er
 		return fmt.Sprintf("expect(find.text(%s), findsOneWidget);", shared.DartStringLiteral(then.Value)), nil
 	}
 
-	return fmt.Sprintf("expect(cubit.state.value, %s);", then.Value), nil
+	// A then whose root is neither a store nor a widget cannot be turned into an
+	// assertion. Falling back to the store's value, as this used to, wrote a
+	// test that asserted something the scenario never mentioned.
+	return "", fmt.Errorf("cannot assert on %q: %q is neither a store nor a widget", then.Target, root)
 }
 
 func dartLiteralForAssertion(a *ir.Assertion, store ir.Store) (string, error) {

@@ -108,7 +108,7 @@ type renderer struct {
 	ownEvents []string
 
 	// childEvents maps a referenced widget name to its event -> parameter name,
-	// e.g. counterButton -> {onPressed: counterButtonOnPressed}. A widget that
+	// e.g. incrementButton -> {onPressed: incrementButtonOnPressed}. A widget that
 	// embeds another widget forwards that widget's callbacks, so a single
 	// wrapper at the top can wire a whole page.
 	childEvents map[string]map[string]string
@@ -139,7 +139,7 @@ func eventsOf(widget string, symbols ir.SymbolTable) []string {
 }
 
 // childEventParams names the forwarded parameter for every event of every
-// referenced widget: counterButton.onPressed becomes counterButtonOnPressed.
+// referenced widget: incrementButton.onPressed becomes incrementButtonOnPressed.
 func childEventParams(refs []string, symbols ir.SymbolTable) map[string]map[string]string {
 	out := make(map[string]map[string]string)
 	for _, name := range refs {
