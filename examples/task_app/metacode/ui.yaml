@@ -1,0 +1,49 @@
+widgets:
+  homePage:
+    scaffold:
+      appBar:
+        title: "Tasks"
+        actions:
+          - filterDropdown
+      body:
+        column:
+          - taskInputRow
+          - expanded:
+              taskList
+      floatingActionButton: addTaskButton
+
+  taskInputRow:
+    row:
+      - expanded:
+          draftField
+      - addTaskButton
+
+  draftField:
+    textField:
+      onChanged: draftChanged
+
+  filterDropdown:
+    dropdownButton:
+      value: selectedFilter
+      items: filterOptions
+      onChanged: filterChanged
+
+  taskList:
+    listView:
+      itemCount: taskCount
+      itemBuilder: taskTile
+
+  taskTile:
+    listTile:
+      title: taskTitle
+      leading: taskCheckbox
+      onTap: taskTapped
+
+  taskCheckbox:
+    checkbox:
+      value: taskDone
+      onChanged: taskToggled
+
+  addTaskButton:
+    floatingActionButton:
+      child: "Add"

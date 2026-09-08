@@ -126,31 +126,3 @@ func (ir *IR) resolveWhen(when string) error {
 	}
 	return nil
 }
-
-// ValidateUIProps checks each catalog prop used by every UI component against
-// the catalog's allowed props. It appends warnings to ir.Warnings for unknown
-// props instead of failing, because some props may be forwarded to custom
-// widgets or handled by the AI wrapper layer.
-func (ir *IR) ValidateUIProps(c *catalog.Catalog) {
-	for _, comp := range ir.UI {
-		validateComponentProps(comp, c, &ir.Warnings)
-	}
-}
-
-func validateComponentProps(comp UIComponent, c *catalog.Catalog, warnings *[]string) {
-	if sym, ok := c.Find(comp.Kind); ok {
-		allowed := make(map[string]bool, len(sym.AllowedProps)+1)
-		allowed[sym.DefaultProp] = true
-		for _, p := range sym.AllowedProps {
-			allowed[p] = true
-		}
-		for prop := range comp.Props {
-			if !allowed[prop] {
-				*warnings = append(*warnings, fmt.Sprintf("ui.yaml > %s: prop %q is not allowed for %s", comp.Name, prop, comp.Kind))
-			}
-		}
-	}
-	for _, child := range comp.Children {
-		validateComponentProps(child, c, warnings)
-	}
-}

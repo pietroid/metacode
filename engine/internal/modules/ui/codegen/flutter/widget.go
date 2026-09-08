@@ -6,10 +6,12 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"text/template"
 
 	"github.com/pietroid/metacode/engine/internal/core/ir"
+	"github.com/pietroid/metacode/engine/internal/core/order"
 	"github.com/pietroid/metacode/engine/internal/modules/codegen"
 	"github.com/pietroid/metacode/engine/internal/modules/shared"
 	"github.com/pietroid/metacode/engine/internal/modules/ui/catalog"
@@ -59,8 +61,15 @@ func writeWidget(comp ir.UIComponent, symbols ir.SymbolTable, c *catalog.Catalog
 		dir = pagesDir
 	}
 
+	refs := referencedWidgets(comp, symbols)
+	r := &renderer{
+		symbols:     symbols,
+		catalog:     c,
+		ownEvents:   eventsOf(comp.Name, symbols),
+		childEvents: childEventParams(refs, symbols),
+	}
+
 	vars := shared.UniqueStrings(comp.Variables)
-	imports := collectImports(comp, comp.Name, symbols, dir)
 
 	var params strings.Builder
 	var fields strings.Builder
@@ -68,20 +77,83 @@ func writeWidget(comp ir.UIComponent, symbols ir.SymbolTable, c *catalog.Catalog
 		params.WriteString(fmt.Sprintf(", required this.%s", v))
 		fields.WriteString(fmt.Sprintf("\n  final String %s;", v))
 	}
-
-	root := renderTopLevel(comp, symbols, c)
+	// Events are optional: a dumb widget must still render on its own, and a
+	// wrapper supplies the callback when there is something to wire.
+	for _, name := range r.callbackParams() {
+		params.WriteString(fmt.Sprintf(", this.%s", name))
+		fields.WriteString(fmt.Sprintf("\n  final VoidCallback? %s;", name))
+	}
 
 	data := widgetData{
 		Name:      comp.Name,
 		ClassName: className,
 		Params:    params.String(),
 		Fields:    fields.String(),
-		Imports:   imports,
-		Root:      root,
+		Imports:   collectImports(refs, dir),
+		Root:      r.renderTopLevel(comp),
 	}
 
 	path := filepath.Join(dir, fileName)
 	return codegen.ExecuteTemplate(tmpl, "widget.dart.tmpl", path, data)
+}
+
+// renderer carries everything the render pass needs: the symbol table, the
+// catalog, and the callback parameters this widget exposes.
+type renderer struct {
+	symbols ir.SymbolTable
+	catalog *catalog.Catalog
+
+	// ownEvents are events declared on this widget, e.g. "onPressed". They are
+	// exposed under their own name and bound to this widget's root.
+	ownEvents []string
+
+	// childEvents maps a referenced widget name to its event -> parameter name,
+	// e.g. counterButton -> {onPressed: counterButtonOnPressed}. A widget that
+	// embeds another widget forwards that widget's callbacks, so a single
+	// wrapper at the top can wire a whole page.
+	childEvents map[string]map[string]string
+}
+
+// callbackParams lists every callback parameter this widget exposes, in a
+// stable order: its own events first, then forwarded child events.
+func (r *renderer) callbackParams() []string {
+	out := append([]string(nil), r.ownEvents...)
+	for _, child := range order.Keys(r.childEvents) {
+		events := r.childEvents[child]
+		for _, event := range order.Keys(events) {
+			out = append(out, events[event])
+		}
+	}
+	return out
+}
+
+// eventsOf returns the events declared on widget, in a stable order.
+func eventsOf(widget string, symbols ir.SymbolTable) []string {
+	var out []string
+	for _, path := range order.Keys(symbols.Events) {
+		if ref := symbols.Events[path]; ref.Widget == widget {
+			out = append(out, ref.Event)
+		}
+	}
+	return shared.UniqueStrings(out)
+}
+
+// childEventParams names the forwarded parameter for every event of every
+// referenced widget: counterButton.onPressed becomes counterButtonOnPressed.
+func childEventParams(refs []string, symbols ir.SymbolTable) map[string]map[string]string {
+	out := make(map[string]map[string]string)
+	for _, name := range refs {
+		events := eventsOf(name, symbols)
+		if len(events) == 0 {
+			continue
+		}
+		params := make(map[string]string, len(events))
+		for _, event := range events {
+			params[event] = name + shared.PascalCase(event)
+		}
+		out[name] = params
+	}
+	return out
 }
 
 func isPage(name string) bool {
@@ -91,16 +163,26 @@ func isPage(name string) bool {
 	return strings.HasSuffix(name, "Page")
 }
 
-func collectImports(comp ir.UIComponent, self string, symbols ir.SymbolTable, currentDir string) string {
+// referencedWidgets lists the declared widgets that comp embeds, sorted.
+func referencedWidgets(comp ir.UIComponent, symbols ir.SymbolTable) []string {
 	refs := make(map[string]bool)
-	collectWidgetRefs(comp, self, symbols, refs)
-	collectRawWidgetRefs(comp.Props, self, symbols, refs)
+	collectWidgetRefs(comp, comp.Name, symbols, refs)
+	collectRawWidgetRefs(comp.Props, comp.Name, symbols, refs)
+
+	out := make([]string, 0, len(refs))
+	for name := range refs {
+		out = append(out, name)
+	}
+	sort.Strings(out)
+	return out
+}
+
+func collectImports(refs []string, currentDir string) string {
 	if len(refs) == 0 {
 		return ""
 	}
-
 	var b strings.Builder
-	for name := range refs {
+	for _, name := range refs {
 		rel := relativeImportPath(currentDir, name)
 		b.WriteString(fmt.Sprintf("\nimport '%s/%s.dart';", rel, shared.SnakeCase(name)))
 	}
@@ -116,13 +198,13 @@ func collectRawWidgetRefs(raw any, self string, symbols ir.SymbolTable, refs map
 			}
 		}
 	case map[string]any:
-		for key, val := range v {
+		for _, key := range order.Keys(v) {
 			if key != self {
 				if sym, ok := symbols.Lookup(key); ok && sym.Kind == "widget" {
 					refs[key] = true
 				}
 			}
-			collectRawWidgetRefs(val, self, symbols, refs)
+			collectRawWidgetRefs(v[key], self, symbols, refs)
 		}
 	case []any:
 		for _, item := range v {
@@ -160,19 +242,33 @@ func collectWidgetRefs(comp ir.UIComponent, self string, symbols ir.SymbolTable,
 	}
 }
 
-func renderTopLevel(comp ir.UIComponent, symbols ir.SymbolTable, c *catalog.Catalog) string {
-	return renderComponent(comp, symbols, c, true)
+func (r *renderer) renderTopLevel(comp ir.UIComponent) string {
+	return r.renderComponent(comp, true)
 }
 
-func renderComponent(comp ir.UIComponent, symbols ir.SymbolTable, c *catalog.Catalog, topLevel bool) string {
-	if sym, ok := c.Find(comp.Kind); ok {
-		return renderCatalogWidget(comp, sym, symbols, c, topLevel)
+func (r *renderer) renderComponent(comp ir.UIComponent, topLevel bool) string {
+	if sym, ok := r.catalog.Find(comp.Kind); ok {
+		return r.renderCatalogWidget(comp, sym, topLevel)
 	}
 	// Custom widget reference.
-	return fmt.Sprintf("const %s()", shared.PascalCase(comp.Name))
+	return r.renderWidgetRef(comp.Name)
 }
 
-func renderCatalogWidget(comp ir.UIComponent, sym catalog.Symbol, symbols ir.SymbolTable, c *catalog.Catalog, topLevel bool) string {
+// renderWidgetRef instantiates another declared widget, forwarding the
+// callbacks this widget exposes on its behalf.
+func (r *renderer) renderWidgetRef(name string) string {
+	params := r.childEvents[name]
+	if len(params) == 0 {
+		return fmt.Sprintf("const %s()", shared.PascalCase(name))
+	}
+	var args []string
+	for _, event := range order.Keys(params) {
+		args = append(args, fmt.Sprintf("%s: %s", event, params[event]))
+	}
+	return fmt.Sprintf("%s(%s)", shared.PascalCase(name), strings.Join(args, ", "))
+}
+
+func (r *renderer) renderCatalogWidget(comp ir.UIComponent, sym catalog.Symbol, topLevel bool) string {
 	var args []string
 
 	if topLevel {
@@ -180,26 +276,32 @@ func renderCatalogWidget(comp ir.UIComponent, sym catalog.Symbol, symbols ir.Sym
 	}
 
 	if sym.DefaultProp != "" {
-		if childArg := renderDefaultProp(comp, sym, symbols, c); childArg != "" {
+		if childArg := r.renderDefaultProp(comp, sym); childArg != "" {
 			args = append(args, childArg)
 		}
 	}
 
-	for prop, val := range comp.Props {
+	for _, prop := range catalogPropOrder(sym, comp.Props) {
 		if prop == sym.DefaultProp {
 			continue
 		}
-		expectsWidget := c.WidgetProp(comp.Kind, prop)
-		args = append(args, fmt.Sprintf("%s: %s", prop, renderNamedProp(prop, val, expectsWidget, symbols, c)))
+		expectsWidget := r.catalog.WidgetProp(comp.Kind, prop)
+		args = append(args, fmt.Sprintf("%s: %s", prop, r.renderNamedProp(prop, comp.Props[prop], expectsWidget)))
 	}
 
 	for _, cb := range requiredCallbacks(comp.Kind) {
-		if _, ok := comp.Props[cb]; !ok {
-			if cb == catalog.PropIcon {
-				args = append(args, "icon: const Icon(Icons.add)")
-			} else {
-				args = append(args, fmt.Sprintf("%s: null", cb))
-			}
+		if _, ok := comp.Props[cb]; ok {
+			continue
+		}
+		switch {
+		case cb == catalog.PropIcon:
+			args = append(args, "icon: const Icon(Icons.add)")
+		case topLevel && r.exposesEvent(cb):
+			// The behavior specs declare this event, so the widget takes it as
+			// a parameter instead of being permanently disabled.
+			args = append(args, fmt.Sprintf("%s: %s", cb, cb))
+		default:
+			args = append(args, fmt.Sprintf("%s: null", cb))
 		}
 	}
 
@@ -207,6 +309,36 @@ func renderCatalogWidget(comp ir.UIComponent, sym catalog.Symbol, symbols ir.Sym
 		return fmt.Sprintf("%s(%s)", sym.FlutterWidget, args[0])
 	}
 	return fmt.Sprintf("%s(\n%s\n)", sym.FlutterWidget, shared.Indent(strings.Join(args, ",\n")))
+}
+
+func (r *renderer) exposesEvent(event string) bool {
+	for _, e := range r.ownEvents {
+		if e == event {
+			return true
+		}
+	}
+	return false
+}
+
+// catalogPropOrder returns the props present on a component in a stable order:
+// catalog order first, so generated Dart reads the way the catalog documents the
+// widget, then any remaining props sorted by name.
+func catalogPropOrder(sym catalog.Symbol, props map[string]any) []string {
+	var ordered []string
+	seen := make(map[string]bool, len(props))
+
+	for _, p := range sym.AllowedProps {
+		if _, ok := props[p]; ok && !seen[p] {
+			ordered = append(ordered, p)
+			seen[p] = true
+		}
+	}
+	for _, p := range order.Keys(props) {
+		if !seen[p] {
+			ordered = append(ordered, p)
+		}
+	}
+	return ordered
 }
 
 func requiredCallbacks(kind string) []string {
@@ -220,20 +352,20 @@ func requiredCallbacks(kind string) []string {
 	}
 }
 
-func renderDefaultProp(comp ir.UIComponent, sym catalog.Symbol, symbols ir.SymbolTable, c *catalog.Catalog) string {
+func (r *renderer) renderDefaultProp(comp ir.UIComponent, sym catalog.Symbol) string {
 	prop := sym.DefaultProp
 	if prop == catalog.PropChild && len(comp.Children) > 0 {
-		return fmt.Sprintf("%s: %s", prop, renderComponent(comp.Children[0], symbols, c, false))
+		return fmt.Sprintf("%s: %s", prop, r.renderComponent(comp.Children[0], false))
 	}
 	if prop == catalog.PropChildren && len(comp.Children) > 0 {
-		return fmt.Sprintf("%s: %s", prop, renderChildrenList(comp.Children, symbols, c))
+		return fmt.Sprintf("%s: %s", prop, r.renderChildrenList(comp.Children))
 	}
 	if val, ok := comp.Props[prop]; ok {
-		expectsWidget := c.WidgetProp(comp.Kind, prop)
+		expectsWidget := r.catalog.WidgetProp(comp.Kind, prop)
 		if prop == catalog.PropData {
-			return renderPropValue(val, expectsWidget, symbols, c)
+			return r.renderPropValue(val, expectsWidget)
 		}
-		return fmt.Sprintf("%s: %s", prop, renderPropValue(val, expectsWidget, symbols, c))
+		return fmt.Sprintf("%s: %s", prop, r.renderPropValue(val, expectsWidget))
 	}
 	return ""
 }
@@ -245,7 +377,7 @@ var impliedWidgetKind = map[string]string{
 	catalog.PropDrawer:    "drawer",
 }
 
-func renderNamedProp(prop string, val any, expectsWidget bool, symbols ir.SymbolTable, c *catalog.Catalog) string {
+func (r *renderer) renderNamedProp(prop string, val any, expectsWidget bool) string {
 	if kind, ok := impliedWidgetKind[prop]; ok {
 		if props, ok := val.(map[string]any); ok {
 			comp := ir.UIComponent{
@@ -253,70 +385,71 @@ func renderNamedProp(prop string, val any, expectsWidget bool, symbols ir.Symbol
 				Kind:  kind,
 				Props: props,
 			}
-			return renderComponent(comp, symbols, c, false)
+			return r.renderComponent(comp, false)
 		}
 	}
-	return renderPropValue(val, expectsWidget, symbols, c)
+	return r.renderPropValue(val, expectsWidget)
 }
 
-func renderChildrenList(children []ir.UIComponent, symbols ir.SymbolTable, c *catalog.Catalog) string {
+func (r *renderer) renderChildrenList(children []ir.UIComponent) string {
 	var parts []string
 	for _, child := range children {
-		parts = append(parts, renderComponent(child, symbols, c, false))
+		parts = append(parts, r.renderComponent(child, false))
 	}
 	return fmt.Sprintf("[\n%s\n]", shared.Indent(strings.Join(parts, ",\n")))
 }
 
-func renderPropValue(val any, expectsWidget bool, symbols ir.SymbolTable, c *catalog.Catalog) string {
+func (r *renderer) renderPropValue(val any, expectsWidget bool) string {
 	switch v := val.(type) {
 	case string:
 		if expectsWidget {
-			if sym, ok := symbols.Lookup(v); ok && sym.Kind == "widget" {
-				return fmt.Sprintf("const %s()", shared.PascalCase(v))
+			if sym, ok := r.symbols.Lookup(v); ok && sym.Kind == "widget" {
+				return r.renderWidgetRef(v)
 			}
-			if shared.IsVariableIdentifier(v) && !c.IsKnown(v) {
+			if shared.IsVariableIdentifier(v) && !r.catalog.IsKnown(v) {
 				return fmt.Sprintf("Text(%s)", v)
 			}
 			return fmt.Sprintf("const Text(%s)", shared.DartStringLiteral(v))
 		}
-		if shared.IsVariableIdentifier(v) && !c.IsKnown(v) {
+		if shared.IsVariableIdentifier(v) && !r.catalog.IsKnown(v) {
 			return v
 		}
 		return shared.DartStringLiteral(v)
 	case map[string]any:
-		return renderRawWidget(v, symbols, c)
+		return r.renderRawWidget(v)
 	case []any:
-		return renderRawList(v, expectsWidget, symbols, c)
+		return r.renderRawList(v, expectsWidget)
 	default:
 		return fmt.Sprintf("%v", v)
 	}
 }
 
-func renderRawWidget(raw map[string]any, symbols ir.SymbolTable, c *catalog.Catalog) string {
+func (r *renderer) renderRawWidget(raw map[string]any) string {
 	if len(raw) != 1 {
 		return "Container()"
 	}
-	for name, value := range raw {
-		if sym, ok := c.Find(name); ok {
+	for _, name := range order.Keys(raw) {
+		value := raw[name]
+		if sym, ok := r.catalog.Find(name); ok {
 			comp := ir.UIComponent{
 				Name:  name,
 				Kind:  name,
 				Props: map[string]any{sym.DefaultProp: value},
 			}
-			return renderComponent(comp, symbols, c, false)
+			return r.renderComponent(comp, false)
 		}
-		if sym, ok := symbols.Lookup(name); ok && sym.Kind == "widget" {
-			return fmt.Sprintf("const %s()", shared.PascalCase(name))
+		if sym, ok := r.symbols.Lookup(name); ok && sym.Kind == "widget" {
+			return r.renderWidgetRef(name)
 		}
 		return "Container()"
 	}
 	return "Container()"
 }
 
-func renderRawList(raw []any, expectsWidget bool, symbols ir.SymbolTable, c *catalog.Catalog) string {
+func (r *renderer) renderRawList(raw []any, expectsWidget bool) string {
 	var parts []string
 	for _, item := range raw {
-		parts = append(parts, renderPropValue(item, expectsWidget, symbols, c))
+		parts = append(parts, r.renderPropValue(item, expectsWidget))
 	}
 	return fmt.Sprintf("[\n%s\n]", shared.Indent(strings.Join(parts, ",\n")))
 }

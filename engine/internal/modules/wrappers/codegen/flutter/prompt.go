@@ -1,4 +1,3 @@
-// Package flutter implements AI-assisted code generation for Flutter projects.
 package flutter
 
 import (
@@ -27,8 +26,12 @@ func BuildWrapperPrompt(app *ir.IR, task PromptTask, outDir string) (string, err
 
 	var b strings.Builder
 	b.WriteString("You are generating Flutter code that connects existing generated widgets to existing generated Cubits.\n")
-	b.WriteString("Do not modify the dumb widget or cubit classes. Import them.\n")
-	b.WriteString("Use flutter_bloc. Prefer BlocSelector.\n")
+	b.WriteString("Do not modify the dumb widget or cubit classes. Import them and instantiate the dumb widget.\n")
+	b.WriteString("The dumb widget exposes every value and every callback it needs as a constructor parameter.\n")
+	b.WriteString("Wire the behavior by passing those parameters. Do not reimplement the widget, do not wrap it\n")
+	b.WriteString("in a GestureDetector or InkWell, and do not add extra classes to the file.\n")
+	b.WriteString("Use flutter_bloc. Prefer BlocSelector. Read Cubits with context.read.\n")
+	b.WriteString("Use relative imports (../widgets/, ../pages/, ../stores/), never package: imports of this project.\n")
 	b.WriteString("Make the code compile and satisfy this behavior.\n")
 	b.WriteString("Return only the Dart code, wrapped in a ```dart ... ``` fence.\n\n")
 
@@ -60,9 +63,10 @@ func BuildWrapperPrompt(app *ir.IR, task PromptTask, outDir string) (string, err
 
 	b.WriteString("=== Instructions ===\n")
 	b.WriteString(fmt.Sprintf("Create a stateless wrapper widget for %q.\n", widgetName))
-	b.WriteString(fmt.Sprintf("Wire %q so the scenario above is satisfied.\n", member))
-	b.WriteString(fmt.Sprintf("Name the wrapper class %s.\n", wrapperClassName(widgetName)))
-	b.WriteString("Place the file in the lib/wrappers directory.\n")
+	b.WriteString(fmt.Sprintf("Wire %q so the scenario above is satisfied, by passing the matching\n", member))
+	b.WriteString("constructor parameter of the dumb widget shown above.\n")
+	b.WriteString(fmt.Sprintf("Name the wrapper class %s and declare exactly one class.\n", wrapperClassName(widgetName)))
+	b.WriteString("The file goes in lib/wrappers, so the dumb widget is one directory up.\n")
 
 	return b.String(), nil
 }
@@ -137,8 +141,4 @@ func appendWidgetCode(b *strings.Builder, outDir, widgetName string) error {
 	}
 	b.WriteString(fmt.Sprintf("// %s\n%s\n", widgetFile, string(code)))
 	return nil
-}
-
-func wrapperClassName(widgetName string) string {
-	return shared.PascalCase(widgetName) + "Wrapper"
 }

@@ -10,6 +10,7 @@ import (
 	"text/template"
 
 	"github.com/pietroid/metacode/engine/internal/core/ir"
+	"github.com/pietroid/metacode/engine/internal/core/order"
 	"github.com/pietroid/metacode/engine/internal/modules/codegen"
 	"github.com/pietroid/metacode/engine/internal/modules/data"
 	"github.com/pietroid/metacode/engine/internal/modules/shared"
@@ -107,7 +108,7 @@ func collectActions(app *ir.IR) map[string]map[string]bool {
 
 func buildMethods(actionSet map[string]bool, stateClass, dartType string) string {
 	var b strings.Builder
-	for action := range actionSet {
+	for _, action := range order.Keys(actionSet) {
 		switch action {
 		case "increment":
 			fmt.Fprintf(&b, "  void increment() => emit(state.copyWith(value: state.value + 1));\n")

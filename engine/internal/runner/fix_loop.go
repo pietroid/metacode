@@ -22,6 +22,9 @@ type FixLoop struct {
 	Reporter      ProgressReporter
 }
 
+// Name implements Verifier.
+func (fl *FixLoop) Name() string { return "fix loop" }
+
 // Run executes the test/fix loop until all tests pass or the maximum number
 // of iterations is reached.
 func (fl *FixLoop) Run(ctx context.Context, tasks []planner.Task) error {

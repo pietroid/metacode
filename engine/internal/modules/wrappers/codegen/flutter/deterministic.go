@@ -1,91 +1,55 @@
 package flutter
 
 import (
+	"context"
 	"fmt"
-	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
 
 	"github.com/pietroid/metacode/engine/internal/core/ir"
+	"github.com/pietroid/metacode/engine/internal/core/order"
 	"github.com/pietroid/metacode/engine/internal/modules/data"
 	"github.com/pietroid/metacode/engine/internal/modules/shared"
 	"github.com/pietroid/metacode/engine/internal/modules/ui/catalog"
 	"github.com/pietroid/metacode/engine/internal/planner"
 )
 
-// GenerateDeterministicWrappers generates wiring wrappers without using an LLM.
-// It handles the common counter-app patterns (variable display via BlocSelector
-// and button events that call a Cubit action) and updates lib/app.dart.
-func GenerateDeterministicWrappers(app *ir.IR, tasks []planner.Task, outDir string) error {
-	if len(app.Stores) == 0 {
-		return nil
-	}
+// DeterministicGenerator renders wrapper bodies from the IR alone, with no LLM.
+// It handles the patterns the catalog can describe: a page laying out its
+// children, a button whose press calls a Cubit action, and a text bound to a
+// store field via BlocSelector.
+type DeterministicGenerator struct{}
 
-	wrappersDir := filepath.Join(outDir, "lib", "wrappers")
-	if err := os.MkdirAll(wrappersDir, 0755); err != nil {
-		return fmt.Errorf("create wrappers dir: %w", err)
-	}
+// NewDeterministicGenerator returns a Generator that needs no LLM.
+func NewDeterministicGenerator() *DeterministicGenerator {
+	return &DeterministicGenerator{}
+}
 
-	byWidget := make(map[string][]planner.Task)
-	for _, task := range tasks {
-		if task.Type != planner.TaskWrapper {
-			continue
-		}
-		widgetName := widgetNameForWrapperTask(task, app)
-		if widgetName == "" {
-			continue
-		}
-		byWidget[widgetName] = append(byWidget[widgetName], task)
-	}
-	if len(byWidget) == 0 {
-		return nil
+// Name implements Generator.
+func (g *DeterministicGenerator) Name() string { return "deterministic" }
+
+// Generate implements Generator.
+func (g *DeterministicGenerator) Generate(ctx context.Context, app *ir.IR, tasks []planner.Task, outDir string) error {
+	return generate(ctx, app, tasks, outDir, g.body)
+}
+
+func (g *DeterministicGenerator) body(_ context.Context, app *ir.IR, plan Plan, plans []Plan, _ string) (string, error) {
+	comp := shared.FindComponent(app.UI, plan.WidgetName)
+	if comp == nil {
+		return "", fmt.Errorf("widget %q not found in UI spec", plan.WidgetName)
 	}
 
 	store := app.Stores[0]
-	generated := make(map[string]string) // target file -> wrapper class name
 	c := catalog.New()
 
-	allChildWrappers := childWrapperClasses(app, tasks)
-
-	for widgetName, widgetTasks := range byWidget {
-		comp := shared.FindComponent(app.UI, widgetName)
-		if comp == nil {
-			continue
-		}
-
-		className := wrapperClassName(widgetName)
-		fileName := shared.SnakeCase(widgetName) + "_wrapper.dart"
-		targetFile := filepath.Join("lib", "wrappers", fileName)
-
-		var code string
-		var err error
-		switch {
-		case shared.IsPageName(widgetName):
-			code, err = generatePageWrapper(widgetName, *comp, app, widgetTasks, allChildWrappers, store, c)
-		case isButtonKind(comp.Kind):
-			code, err = generateButtonWrapper(*comp, app, widgetTasks, store, c)
-		default:
-			code, err = generateFallbackWrapper(*comp, app, store, c)
-		}
-		if err != nil {
-			return fmt.Errorf("wrapper %s: %w", widgetName, err)
-		}
-
-		path := filepath.Join(outDir, targetFile)
-		if err := os.WriteFile(path, []byte(code), 0644); err != nil {
-			return fmt.Errorf("write wrapper %s: %w", path, err)
-		}
-		generated[targetFile] = className
+	switch {
+	case shared.IsPageName(plan.WidgetName):
+		return generatePageWrapper(plan, *comp, app, childWrapperClasses(plans), store, c)
+	case isButtonKind(comp.Kind):
+		return generateButtonWrapper(plan, *comp, app, store)
+	default:
+		return generateFallbackWrapper(plan)
 	}
-
-	if len(generated) > 0 {
-		if err := updateAppDart(app, outDir, generated); err != nil {
-			return fmt.Errorf("update app.dart: %w", err)
-		}
-	}
-
-	return nil
 }
 
 func widgetNameForWrapperTask(task planner.Task, app *ir.IR) string {
@@ -115,9 +79,9 @@ func isButtonKind(kind string) bool {
 	return false
 }
 
-func generatePageWrapper(pageName string, comp ir.UIComponent, app *ir.IR, tasks []planner.Task, childWrappers map[string]string, store ir.Store, c *catalog.Catalog) (string, error) {
+func generatePageWrapper(plan Plan, comp ir.UIComponent, app *ir.IR, childWrappers map[string]string, store ir.Store, c *catalog.Catalog) (string, error) {
 	base := shared.StoreBaseName(store.Name)
-	bindings := inferVariableBindings(app, pageName, store)
+	bindings := inferVariableBindings(app, plan.WidgetName, store)
 
 	title := ""
 	if appBarRaw, ok := comp.Props["appBar"].(map[string]any); ok {
@@ -151,11 +115,11 @@ func generatePageWrapper(pageName string, comp ir.UIComponent, app *ir.IR, tasks
 		fmt.Sprintf("import '../stores/%s_cubit.dart';", shared.SnakeCase(base)),
 		fmt.Sprintf("import '../stores/%s_state.dart';", shared.SnakeCase(base)),
 	)
-	for childName := range childWrappers {
+	for _, childName := range order.Keys(childWrappers) {
 		imports = append(imports, fmt.Sprintf("import '%s_wrapper.dart';", shared.SnakeCase(childName)))
 	}
 
-	className := wrapperClassName(pageName)
+	className := plan.ClassName
 	return fmt.Sprintf(`// GENERATED BY METACODE - DO NOT EDIT BY HAND
 %s
 
@@ -177,26 +141,20 @@ class %s extends StatelessWidget {
 `, strings.Join(imports, "\n"), className, className, shared.DartStringLiteral(title), childrenArg), nil
 }
 
-func generateButtonWrapper(comp ir.UIComponent, app *ir.IR, tasks []planner.Task, store ir.Store, c *catalog.Catalog) (string, error) {
+// generateButtonWrapper wraps the generated dumb button, passing the Cubit
+// action through the callback parameter the dumb widget exposes. It does not
+// re-render the button: the UI module already knows how to do that, and a
+// wrapper that rebuilt it would drift from the widget it wraps.
+func generateButtonWrapper(plan Plan, comp ir.UIComponent, app *ir.IR, store ir.Store) (string, error) {
 	base := shared.StoreBaseName(store.Name)
 	cubitClass := shared.PascalCase(base) + "Cubit"
-
 	method := inferButtonAction(comp.Name, app, store)
-
-	sym, ok := c.Find(comp.Kind)
-	if !ok {
-		return "", fmt.Errorf("unknown button kind %q", comp.Kind)
-	}
-
-	child := "const SizedBox()"
-	if val, ok := comp.Props[catalog.PropChild]; ok {
-		child = renderWrapperPropValue(val, true, app, c, nil, nil, store)
-	}
 
 	return fmt.Sprintf(`// GENERATED BY METACODE - DO NOT EDIT BY HAND
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../stores/%s_cubit.dart';
+import '../widgets/%s.dart';
 
 class %s extends StatelessWidget {
   const %s({super.key});
@@ -205,17 +163,16 @@ class %s extends StatelessWidget {
   Widget build(BuildContext context) {
     return %s(
       onPressed: () => context.read<%s>().%s(),
-      child: %s,
     );
   }
 }
-`, shared.SnakeCase(base),
-		wrapperClassName(comp.Name), wrapperClassName(comp.Name),
-		sym.FlutterWidget, cubitClass, method, child), nil
+`, shared.SnakeCase(base), shared.SnakeCase(comp.Name),
+		plan.ClassName, plan.ClassName,
+		shared.PascalCase(comp.Name), cubitClass, method), nil
 }
 
-func generateFallbackWrapper(comp ir.UIComponent, app *ir.IR, store ir.Store, c *catalog.Catalog) (string, error) {
-	className := wrapperClassName(comp.Name)
+func generateFallbackWrapper(plan Plan) (string, error) {
+	className := plan.ClassName
 	return fmt.Sprintf(`// GENERATED BY METACODE - DO NOT EDIT BY HAND
 import 'package:flutter/material.dart';
 
@@ -242,7 +199,8 @@ func renderWrapperListItem(raw any, app *ir.IR, c *catalog.Catalog, bindings map
 		return fmt.Sprintf("const Text(%s)", shared.DartStringLiteral(v))
 	case map[string]any:
 		if len(v) == 1 {
-			for k, val := range v {
+			for _, k := range order.Keys(v) {
+				val := v[k]
 				if k == "text" {
 					if s, ok := val.(string); ok {
 						if expr, ok := bindings[s]; ok {
@@ -285,12 +243,12 @@ func renderWrapperCatalogWidget(comp ir.UIComponent, sym catalog.Symbol, app *ir
 			args = append(args, arg)
 		}
 	}
-	for prop, val := range comp.Props {
+	for _, prop := range order.Keys(comp.Props) {
 		if prop == sym.DefaultProp {
 			continue
 		}
 		expectsWidget := c.WidgetProp(comp.Kind, prop)
-		args = append(args, fmt.Sprintf("%s: %s", prop, renderWrapperPropValue(val, expectsWidget, app, c, bindings, childWrappers, store)))
+		args = append(args, fmt.Sprintf("%s: %s", prop, renderWrapperPropValue(comp.Props[prop], expectsWidget, app, c, bindings, childWrappers, store)))
 	}
 	if len(args) == 0 {
 		return sym.FlutterWidget + "()"
@@ -376,7 +334,8 @@ func renderWrapperChildrenList(children []ir.UIComponent, app *ir.IR, c *catalog
 
 func rawMapToComponent(m map[string]any, parentName string, c *catalog.Catalog) ir.UIComponent {
 	if len(m) == 1 {
-		for k, val := range m {
+		for _, k := range order.Keys(m) {
+			val := m[k]
 			if c.IsKnown(k) {
 				comp := buildWrapperComponentValue(val, k, c)
 				comp.Name = k
@@ -404,21 +363,6 @@ func buildWrapperComponentValue(raw any, name string, c *catalog.Catalog) ir.UIC
 		}
 	}
 	return comp
-}
-
-func childWrapperClasses(app *ir.IR, tasks []planner.Task) map[string]string {
-	out := make(map[string]string)
-	for _, task := range tasks {
-		if task.Type != planner.TaskWrapper {
-			continue
-		}
-		childName := widgetNameForWrapperTask(task, app)
-		if childName == "" || shared.IsPageName(childName) {
-			continue
-		}
-		out[childName] = wrapperClassName(childName)
-	}
-	return out
 }
 
 func inferVariableBindings(app *ir.IR, pageName string, store ir.Store) map[string]string {

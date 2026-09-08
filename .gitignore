@@ -1,10 +1,19 @@
 # Local tooling
 .tools/
 
+# Secrets
+.env
+.env.local
+!.env.example
+
 # Build artifacts
 bin/
 /tmp/
 *.exe
+
+# Flutter/Dart build output in examples
+.dart_tool/
+build/
 
 # IDE
 .idea/

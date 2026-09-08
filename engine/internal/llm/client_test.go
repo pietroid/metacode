@@ -12,47 +12,120 @@ import (
 	"github.com/pietroid/metacode/engine/internal/core/log"
 )
 
-func TestConfigFromEnvMissingBaseURL(t *testing.T) {
-	t.Setenv("METACODE_LLM_BASE_URL", "")
+// clearLLMEnv resets every variable ConfigFromEnv reads, so a test starts from
+// a known state regardless of the developer's shell.
+func clearLLMEnv(t *testing.T) {
+	t.Helper()
+	for _, key := range []string{
+		"METACODE_LLM_PROVIDER",
+		"METACODE_LLM_BASE_URL",
+		"METACODE_LLM_API_KEY",
+		"METACODE_LLM_MODEL",
+		"ANTHROPIC_API_KEY",
+	} {
+		t.Setenv(key, "")
+	}
+}
+
+func TestConfigFromEnvDefaultsToAnthropic(t *testing.T) {
+	clearLLMEnv(t)
+	t.Setenv("ANTHROPIC_API_KEY", "sk-ant-test")
+
+	cfg, err := ConfigFromEnv()
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if cfg.Provider != ProviderAnthropic {
+		t.Errorf("expected provider %q, got %q", ProviderAnthropic, cfg.Provider)
+	}
+	if cfg.Model != DefaultAnthropicModel {
+		t.Errorf("expected model %q, got %q", DefaultAnthropicModel, cfg.Model)
+	}
+	if cfg.APIKey != "sk-ant-test" {
+		t.Errorf("expected key from ANTHROPIC_API_KEY, got %q", cfg.APIKey)
+	}
+}
+
+func TestConfigFromEnvAnthropicAcceptsMetacodeKey(t *testing.T) {
+	clearLLMEnv(t)
+	t.Setenv("METACODE_LLM_API_KEY", "sk-ant-fallback")
+
+	cfg, err := ConfigFromEnv()
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if cfg.APIKey != "sk-ant-fallback" {
+		t.Errorf("expected key from METACODE_LLM_API_KEY, got %q", cfg.APIKey)
+	}
+}
+
+func TestConfigFromEnvAnthropicMissingKey(t *testing.T) {
+	clearLLMEnv(t)
+
+	_, err := ConfigFromEnv()
+	if err == nil || !strings.Contains(err.Error(), "ANTHROPIC_API_KEY") {
+		t.Fatalf("expected missing api key error, got %v", err)
+	}
+}
+
+func TestConfigFromEnvCustomModel(t *testing.T) {
+	clearLLMEnv(t)
+	t.Setenv("ANTHROPIC_API_KEY", "key")
+	t.Setenv("METACODE_LLM_MODEL", "claude-sonnet-5")
+
+	cfg, err := ConfigFromEnv()
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if cfg.Model != "claude-sonnet-5" {
+		t.Errorf("expected custom model, got %q", cfg.Model)
+	}
+}
+
+func TestConfigFromEnvOpenAIMissingBaseURL(t *testing.T) {
+	clearLLMEnv(t)
+	t.Setenv("METACODE_LLM_PROVIDER", "openai")
 	t.Setenv("METACODE_LLM_API_KEY", "key")
+
 	_, err := ConfigFromEnv()
 	if err == nil || !strings.Contains(err.Error(), "METACODE_LLM_BASE_URL") {
 		t.Fatalf("expected missing base url error, got %v", err)
 	}
 }
 
-func TestConfigFromEnvMissingAPIKey(t *testing.T) {
+func TestConfigFromEnvOpenAIMissingAPIKey(t *testing.T) {
+	clearLLMEnv(t)
+	t.Setenv("METACODE_LLM_PROVIDER", "openai")
 	t.Setenv("METACODE_LLM_BASE_URL", "http://localhost")
-	t.Setenv("METACODE_LLM_API_KEY", "")
+
 	_, err := ConfigFromEnv()
 	if err == nil || !strings.Contains(err.Error(), "METACODE_LLM_API_KEY") {
 		t.Fatalf("expected missing api key error, got %v", err)
 	}
 }
 
-func TestConfigFromEnvDefaultModel(t *testing.T) {
+func TestConfigFromEnvOpenAIDefaultModel(t *testing.T) {
+	clearLLMEnv(t)
+	t.Setenv("METACODE_LLM_PROVIDER", "openai")
 	t.Setenv("METACODE_LLM_BASE_URL", "http://localhost")
 	t.Setenv("METACODE_LLM_API_KEY", "key")
-	t.Setenv("METACODE_LLM_MODEL", "")
+
 	cfg, err := ConfigFromEnv()
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if cfg.Model != DefaultModel {
-		t.Errorf("expected default model %q, got %q", DefaultModel, cfg.Model)
+	if cfg.Model != DefaultOpenAIModel {
+		t.Errorf("expected default model %q, got %q", DefaultOpenAIModel, cfg.Model)
 	}
 }
 
-func TestConfigFromEnvCustomModel(t *testing.T) {
-	t.Setenv("METACODE_LLM_BASE_URL", "http://localhost")
-	t.Setenv("METACODE_LLM_API_KEY", "key")
-	t.Setenv("METACODE_LLM_MODEL", "custom-model")
-	cfg, err := ConfigFromEnv()
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if cfg.Model != "custom-model" {
-		t.Errorf("expected custom model, got %q", cfg.Model)
+func TestConfigFromEnvUnknownProvider(t *testing.T) {
+	clearLLMEnv(t)
+	t.Setenv("METACODE_LLM_PROVIDER", "cohere")
+
+	_, err := ConfigFromEnv()
+	if err == nil || !strings.Contains(err.Error(), "cohere") {
+		t.Fatalf("expected unknown provider error, got %v", err)
 	}
 }
 

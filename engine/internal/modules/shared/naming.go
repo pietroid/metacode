@@ -51,33 +51,6 @@ func SnakeCase(s string) string {
 	return b.String()
 }
 
-// DartPackageName normalizes a project name into a valid Dart package name.
-// Dart package names must be lowercase, start with a letter, and contain only
-// letters, digits, and underscores.
-func DartPackageName(s string) string {
-	if s == "" {
-		return "unnamed_app"
-	}
-	var b strings.Builder
-	for _, r := range strings.ToLower(s) {
-		if unicode.IsLetter(r) || unicode.IsDigit(r) || r == '_' {
-			b.WriteRune(r)
-		} else if r == '-' || r == ' ' {
-			b.WriteByte('_')
-		}
-	}
-	name := b.String()
-	name = strings.Trim(name, "_")
-	if name == "" {
-		return "unnamed_app"
-	}
-	first := rune(name[0])
-	if !unicode.IsLetter(first) {
-		name = "app_" + name
-	}
-	return name
-}
-
 // StoreBaseName strips a trailing "Store" suffix (case-insensitive) from a
 // store symbol name so that counterStore becomes counter.
 func StoreBaseName(s string) string {

@@ -1,0 +1,15 @@
+stores:
+  taskStore:
+    value: list(task)
+    initialValue: []
+    strategy: local
+
+  filterStore:
+    value: filter
+    initialValue: all
+    strategy: ephemeral
+
+  draftStore:
+    value: string
+    initialValue: ""
+    strategy: ephemeral

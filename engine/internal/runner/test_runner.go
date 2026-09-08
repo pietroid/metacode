@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io"
 	"os/exec"
 	"regexp"
 	"strings"
@@ -150,12 +149,3 @@ func parseFailures(output string) []Failure {
 
 	return failures
 }
-
-// nopReporter implements ProgressReporter and discards output.
-type nopReporter struct{}
-
-func (nopReporter) Logf(format string, args ...any) {}
-
-var _ ProgressReporter = nopReporter{}
-
-var _ io.Writer = (*bytes.Buffer)(nil)

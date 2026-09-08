@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/pietroid/metacode/engine/internal/core/env"
 	"github.com/pietroid/metacode/engine/internal/core/ir"
 	"github.com/pietroid/metacode/engine/internal/core/log"
 	"github.com/pietroid/metacode/engine/internal/core/spec"
-	generatorsflutter "github.com/pietroid/metacode/engine/internal/generators/flutter"
 	"github.com/pietroid/metacode/engine/internal/llm"
 	"github.com/pietroid/metacode/engine/internal/modules/codegen/flutter"
 	"github.com/pietroid/metacode/engine/internal/modules/data"
@@ -57,6 +57,18 @@ func runCommand(verbose bool, args []string) error {
 	}
 	logger := log.New(os.Stdout, minLevel)
 	reporter := log.NewReporter(os.Stdout, logger)
+
+	// Pick up credentials from a .env file so the API key does not have to live
+	// in the shell environment. Real environment variables still win.
+	cwd, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+	if envPath, err := env.Load(cwd); err != nil {
+		logger.Warnf("could not read %s: %s", env.FileName, err)
+	} else if envPath != "" {
+		logger.Debugf("loaded environment from %s", envPath)
+	}
 
 	reporter.Start("Metacode run")
 	defer func() { reporter.End("Metacode run", nil) }()
@@ -142,71 +154,48 @@ func runCommand(verbose bool, args []string) error {
 	logger.Debugf("planned tasks: %d", len(tasks))
 	reporter.End("Planning wrappers", nil)
 
-	llmCfg, llmErr := llm.ConfigFromEnv()
-	if llmErr != nil {
-		logger.Warnf("LLM not configured: %s", llmErr)
-		logger.Warnf("set METACODE_LLM_BASE_URL and METACODE_LLM_API_KEY to enable AI wrappers")
+	// A nil client means no LLM is configured. Every strategy choice below is
+	// made from this one value.
+	var client llm.Client
+	if llmCfg, err := llm.ConfigFromEnv(); err != nil {
+		logger.Warnf("LLM not configured: %s", err)
+		logger.Warnf("set ANTHROPIC_API_KEY in a .env file (see .env.example) to enable AI wrappers, or METACODE_LLM_PROVIDER=openai with METACODE_LLM_BASE_URL and METACODE_LLM_API_KEY")
+	} else {
+		client = llm.NewClient(llmCfg, logger)
 	}
 
-	if llmErr == nil {
-		reporter.Start("Generating AI wrappers")
-		client := llm.NewClient(llmCfg, logger)
-		if err := generatorsflutter.GenerateWrappers(context.Background(), &app, tasks, client, paths.Root); err != nil {
-			reporter.End("Generating AI wrappers", err)
-			return err
-		}
-		logger.Infof("generated AI wrappers")
-		reporter.End("Generating AI wrappers", nil)
-	} else {
-		reporter.Start("Generating deterministic wrappers")
-		if err := generatorsflutter.GenerateDeterministicWrappers(&app, tasks, paths.Root); err != nil {
-			reporter.End("Generating deterministic wrappers", err)
-			return err
-		}
-		logger.Infof("generated deterministic wrappers")
-		reporter.End("Generating deterministic wrappers", nil)
+	wrapperGen := flutter.NewWrapperGenerator(client)
+
+	reporter.Start("Generating wrappers")
+	if err := wrapperGen.Generate(context.Background(), &app, tasks, paths.Root); err != nil {
+		reporter.End("Generating wrappers", err)
+		return err
 	}
+	logger.Infof("generated %s wrappers", wrapperGen.Name())
+	reporter.End("Generating wrappers", nil)
 
 	reporter.Start("Generating tests")
-	if err := generatorsflutter.GenerateTests(&app, tasks, paths.Root); err != nil {
+	if err := flutter.GenerateTests(&app, tasks, paths.Root); err != nil {
 		reporter.End("Generating tests", err)
 		return err
 	}
 	logger.Infof("generated tests")
 	reporter.End("Generating tests", nil)
 
-	testRunner := runner.NewTestRunner(paths.Root, &loggerReporter{logger: logger})
+	verifier := runner.NewVerifier(
+		runner.NewTestRunner(paths.Root, &loggerReporter{logger: logger}),
+		client,
+		paths.Root,
+		&loggerReporter{logger: logger},
+	)
 
-	if llmErr == nil {
-		reporter.Start("Running tests with fix loop")
-		fixLoop := &runner.FixLoop{
-			MaxIterations: 3,
-			Runner:        testRunner,
-			Client:        llm.NewClient(llmCfg, logger),
-			ProjectDir:    paths.Root,
-			Reporter:      &loggerReporter{logger: logger},
-		}
-		if err := fixLoop.Run(context.Background(), tasks); err != nil {
-			reporter.End("Running tests with fix loop", err)
-			return err
-		}
-		logger.Infof("tests passed")
-		reporter.End("Running tests with fix loop", nil)
-	} else {
-		reporter.Start("Running tests")
-		result, err := testRunner.Run(context.Background())
-		if err != nil {
-			reporter.End("Running tests", err)
-			return err
-		}
-		if !result.Success {
-			err := fmt.Errorf("tests failed: %d failure(s)", len(result.Failures))
-			reporter.End("Running tests", err)
-			return err
-		}
-		logger.Infof("tests passed")
-		reporter.End("Running tests", nil)
+	reporter.Start("Running tests")
+	if err := verifier.Run(context.Background(), tasks); err != nil {
+		reporter.End("Running tests", err)
+		return err
 	}
+	logger.Infof("tests passed (%s)", verifier.Name())
+	reporter.End("Running tests", nil)
 
 	return nil
 }

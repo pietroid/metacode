@@ -1,5 +1,8 @@
-// Package llm provides a thin HTTP client for OpenAI-compatible chat
-// completion endpoints.
+// Package llm provides the LLM client used by the generators.
+//
+// Two providers are supported behind one interface: the Anthropic Messages API
+// via the official Go SDK (the default), and any OpenAI-compatible
+// /chat/completions endpoint. See config.go for the environment contract.
 package llm
 
 import (
@@ -19,19 +22,23 @@ type Client interface {
 	Complete(ctx context.Context, prompt string) (string, error)
 }
 
-// NewClient creates a concrete Client from cfg and logger.
+// NewClient creates a concrete Client for the provider named in cfg.
 func NewClient(cfg Config, logger log.Logger) Client {
 	if logger == nil {
 		logger = log.Nop()
 	}
-	return &client{
-		cfg:    cfg,
-		http:   http.DefaultClient,
-		logger: logger,
+	if cfg.Provider == ProviderOpenAI {
+		return &openAIClient{
+			cfg:    cfg,
+			http:   http.DefaultClient,
+			logger: logger,
+		}
 	}
+	return newAnthropicClient(cfg, logger)
 }
 
-type client struct {
+// openAIClient talks to an OpenAI-compatible /chat/completions endpoint.
+type openAIClient struct {
 	cfg    Config
 	http   *http.Client
 	logger log.Logger
@@ -57,7 +64,7 @@ type choice struct {
 
 // Complete sends a single user message to the configured chat completions
 // endpoint and returns the assistant message content.
-func (c *client) Complete(ctx context.Context, prompt string) (string, error) {
+func (c *openAIClient) Complete(ctx context.Context, prompt string) (string, error) {
 	reqBody := chatRequest{
 		Model: c.cfg.Model,
 		Messages: []message{
@@ -105,8 +112,9 @@ func (c *client) Complete(ctx context.Context, prompt string) (string, error) {
 	return parsed.Choices[0].Message.Content, nil
 }
 
-// NewClientWithHTTP creates a client using a custom HTTP client. It is used
-// mainly by tests that want to point the client at a mock server.
+// NewClientWithHTTP creates an OpenAI-compatible client using a custom HTTP
+// client. It is used mainly by tests that want to point the client at a mock
+// server.
 func NewClientWithHTTP(cfg Config, logger log.Logger, httpClient *http.Client) Client {
 	if logger == nil {
 		logger = log.Nop()
@@ -114,7 +122,7 @@ func NewClientWithHTTP(cfg Config, logger log.Logger, httpClient *http.Client) C
 	if httpClient == nil {
 		httpClient = http.DefaultClient
 	}
-	return &client{
+	return &openAIClient{
 		cfg:    cfg,
 		http:   httpClient,
 		logger: logger,

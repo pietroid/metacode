@@ -3,8 +3,8 @@ package ir
 import (
 	"testing"
 
-	"github.com/pietroid/metacode/engine/internal/modules/ui/catalog"
 	"github.com/pietroid/metacode/engine/internal/core/spec"
+	"github.com/pietroid/metacode/engine/internal/modules/ui/catalog"
 )
 
 func TestResolveCounterApp(t *testing.T) {
@@ -53,46 +53,4 @@ func TestResolveUndefinedStoreInAssertion(t *testing.T) {
 	if err := app.Resolve(catalog.New()); err == nil {
 		t.Fatal("expected error for undefined store in assertion")
 	}
-}
-
-func TestResolveUnknownPropWarning(t *testing.T) {
-	raw := spec.RawSpecs{
-		UI: map[string]any{
-			"widgets": map[string]any{
-				"homePage": map[string]any{
-					"text": map[string]any{
-						"unknownProp": "value",
-					},
-				},
-			},
-		},
-	}
-	app, err := Build(raw)
-	if err != nil {
-		t.Fatalf("build failed: %v", err)
-	}
-	app.ValidateUIProps(catalog.New())
-	found := false
-	for _, w := range app.Warnings {
-		if containsString(w, "unknownProp") {
-			found = true
-			break
-		}
-	}
-	if !found {
-		t.Errorf("expected warning for unknownProp, got %+v", app.Warnings)
-	}
-}
-
-func containsString(s, substr string) bool {
-	return len(s) >= len(substr) && (s == substr || findSubstr(s, substr))
-}
-
-func findSubstr(s, substr string) bool {
-	for i := 0; i+len(substr) <= len(s); i++ {
-		if s[i:i+len(substr)] == substr {
-			return true
-		}
-	}
-	return false
 }

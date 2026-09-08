@@ -273,3 +273,99 @@ func TestBuildDetectsVariables(t *testing.T) {
 		t.Errorf("expected counterValue to be detected as variable, got %+v", ir.UI[0].Variables)
 	}
 }
+
+// TestBuildOrdersDeclarationsLexicographically pins the ordering guarantee that
+// reproducible generation depends on. Go randomizes map iteration, so without
+// sorting these slices arrive in a different order on every run and the
+// generated files differ from identical specs.
+func TestBuildOrdersDeclarationsLexicographically(t *testing.T) {
+	raw := spec.RawSpecs{
+		Data: map[string]any{
+			"stores": map[string]any{
+				"zebraStore": map[string]any{"value": "int"},
+				"alphaStore": map[string]any{"value": "int"},
+				"midStore":   map[string]any{"value": "int"},
+			},
+		},
+		UI: map[string]any{
+			"widgets": map[string]any{
+				"zebraWidget": map[string]any{"text": "z"},
+				"alphaWidget": map[string]any{"text": "a"},
+				"midWidget":   map[string]any{"text": "m"},
+			},
+		},
+		Behaviors: map[string]any{
+			"zebraGroup": map[string]any{
+				"scenario": map[string]any{"then": "alphaStore.value should be 1"},
+			},
+			"alphaGroup": map[string]any{
+				"scenario": map[string]any{"then": "alphaStore.value should be 1"},
+			},
+		},
+	}
+
+	app, err := Build(raw)
+	if err != nil {
+		t.Fatalf("build failed: %v", err)
+	}
+
+	assertOrder(t, "stores", storeNames(app.Stores), []string{"alphaStore", "midStore", "zebraStore"})
+	assertOrder(t, "widgets", componentNames(app.UI), []string{"alphaWidget", "midWidget", "zebraWidget"})
+	assertOrder(t, "behaviors", scenarioIDs(app.Behaviors), []string{"alphaGroup/scenario", "zebraGroup/scenario"})
+}
+
+// TestBuildKeepsGroupPathsIndependent covers the aliasing defect where sibling
+// groups appended into a shared backing array and overwrote each other's path.
+// It needs three levels of nesting to reproduce.
+func TestBuildKeepsGroupPathsIndependent(t *testing.T) {
+	raw := spec.RawSpecs{
+		Behaviors: map[string]any{
+			"root": map[string]any{
+				"branchA": map[string]any{
+					"leaf": map[string]any{"then": "s.value should be 1"},
+				},
+				"branchB": map[string]any{
+					"leaf": map[string]any{"then": "s.value should be 2"},
+				},
+			},
+		},
+	}
+
+	app, err := Build(raw)
+	if err != nil {
+		t.Fatalf("build failed: %v", err)
+	}
+
+	assertOrder(t, "scenario ids", scenarioIDs(app.Behaviors), []string{"root/branchA/leaf", "root/branchB/leaf"})
+}
+
+func storeNames(stores []Store) []string {
+	out := make([]string, 0, len(stores))
+	for _, s := range stores {
+		out = append(out, s.Name)
+	}
+	return out
+}
+
+func componentNames(components []UIComponent) []string {
+	out := make([]string, 0, len(components))
+	for _, c := range components {
+		out = append(out, c.Name)
+	}
+	return out
+}
+
+func scenarioIDs(scenarios []BehaviorScenario) []string {
+	out := make([]string, 0, len(scenarios))
+	for _, s := range scenarios {
+		out = append(out, s.ID)
+	}
+	return out
+}
+
+func assertOrder(t *testing.T, label string, got, want []string) {
+	t.Helper()
+	if strings.Join(got, ",") != strings.Join(want, ",") {
+		t.Errorf("%s: expected %v, got %v", label, want, got)
+	}
+}

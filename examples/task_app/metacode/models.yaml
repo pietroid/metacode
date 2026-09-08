@@ -1,0 +1,16 @@
+task:
+  id: string
+  title: string
+  done: boolean
+  priority: priority
+  createdAt: datetime
+
+priority:
+  - low
+  - medium
+  - high
+
+filter:
+  - all
+  - open
+  - done

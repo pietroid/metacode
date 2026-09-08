@@ -3,7 +3,6 @@ package runner
 import (
 	"context"
 	"fmt"
-	"io"
 	"os/exec"
 	"strings"
 	"testing"
@@ -172,5 +171,3 @@ func TestParseFailuresMultipleTests(t *testing.T) {
 		t.Errorf("unexpected second failure: %+v", failures[1])
 	}
 }
-
-var _ io.Writer = (*strings.Builder)(nil)

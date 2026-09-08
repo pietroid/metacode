@@ -2,15 +2,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../stores/counter_cubit.dart';
+import '../widgets/counter_button.dart';
 
 class CounterButtonWrapper extends StatelessWidget {
   const CounterButtonWrapper({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return ElevatedButton(
+    return CounterButton(
       onPressed: () => context.read<CounterCubit>().increment(),
-      child: const Text('Increment'),
     );
   }
 }

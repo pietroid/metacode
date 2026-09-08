@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/pietroid/metacode/engine/internal/core/order"
 	"github.com/pietroid/metacode/engine/internal/core/spec"
 	"github.com/pietroid/metacode/engine/internal/modules/ui/catalog"
 )
@@ -70,7 +71,7 @@ func unknownKeys(file string, raw map[string]any, allowed []string) []string {
 		allowedSet[k] = true
 	}
 	var warnings []string
-	for key := range raw {
+	for _, key := range order.Keys(raw) {
 		if !allowedSet[key] {
 			warnings = append(warnings, fmt.Sprintf("%s: unknown top-level key %q", file, key))
 		}
@@ -95,7 +96,8 @@ func buildData(raw map[string]any) ([]Store, []Model, []Enum, error) {
 	var enums []Enum
 
 	storesRaw, _ := raw["stores"].(map[string]any)
-	for name, val := range storesRaw {
+	for _, name := range order.Keys(storesRaw) {
+		val := storesRaw[name]
 		cfg, ok := val.(map[string]any)
 		if !ok {
 			return nil, nil, nil, fmt.Errorf("store %q: expected mapping", name)
@@ -114,7 +116,8 @@ func buildData(raw map[string]any) ([]Store, []Model, []Enum, error) {
 	}
 
 	modelsRaw, _ := raw["models"].(map[string]any)
-	for name, val := range modelsRaw {
+	for _, name := range order.Keys(modelsRaw) {
+		val := modelsRaw[name]
 		m := Model{Name: name, Fields: make(map[string]string)}
 		if fields, ok := val.(map[string]any); ok {
 			for fieldName, fieldVal := range fields {
@@ -127,7 +130,8 @@ func buildData(raw map[string]any) ([]Store, []Model, []Enum, error) {
 	}
 
 	enumsRaw, _ := raw["enums"].(map[string]any)
-	for name, val := range enumsRaw {
+	for _, name := range order.Keys(enumsRaw) {
+		val := enumsRaw[name]
 		e := Enum{Name: name}
 		if values, ok := val.([]any); ok {
 			for _, v := range values {
@@ -157,8 +161,8 @@ func buildUI(raw map[string]any, symbols SymbolTable) ([]UIComponent, error) {
 	}
 
 	var components []UIComponent
-	for name, val := range widgetsRaw {
-		comp, err := buildComponent(name, val, symbols)
+	for _, name := range order.Keys(widgetsRaw) {
+		comp, err := buildComponent(name, widgetsRaw[name], symbols)
 		if err != nil {
 			return nil, fmt.Errorf("widget %q: %w", name, err)
 		}
@@ -245,7 +249,8 @@ func buildChildComponent(raw any, symbols SymbolTable) (UIComponent, error) {
 }
 
 func applyProps(comp *UIComponent, raw map[string]any, symbols SymbolTable) error {
-	for key, val := range raw {
+	for _, key := range order.Keys(raw) {
+		val := raw[key]
 		if key == "child" {
 			comp.Props[key] = val
 			if s, ok := val.(string); ok {
@@ -286,27 +291,43 @@ func applyProps(comp *UIComponent, raw map[string]any, symbols SymbolTable) erro
 	return nil
 }
 
+// extractSingleKind resolves the catalog kind for a widget declared as
+// `name: {kind: ...}`.
+//
+// Keys are walked in sorted order and a catalog symbol wins over any other key,
+// so the result does not depend on map iteration order when the mapping has
+// more than one key.
 func extractSingleKind(m map[string]any, symbols SymbolTable) (string, map[string]any, error) {
 	cat := catalog.New()
-	for key, val := range m {
+	keys := order.Keys(m)
+
+	for _, key := range keys {
 		if cat.IsKnown(key) {
-			rest, ok := val.(map[string]any)
-			if !ok {
-				rest = map[string]any{defaultContentProp(key): val}
-			}
-			return key, rest, nil
+			return key, propsFor(key, m[key]), nil
 		}
-		// If the key is a declared widget, treat it as a reference wrapper.
+	}
+
+	for _, key := range keys {
+		// A declared widget key is a reference wrapper: the component renders
+		// as that widget and carries no props of its own.
 		if sym, ok := symbols.Lookup(key); ok && sym.Kind == "widget" {
-			return sym.Kind, map[string]any{}, nil
+			return key, map[string]any{}, nil
 		}
-		rest, ok := val.(map[string]any)
-		if !ok {
-			rest = map[string]any{defaultContentProp(key): val}
-		}
-		return key, rest, nil
+	}
+
+	for _, key := range keys {
+		return key, propsFor(key, m[key]), nil
 	}
 	return "custom", map[string]any{}, nil
+}
+
+// propsFor normalizes a widget value into a prop mapping, applying the
+// default-content sugar when the value is not already a mapping.
+func propsFor(kind string, val any) map[string]any {
+	if rest, ok := val.(map[string]any); ok {
+		return rest
+	}
+	return map[string]any{defaultContentProp(kind): val}
 }
 
 func defaultContentProp(kind string) string {
@@ -346,8 +367,8 @@ func scanVariables(raw any, symbols SymbolTable, out *[]string) {
 			scanVariables(item, symbols, out)
 		}
 	case map[string]any:
-		for _, val := range v {
-			scanVariables(val, symbols, out)
+		for _, key := range order.Keys(v) {
+			scanVariables(v[key], symbols, out)
 		}
 	}
 }
@@ -370,11 +391,10 @@ func isLowerCamelIdentifier(s string) bool {
 	return true
 }
 
-
 func buildBehaviors(raw map[string]any) ([]BehaviorScenario, error) {
 	var scenarios []BehaviorScenario
-	for group, val := range raw {
-		if err := appendBehaviorScenarios(group, val, nil, &scenarios); err != nil {
+	for _, group := range order.Keys(raw) {
+		if err := appendBehaviorScenarios(group, raw[group], nil, &scenarios); err != nil {
 			return nil, err
 		}
 	}
@@ -385,7 +405,7 @@ func appendBehaviorScenarios(key string, raw any, path []string, out *[]Behavior
 	switch v := raw.(type) {
 	case map[string]any:
 		if looksLikeScenario(v) {
-			id := strings.Join(append(path, key), "/")
+			id := strings.Join(append(append([]string(nil), path...), key), "/")
 			scenario, err := ParseBehaviorScenario(
 				id,
 				key,
@@ -400,9 +420,12 @@ func appendBehaviorScenarios(key string, raw any, path []string, out *[]Behavior
 			*out = append(*out, scenario)
 			return nil
 		}
-		newPath := append(path, key)
-		for k, val := range v {
-			if err := appendBehaviorScenarios(k, val, newPath, out); err != nil {
+		// Copy rather than append in place: sibling recursive calls each append
+		// to newPath, and a shared backing array would let them overwrite each
+		// other's group path.
+		newPath := append(append([]string(nil), path...), key)
+		for _, k := range order.Keys(v) {
+			if err := appendBehaviorScenarios(k, v[k], newPath, out); err != nil {
 				return err
 			}
 		}

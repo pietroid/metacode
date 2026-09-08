@@ -126,7 +126,7 @@ func TestGenerateWrappersWritesFiles(t *testing.T) {
 
 	mock := &mockClient{}
 
-	if err := GenerateWrappers(context.Background(), app, tasks, mock, dir); err != nil {
+	if err := NewLLMGenerator(mock).Generate(context.Background(), app, tasks, dir); err != nil {
 		t.Fatalf("generate wrappers failed: %v", err)
 	}
 
@@ -166,7 +166,7 @@ func TestGenerateWrappersPromptContainsBehaviorAndCode(t *testing.T) {
 		response: "```dart\nclass CounterButtonWrapper extends StatelessWidget {\n  const CounterButtonWrapper({super.key});\n  @override\n  Widget build(BuildContext context) {\n    return Container();\n  }\n}\n```",
 	}
 
-	if err := GenerateWrappers(context.Background(), app, tasks, mock, dir); err != nil {
+	if err := NewLLMGenerator(mock).Generate(context.Background(), app, tasks, dir); err != nil {
 		t.Fatalf("generate wrappers failed: %v", err)
 	}
 

@@ -46,11 +46,11 @@ func Discover(startDir string) (Paths, error) {
 
 	metacodeDir := filepath.Join(root, "metacode")
 	paths := Paths{
-		Root:     root,
-		Metacode: metacodeDir,
-		Project:  filepath.Join(metacodeDir, "project.yaml"),
-		Data:     filepath.Join(metacodeDir, "data.yaml"),
-		UI:       filepath.Join(metacodeDir, "ui.yaml"),
+		Root:      root,
+		Metacode:  metacodeDir,
+		Project:   filepath.Join(metacodeDir, "project.yaml"),
+		Data:      filepath.Join(metacodeDir, "data.yaml"),
+		UI:        filepath.Join(metacodeDir, "ui.yaml"),
 		Behaviors: filepath.Join(metacodeDir, "behaviors.yaml"),
 	}
 

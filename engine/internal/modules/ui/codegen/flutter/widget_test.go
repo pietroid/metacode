@@ -152,3 +152,94 @@ func counterAppSpecs() spec.RawSpecs {
 		},
 	}
 }
+
+// counterResolvedIR builds the counter app and resolves it, so the symbol table
+// carries the events declared in behaviors.yaml. Generation in the real pipeline
+// always runs after resolution.
+func counterResolvedIR(t *testing.T) *ir.IR {
+	t.Helper()
+	app, err := ir.Build(counterAppSpecs())
+	if err != nil {
+		t.Fatalf("build ir: %v", err)
+	}
+	if err := app.Resolve(catalog.New()); err != nil {
+		t.Fatalf("resolve: %v", err)
+	}
+	return &app
+}
+
+func generateAndRead(t *testing.T, app *ir.IR, rel string) string {
+	t.Helper()
+	dir := t.TempDir()
+	if err := Generate(app, catalog.New(), dir); err != nil {
+		t.Fatalf("generate widgets failed: %v", err)
+	}
+	data, err := os.ReadFile(filepath.Join(dir, filepath.FromSlash(rel)))
+	if err != nil {
+		t.Fatalf("read %s: %v", rel, err)
+	}
+	return string(data)
+}
+
+// TestDeclaredEventBecomesConstructorParameter is the regression test for a
+// dumb widget that could not be wired at all: counterButton.onPressed is
+// declared in behaviors.yaml, but the button was generated with
+// `onPressed: null`, so it rendered permanently disabled and no wrapper — LLM
+// or deterministic — could make a tap reach the Cubit.
+func TestDeclaredEventBecomesConstructorParameter(t *testing.T) {
+	content := generateAndRead(t, counterResolvedIR(t), "lib/widgets/counter_button.dart")
+
+	for _, want := range []string{
+		"const CounterButton({super.key, this.onPressed});",
+		"final VoidCallback? onPressed;",
+		"onPressed: onPressed",
+	} {
+		if !strings.Contains(content, want) {
+			t.Errorf("expected %q, got:\n%s", want, content)
+		}
+	}
+	if strings.Contains(content, "onPressed: null") {
+		t.Errorf("expected the button not to be hard-disabled, got:\n%s", content)
+	}
+}
+
+// TestParentForwardsChildEvents covers composition: a page that embeds a widget
+// with a declared event must forward that event, or the page can only ever be
+// rendered with a dead child.
+func TestParentForwardsChildEvents(t *testing.T) {
+	content := generateAndRead(t, counterResolvedIR(t), "lib/pages/home_page.dart")
+
+	for _, want := range []string{
+		"this.counterButtonOnPressed",
+		"final VoidCallback? counterButtonOnPressed;",
+		"CounterButton(onPressed: counterButtonOnPressed)",
+	} {
+		if !strings.Contains(content, want) {
+			t.Errorf("expected %q, got:\n%s", want, content)
+		}
+	}
+}
+
+// TestUndeclaredEventStaysDisabled keeps the parameter tied to the specs: a
+// button no behavior refers to has nothing to wire, and a nullable callback
+// nobody passes would only widen the API for no reason.
+func TestUndeclaredEventStaysDisabled(t *testing.T) {
+	specs := counterAppSpecs()
+	specs.Behaviors = map[string]any{}
+
+	app, err := ir.Build(specs)
+	if err != nil {
+		t.Fatalf("build ir: %v", err)
+	}
+	if err := app.Resolve(catalog.New()); err != nil {
+		t.Fatalf("resolve: %v", err)
+	}
+
+	content := generateAndRead(t, &app, "lib/widgets/counter_button.dart")
+	if !strings.Contains(content, "onPressed: null") {
+		t.Errorf("expected onPressed: null with no behavior declared, got:\n%s", content)
+	}
+	if strings.Contains(content, "VoidCallback") {
+		t.Errorf("expected no callback parameter with no behavior declared, got:\n%s", content)
+	}
+}

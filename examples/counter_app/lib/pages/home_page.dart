@@ -5,8 +5,9 @@ import 'package:flutter/material.dart';
 import '../widgets/counter_button.dart';
 
 class HomePage extends StatelessWidget {
-  const HomePage({super.key, required this.counterValue});
+  const HomePage({super.key, required this.counterValue, this.counterButtonOnPressed});
   final String counterValue;
+  final VoidCallback? counterButtonOnPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +15,7 @@ class HomePage extends StatelessWidget {
     key: const Key('homePage'),
     body: Center(child: Column(children: [
         Text(counterValue),
-        const CounterButton()
+        CounterButton(onPressed: counterButtonOnPressed)
     ])),
     appBar: AppBar(title: const Text('Counter App'))
 );

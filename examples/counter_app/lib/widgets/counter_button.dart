@@ -4,14 +4,15 @@
 import 'package:flutter/material.dart';
 
 class CounterButton extends StatelessWidget {
-  const CounterButton({super.key});
+  const CounterButton({super.key, this.onPressed});
+  final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(
     key: const Key('counterButton'),
     child: const Text('Increment'),
-    onPressed: null
+    onPressed: onPressed
 );
   }
 }
