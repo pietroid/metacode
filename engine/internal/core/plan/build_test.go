@@ -52,19 +52,19 @@ func counterAppIR() *model.App {
 		Behaviors: map[string]any{
 			"counterStore": map[string]any{
 				"increments from 0": map[string]any{
-					"given": "counterStore.value is 0",
+					"given": map[string]any{"counterStore.value": 0},
 					"when":  "incrementButton.onPressed",
 					"then":  "counterStore.value should be 1",
 				},
 				"increments from 1": map[string]any{
-					"given": "counterStore.value is 1",
+					"given": map[string]any{"counterStore.value": 1},
 					"when":  "incrementButton.onPressed",
 					"then":  "counterStore.value should be 2",
 				},
 				"Show counter value on the home page": map[string]any{
-					"given": "counterStore.value = 5",
+					"given": map[string]any{"counterStore.value": 5},
 					"when":  "",
-					"then":  "homePage.counterValue = 5",
+					"then":  "homePage.counterValue should be 5",
 				},
 			},
 		},
@@ -97,12 +97,13 @@ func TestPlanCounterAppProducesWrappersAndTests(t *testing.T) {
 	for _, w := range work.Wrappers {
 		widgets[w.Widget] = true
 	}
-	// The page, and only the page: it forwards its children's callbacks.
-	if !widgets["homePage"] {
-		t.Errorf("expected a wrapper for the page, got %v", work.Widgets())
-	}
-	if widgets["incrementButton"] {
-		t.Errorf("a button was wrapped, but the page wires its buttons: %v", work.Widgets())
+	// The page, and every widget with something to wire. A button whose event a
+	// behavior binds is reached through its own wrapper, and the page takes it
+	// as a slot.
+	for _, want := range []string{"homePage", "incrementButton"} {
+		if !widgets[want] {
+			t.Errorf("expected a wrapper for %s, got %v", want, work.Widgets())
+		}
 	}
 }
 

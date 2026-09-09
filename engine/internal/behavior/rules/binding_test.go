@@ -35,22 +35,62 @@ func twoButtonSpecs() spec.RawSpecs {
 		},
 		Behaviors: map[string]any{
 			"increments from 0": map[string]any{
-				"given": "counterStore.value is 0",
+				"given": map[string]any{"counterStore.value": 0},
 				"when":  "incrementButton.onPressed",
 				"then":  "counterStore.value should be 1",
 			},
 			"decrements from 2": map[string]any{
-				"given": "counterStore.value is 2",
+				"given": map[string]any{"counterStore.value": 2},
 				"when":  "decrementButton.onPressed",
 				"then":  "counterStore.value should be 1",
 			},
 			"not decrements when is 0": map[string]any{
-				"given": "counterStore.value is 0",
+				"given": map[string]any{"counterStore.value": 0},
 				"when":  "decrementButton.onPressed",
 				"then":  "counterStore.value should be 0",
 			},
 		},
 	}
+}
+
+// rowApp is a list whose rows carry a checkbox, so the scenario that toggles
+// one names the row it means.
+func rowApp(t *testing.T) *model.App {
+	t.Helper()
+	raw := spec.RawSpecs{
+		Project: map[string]any{"name": "task_app"},
+		Data: map[string]any{
+			"stores": map[string]any{
+				"taskStore": map[string]any{"value": "list(text)", "initialValue": []any{}, "strategy": "local"},
+			},
+		},
+		UI: map[string]any{
+			"widgets": map[string]any{
+				"homePage": map[string]any{
+					"scaffold": map[string]any{
+						"body": map[string]any{"listView": map[string]any{"items": "taskList", "item": "taskTile"}},
+					},
+				},
+				"taskTile":     map[string]any{"listTile": map[string]any{"leading": "taskCheckbox"}},
+				"taskCheckbox": map[string]any{"checkbox": map[string]any{"value": "taskDone", "onChanged": "taskToggled"}},
+			},
+		},
+		Behaviors: map[string]any{
+			"toggling a row": map[string]any{
+				"given": map[string]any{"taskStore.value": []any{"Buy milk"}},
+				"when":  "taskCheckbox.first.taskToggled",
+				"then":  "taskStore.value.first should be \"Bought milk\"",
+			},
+		},
+	}
+	app, err := build.App(raw)
+	if err != nil {
+		t.Fatalf("build: %v", err)
+	}
+	if err := build.Resolve(&app, catalog.Default()); err != nil {
+		t.Fatalf("resolve: %v", err)
+	}
+	return &app
 }
 
 func resolvedTwoButtonIR(t *testing.T) *model.App {
@@ -136,7 +176,7 @@ func TestConflictingBindingIsAnError(t *testing.T) {
 	stores := specs.Data["stores"].(map[string]any)
 	stores["otherStore"] = map[string]any{"value": "int", "initialValue": 0, "strategy": "ephemeral"}
 	specs.Behaviors["also drives another store"] = map[string]any{
-		"given": "otherStore.value is 0",
+		"given": map[string]any{"otherStore.value": 0},
 		"when":  "incrementButton.onPressed",
 		"then":  "otherStore.value should be 1",
 	}
@@ -147,5 +187,27 @@ func TestConflictingBindingIsAnError(t *testing.T) {
 	}
 	if err := build.Resolve(&app, catalog.Default()); err == nil {
 		t.Fatal("expected an error for one event driving two stores")
+	}
+}
+
+// TestRowSelectorIsNotPartOfTheEvent pins what a binding on a row means: the
+// row says which widget fired, not which event it was. The selector used to
+// stay in the event name, so the wrapper that wired it wrote
+// `first.onChanged:` as a parameter and the file did not compile.
+func TestRowSelectorIsNotPartOfTheEvent(t *testing.T) {
+	app := rowApp(t)
+
+	if err := behaviorrules.ResolveBindings(app); err != nil {
+		t.Fatalf("resolve bindings failed: %v", err)
+	}
+	if len(app.Symbols.Bindings) != 1 {
+		t.Fatalf("expected one binding, got %+v", app.Symbols.Bindings)
+	}
+	got := app.Symbols.Bindings[0]
+	if got.Event != "onChanged" {
+		t.Errorf("expected the event without the row selector, got %q", got.Event)
+	}
+	if got.Widget != "taskCheckbox" {
+		t.Errorf("expected the checkbox, got %q", got.Widget)
 	}
 }

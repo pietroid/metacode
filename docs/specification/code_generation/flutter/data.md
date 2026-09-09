@@ -42,11 +42,15 @@ class CounterState extends Equatable {
 class CounterCubit extends Cubit<CounterState> {
   CounterCubit() : super(const CounterState(value: 0));
 
+  CounterCubit.seeded(CounterState initial) : super(initial);
+
   void increment() => emit(state.copyWith(value: state.value + 1));
 }
 ```
 
 - Initialize from the spec's `initialValue`.
+- Generate a `seeded` constructor. A scenario's "Given" is a starting state, and
+  a generated test passes it here rather than reaching into the store.
 - Generate one public method per action referenced in behaviors or UI callbacks.
 - Always emit a new state; never mutate `state` directly.
 - Keep methods synchronous unless the action involves async data access.

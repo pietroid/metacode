@@ -122,11 +122,31 @@ func counterAppSpecs() spec.RawSpecs {
 		Behaviors: map[string]any{
 			"counterStore": map[string]any{
 				"increments from 0": map[string]any{
-					"given": "counterStore.value is 0",
+					"given": map[string]any{"counterStore.value": 0},
 					"when":  "incrementButton.onPressed",
 					"then":  "counterStore.value should be 1",
 				},
 			},
 		},
+	}
+}
+
+// TestGenerateLaunchConfig guards the dot-directory: templates are embedded
+// with all: precisely so .vscode ships, and a plain //go:embed would drop it
+// without failing anything.
+func TestGenerateLaunchConfig(t *testing.T) {
+	dir := t.TempDir()
+	if err := Generate(counterIR(), dir); err != nil {
+		t.Fatalf("generate project failed: %v", err)
+	}
+	data, err := os.ReadFile(filepath.Join(dir, ".vscode", "launch.json"))
+	if err != nil {
+		t.Fatalf("read launch.json: %v", err)
+	}
+	content := string(data)
+	for _, want := range []string{`"name": "counter_app"`, `"program": "lib/main.dart"`, `"flutterMode": "profile"`} {
+		if !strings.Contains(content, want) {
+			t.Errorf("expected launch.json to contain %q, got:\n%s", want, content)
+		}
 	}
 }

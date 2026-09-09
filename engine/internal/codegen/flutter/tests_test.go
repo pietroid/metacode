@@ -82,7 +82,7 @@ func TestGenerateTestsWidgetTestSeedsAndAsserts(t *testing.T) {
 		t.Fatalf("read test file: %v", err)
 	}
 
-	if !strings.Contains(string(content), "cubit.emit(CounterState(value: 5))") {
+	if !strings.Contains(string(content), "CounterCubit.seeded(CounterState(value: 5))") {
 		t.Errorf("expected test to seed cubit with value 5, got:\n%s", string(content))
 	}
 	if !strings.Contains(string(content), "expect(find.text('5'), findsOneWidget)") {

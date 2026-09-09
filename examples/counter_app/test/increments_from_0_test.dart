@@ -10,8 +10,7 @@ import 'package:counter_app/wrappers/home_page_wrapper.dart';
 
 void main() {
   testWidgets('increments from 0', (tester) async {
-    final cubit = CounterCubit();
-    cubit.emit(CounterState(value: 0));
+    final cubit = CounterCubit.seeded(CounterState(value: 0));
     await tester.pumpWidget(
       BlocProvider.value(
         value: cubit,

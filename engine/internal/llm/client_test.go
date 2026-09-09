@@ -150,6 +150,7 @@ func TestCompleteSendsCorrectRequestAndExtractsContent(t *testing.T) {
 			Choices: []choice{
 				{Message: message{Role: "assistant", Content: "hello world"}},
 			},
+			Usage: chatUsage{PromptTokens: 11, CompletionTokens: 7},
 		}
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
@@ -164,8 +165,11 @@ func TestCompleteSendsCorrectRequestAndExtractsContent(t *testing.T) {
 	if err != nil {
 		t.Fatalf("complete failed: %v", err)
 	}
-	if result != "hello world" {
-		t.Errorf("expected %q, got %q", "hello world", result)
+	if result.Text != "hello world" {
+		t.Errorf("expected %q, got %q", "hello world", result.Text)
+	}
+	if result.Usage.InputTokens != 11 || result.Usage.OutputTokens != 7 {
+		t.Errorf("expected the reported token usage, got %+v", result.Usage)
 	}
 	if gotAuth != "Bearer test-key" {
 		t.Errorf("expected auth header %q, got %q", "Bearer test-key", gotAuth)
@@ -217,10 +221,56 @@ func TestCompleteDebugLogs(t *testing.T) {
 		t.Fatalf("complete failed: %v", err)
 	}
 	logs := buf.String()
-	if !strings.Contains(logs, "llm request [test]:") {
+	if !strings.Contains(logs, "LLM request [test]:") {
 		t.Errorf("expected debug request log naming the call, got %q", logs)
 	}
-	if !strings.Contains(logs, "llm response [test]:") {
+	if !strings.Contains(logs, "LLM response [test]:") {
 		t.Errorf("expected debug response log naming the call, got %q", logs)
 	}
+}
+
+// TestTracerAccumulatesUsage is the number a run reports at the end: one call's
+// tokens are of passing interest, the run's total is what a user is watching.
+func TestTracerAccumulatesUsage(t *testing.T) {
+	inner := &usageClient{usage: Usage{InputTokens: 100, OutputTokens: 40}}
+	tracer := NewTracer(inner, log.Nop(), "", nil)
+
+	for i := 0; i < 3; i++ {
+		if _, err := tracer.Complete(context.Background(), Call{Label: "implement", Prompt: "p"}); err != nil {
+			t.Fatalf("complete failed: %v", err)
+		}
+	}
+
+	if got := tracer.Calls(); got != 3 {
+		t.Errorf("expected 3 calls, got %d", got)
+	}
+	total := tracer.Usage()
+	if total.InputTokens != 300 || total.OutputTokens != 120 {
+		t.Errorf("expected the summed usage, got %+v", total)
+	}
+	if total.Total() != 420 {
+		t.Errorf("expected 420 tokens in total, got %d", total.Total())
+	}
+}
+
+func TestUsageStringNamesCacheOnlyWhenReported(t *testing.T) {
+	plain := Usage{InputTokens: 1200, OutputTokens: 300}.String()
+	if strings.Contains(plain, "cache") {
+		t.Errorf("expected no cache counts when none were reported, got %q", plain)
+	}
+	if !strings.Contains(plain, "1.2k in / 300 out") {
+		t.Errorf("expected readable counts, got %q", plain)
+	}
+
+	cached := Usage{InputTokens: 10, CacheReadTokens: 2000}.String()
+	if !strings.Contains(cached, "2.0k cache read") {
+		t.Errorf("expected the cache counts, got %q", cached)
+	}
+}
+
+// usageClient is a stand-in that reports a fixed cost per call.
+type usageClient struct{ usage Usage }
+
+func (c *usageClient) Complete(_ context.Context, _ Call) (Result, error) {
+	return Result{Text: "ok", Usage: c.usage}, nil
 }

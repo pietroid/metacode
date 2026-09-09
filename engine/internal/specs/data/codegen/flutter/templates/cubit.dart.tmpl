@@ -11,13 +11,9 @@ import '{{.StateFile}}';
 class {{.CubitClass}} extends Cubit<{{.StateClass}}> {
   {{.CubitClass}}() : super(const {{.StateClass}}(value: {{.InitialLiteral}}));
 
-  /// Re-exposed so a generated test can seed a scenario's "Given" state before
-  /// pumping the app. The base implementation is `@protected`, so every test
-  /// that seeds needs this; scaffolding it here rather than leaving it to the
-  /// implement stage means it cannot go missing on a run where the model did
-  /// not think to add it back.
-  @override
-  void emit({{.StateClass}} state) => super.emit(state);
+  /// Starts from a state a caller chooses, which is how a generated test sets
+  /// up a scenario's "Given" without reaching into the store.
+  {{.CubitClass}}.seeded({{.StateClass}} initial) : super(initial);
 
 {{.Methods}}
 }

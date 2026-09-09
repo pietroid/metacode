@@ -15,12 +15,16 @@ import (
 const rules = `Rules:
 - The dumb widgets, the state classes and the tests are generated from the specs. Never rewrite them.
 - Business rules live in the Cubit. A widget calls Cubit methods; a widget never calls emit.
-- A wrapper instantiates the dumb widget and passes its constructor parameters. Do not reimplement
-  the widget, do not wrap it in a GestureDetector or InkWell, and declare exactly one class per file.
+- A wrapper instantiates its own dumb widget and passes its constructor parameters, and that is all it
+  is: one constructor call. Do not reimplement the widget, do not wrap it in a GestureDetector or
+  InkWell, and declare exactly one class per file.
+- A parameter holding a widget is a slot the scaffolding has already filled with the child's own
+  wrapper. Keep it as it is. Never construct another widget's children inside a wrapper: the widget
+  tree comes from the specs, and each wired widget has a wrapper of its own that fills it.
 - Pass every callback parameter a dumb widget declares. A parameter left out is a dead control.
 - Use flutter_bloc. Read Cubits with context.read, rebuild with BlocSelector or BlocBuilder.
 - Inside lib, use relative imports (../widgets/, ../pages/, ../stores/), never package: imports of this project.
-- Keep every declaration a file already has, including methods no test exercises.
+- Keep every declaration a file already has, including the seeded constructor and methods no test exercises.
 - Implement the behavior described by the scenarios, not only the literal values the tests check.
   "not decrements when is 0" is a rule about every value at the floor, not about the number 0.
 `
@@ -185,13 +189,13 @@ func writeScenario(b *strings.Builder, s model.BehaviorScenario) {
 		fmt.Fprintf(b, "  Description: %s\n", s.Description)
 	}
 	if s.Given != nil {
-		fmt.Fprintf(b, "  Given: %s %s %s\n", s.Given.Target, s.Given.Op, s.Given.Value)
+		fmt.Fprintf(b, "  Given: %s: %s\n", s.Given.Target, s.Given.Value)
 	}
 	if s.When != "" {
 		fmt.Fprintf(b, "  When: %s\n", s.When)
 	}
 	if s.Then != nil {
-		fmt.Fprintf(b, "  Then: %s %s %s\n", s.Then.Target, s.Then.Op, s.Then.Value)
+		fmt.Fprintf(b, "  Then: %s should be %s\n", s.Then.Target, s.Then.Value)
 	}
 	b.WriteString("\n")
 }

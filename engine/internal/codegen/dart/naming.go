@@ -100,3 +100,13 @@ func FindComponent(components []model.UIComponent, name string) *model.UICompone
 	}
 	return nil
 }
+
+// EnumValue is how one declared enum value is spelled in Dart: lowerCamel, so
+// `in progress` and `in_progress` both become `inProgress`.
+func EnumValue(s string) string {
+	pascal := PascalCase(s)
+	if pascal == "" {
+		return pascal
+	}
+	return strings.ToLower(pascal[:1]) + pascal[1:]
+}

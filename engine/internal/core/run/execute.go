@@ -53,7 +53,7 @@ func usage(w *os.File) {
 	fmt.Fprintf(w, "\nEvery run writes one file per LLM call to %s.\n", llm.TraceDirName)
 }
 
-func runCommand(target Target, verbose, quiet bool) error {
+func runCommand(target Target, verbose, quiet bool) (runErr error) {
 	logger := log.New(os.Stdout, logLevel(verbose, quiet))
 	reporter := log.NewReporter(os.Stdout, logger)
 
@@ -61,9 +61,12 @@ func runCommand(target Target, verbose, quiet bool) error {
 
 	started := time.Now()
 	reporter.Start("Metacode run")
+	// The outcome is reported through the named return: a run that ended on a
+	// red suite closed with a green tick until this read the error it was
+	// about to return.
 	defer func() {
 		logger.Infof("total time %s", time.Since(started).Round(time.Millisecond))
-		reporter.End("Metacode run", nil)
+		reporter.EndStatus("Metacode run", runErr == nil)
 	}()
 
 	paths, err := stage(reporter, "Discovering specs", func() (spec.Paths, error) {
@@ -83,11 +86,14 @@ func runCommand(target Target, verbose, quiet bool) error {
 		return err
 	}
 
-	client := newLLMClient(logger, paths.Root)
+	tracer := newLLMClient(logger, paths.Root)
+	if tracer != nil {
+		defer func() { reportUsage(logger, tracer) }()
+	}
 
 	var impl Implementer
-	if client != nil {
-		impl = target.NewImplementer(client, logger, &app, work, paths.Root)
+	if tracer != nil {
+		impl = target.NewImplementer(tracer, logger, &app, work, paths.Root)
 		if _, err := stage(reporter, "Implementing behavior", func() (struct{}, error) {
 			return struct{}{}, impl.Implement(context.Background())
 		}); err != nil {
@@ -102,6 +108,7 @@ func runCommand(target Target, verbose, quiet bool) error {
 		repairer = impl
 	}
 	tests := NewTestRunner(paths.Root, target.TestCommand, logger)
+	tests.Progress = log.NewSpinner(os.Stdout)
 
 	if _, err := stage(reporter, "Running tests", func() (struct{}, error) {
 		return struct{}{}, Verify(context.Background(), tests, repairer, logger)
@@ -147,7 +154,7 @@ func loadEnvFile(logger log.Logger) {
 // newLLMClient builds the traced client, or returns nil when no LLM is
 // configured. Every call it makes is logged and written to a transcript under
 // the project root.
-func newLLMClient(logger log.Logger, projectDir string) llm.Client {
+func newLLMClient(logger log.Logger, projectDir string) *llm.Tracer {
 	cfg, err := llm.ConfigFromEnv()
 	if err != nil {
 		logger.Warnf("LLM not configured: %s", err)
@@ -155,13 +162,24 @@ func newLLMClient(logger log.Logger, projectDir string) llm.Client {
 		return nil
 	}
 
-	logger.Infof("llm: provider=%s model=%s max_tokens=%d", cfg.Provider, cfg.Model, cfg.MaxTokens)
+	logger.Infof("LLM: provider=%s model=%s max_tokens=%d", cfg.Provider, cfg.Model, cfg.MaxTokens)
 	if err := llm.ResetTraceDir(projectDir); err != nil {
 		logger.Warnf("could not clear the LLM trace directory: %s", err)
 	}
-	logger.Infof("llm transcripts: %s", llm.TraceDirName)
+	logger.Infof("LLM transcripts: %s", llm.TraceDirName)
 
-	return llm.NewTracer(llm.NewClient(cfg, logger), logger, projectDir)
+	return llm.NewTracer(llm.NewClient(cfg, logger), logger, projectDir, os.Stdout)
+}
+
+// reportUsage closes a run with what it spent. It is the last thing printed,
+// because "how many tokens did that cost" is the question a run raises and
+// nothing else in the output answers.
+func reportUsage(logger log.Logger, tracer *llm.Tracer) {
+	calls := tracer.Calls()
+	if calls == 0 {
+		return
+	}
+	logger.Infof("LLM usage: %d call(s), %s", calls, tracer.Usage())
 }
 
 // stage runs one pipeline step under the reporter, so a step cannot be started

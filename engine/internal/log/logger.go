@@ -40,12 +40,13 @@ type Logger interface {
 	Errorf(format string, args ...any)
 }
 
-// New creates a Logger writing to w at the given minimum level.
+// New creates a Logger writing to w at the given minimum level. Output is
+// coloured when w is a terminal.
 func New(w io.Writer, minLevel Level) Logger {
 	if w == nil {
 		w = io.Discard
 	}
-	return &stdLogger{w: w, level: minLevel}
+	return &stdLogger{w: w, level: minLevel, color: isTerminal(w)}
 }
 
 // Nop returns a logger that discards all output.
@@ -56,6 +57,7 @@ func Nop() Logger {
 type stdLogger struct {
 	w     io.Writer
 	level Level
+	color bool
 }
 
 func (l *stdLogger) log(level Level, format string, args ...any) {
@@ -63,7 +65,16 @@ func (l *stdLogger) log(level Level, format string, args ...any) {
 		return
 	}
 	msg := fmt.Sprintf(format, args...)
-	fmt.Fprintf(l.w, "[%s] %s\n", level, msg)
+	// A running spinner owns the last line; clear it so a log line never
+	// lands on top of the animation. The spinner redraws on its next tick.
+	clearActiveSpinner()
+	tag := paint(l.color, levelColor(level), "["+level.String()+"]")
+	if level == DebugLevel {
+		msg = paint(l.color, ansiGray, msg)
+	}
+	// Indented under the stage marker that precedes it: a log line belongs to
+	// a step, and at the same margin the two read as one undifferentiated list.
+	fmt.Fprintf(l.w, "  %s %s\n", tag, msg)
 }
 
 func (l *stdLogger) Debugf(format string, args ...any) { l.log(DebugLevel, format, args...) }

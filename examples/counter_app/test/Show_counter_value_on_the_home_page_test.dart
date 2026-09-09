@@ -10,8 +10,7 @@ import 'package:counter_app/wrappers/home_page_wrapper.dart';
 
 void main() {
   testWidgets('Show counter value on the home page', (tester) async {
-    final cubit = CounterCubit();
-    cubit.emit(CounterState(value: 5));
+    final cubit = CounterCubit.seeded(CounterState(value: 5));
     await tester.pumpWidget(
       BlocProvider.value(
         value: cubit,

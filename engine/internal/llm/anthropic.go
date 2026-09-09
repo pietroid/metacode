@@ -37,7 +37,7 @@ func newAnthropicClient(cfg Config, logger log.Logger) Client {
 // default, which is what we want for code generation, and not naming the
 // parameter keeps this call compatible with models that reject an explicit
 // thinking config.
-func (c *anthropicClient) Complete(ctx context.Context, call Call) (string, error) {
+func (c *anthropicClient) Complete(ctx context.Context, call Call) (Result, error) {
 	client := anthropic.NewClient(c.opts...)
 	prompt := call.Prompt
 
@@ -46,7 +46,7 @@ func (c *anthropicClient) Complete(ctx context.Context, call Call) (string, erro
 		maxTokens = DefaultMaxTokens
 	}
 
-	c.logger.Debugf("llm request [%s]: anthropic messages model=%s max_tokens=%d prompt_len=%d", call.Label, c.cfg.Model, maxTokens, len(prompt))
+	c.logger.Debugf("LLM request [%s]: anthropic messages model=%s max_tokens=%d prompt_len=%d", call.Label, c.cfg.Model, maxTokens, len(prompt))
 
 	resp, err := client.Messages.New(ctx, anthropic.MessageNewParams{
 		Model:     anthropic.Model(c.cfg.Model),
@@ -56,13 +56,13 @@ func (c *anthropicClient) Complete(ctx context.Context, call Call) (string, erro
 		},
 	})
 	if err != nil {
-		return "", fmt.Errorf("anthropic messages: %w", err)
+		return Result{}, fmt.Errorf("anthropic messages: %w", err)
 	}
 
 	// A safety classifier can decline the request. That arrives as a successful
 	// HTTP response with no usable content, so check it before reading blocks.
 	if resp.StopReason == anthropic.StopReasonRefusal {
-		return "", fmt.Errorf("anthropic refused the request (category %q): %s", resp.StopDetails.Category, resp.StopDetails.Explanation)
+		return Result{}, fmt.Errorf("anthropic refused the request (category %q): %s", resp.StopDetails.Category, resp.StopDetails.Explanation)
 	}
 
 	var out string
@@ -72,11 +72,18 @@ func (c *anthropicClient) Complete(ctx context.Context, call Call) (string, erro
 		}
 	}
 
-	c.logger.Debugf("llm response [%s]: stop_reason=%s input_tokens=%d output_tokens=%d len=%d",
-		call.Label, resp.StopReason, resp.Usage.InputTokens, resp.Usage.OutputTokens, len(out))
+	usage := Usage{
+		InputTokens:      resp.Usage.InputTokens,
+		OutputTokens:     resp.Usage.OutputTokens,
+		CacheReadTokens:  resp.Usage.CacheReadInputTokens,
+		CacheWriteTokens: resp.Usage.CacheCreationInputTokens,
+	}
+
+	c.logger.Debugf("LLM response [%s]: stop_reason=%s %s len=%d",
+		call.Label, resp.StopReason, usage, len(out))
 
 	if out == "" {
-		return "", fmt.Errorf("anthropic returned no text content (stop reason %q)", resp.StopReason)
+		return Result{}, fmt.Errorf("anthropic returned no text content (stop reason %q)", resp.StopReason)
 	}
-	return out, nil
+	return Result{Text: out, Usage: usage}, nil
 }

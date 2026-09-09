@@ -2,14 +2,12 @@
 // Source spec: ui.yaml > homePage
 
 import 'package:flutter/material.dart';
-import '../widgets/decrement_button.dart';
-import '../widgets/increment_button.dart';
 
 class HomePage extends StatelessWidget {
-  const HomePage({super.key, required this.counterValue, this.decrementButtonOnPressed, this.incrementButtonOnPressed});
+  const HomePage({super.key, required this.counterValue, required this.decrementButton, required this.incrementButton});
   final String counterValue;
-  final VoidCallback? decrementButtonOnPressed;
-  final VoidCallback? incrementButtonOnPressed;
+  final Widget decrementButton;
+  final Widget incrementButton;
 
   @override
   Widget build(BuildContext context) {
@@ -17,8 +15,8 @@ class HomePage extends StatelessWidget {
     key: const Key('homePage'),
     body: Center(child: Column(children: [
         Text(counterValue),
-        IncrementButton(onPressed: incrementButtonOnPressed),
-        DecrementButton(onPressed: decrementButtonOnPressed)
+        incrementButton,
+        decrementButton
     ])),
     appBar: AppBar(title: const Text('Counter App'))
 );

@@ -23,16 +23,16 @@ type recordingClient struct {
 	responses []string
 }
 
-func (c *recordingClient) Complete(_ context.Context, call llm.Call) (string, error) {
+func (c *recordingClient) Complete(_ context.Context, call llm.Call) (llm.Result, error) {
 	c.calls = append(c.calls, call)
 	if len(c.responses) == 0 {
-		return "", nil
+		return llm.Result{}, nil
 	}
 	resp := c.responses[0]
 	if len(c.responses) > 1 {
 		c.responses = c.responses[1:]
 	}
-	return resp, nil
+	return llm.Result{Text: resp, Usage: llm.Usage{InputTokens: 10, OutputTokens: 20}}, nil
 }
 
 var _ llm.Client = (*recordingClient)(nil)
@@ -85,7 +85,7 @@ func TestImplementMakesExactlyOneCall(t *testing.T) {
 		t.Fatalf("implement: %v", err)
 	}
 	if len(client.calls) != 1 {
-		t.Fatalf("expected exactly 1 llm call, got %d", len(client.calls))
+		t.Fatalf("expected exactly 1 LLM call, got %d", len(client.calls))
 	}
 	if client.calls[0].Label != "implement" {
 		t.Errorf("expected the call to be labelled for the trace, got %q", client.calls[0].Label)
@@ -187,7 +187,7 @@ func TestRepairSendsOneCallForEveryFailure(t *testing.T) {
 		t.Fatalf("repair: %v", err)
 	}
 	if len(client.calls) != 1 {
-		t.Fatalf("expected 1 llm call for 2 failures, got %d", len(client.calls))
+		t.Fatalf("expected 1 LLM call for 2 failures, got %d", len(client.calls))
 	}
 
 	prompt := client.calls[0].Prompt

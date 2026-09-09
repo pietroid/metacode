@@ -20,7 +20,8 @@ The unit of Behaviors is a scenario. A scenario is built like this:
 
 ```yaml
 When counterButton is pressed, it should increment the counter:
-    given: counterStore.value is 5
+    given:
+        counterStore.value: 5
     when: counterButton.onPressed
     then: counterStore.value should be 6
 ```
@@ -29,9 +30,49 @@ The key is a text free description. It will affect nothing on the code itself, b
 
 The core of the determinstic behavior to be tested is on the next three lines.
 
-1. Given: It's the condition of any of the variables of that certain scenario. In the example, value is a known value from counterStore
+1. Given: It's the condition of any of the variables of that certain scenario. It is a mapping of one target to the value it holds, so the colon is the operator. In the example, value is a known value from counterStore
 2. When: It's an event triggered from any function
-3. Then: It's the action or value a variable should assume.
+3. Then: It's the action or value a variable should assume. It is written as `<target> should be <value>`, which is the only operator there is
+
+Because the given is a mapping and not a sentence, the value stays YAML. A list or a mapping is written as one:
+
+```yaml
+show the tasks that are already in the store:
+    given:
+        taskStore.value:
+            - description: "Buy milk"
+              done: false
+            - description: "Call mom"
+              done: true
+    when: # always
+    then: taskTile.last.taskTitle should be "Call mom"
+```
+
+An element of a list is addressed by `.first` or `.last`, both in a stored list and in the widget a list builds one of per element:
+
+```yaml
+then: taskStore.value.first.done should be true
+then: taskTile.last.taskTitle should be "Call mom"
+when: taskCheckbox.first.onChanged
+```
+
+`last` is read from the given, whose list is what the screen is showing, so a
+`last` with no list in the given is an error. `<widget>.count` asks how many rows
+a list rendered:
+
+```yaml
+then: taskTile.count should be 3
+```
+
+A variable is always addressed through the widget that renders it, so `homeContent` alone is undefined and `homePage.homeContent` is the variable homePage renders. When the value of such a `then` names a widget, the scenario asserts that widget is on screen:
+
+```yaml
+show the empty state when there are no tasks:
+    given:
+        taskStore.value: []
+    when: # always
+    then: homePage.homeContent should be emptyState
+```
 
 _Notice that scenarios are concrete, specific. If we want to cover more cases in a structured way, that's where grouping comes in_
 
@@ -42,17 +83,33 @@ Grouping is very simple, we replace it by a list of keys that will also contain 
 ```yaml
 When counterButton is pressed, it should increment the counter:
     - case for 0:
-        given: counterStore.value is 0
+        given:
+            counterStore.value: 0
         when: counterButton.onPressed
         then: counterStore.value should be 1
     - case for 1:
-        given: counterStore.value is 1
+        given:
+            counterStore.value: 1
         when: counterButton.onPressed
         then: counterStore.value should be 2
     - case for 2:
-        given: counterStore.value is 2
+        given:
+            counterStore.value: 2
         when: counterButton.onPressed
         then: counterStore.value should be 3
+```
+
+A group can also be a plain nested key rather than a list, which reads better when the cases are not variations of one sentence:
+
+```yaml
+toggling:
+    toggling a row marks its task done:
+        given:
+            taskStore.value:
+                - description: "Buy milk"
+                  done: false
+        when: taskCheckbox.first.onChanged
+        then: taskStore.value.first.done should be true
 ```
 
 It can be nested infinitely:
@@ -61,23 +118,29 @@ It can be nested infinitely:
 Renders the correct color based on the percentage:
     - for less than 30%:
         - 0% case:
-            given: value is 0
+            given:
+                value: 0
             then: color should be red
         - 29% case:
-            given: value is 0.29
+            given:
+                value: 0.29
             then: color should be red
     - between 30% and 60%:
         - 30% case:
-            given: value is 0.3
+            given:
+                value: 0.3
             then: color should be yellow
         - 59% case:
-            given: value is 0.59
+            given:
+                value: 0.59
             then: color should be yellow
     - for more than 60%:
         - 60% case:
-            given: value is 0.6
+            given:
+                value: 0.6
             then: color should be green
         - 100% case:
-            given: value is 1
+            given:
+                value: 1
             then: color should be green
 ```

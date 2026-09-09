@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+
+	"github.com/pietroid/metacode/engine/internal/order"
 )
 
 // This file is the single answer to "where does generated code go, and what is
@@ -103,8 +105,13 @@ func LibImport(libPath string) string {
 	return strings.TrimPrefix(libPath, "lib/")
 }
 
-// DartTypeFor maps a Metacode primitive type to its Dart equivalent.
+// DartTypeFor maps a Metacode type to its Dart equivalent.
+//
+// A declared model name maps to its class, so `list(task)` is `List<Task>`.
 func DartTypeFor(metaType string) string {
+	if inner, ok := ListElementType(metaType); ok {
+		return "List<" + DartTypeFor(inner) + ">"
+	}
 	switch strings.ToLower(metaType) {
 	case "int", "integer":
 		return "int"
@@ -114,9 +121,92 @@ func DartTypeFor(metaType string) string {
 		return "bool"
 	case "num", "number", "double":
 		return "num"
+	case "datetime":
+		return "DateTime"
+	case "", "any", "dynamic":
+		return "dynamic"
+	default:
+		// Anything else names a shape models.yaml declares. That the name is
+		// declared is checked in the model rules, so a typo is an error there
+		// rather than a class here that nothing wrote.
+		return PascalCase(metaType)
+	}
+}
+
+// RawLiteral renders a value whose type no spec declares: a field of a stored
+// element, or a count. It reads what the value looks like, which is all there
+// is to go on until models.yaml gives elements a shape.
+func RawLiteral(raw string) string {
+	switch strings.ToLower(raw) {
+	case "true":
+		return "true"
+	case "false":
+		return "false"
+	}
+	if _, err := strconv.ParseFloat(raw, 64); err == nil {
+		return raw
+	}
+	return DartStringLiteral(raw)
+}
+
+// VariableType maps a Metacode UI variable type to its Dart declaration. The
+// spec's words are on the left and Dart is on the right, so a target that is
+// not Flutter answers this differently and nothing above it changes.
+func VariableType(metaType string) string {
+	switch metaType {
+	case "text":
+		return "String"
+	case "boolean":
+		return "bool"
+	case "number":
+		return "num"
+	case "list":
+		return "List<dynamic>"
+	case "widget":
+		return "Widget"
+	case "callback":
+		return "VoidCallback?"
+	case "callback(text)":
+		return "ValueChanged<String>?"
+	case "callback(boolean)":
+		return "ValueChanged<bool?>?"
+	case "callback(number)":
+		return "ValueChanged<double>?"
+	case "callback(any)":
+		return "ValueChanged<dynamic>?"
 	default:
 		return "dynamic"
 	}
+}
+
+// VariablePlaceholder is a value of the given type that compiles, used where a
+// generator has to pass something it was never told.
+func VariablePlaceholder(metaType string) string {
+	switch metaType {
+	case "text":
+		return "''"
+	case "boolean":
+		return "false"
+	case "number":
+		return "0"
+	case "list":
+		return "const []"
+	case "widget":
+		return "SizedBox()"
+	default:
+		return "null"
+	}
+}
+
+// ListElementType reads the element type out of `list(task)`. It reports false
+// for anything that is not a list.
+func ListElementType(metaType string) (string, bool) {
+	t := strings.TrimSpace(metaType)
+	lower := strings.ToLower(t)
+	if !strings.HasPrefix(lower, "list(") || !strings.HasSuffix(lower, ")") {
+		return "", false
+	}
+	return strings.TrimSpace(t[len("list(") : len(t)-1]), true
 }
 
 // DartLiteral returns a Dart literal for v according to dartType.
@@ -135,6 +225,10 @@ func DartLiteral(v any, dartType string) string {
 		return strconv.FormatInt(val, 10)
 	case float64:
 		return strconv.FormatFloat(val, 'f', -1, 64)
+	case []any:
+		return dartListLiteral(val, dartType)
+	case map[string]any:
+		return dartMapLiteral(val, dartType)
 	default:
 		s := fmt.Sprintf("%v", val)
 		if _, err := strconv.ParseFloat(s, 64); err == nil {
@@ -142,4 +236,52 @@ func DartLiteral(v any, dartType string) string {
 		}
 		return DartStringLiteral(s)
 	}
+}
+
+// dartListLiteral renders a seeded list. The element type comes from the store's
+// own Dart type, so a List<String> seeds strings and a List<dynamic> seeds maps.
+func dartListLiteral(items []any, dartType string) string {
+	element := "dynamic"
+	if inner, ok := strings.CutPrefix(dartType, "List<"); ok {
+		element = strings.TrimSuffix(inner, ">")
+	}
+	parts := make([]string, 0, len(items))
+	for _, item := range items {
+		parts = append(parts, DartLiteral(item, element))
+	}
+	return "[" + strings.Join(parts, ", ") + "]"
+}
+
+// dartMapLiteral renders a mapping. When the type it fills is a declared class
+// the mapping is that class being built, so the keys are named arguments rather
+// than string keys. Keys are walked in order so identical specs produce
+// identical bytes.
+func dartMapLiteral(m map[string]any, dartType string) string {
+	named := IsClassName(dartType)
+	parts := make([]string, 0, len(m))
+	for _, key := range order.Keys(m) {
+		name := DartStringLiteral(key)
+		if named {
+			name = key
+		}
+		parts = append(parts, name+": "+DartLiteral(m[key], "dynamic"))
+	}
+	if named {
+		return dartType + "(" + strings.Join(parts, ", ") + ")"
+	}
+	return "{" + strings.Join(parts, ", ") + "}"
+}
+
+// IsClassName reports whether a Dart type is a class this project declared,
+// rather than a builtin or a container.
+func IsClassName(dartType string) bool {
+	switch dartType {
+	case "", "dynamic", "String", "int", "num", "double", "bool", "Object", "DateTime", "Widget":
+		return false
+	}
+	if strings.ContainsAny(dartType, "<>?") {
+		return false
+	}
+	r := rune(dartType[0])
+	return r >= 'A' && r <= 'Z'
 }

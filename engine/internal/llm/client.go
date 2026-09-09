@@ -27,7 +27,7 @@ type Call struct {
 // Client is the abstract interface implemented by the LLM client.
 // It exists so callers can swap in caching, retry, streaming, or test doubles.
 type Client interface {
-	Complete(ctx context.Context, call Call) (string, error)
+	Complete(ctx context.Context, call Call) (Result, error)
 }
 
 // NewClient creates a concrete Client for the provider named in cfg.
@@ -63,7 +63,15 @@ type message struct {
 }
 
 type chatResponse struct {
-	Choices []choice `json:"choices"`
+	Choices []choice  `json:"choices"`
+	Usage   chatUsage `json:"usage"`
+}
+
+// chatUsage is the token accounting an OpenAI-compatible endpoint returns. An
+// endpoint that omits it leaves the counts at zero rather than failing.
+type chatUsage struct {
+	PromptTokens     int64 `json:"prompt_tokens"`
+	CompletionTokens int64 `json:"completion_tokens"`
 }
 
 type choice struct {
@@ -72,7 +80,7 @@ type choice struct {
 
 // Complete sends a single user message to the configured chat completions
 // endpoint and returns the assistant message content.
-func (c *openAIClient) Complete(ctx context.Context, call Call) (string, error) {
+func (c *openAIClient) Complete(ctx context.Context, call Call) (Result, error) {
 	prompt := call.Prompt
 	reqBody := chatRequest{
 		Model: c.cfg.Model,
@@ -82,43 +90,50 @@ func (c *openAIClient) Complete(ctx context.Context, call Call) (string, error) 
 	}
 	jsonBody, err := json.Marshal(reqBody)
 	if err != nil {
-		return "", fmt.Errorf("marshal request: %w", err)
+		return Result{}, fmt.Errorf("marshal request: %w", err)
 	}
 
-	c.logger.Debugf("llm request [%s]: POST %s/chat/completions model=%s prompt_len=%d", call.Label, c.cfg.BaseURL, c.cfg.Model, len(prompt))
+	c.logger.Debugf("LLM request [%s]: POST %s/chat/completions model=%s prompt_len=%d", call.Label, c.cfg.BaseURL, c.cfg.Model, len(prompt))
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.cfg.BaseURL+"/chat/completions", bytes.NewReader(jsonBody))
 	if err != nil {
-		return "", fmt.Errorf("create request: %w", err)
+		return Result{}, fmt.Errorf("create request: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+c.cfg.APIKey)
 
 	resp, err := c.http.Do(req)
 	if err != nil {
-		return "", fmt.Errorf("do request: %w", err)
+		return Result{}, fmt.Errorf("do request: %w", err)
 	}
 	defer resp.Body.Close()
 
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "", fmt.Errorf("read response body: %w", err)
+		return Result{}, fmt.Errorf("read response body: %w", err)
 	}
 
-	c.logger.Debugf("llm response [%s]: status=%d len=%d", call.Label, resp.StatusCode, len(respBody))
+	c.logger.Debugf("LLM response [%s]: status=%d len=%d", call.Label, resp.StatusCode, len(respBody))
 
 	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("unexpected status %d: %s", resp.StatusCode, string(respBody))
+		return Result{}, fmt.Errorf("unexpected status %d: %s", resp.StatusCode, string(respBody))
 	}
 
 	var parsed chatResponse
 	if err := json.Unmarshal(respBody, &parsed); err != nil {
-		return "", fmt.Errorf("decode response: %w", err)
+		return Result{}, fmt.Errorf("decode response: %w", err)
 	}
 	if len(parsed.Choices) == 0 {
-		return "", fmt.Errorf("empty choices in response")
+		return Result{}, fmt.Errorf("empty choices in response")
 	}
-	return parsed.Choices[0].Message.Content, nil
+
+	usage := Usage{
+		InputTokens:  parsed.Usage.PromptTokens,
+		OutputTokens: parsed.Usage.CompletionTokens,
+	}
+	c.logger.Debugf("LLM usage [%s]: %s", call.Label, usage)
+
+	return Result{Text: parsed.Choices[0].Message.Content, Usage: usage}, nil
 }
 
 // NewClientWithHTTP creates an OpenAI-compatible client using a custom HTTP

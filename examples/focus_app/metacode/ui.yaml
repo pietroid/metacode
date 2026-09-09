@@ -1,0 +1,37 @@
+widgets:
+  homePage:
+    scaffold:
+      body: homeContent
+      floatingActionButton: addTaskButton
+
+  addTaskButton:
+    floatingActionButton:
+      child:
+        icon: icons.add
+      onPressed: onAddTask
+
+  # empty state
+  emptyState:
+    center:
+      child:
+        text: "Adicione uma nova tarefa"
+
+  # default state
+  defaultState:
+    column:
+      - text: "Minhas tarefas"
+      - expanded:
+          listView:
+            items: taskList
+            item: taskTile
+
+  taskTile:
+    listTile:
+      title: taskTitle
+      leading: taskCheckbox
+      onTap: taskTapped
+
+  taskCheckbox:
+    checkbox:
+      value: taskDone
+      onChanged: taskToggled

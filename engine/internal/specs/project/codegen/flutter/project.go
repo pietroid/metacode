@@ -15,7 +15,7 @@ import (
 	"github.com/pietroid/metacode/engine/internal/specs/project/rules"
 )
 
-//go:embed templates
+//go:embed all:templates
 var templates embed.FS
 
 // Generate scaffolds the Flutter project root by walking the embedded template
@@ -90,13 +90,13 @@ func buildArgList(components []model.UIComponent, pageName string) string {
 	if page == nil {
 		return ""
 	}
-	vars := dart.UniqueStrings(page.Variables)
+	vars := model.UniqueVariables(page.Variables)
 	if len(vars) == 0 {
 		return ""
 	}
 	parts := make([]string, len(vars))
 	for i, v := range vars {
-		parts[i] = fmt.Sprintf("%s: ''", v)
+		parts[i] = fmt.Sprintf("%s: %s", v.Name, dart.VariablePlaceholder(v.Type))
 	}
 	return "(" + strings.Join(parts, ", ") + ")"
 }

@@ -14,9 +14,11 @@ type Stage string
 type Reporter struct {
 	w      io.Writer
 	logger Logger
+	color  bool
 
 	mu      sync.Mutex
 	started map[Stage]time.Time
+	printed bool
 }
 
 // NewReporter creates a Reporter writing to w. A nil w discards, which is what
@@ -28,7 +30,7 @@ func NewReporter(w io.Writer, logger Logger) *Reporter {
 	if logger == nil {
 		logger = Nop()
 	}
-	return &Reporter{w: w, logger: logger}
+	return &Reporter{w: w, logger: logger, color: isTerminal(w)}
 }
 
 // Start records the stage's start time and announces it.
@@ -40,7 +42,13 @@ func (r *Reporter) Start(stage Stage) {
 	r.started[stage] = time.Now()
 	r.mu.Unlock()
 
-	fmt.Fprintf(r.w, "→ %s\n", stage)
+	clearActiveSpinner()
+	// A blank line before each stage, so a run reads as a list of steps rather
+	// than as one wall of lines. The first stage does not need one.
+	if r.wasPrinted() {
+		fmt.Fprintln(r.w)
+	}
+	fmt.Fprintf(r.w, "%s %s\n", paint(r.color, ansiCyan+ansiBold, "→"), paint(r.color, ansiBold, string(stage)))
 	r.logger.Debugf("stage started: %s", stage)
 }
 
@@ -51,12 +59,47 @@ func (r *Reporter) End(stage Stage, err error) {
 	elapsed := r.elapsed(stage)
 
 	if err != nil {
-		fmt.Fprintf(r.w, "✗ %s (%s): %v\n", stage, elapsed, err)
+		r.mark(stage, false, elapsed, err.Error())
 		r.logger.Errorf("stage failed: %s: %v", stage, err)
 		return
 	}
-	fmt.Fprintf(r.w, "✓ %s (%s)\n", stage, elapsed)
+	r.mark(stage, true, elapsed, "")
 	r.logger.Debugf("stage completed: %s in %s", stage, elapsed)
+}
+
+// EndStatus reports an outcome whose cause has already been printed by the
+// stage that raised it. The run as a whole ends this way: it is red when
+// anything under it failed, without repeating that failure's message.
+func (r *Reporter) EndStatus(stage Stage, ok bool) {
+	r.mark(stage, ok, r.elapsed(stage), "")
+}
+
+// mark prints the one line a stage is remembered by: a green tick or a red
+// cross, the stage name, and how long it took.
+func (r *Reporter) mark(stage Stage, ok bool, elapsed time.Duration, detail string) {
+	clearActiveSpinner()
+	mark, color := "✓", ansiGreen
+	if !ok {
+		mark, color = "✗", ansiRed
+	}
+	line := fmt.Sprintf("%s %s %s",
+		paint(r.color, color+ansiBold, mark),
+		paint(r.color, color, string(stage)),
+		paint(r.color, ansiDim, "("+elapsed.String()+")"))
+	if detail != "" {
+		line += ": " + paint(r.color, color, detail)
+	}
+	fmt.Fprintln(r.w, line)
+}
+
+// wasPrinted reports whether this reporter has written anything yet, and
+// records that it is about to.
+func (r *Reporter) wasPrinted() bool {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	was := r.printed
+	r.printed = true
+	return was
 }
 
 func (r *Reporter) elapsed(stage Stage) time.Duration {

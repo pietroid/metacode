@@ -86,7 +86,7 @@ func (im *Implementer) editableFiles() []editableFile {
 // Implement makes the one request that writes the behavior of the whole app.
 func (im *Implementer) Implement(ctx context.Context) error {
 	if im.Client == nil {
-		return fmt.Errorf("no llm client configured")
+		return fmt.Errorf("no LLM client configured")
 	}
 
 	files := im.editableFiles()
@@ -102,12 +102,12 @@ func (im *Implementer) Implement(ctx context.Context) error {
 
 	im.Logger.Infof("implementing %d file(s) in one request: %s", len(files), strings.Join(paths(files), ", "))
 
-	raw, err := im.Client.Complete(ctx, llm.Call{Label: "implement", Prompt: prompt})
+	result, err := im.Client.Complete(ctx, llm.Call{Label: "implement", Prompt: prompt})
 	if err != nil {
-		return fmt.Errorf("llm complete: %w", err)
+		return fmt.Errorf("LLM complete: %w", err)
 	}
 
-	written, err := im.apply(raw, files)
+	written, err := im.apply(result.Text, files)
 	if err != nil {
 		return err
 	}
@@ -122,7 +122,7 @@ func (im *Implementer) Implement(ctx context.Context) error {
 // scenarios. See docs/decisions.md, "Ask once, with everything".
 func (im *Implementer) Repair(ctx context.Context, iteration int, failures []run.Failure) error {
 	if im.Client == nil {
-		return fmt.Errorf("no llm client configured")
+		return fmt.Errorf("no LLM client configured")
 	}
 	if len(failures) == 0 {
 		return nil
@@ -137,12 +137,12 @@ func (im *Implementer) Repair(ctx context.Context, iteration int, failures []run
 	im.Logger.Infof("repairing %d failure(s) in one request", len(failures))
 
 	label := fmt.Sprintf("repair %d", iteration)
-	raw, err := im.Client.Complete(ctx, llm.Call{Label: label, Prompt: prompt})
+	result, err := im.Client.Complete(ctx, llm.Call{Label: label, Prompt: prompt})
 	if err != nil {
-		return fmt.Errorf("llm complete: %w", err)
+		return fmt.Errorf("LLM complete: %w", err)
 	}
 
-	if _, err := im.apply(raw, files); err != nil {
+	if _, err := im.apply(result.Text, files); err != nil {
 		return err
 	}
 	return nil

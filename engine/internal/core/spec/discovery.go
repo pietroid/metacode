@@ -15,6 +15,7 @@ type Paths struct {
 	Data      string
 	UI        string
 	Behaviors string
+	Models    string // optional: "" when the project declares no models
 }
 
 // requiredFiles maps the canonical spec filename to its Paths field.
@@ -52,6 +53,12 @@ func Discover(startDir string) (Paths, error) {
 		Data:      filepath.Join(metacodeDir, "data.yaml"),
 		UI:        filepath.Join(metacodeDir, "ui.yaml"),
 		Behaviors: filepath.Join(metacodeDir, "behaviors.yaml"),
+	}
+
+	// models.yaml is optional: an app whose stores hold only primitives has no
+	// models to declare, and a missing file is that app rather than an error.
+	if modelsPath := filepath.Join(metacodeDir, "models.yaml"); fileExists(modelsPath) {
+		paths.Models = modelsPath
 	}
 
 	for _, req := range requiredFiles {
@@ -94,4 +101,9 @@ func findMetacodeRoot(dir string) (string, bool) {
 		dir = parent
 	}
 	return "", false
+}
+
+func fileExists(path string) bool {
+	_, err := os.Stat(path)
+	return err == nil
 }

@@ -55,9 +55,10 @@ func GenerateWrappers(app *model.App, work plan.Work, outDir string) error {
 		return fmt.Errorf("create wrappers dir: %w", err)
 	}
 
+	t := treeOf(app)
 	generated := make(map[string]string) // target file -> wrapper class name
 	for _, wrapper := range wrappers {
-		code, err := wrapperBody(app, wrapper)
+		code, err := wrapperBody(app, wrapper, t)
 		if err != nil {
 			return fmt.Errorf("wrapper %s: %w", wrapper.WidgetName, err)
 		}

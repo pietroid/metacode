@@ -133,7 +133,7 @@ func counterAppSpecs() spec.RawSpecs {
 		Behaviors: map[string]any{
 			"counterStore": map[string]any{
 				"increments from 0": map[string]any{
-					"given": "counterStore.value is 0",
+					"given": map[string]any{"counterStore.value": 0},
 					"when":  "incrementButton.onPressed",
 					"then":  "counterStore.value should be 1",
 				},
@@ -192,19 +192,26 @@ func TestDeclaredEventBecomesConstructorParameter(t *testing.T) {
 	}
 }
 
-// TestParentForwardsChildEvents covers composition: a page that embeds a widget
-// with a declared event must forward that event, or the page can only ever be
-// rendered with a dead child.
-func TestParentForwardsChildEvents(t *testing.T) {
+// TestWiredChildBecomesASlot covers composition: a child with something to wire
+// has a wrapper of its own, so the page takes it as a Widget parameter and
+// renders it as given. The page used to declare a callback per child event and
+// build the child itself, which is what let one freehand wrapper at the top
+// decide the shape of the whole tree.
+func TestWiredChildBecomesASlot(t *testing.T) {
 	content := generateAndRead(t, counterResolvedIR(t), "lib/pages/home_page.dart")
 
 	for _, want := range []string{
-		"this.incrementButtonOnPressed",
-		"final VoidCallback? incrementButtonOnPressed;",
-		"IncrementButton(onPressed: incrementButtonOnPressed)",
+		"required this.incrementButton",
+		"final Widget incrementButton;",
+		"incrementButton",
 	} {
 		if !strings.Contains(content, want) {
 			t.Errorf("expected %q, got:\n%s", want, content)
+		}
+	}
+	for _, unwanted := range []string{"incrementButtonOnPressed", "IncrementButton(", "increment_button.dart"} {
+		if strings.Contains(content, unwanted) {
+			t.Errorf("expected the page not to build or forward to its wired child, found %q in:\n%s", unwanted, content)
 		}
 	}
 }
@@ -230,5 +237,30 @@ func TestUndeclaredEventStaysDisabled(t *testing.T) {
 	}
 	if strings.Contains(content, "VoidCallback") {
 		t.Errorf("expected no callback parameter with no behavior declared, got:\n%s", content)
+	}
+}
+
+func TestRenderIconProp(t *testing.T) {
+	r := &renderer{catalog: catalog.Default()}
+	if got := r.renderIconProp("icon", "icons.add"); got != "Icons.add" {
+		t.Errorf("icon widget renders %q, want Icons.add", got)
+	}
+	if got := r.renderIconProp("iconButton", "icons.hidden"); got != "icon: const Icon(Icons.visibility_off)" {
+		t.Errorf("iconButton renders %q", got)
+	}
+	if got := r.renderIconProp("icon", "add"); got != "" {
+		t.Errorf("an unqualified name renders %q, want empty", got)
+	}
+}
+
+func TestForwardedVariablesReachTheReferencedWidget(t *testing.T) {
+	symbols := model.NewSymbolTable()
+	symbols.Widgets["taskCheckbox"] = model.UIComponent{
+		Name:      "taskCheckbox",
+		Variables: []model.Variable{{Name: "taskDone", Type: "boolean"}},
+	}
+	got := forwardedVariables([]string{"taskCheckbox"}, symbols)
+	if len(got["taskCheckbox"]) != 1 || got["taskCheckbox"][0].Name != "taskDone" {
+		t.Errorf("expected taskDone forwarded, got %+v", got)
 	}
 }

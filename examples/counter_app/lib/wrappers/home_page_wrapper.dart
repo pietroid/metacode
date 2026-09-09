@@ -4,6 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../pages/home_page.dart';
 import '../stores/counter_cubit.dart';
 import '../stores/counter_state.dart';
+import '../wrappers/decrement_button_wrapper.dart';
+import '../wrappers/increment_button_wrapper.dart';
 
 class HomePageWrapper extends StatelessWidget {
   const HomePageWrapper({super.key});
@@ -14,8 +16,8 @@ class HomePageWrapper extends StatelessWidget {
       selector: (state) => state.value.toString(),
       builder: (context, value) => HomePage(
         counterValue: value,
-        decrementButtonOnPressed: () => context.read<CounterCubit>().decrement(),
-        incrementButtonOnPressed: () => context.read<CounterCubit>().increment(),
+        decrementButton: const DecrementButtonWrapper(),
+        incrementButton: const IncrementButtonWrapper(),
       ),
     );
   }

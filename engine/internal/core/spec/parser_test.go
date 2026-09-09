@@ -31,7 +31,8 @@ widgets:
 	writeFile(t, filepath.Join(metacodeDir, "behaviors.yaml"), `
 counter:
   increments:
-    given: counter is 0
+    given:
+      counter.value: 0
     when: increment button is tapped
     then: counter becomes 1
 `)

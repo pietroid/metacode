@@ -1,0 +1,98 @@
+homeState:
+  show empty state when taskStore is empty:
+    given:
+      taskStore.value: []
+    when: # always
+    then: homePage.homeContent should be emptyState
+
+  show default state when taskStore has one item:
+    given:
+      taskStore.value:
+        - description: "Buy milk"
+          done: false
+    when: # always
+    then: homePage.homeContent should be defaultState
+
+rendering:
+  render one row per task:
+    given:
+      taskStore.value:
+        - description: "Buy milk"
+          done: false
+        - description: "Call mom"
+          done: false
+        - description: "Pay rent"
+          done: true
+    when: # always
+    then: taskTile.count should be 3
+
+  render the item inside the list when taskStore has one item:
+    given:
+      taskStore.value:
+        - description: "Buy milk"
+          done: false
+    when: # always
+    then: taskTile.first.taskTitle should be "Buy milk"
+
+  render each row with its own task:
+    given:
+      taskStore.value:
+        - description: "Buy milk"
+          done: false
+        - description: "Call mom"
+          done: false
+    when: # always
+    then: taskTile.last.taskTitle should be "Call mom"
+
+  render a checkbox reflecting the task it belongs to:
+    given:
+      taskStore.value:
+        - description: "Buy milk"
+          done: false
+        - description: "Call mom"
+          done: true
+    when: # always
+    then: taskCheckbox.last.taskDone should be true
+
+toggling:
+  toggling a row marks its task done:
+    given:
+      taskStore.value:
+        - description: "Buy milk"
+          done: false
+    when: taskCheckbox.first.taskToggled
+    then: taskStore.value.first.done should be true
+
+  toggling a row twice returns it to open:
+    given:
+      taskStore.value:
+        - description: "Buy milk"
+          done: true
+    when: taskCheckbox.first.taskToggled
+    then: taskStore.value.first.done should be false
+
+  toggling a row leaves the other rows alone:
+    given:
+      taskStore.value:
+        - description: "Buy milk"
+          done: false
+        - description: "Call mom"
+          done: false
+    when: taskCheckbox.last.taskToggled
+    then: taskStore.value.first.done should be false
+
+adding:
+  adding a task appends it to the list:
+    given:
+      taskStore.value: []
+    when: addTaskButton.onAddTask
+    then: taskStore.value.first.description should be "New task"
+
+  adding a second task appends it to the list with counter:
+    given:
+      taskStore.value:
+        - description: "Buy milk"
+          done: false
+    when: addTaskButton.onAddTask
+    then: taskStore.value.first.description should be "New task 2"
+

@@ -1,28 +1,35 @@
 increments from 0:
-  given: counterStore.value is 0
+  given:
+    counterStore.value: 0
   when: incrementButton.onPressed
   then: counterStore.value should be 1
 increments from 1:
-  given: counterStore.value is 1
+  given:
+    counterStore.value: 1
   when: incrementButton.onPressed
   then: counterStore.value should be 2
 increments from 2:
-  given: counterStore.value is 2
+  given:
+    counterStore.value: 2
   when: incrementButton.onPressed
   then: counterStore.value should be 3
 decrements from 2:
-  given: counterStore.value is 2
+  given:
+    counterStore.value: 2
   when: decrementButton.onPressed
   then: counterStore.value should be 1
 decrements from 1:
-  given: counterStore.value is 1
+  given:
+    counterStore.value: 1
   when: decrementButton.onPressed
   then: counterStore.value should be 0
 not decrements when is 0:
-  given: counterStore.value is 0
+  given:
+    counterStore.value: 0
   when: decrementButton.onPressed
   then: counterStore.value should be 0
 Show counter value on the home page:
-  given: counterStore.value = 5
+  given:
+    counterStore.value: 5
   when: # always
-  then: homePage.counterValue = 5
+  then: homePage.counterValue should be 5

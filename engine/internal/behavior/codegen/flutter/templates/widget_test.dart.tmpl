@@ -6,12 +6,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:{{.PackageName}}/{{.CubitFile}}';
 import 'package:{{.PackageName}}/{{.StateFile}}';
-import 'package:{{.PackageName}}/{{.PageWrapperFile}}';
+import 'package:{{.PackageName}}/{{.PageWrapperFile}}';{{range .Imports}}
+import 'package:{{$.PackageName}}/{{.}}';{{end}}
 
 void main() {
   testWidgets({{dartQuote .Description}}, (tester) async {
-    final cubit = {{.CubitClass}}();
-    {{if .SeedExpression}}{{.SeedExpression}}{{end}}
+    final cubit = {{if .SeedState}}{{.CubitClass}}.seeded({{.SeedState}}){{else}}{{.CubitClass}}(){{end}};
     await tester.pumpWidget(
       BlocProvider.value(
         value: cubit,

@@ -10,6 +10,9 @@ func TestDartTypeFor(t *testing.T) {
 		{"string", "String"},
 		{"bool", "bool"},
 		{"number", "num"},
+		{"list(string)", "List<String>"},
+		{"list(task)", "List<Task>"},
+		{"datetime", "DateTime"},
 	}
 	for _, tc := range cases {
 		got := DartTypeFor(tc.in)
@@ -25,5 +28,21 @@ func TestDartLiteral(t *testing.T) {
 	}
 	if got := DartLiteral("hello", "String"); got != "'hello'" {
 		t.Errorf("DartLiteral(hello) = %q, want 'hello'", got)
+	}
+}
+
+func TestDartLiteralListOfMaps(t *testing.T) {
+	v := []any{map[string]any{"done": false, "description": "Buy milk"}}
+	want := "[{'description': 'Buy milk', 'done': false}]"
+	if got := DartLiteral(v, "List<dynamic>"); got != want {
+		t.Errorf("DartLiteral(list) = %q, want %q", got, want)
+	}
+}
+
+func TestDartLiteralBuildsADeclaredModel(t *testing.T) {
+	v := []any{map[string]any{"done": false, "description": "Buy milk"}}
+	want := "[Task(description: 'Buy milk', done: false)]"
+	if got := DartLiteral(v, "List<Task>"); got != want {
+		t.Errorf("DartLiteral(list of task) = %q, want %q", got, want)
 	}
 }

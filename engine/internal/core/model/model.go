@@ -15,6 +15,8 @@ type App struct {
 	Stores    []Store
 	UI        []UIComponent
 	Behaviors []BehaviorScenario
+	Models    []Model
+	Enums     []Enum
 	Symbols   SymbolTable
 	Warnings  []string
 }
@@ -39,4 +41,58 @@ func SplitRef(s string) (string, string) {
 		return s, ""
 	}
 	return parts[0], parts[1]
+}
+
+// Row selectors address one element of a list, in a behavior target and in the
+// widget a list builds one of per element.
+const (
+	RowFirst = "first"
+	RowLast  = "last"
+)
+
+// CountMember asks how many rows a widget rendered; LengthMember asks how long
+// a stored list is.
+const (
+	CountMember  = "count"
+	LengthMember = "length"
+)
+
+// Ref is a dotted path written in a behavior: a root that names a store or a
+// widget, then the members reached from it. A row selector is one of those
+// members, which is what lets `taskTile.first.taskTitle` and
+// `taskStore.value.first.done` be the same shape of thing.
+type Ref struct {
+	Root    string
+	Members []string
+}
+
+// ParseRef splits a dotted path. It does no validation: what a shape is allowed
+// to be belongs to symbol resolution, which is the stage that knows what the
+// root is.
+func ParseRef(s string) Ref {
+	parts := strings.Split(s, ".")
+	return Ref{Root: parts[0], Members: parts[1:]}
+}
+
+// IsRowSelector reports whether a member addresses one element of a list.
+func IsRowSelector(member string) bool {
+	return member == RowFirst || member == RowLast
+}
+
+// RowSelector returns the row this ref addresses, and whether it addresses one.
+func (r Ref) RowSelector() (string, bool) {
+	for _, m := range r.Members {
+		if IsRowSelector(m) {
+			return m, true
+		}
+	}
+	return "", false
+}
+
+// Last returns the final member, or "" when the ref names only its root.
+func (r Ref) Last() string {
+	if len(r.Members) == 0 {
+		return ""
+	}
+	return r.Members[len(r.Members)-1]
 }

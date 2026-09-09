@@ -47,9 +47,7 @@ func updateAppDart(app *model.App, outDir string, wrappers map[string]string) er
 	}
 
 	// Replace page instantiation with wrapper instantiation.
-	pageClass := dart.WidgetClass(pageName)
-	re := regexp.MustCompile(fmt.Sprintf(`const\s+%s\s*\([^)]*\)`, pageClass))
-	updated = re.ReplaceAllString(updated, fmt.Sprintf("const %s()", wrapperClass))
+	updated = replacePageWithWrapper(updated, dart.WidgetClass(pageName), wrapperClass)
 
 	// One store, checked in the resolve stage: see datarules.CheckSupported.
 	if len(app.Stores) == 1 {
@@ -71,7 +69,35 @@ func updateAppDart(app *model.App, outDir string, wrappers map[string]string) er
 	if updated == string(content) {
 		return nil
 	}
+	// This function edits Dart as text, so it can produce a file that is not
+	// Dart. Model output is shape-checked before it is kept and this was not,
+	// which is how a stray paren reached disk and stayed there.
+	if !dart.Balanced(updated) {
+		return fmt.Errorf("rewriting app.dart produced unbalanced brackets; left the file as it was")
+	}
 	return os.WriteFile(appDartPath, []byte(updated), 0644)
+}
+
+// replacePageWithWrapper swaps `const HomePage(...)` for the wrapper, finding
+// the end of the call by counting parens.
+//
+// A regex cannot do this. `const HomePage\([^)]*\)` stops at the first close
+// paren, so `const HomePage(homeContent: SizedBox())` matched up to SizedBox's
+// paren and left the page's behind. The app compiled for as long as no page
+// took an argument that was itself a call.
+func replacePageWithWrapper(src, pageClass, wrapperClass string) string {
+	open := regexp.MustCompile(`const\s+` + regexp.QuoteMeta(pageClass) + `\b\s*\(`)
+	for {
+		loc := open.FindStringIndex(src)
+		if loc == nil {
+			return src
+		}
+		end := findMatchingClose(src[loc[1]:], '(', ')')
+		if end == -1 {
+			return src
+		}
+		src = src[:loc[0]] + fmt.Sprintf("const %s()", wrapperClass) + src[loc[1]+end+1:]
+	}
 }
 
 func wrapWithBlocProvider(appDart, cubitClass string) string {

@@ -79,3 +79,21 @@ func TestReporterEndError(t *testing.T) {
 		t.Errorf("expected failure marker with error, got:\n%s", out)
 	}
 }
+
+// TestReporterEndStatusOmitsMessage covers the line a whole run ends on: red
+// when something under it failed, without repeating the failure's own message.
+func TestReporterEndStatusOmitsMessage(t *testing.T) {
+	var buf bytes.Buffer
+	r := NewReporter(&buf, Nop())
+
+	r.Start("Metacode run")
+	r.EndStatus("Metacode run", false)
+
+	out := buf.String()
+	if !strings.Contains(out, "✗ Metacode run") {
+		t.Errorf("expected a failed run marker, got:\n%s", out)
+	}
+	if strings.Contains(out, ":") && strings.Contains(out, "error") {
+		t.Errorf("expected no error detail on the run line, got:\n%s", out)
+	}
+}

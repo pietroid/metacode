@@ -11,11 +11,11 @@ For *why* a rule exists, see [docs/decisions.md](../docs/decisions.md).
 ```
 metacode run
   1  discover      find the metacode/ folder above the working directory
-  2  parse         read project.yaml, data.yaml, ui.yaml, behaviors.yaml
+  2  parse         read project.yaml, data.yaml, ui.yaml, behaviors.yaml, and models.yaml if present
   3  build         raw YAML -> model, by asking each spec kind's rules
   4  resolve       cross-reference symbols, resolve widget-event -> store-action
   5  scaffold      write the project, the stores, the dumb widgets
-  6  plan          decide what to generate: one wrapper per page, one test per scenario
+  6  plan          decide what to generate: one wrapper per widget that needs wiring, one test per scenario
   7  wrappers      write the layer that wires widgets to stores
   8  tests         write one test per scenario
   9  prune         delete generated files whose spec source is gone
@@ -35,6 +35,7 @@ The order is a list in one function: `internal/core/run/pipeline.go`.
 | Path | Written by | May the model rewrite it? |
 |---|---|---|
 | `pubspec.yaml`, `lib/main.dart`, `lib/app.dart` | project generator | no |
+| `lib/models/*.dart` | model generator | no |
 | `lib/stores/*_state.dart` | data generator | no |
 | `lib/stores/*_cubit.dart` | data generator (signatures) | **yes** — bodies are business logic |
 | `lib/pages/*.dart`, `lib/widgets/*.dart` | ui generator | no |
@@ -53,7 +54,7 @@ directory.
 
 The tree is open in two directions, and the folders say which:
 
-- **spec kind** — ui, data, project, behaviors, and later models and groups
+- **spec kind** — ui, data, project, models, behaviors, and later groups
 - **target language** — Flutter today
 
 So a spec kind has `rules/` for interpreting itself and `codegen/<language>/`
@@ -71,6 +72,7 @@ engine/
     │   └── run/             the stage list, the CLI, the test runner, the fix loop
     ├── specs/
     │   ├── project/{rules,codegen/flutter}
+    │   ├── model/{rules,codegen/flutter}
     │   ├── data/{rules,codegen/flutter}
     │   └── ui/{rules,catalog,codegen/flutter}
     ├── behavior/            the centerpiece spec, at its own top level

@@ -3,12 +3,14 @@ package run
 import (
 	"strings"
 
+	"github.com/pietroid/metacode/engine/internal/behavior/rules"
 	"github.com/pietroid/metacode/engine/internal/core/build"
 	"github.com/pietroid/metacode/engine/internal/core/model"
 	"github.com/pietroid/metacode/engine/internal/core/plan"
 	"github.com/pietroid/metacode/engine/internal/core/spec"
 	"github.com/pietroid/metacode/engine/internal/log"
 	"github.com/pietroid/metacode/engine/internal/specs/data/rules"
+	"github.com/pietroid/metacode/engine/internal/specs/model/rules"
 	"github.com/pietroid/metacode/engine/internal/specs/project/rules"
 	"github.com/pietroid/metacode/engine/internal/specs/ui/catalog"
 	"github.com/pietroid/metacode/engine/internal/specs/ui/rules"
@@ -129,6 +131,8 @@ func resolveSymbols(logger log.Logger, app *model.App) error {
 		{"project", projectrules.Validate(app.Project)},
 		{"data", datarules.Validate(app.Stores)},
 		{"ui", uirules.Validate(app.UI, catalog.Default())},
+		{"models", modelrules.Validate(app.Models, app.Enums)},
+		{"behaviors", behaviorrules.ValidateGivens(app)},
 	} {
 		for _, err := range rule.errs {
 			logger.Warnf("%s rule: %s", rule.kind, err)

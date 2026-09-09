@@ -115,7 +115,9 @@ BlocSelector<CounterCubit, CounterState, int>(
 
 - Pages must be wrapped in a `Scaffold`.
 - Inside flex parents (`Column`, `Row`), generate `Expanded`/`Flexible` only when the spec explicitly requests expansion or the layout requires it.
-- For dynamic lists, generate `ListView.builder` with `itemCount` and `itemBuilder`.
+- For dynamic lists, generate `ListView.builder`. `itemCount` is the length of the spec's `items` variable, and `itemBuilder` is a constructor parameter named after the widget the spec's `item` names, typed `Widget Function(BuildContext, int)`. Neither word appears in the spec: `itemCount` and `itemBuilder` are this target's spelling, and another target is free to have neither.
+- The widget that holds a list does not build its rows and does not import the row widget. The wrapper supplies the builder, because it is the layer that knows what an element is.
+- A child widget that has something to wire — a variable of its own, or an event a behavior binds — is not built here either. It arrives as a required `Widget` parameter named after the widget, and is rendered as it is given. Its own wrapper is what fills that slot, so the tree stays in the generated widgets and the wiring stays one widget deep.
 - For static short lists, `ListView(children: [...])` is acceptable.
 
 ## Navigation and overlays

@@ -21,7 +21,7 @@ func ResolveBindings(app *model.App) error {
 	var bindings []model.Binding
 
 	for _, b := range app.Behaviors {
-		widget, event, ok := splitWidgetEvent(app, b.When)
+		widget, address, event, ok := splitWidgetEvent(app, b.When)
 		if !ok {
 			continue
 		}
@@ -38,16 +38,18 @@ func ResolveBindings(app *model.App) error {
 			continue
 		}
 
-		action, err := ActionNameFor(widget, event)
+		// The address is what names the action, not the prop: two buttons in
+		// one row share onPressed and are two different things to do.
+		action, err := ActionNameFor(widget, address)
 		if err != nil {
 			return fmt.Errorf("scenario %q: %w", b.ID, err)
 		}
 
-		key := widget + "." + event
+		key := widget + "." + address
 		if i, seen := index[key]; seen {
 			if bindings[i].Store != store {
 				return fmt.Errorf("scenario %q: %s.%s already drives store %q, cannot also drive %q",
-					b.ID, widget, event, bindings[i].Store, store)
+					b.ID, widget, address, bindings[i].Store, store)
 			}
 			bindings[i].ScenarioIDs = append(bindings[i].ScenarioIDs, b.ID)
 			continue
@@ -56,6 +58,7 @@ func ResolveBindings(app *model.App) error {
 		index[key] = len(bindings)
 		bindings = append(bindings, model.Binding{
 			Widget:      widget,
+			Param:       address,
 			Event:       event,
 			Store:       store,
 			Action:      action,
@@ -93,16 +96,19 @@ func ActionNameFor(widget, event string) (string, error) {
 	return "", fmt.Errorf("cannot derive a store action from %q.%q: name the widget after what it does, e.g. %sButton", widget, event, widget)
 }
 
-// splitWidgetEvent splits "widget.event" when the root resolves to a widget.
-func splitWidgetEvent(app *model.App, ref string) (string, string, bool) {
-	root, member := model.SplitRef(ref)
-	if member == "" {
-		return "", "", false
+// splitWidgetEvent reads back the widget, the name it answers to, and the prop
+// that name fills.
+//
+// The answer is not in the text: `taskCheckbox.first.onChanged` names a row
+// that is not part of the event, and `addTaskButton.onAddTask` names an alias
+// that is not the prop. Resolution worked both out already and wrote them into
+// the symbol table, so this reads them rather than parsing the string twice.
+func splitWidgetEvent(app *model.App, ref string) (string, string, string, bool) {
+	event, ok := app.Symbols.Events[ref]
+	if !ok {
+		return "", "", "", false
 	}
-	if sym, ok := app.Symbols.Lookup(root); !ok || sym.Kind != "widget" {
-		return "", "", false
-	}
-	return root, member, true
+	return event.Widget, event.Address, event.Event, true
 }
 
 func lowerFirst(s string) string {

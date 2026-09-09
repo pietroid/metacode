@@ -6,6 +6,7 @@ import (
 
 	"github.com/pietroid/metacode/engine/internal/codegen/dart"
 	"github.com/pietroid/metacode/engine/internal/core/model"
+	"github.com/pietroid/metacode/engine/internal/specs/ui/rules"
 )
 
 // Build analyzes the resolved IR and returns what to generate: which widgets
@@ -26,22 +27,23 @@ func Build(app *model.App) (Work, error) {
 		tests = append(tests, Test{ScenarioID: scenario.ID})
 	}
 
-	// One wrapper per page, and only per page. A page's generated widget takes
-	// a callback parameter for every event of every widget it embeds, so one
-	// wrapper at the top wires the whole screen. A wrapper per button was
-	// written too, and then referenced by nothing: the page could not use it,
-	// because the page instantiates its children itself.
+	// One wrapper per widget that has something to wire, and a wrapper for
+	// every page whether or not it does. A widget with a wrapper is reached by
+	// its parent as a slot, so the wrappers nest the way the widgets do and
+	// each one wires its own widget and nothing below it. See
+	// uirules.WrapperWidgets.
 	//
 	// Every test pumps the page wrapper, because every scenario is a behavior
 	// of the whole app, so a page wrapper exists even when no scenario names
 	// the page.
+	needsWrapper := uirules.WrapperWidgets(app)
 	var wrappers []Wrapper
 	for _, comp := range app.UI {
-		if dart.IsPageName(comp.Name) {
+		if needsWrapper[comp.Name] || dart.IsPageName(comp.Name) {
 			wrappers = append(wrappers, Wrapper{Widget: comp.Name})
 		}
 	}
-	if len(wrappers) == 0 {
+	if !hasPage(wrappers) {
 		if page := dart.FirstPageName(app.UI); page != "" {
 			wrappers = append(wrappers, Wrapper{Widget: page})
 		}
@@ -49,4 +51,15 @@ func Build(app *model.App) (Work, error) {
 	sort.Slice(wrappers, func(i, j int) bool { return wrappers[i].Widget < wrappers[j].Widget })
 
 	return Work{Wrappers: wrappers, Tests: tests}, nil
+}
+
+// hasPage reports whether the planned wrappers already cover a page. Every run
+// needs one, because that is what a test pumps.
+func hasPage(wrappers []Wrapper) bool {
+	for _, w := range wrappers {
+		if dart.IsPageName(w.Widget) {
+			return true
+		}
+	}
+	return false
 }

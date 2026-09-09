@@ -38,7 +38,7 @@ func TestGenerateWritesOneFilePerCase(t *testing.T) {
 			PageWrapperClass:    "HomePageWrapper",
 			PageWrapperFile:     "wrappers/home_page_wrapper.dart",
 			TargetFile:          "test/counter_store_show_counter_value_test.dart",
-			SeedExpression:      "cubit.emit(CounterState(value: 5));",
+			SeedState:           "CounterState(value: 5)",
 			ActionExpression:    "",
 			AssertionExpression: "expect(find.text('5'), findsOneWidget);",
 		},
@@ -84,7 +84,7 @@ func TestGenerateWritesOneFilePerCase(t *testing.T) {
 		"import 'package:flutter/material.dart';",
 		"import 'package:flutter_bloc/flutter_bloc.dart';",
 		"import 'package:counter_app/wrappers/home_page_wrapper.dart';",
-		"cubit.emit(CounterState(value: 5));",
+		"final cubit = CounterCubit.seeded(CounterState(value: 5));",
 		"expect(find.text('5'), findsOneWidget);",
 	}
 	for _, w := range wantWidget {
@@ -108,7 +108,7 @@ func TestGenerateOmitsEmptyActionAndSeed(t *testing.T) {
 			PageWrapperClass:    "HomePageWrapper",
 			PageWrapperFile:     "wrappers/home_page_wrapper.dart",
 			TargetFile:          "test/render_test.dart",
-			SeedExpression:      "",
+			SeedState:           "",
 			ActionExpression:    "",
 			AssertionExpression: "expect(find.text('5'), findsOneWidget);",
 		},
@@ -126,7 +126,10 @@ func TestGenerateOmitsEmptyActionAndSeed(t *testing.T) {
 	if strings.Contains(string(content), "await tester.pump();") {
 		t.Errorf("expected no pump when action is empty")
 	}
-	if strings.Contains(string(content), "cubit.emit") {
+	if !strings.Contains(string(content), "final cubit = CounterCubit();") {
+		t.Errorf("expected an unseeded store when the scenario has no given, got:\n%s", string(content))
+	}
+	if strings.Contains(string(content), ".seeded(") {
 		t.Errorf("expected no seed when seed is empty")
 	}
 }

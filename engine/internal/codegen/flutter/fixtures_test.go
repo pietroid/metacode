@@ -51,14 +51,14 @@ func counterAppFullIR() *model.App {
 		Behaviors: map[string]any{
 			"counterStore": map[string]any{
 				"increments from 0": map[string]any{
-					"given": "counterStore.value is 0",
+					"given": map[string]any{"counterStore.value": 0},
 					"when":  "incrementButton.onPressed",
 					"then":  "counterStore.value should be 1",
 				},
 				"Show counter value on the home page": map[string]any{
-					"given": "counterStore.value = 5",
+					"given": map[string]any{"counterStore.value": 5},
 					"when":  "",
-					"then":  "homePage.counterValue = 5",
+					"then":  "homePage.counterValue should be 5",
 				},
 			},
 		},

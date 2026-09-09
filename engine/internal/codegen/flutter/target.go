@@ -15,6 +15,7 @@ import (
 	"github.com/pietroid/metacode/engine/internal/core/model"
 	"github.com/pietroid/metacode/engine/internal/core/plan"
 	"github.com/pietroid/metacode/engine/internal/specs/data/codegen/flutter"
+	"github.com/pietroid/metacode/engine/internal/specs/model/codegen/flutter"
 	"github.com/pietroid/metacode/engine/internal/specs/project/codegen/flutter"
 	"github.com/pietroid/metacode/engine/internal/specs/ui/catalog"
 	"github.com/pietroid/metacode/engine/internal/specs/ui/codegen/flutter"
@@ -25,6 +26,9 @@ import (
 func GenerateAll(app *model.App, outDir string) error {
 	if err := projectflutter.Generate(app, outDir); err != nil {
 		return fmt.Errorf("project generation: %w", err)
+	}
+	if err := modelflutter.Generate(app, outDir); err != nil {
+		return fmt.Errorf("model generation: %w", err)
 	}
 	if err := dataflutter.Generate(app, outDir); err != nil {
 		return fmt.Errorf("store generation: %w", err)

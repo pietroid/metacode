@@ -37,3 +37,22 @@ gender:
     - male
     - female
 ```
+
+## What is generated
+
+Each model becomes a class holding its fields, with `copyWith` and value
+equality. Each enum becomes an enum. A field marked `?` is nullable and not
+required by the constructor; every other field is required.
+
+A store declaring `list(task)` therefore holds `List<Task>`, and a scenario
+seeding one writes the fields it wants:
+
+```yaml
+given:
+    taskStore.value:
+        - description: "Buy milk"
+          done: false
+```
+
+Seeding a field the model does not declare, or leaving out one it requires, is
+an error naming the scenario.

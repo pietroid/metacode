@@ -27,15 +27,27 @@ func validateComponent(comp model.UIComponent, c *catalog.Catalog) []error {
 		return errs
 	}
 
-	allowed := make(map[string]bool, len(sym.AllowedProps)+1)
+	allowed := make(map[string]bool, len(sym.Props)+1)
 	allowed[sym.DefaultProp] = true
-	for _, p := range sym.AllowedProps {
-		allowed[p] = true
+	for _, p := range sym.Props {
+		allowed[p.Name] = true
 	}
 
-	for prop := range comp.Props {
+	for _, prop := range order.Keys(comp.Props) {
 		if !allowed[prop] {
 			errs = append(errs, fmt.Errorf("ui.yaml > %s: prop %q is not allowed for %s", comp.Name, prop, comp.Kind))
+			continue
+		}
+		if prop == catalog.PropIcon {
+			errs = append(errs, validateIcon(comp, comp.Props[prop], c)...)
+		}
+	}
+	errs = append(errs, validateList(comp)...)
+	if sym.DefaultProp == catalog.PropIcon {
+		if _, ok := comp.Props[catalog.PropIcon]; !ok {
+			// The renderer used to substitute Icons.add here, so a button that
+			// forgot to say which icon it was silently became a plus sign.
+			errs = append(errs, fmt.Errorf("ui.yaml > %s: %s must name an icon, as in `icon: %sadd`", comp.Name, comp.Kind, catalog.IconPrefix))
 		}
 	}
 
@@ -43,6 +55,43 @@ func validateComponent(comp model.UIComponent, c *catalog.Catalog) []error {
 		errs = append(errs, validateComponent(child, c)...)
 	}
 	return errs
+}
+
+// validateIcon checks an icon value against the icon vocabulary. An icon is
+// named, never bound, so an unqualified value is rejected rather than quietly
+// treated as a variable and rendered as text.
+func validateIcon(comp model.UIComponent, val any, c *catalog.Catalog) []error {
+	name, ok := val.(string)
+	if !ok {
+		return nil
+	}
+	if !catalog.IsIconRef(name) {
+		return []error{fmt.Errorf("ui.yaml > %s: icon %q must name the icon vocabulary, as in `icon: %sadd`", comp.Name, name, catalog.IconPrefix)}
+	}
+	if _, ok := c.FindIcon(name); !ok {
+		return []error{fmt.Errorf("ui.yaml > %s: unknown icon %q (see specification/base_specs/ui_catalog.md)", comp.Name, name)}
+	}
+	return nil
+}
+
+// validateList checks the two forms of a list against each other. A list is
+// static or dynamic, never both and never half of one: a `items` with no `item`
+// used to render as an empty ListView, which looks like a list with nothing in
+// it rather than like a spec missing a line.
+func validateList(comp model.UIComponent) []error {
+	_, hasItems := comp.Props[catalog.PropItems]
+	_, hasItem := comp.Props[catalog.PropItem]
+	_, hasChildren := comp.Props[catalog.PropChildren]
+
+	switch {
+	case hasItems && hasChildren:
+		return []error{fmt.Errorf("ui.yaml > %s: a list is static (`children`) or dynamic (`items` and `item`), not both", comp.Name)}
+	case hasItems && !hasItem:
+		return []error{fmt.Errorf("ui.yaml > %s: `items` needs an `item` saying what one element renders as", comp.Name)}
+	case hasItem && !hasItems:
+		return []error{fmt.Errorf("ui.yaml > %s: `item` needs an `items` saying what it renders one of", comp.Name)}
+	}
+	return nil
 }
 
 // RegisterWidgets records every declared widget name before the tree is built,
@@ -59,7 +108,13 @@ func RegisterWidgets(raw map[string]any, symbols *model.SymbolTable) error {
 func Build(raw map[string]any, symbols model.SymbolTable) ([]model.UIComponent, error) {
 	widgetsRaw, _ := raw["widgets"].(map[string]any)
 	if widgetsRaw == nil {
-		return nil, nil
+		if len(raw) == 0 {
+			return nil, nil
+		}
+		// A ui.yaml that declares widgets at the top level used to build zero
+		// widgets and say nothing, so every later stage reported the widget it
+		// could not find rather than the one line that was missing.
+		return nil, fmt.Errorf("ui.yaml has no `widgets:` key; every widget is declared under it")
 	}
 
 	var components []model.UIComponent
@@ -106,9 +161,31 @@ func buildComponent(name string, raw any, symbols model.SymbolTable) (model.UICo
 // applyScalarSugar handles `text: "Hello"`: the value is the widget's default
 // prop, and it is a variable reference when it names no known symbol.
 func applyScalarSugar(comp *model.UIComponent, value string, symbols model.SymbolTable) {
-	comp.Props[defaultContentProp(comp.Kind)] = value
+	prop := defaultContentProp(comp.Kind)
+	comp.Props[prop] = value
 	if isVariableReference(value, symbols) {
-		comp.Variables = append(comp.Variables, value)
+		comp.Variables = append(comp.Variables, variableAt(comp.Kind, prop, value))
+	}
+}
+
+// variableAt names a variable together with what the prop it fills holds. It is
+// the whole answer to "what type is this": the catalog knows, so nothing
+// downstream has to assume.
+func variableAt(kind, prop, name string) model.Variable {
+	return model.Variable{Name: name, Type: VariableType(catalog.Default().PropType(kind, prop)), Prop: prop}
+}
+
+// VariableType maps a prop type to the type of a variable filling it. A widget
+// prop given a bare name renders it as text, which is why both report text; a
+// behavior can still say the variable holds a widget.
+func VariableType(t catalog.PropType) string {
+	switch {
+	case t.IsCallback():
+		return string(t)
+	case t.IsWidget(), t == catalog.TypeText:
+		return string(catalog.TypeText)
+	default:
+		return string(t)
 	}
 }
 
@@ -151,7 +228,7 @@ func buildChildComponent(raw any, symbols model.SymbolTable) (model.UIComponent,
 		kind := classifyKind(v, symbols)
 		comp := model.UIComponent{Name: v, Kind: kind, Props: make(map[string]any)}
 		if kind == "variable" {
-			comp.Variables = append(comp.Variables, v)
+			comp.Variables = append(comp.Variables, model.Variable{Name: v, Type: string(catalog.TypeText)})
 		}
 		return comp, nil
 	case map[string]any:
@@ -169,44 +246,71 @@ func buildChildComponent(raw any, symbols model.SymbolTable) (model.UIComponent,
 
 func applyProps(comp *model.UIComponent, raw map[string]any, symbols model.SymbolTable) error {
 	for _, key := range order.Keys(raw) {
-		val := raw[key]
-		if key == "child" {
-			comp.Props[key] = val
-			if s, ok := val.(string); ok {
-				if isVariableReference(s, symbols) {
-					comp.Variables = append(comp.Variables, s)
-				}
-			} else {
-				child, err := buildChildComponent(val, symbols)
-				if err != nil {
-					return err
-				}
-				comp.Children = append(comp.Children, child)
-				comp.Variables = append(comp.Variables, child.Variables...)
-			}
-		} else if key == "children" {
-			comp.Props[key] = val
-			list, ok := val.([]any)
-			if !ok {
-				return fmt.Errorf("children must be a list")
-			}
-			for _, item := range list {
-				child, err := buildChildComponent(item, symbols)
-				if err != nil {
-					return err
-				}
-				comp.Children = append(comp.Children, child)
-				comp.Variables = append(comp.Variables, child.Variables...)
-			}
-		} else {
-			comp.Props[key] = val
-			if s, ok := val.(string); ok && isVariableReference(s, symbols) {
-				comp.Variables = append(comp.Variables, s)
-			}
-			// Recursively scan nested structures for additional variables.
-			scanVariables(val, symbols, &comp.Variables)
+		if err := applyProp(comp, key, raw[key], symbols); err != nil {
+			return err
 		}
 	}
+	return nil
+}
+
+func applyProp(comp *model.UIComponent, key string, val any, symbols model.SymbolTable) error {
+	comp.Props[key] = val
+	switch key {
+	case catalog.PropChild:
+		return applyChildProp(comp, val, symbols)
+	case catalog.PropChildren:
+		list, ok := val.([]any)
+		if !ok {
+			return fmt.Errorf("children must be a list")
+		}
+		for _, item := range list {
+			if err := appendChild(comp, item, symbols); err != nil {
+				return err
+			}
+		}
+		return nil
+	default:
+		if isNestedWidget(comp.Kind, key) {
+			// `expanded: {listView: ...}` is the nested mapping form: the inner
+			// widget is this one's content, not a prop named after it. Without
+			// this it became a prop, which validation then rejected by name.
+			delete(comp.Props, key)
+			return appendChild(comp, map[string]any{key: val}, symbols)
+		}
+		if s, ok := val.(string); ok && isVariableReference(s, symbols) {
+			comp.Variables = append(comp.Variables, variableAt(comp.Kind, key, s))
+			return nil
+		}
+		// Recursively scan nested structures for additional variables.
+		scanVariables(comp.Kind, val, symbols, &comp.Variables)
+		return nil
+	}
+}
+
+// isNestedWidget reports whether key, appearing under a widget of the given
+// kind, names a widget rather than one of that kind's props.
+func isNestedWidget(kind, key string) bool {
+	c := catalog.Default()
+	return c.IsKnown(key) && !c.AllowsProp(kind, key)
+}
+
+func applyChildProp(comp *model.UIComponent, val any, symbols model.SymbolTable) error {
+	if s, ok := val.(string); ok {
+		if isVariableReference(s, symbols) {
+			comp.Variables = append(comp.Variables, variableAt(comp.Kind, catalog.PropChild, s))
+		}
+		return nil
+	}
+	return appendChild(comp, val, symbols)
+}
+
+func appendChild(comp *model.UIComponent, raw any, symbols model.SymbolTable) error {
+	child, err := buildChildComponent(raw, symbols)
+	if err != nil {
+		return err
+	}
+	comp.Children = append(comp.Children, child)
+	comp.Variables = append(comp.Variables, child.Variables...)
 	return nil
 }
 
@@ -275,19 +379,32 @@ func isRegisteredSymbol(name string, symbols model.SymbolTable) bool {
 	return ok
 }
 
-func scanVariables(raw any, symbols model.SymbolTable, out *[]string) {
+// scanVariables walks a prop value that was left raw, such as the nested
+// mapping under `body:`, and collects the variables inside it. It carries the
+// widget kind it is currently inside so a variable still gets the type of the
+// prop it fills: a key that names a catalog widget becomes the new kind, and
+// any other key is a prop of the current one.
+func scanVariables(kind string, raw any, symbols model.SymbolTable, out *[]model.Variable) {
 	switch v := raw.(type) {
 	case string:
 		if isVariableReference(v, symbols) {
-			*out = append(*out, v)
+			*out = append(*out, variableAt(kind, defaultContentProp(kind), v))
 		}
 	case []any:
 		for _, item := range v {
-			scanVariables(item, symbols, out)
+			scanVariables(kind, item, symbols, out)
 		}
 	case map[string]any:
 		for _, key := range order.Keys(v) {
-			scanVariables(v[key], symbols, out)
+			if catalog.Default().IsKnown(key) {
+				scanVariables(key, v[key], symbols, out)
+				continue
+			}
+			if s, ok := v[key].(string); ok && isVariableReference(s, symbols) {
+				*out = append(*out, variableAt(kind, key, s))
+				continue
+			}
+			scanVariables(kind, v[key], symbols, out)
 		}
 	}
 }

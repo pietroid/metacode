@@ -1,50 +1,66 @@
 draft:
   Typing updates the draft:
-    given: draftStore.value is ""
-    when: draftField.onChanged
+    given:
+      draftStore.value: ""
+    when: draftField.draftChanged
     then: draftStore.value should be "Buy milk"
 
 addTask:
   Adding a task appends it to the store:
-    given: taskStore.value is []
+    given:
+      taskStore.value: []
     when: taskStore.add
     then: taskStore.value.length should be 1
 
   Adding a task clears the draft:
-    given: draftStore.value is "Buy milk"
+    given:
+      draftStore.value: "Buy milk"
     when: addTaskButton.onPressed
     then: draftStore.value should be ""
 
   Adding an empty draft is rejected:
-    given: draftStore.value is ""
+    given:
+      draftStore.value: ""
     when: addTaskButton.onPressed
     then: taskStore.value.length should be 0
 
 toggle:
   Toggling marks a task done:
-    given: taskStore.value is [{title: "Buy milk", done: false}]
-    when: taskCheckbox.onChanged
-    then: taskStore.value[0].done should be true
+    given:
+      taskStore.value:
+        - title: "Buy milk"
+          done: false
+    when: taskCheckbox.first.taskToggled
+    then: taskStore.value.first.done should be true
 
   Toggling twice returns to open:
-    given: taskStore.value is [{title: "Buy milk", done: true}]
-    when: taskCheckbox.onChanged
-    then: taskStore.value[0].done should be false
+    given:
+      taskStore.value:
+        - title: "Buy milk"
+          done: true
+    when: taskCheckbox.first.taskToggled
+    then: taskStore.value.first.done should be false
 
 filtering:
   Filter shows the right tasks:
     - all shows everything:
-        given: filterStore.value is all
-        then: homePage.taskCount = 3
+        given:
+          filterStore.value: all
+        then: taskList.count should be 3
     - open hides completed:
-        given: filterStore.value is open
-        then: homePage.taskCount = 2
+        given:
+          filterStore.value: open
+        then: taskList.count should be 2
     - done shows only completed:
-        given: filterStore.value is done
-        then: homePage.taskCount = 1
+        given:
+          filterStore.value: done
+        then: taskList.count should be 1
 
 persistence:
   Tasks survive a restart:
-    given: taskStore.value is [{title: "Buy milk", done: false}]
+    given:
+      taskStore.value:
+        - title: "Buy milk"
+          done: false
     when: app.restart
     then: taskStore.value.length should be 1

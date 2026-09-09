@@ -30,8 +30,8 @@ widgets:
 
   taskList:
     listView:
-      itemCount: taskCount
-      itemBuilder: taskTile
+      items: visibleTasks
+      item: taskTile
 
   taskTile:
     listTile:

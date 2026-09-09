@@ -11,18 +11,14 @@ import 'counter_state.dart';
 class CounterCubit extends Cubit<CounterState> {
   CounterCubit() : super(const CounterState(value: 0));
 
-  /// Re-exposed so a generated test can seed a scenario's "Given" state before
-  /// pumping the app. The base implementation is `@protected`, so every test
-  /// that seeds needs this; scaffolding it here rather than leaving it to the
-  /// implement stage means it cannot go missing on a run where the model did
-  /// not think to add it back.
-  @override
-  void emit(CounterState state) => super.emit(state);
+  /// Starts from a state a caller chooses, which is how a generated test sets
+  /// up a scenario's "Given" without reaching into the store.
+  CounterCubit.seeded(CounterState initial) : super(initial);
 
   /// Specified by:
-  ///   decrements from 1: given counterStore.value is 1, then counterStore.value should be 0
-  ///   decrements from 2: given counterStore.value is 2, then counterStore.value should be 1
-  ///   not decrements when is 0: given counterStore.value is 0, then counterStore.value should be 0
+  ///   decrements from 1: given counterStore.value: 1, then counterStore.value should be 0
+  ///   decrements from 2: given counterStore.value: 2, then counterStore.value should be 1
+  ///   not decrements when is 0: given counterStore.value: 0, then counterStore.value should be 0
   void decrement() {
     if (state.value <= 0) {
       return;
@@ -31,9 +27,9 @@ class CounterCubit extends Cubit<CounterState> {
   }
 
   /// Specified by:
-  ///   increments from 0: given counterStore.value is 0, then counterStore.value should be 1
-  ///   increments from 1: given counterStore.value is 1, then counterStore.value should be 2
-  ///   increments from 2: given counterStore.value is 2, then counterStore.value should be 3
+  ///   increments from 0: given counterStore.value: 0, then counterStore.value should be 1
+  ///   increments from 1: given counterStore.value: 1, then counterStore.value should be 2
+  ///   increments from 2: given counterStore.value: 2, then counterStore.value should be 3
   void increment() {
     emit(state.copyWith(value: state.value + 1));
   }

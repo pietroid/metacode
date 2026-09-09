@@ -25,12 +25,15 @@ type TestCase struct {
 	PageWrapperClass string
 	PageWrapperFile  string // relative import path, e.g. "wrappers/home_page_wrapper.dart"
 
+	// Imports the assertion needs on top of the standard ones, relative to lib/.
+	Imports []string
+
 	// Output location relative to the project root.
 	TargetFile string
 
 	// Test body fragments. These are target-language expressions produced by the
 	// builder so the Dart codegen can render them directly.
-	SeedExpression      string // empty if no setup is needed
+	SeedState           string // the "Given" state to start from; empty if none
 	ActionExpression    string // empty if the scenario has no action
 	AssertionExpression string
 }

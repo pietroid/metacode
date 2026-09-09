@@ -4,6 +4,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/pietroid/metacode/engine/internal/core/model"
 	"github.com/pietroid/metacode/engine/internal/core/plan"
 )
 
@@ -48,8 +49,8 @@ func TestBuildWidgetTestSeedsAndAssertsText(t *testing.T) {
 			continue
 		}
 		found = true
-		if tc.SeedExpression != "cubit.emit(CounterState(value: 5));" {
-			t.Errorf("expected seed expression for value 5, got %q", tc.SeedExpression)
+		if tc.SeedState != "CounterState(value: 5)" {
+			t.Errorf("expected the seeded state for value 5, got %q", tc.SeedState)
 		}
 		if tc.AssertionExpression != "expect(find.text('5'), findsOneWidget);" {
 			t.Errorf("expected text assertion, got %q", tc.AssertionExpression)
@@ -97,5 +98,78 @@ func TestStoreActionScenarioStaysOneWidgetTest(t *testing.T) {
 	}
 	if !found {
 		t.Fatal("no test case for the store-action scenario")
+	}
+}
+
+func TestDartLiteralForValueSeedsAList(t *testing.T) {
+	store := model.Store{Name: "taskStore", ValueType: "list(task)"}
+	got, err := dartLiteralForValue(`[{"description":"Buy milk","done":false}]`, store)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if got != "[Task(description: 'Buy milk', done: false)]" {
+		t.Errorf("unexpected literal: %q", got)
+	}
+}
+
+func TestDartLiteralForValueRejectsAValueTheStoreCannotHold(t *testing.T) {
+	store := model.Store{Name: "counterStore", ValueType: "int"}
+	if _, err := dartLiteralForValue("[]", store); err == nil {
+		t.Fatal("expected an error for a list seeded into an int store")
+	}
+}
+
+func TestBuildTestCasesRejectsTwoScenariosWritingOneFile(t *testing.T) {
+	app := counterApp()
+	work := plan.Work{Tests: []plan.Test{
+		{ScenarioID: "counterStore/increments from 0"},
+		{ScenarioID: "counterStore/increments from 0"},
+	}}
+	if _, err := BuildTestCases(app, work); err == nil {
+		t.Fatal("expected an error when two scenarios target one test file")
+	}
+}
+
+func TestRowIndexFromTheGiven(t *testing.T) {
+	scenario := model.BehaviorScenario{
+		Given: &model.Assertion{Target: "taskStore.value", Value: `[{"done":false},{"done":true}]`},
+	}
+	if got, err := rowIndex(model.RowFirst, scenario); err != nil || got != 0 {
+		t.Errorf("first = %d, %v; want 0", got, err)
+	}
+	if got, err := rowIndex(model.RowLast, scenario); err != nil || got != 1 {
+		t.Errorf("last = %d, %v; want 1", got, err)
+	}
+}
+
+func TestRowIndexNeedsAList(t *testing.T) {
+	scenario := model.BehaviorScenario{Given: &model.Assertion{Target: "counterStore.value", Value: "5"}}
+	if _, err := rowIndex(model.RowLast, scenario); err == nil {
+		t.Fatal("expected an error asking for a list in the given")
+	}
+}
+
+func TestStoreExpressionReadsAModelField(t *testing.T) {
+	app := &model.App{Models: []model.Model{{Name: "task", Fields: []model.Field{{Name: "done", Type: "boolean"}}}}}
+	ref := model.ParseRef("taskStore.value.first.done")
+	got, err := storeExpression(ref, app, model.Store{Name: "taskStore", ValueType: "list(task)"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got != "cubit.state.value.first.done" {
+		t.Errorf("unexpected expression %q", got)
+	}
+}
+
+// Without a declared model an element is still a map, so its fields are looked
+// up rather than dotted.
+func TestStoreExpressionReadsAnUndeclaredElementAsAMap(t *testing.T) {
+	ref := model.ParseRef("taskStore.value.first.done")
+	got, err := storeExpression(ref, &model.App{}, model.Store{Name: "taskStore", ValueType: "list(task)"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got != "cubit.state.value.first['done']" {
+		t.Errorf("unexpected expression %q", got)
 	}
 }

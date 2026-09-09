@@ -7,19 +7,22 @@ package model
 // to agree about it.
 type Binding struct {
 	Widget      string   // decrementButton
-	Event       string   // onPressed
+	Param       string   // the name the widget exposes: onPressed, or an alias
+	Event       string   // the catalog prop that name fills: onPressed
 	Store       string   // counterStore
 	Action      string   // decrement
 	ScenarioIDs []string // every scenario that exercises this binding
 }
 
 // FullPath is the widget event that triggers the binding.
-func (b Binding) FullPath() string { return b.Widget + "." + b.Event }
+func (b Binding) FullPath() string { return b.Widget + "." + b.Param }
 
-// BindingFor returns the binding for a widget event, if there is one.
-func (st SymbolTable) BindingFor(widget, event string) (Binding, bool) {
+// BindingFor returns the binding that fills a widget's parameter, if there is
+// one. The parameter is what a wrapper writes, so it is what the lookup is by:
+// two buttons in one widget share a prop and never share a parameter.
+func (st SymbolTable) BindingFor(widget, param string) (Binding, bool) {
 	for _, b := range st.Bindings {
-		if b.Widget == widget && b.Event == event {
+		if b.Widget == widget && b.Param == param {
 			return b, true
 		}
 	}

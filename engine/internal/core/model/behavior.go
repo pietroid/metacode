@@ -1,13 +1,10 @@
 package model
 
-// Assertion represents a simple condition or expectation in a behavior scenario.
-// Supported forms:
-//   - "<target> should be <value>"  (then)
-//   - "<target> is <value>"         (given, alias for should be)
-//   - "<target> = <value>"          (shorthand used by some specs)
+// Assertion represents a condition or expectation in a behavior scenario. A
+// `then` writes it as "<target> should be <value>"; a `given` writes it as a
+// YAML mapping, "<target>: <value>", where the colon is the operator.
 type Assertion struct {
 	Target string // e.g. "counterStore.value"
-	Op     string // "should be", "is", "="
 	Value  string // "6"
 }
 

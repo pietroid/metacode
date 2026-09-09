@@ -27,13 +27,13 @@ engine tier.
 | `models.yaml` with `task`, `priority`, `filter` | Discovery requires exactly four files and has no `models.yaml` path | `core/spec/discovery.go` |
 | `value: list(task)` | `DartTypeFor` maps anything unrecognized to `dynamic`; state classes hold one scalar `value` field | `modules/data/rules.go`, `data/codegen/flutter/templates` |
 | Three stores | Test builder, deterministic wrappers, and the prompt builder all take `app.Stores[0]`; `app.dart` only provides a Cubit when `len(Stores) == 1` | `modules/tests/builder.go`, `generators/flutter/*` |
-| `taskStore.value.length`, `taskStore.value[0].done` | The resolver rejects any dot chain deeper than 2 and has no index syntax | `core/ir/resolver.go` |
-| `given: taskStore.value is [{title: "Buy milk", done: false}]` | Assertion values are opaque strings parsed with `strconv`; there is no structured literal | `core/ir/behavior_parser.go` |
+| `taskStore.value.length`, `taskStore.value.first.done` | The resolver rejects any dot chain deeper than 2 and has no index syntax | `core/ir/resolver.go` |
+| `given:` with a list of task mappings | Seeds a `List<dynamic>` of Dart maps. Once models.yaml is read it should seed `Task(...)` instead | `codegen/dart/layout.go` |
 | `strategy: local` | Only `ephemeral` generates; the strategy field is parsed and ignored | `data/codegen/flutter/store.go` |
 | `filterStore: value: filter` (enum-typed store) | No enum branch in the type mapper | `modules/data/rules.go` |
 | `onChanged`, `onTap` events | `renderAction` handles `onPressed` and silently returns an empty action for everything else, producing a test that asserts without acting | `modules/tests/builder.go` |
-| `listView` with `itemCount` / `itemBuilder` | Widgets are rendered as a closed tree with `final String` parameters; there is no per-item widget scope | `ui/codegen/flutter/widget.go` |
-| `taskCount` (number), `taskDone` (bool) | Every UI variable is generated as `final String` | `ui/codegen/flutter/widget.go` |
+| `listView` with `items` / `item` | Widgets are rendered as a closed tree with `final String` parameters; there is no per-item widget scope | `ui/codegen/flutter/widget.go` |
+| `taskList.count` (number), `taskDone` (bool) | Every UI variable is generated as `final String` | `ui/codegen/flutter/widget.go` |
 | `body: column: [..., expanded: taskList]` | The deterministic wrapper hard-codes the path `body → center → column` and renders an empty page for anything else | `generators/flutter/wrapper_deterministic.go` |
 | `when: app.restart` | There is no namespace for app lifecycle events, only stores and widgets | `core/ir/resolver.go` |
 | Nested groups under `filtering` | Groups mostly flatten already, but sibling group paths share a backing array (`append(path, key)` aliasing) | `core/ir/builder.go` |

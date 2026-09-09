@@ -42,10 +42,12 @@ func Generate(app *model.App, outDir string) error {
 			StoreName  string
 			StateClass string
 			DartType   string
+			Imports    string
 		}{
 			StoreName:  store.Name,
 			StateClass: stateClass,
 			DartType:   dartType,
+			Imports:    modelImport(app, store),
 		}
 		if err := dart.ExecuteTemplate(tmpl, "state.dart.tmpl", filepath.Join(storesDir, stateFile), stateData); err != nil {
 			return fmt.Errorf("state %s: %w", store.Name, err)
@@ -158,10 +160,20 @@ func specificationComment(action storeAction) []string {
 func scenarioSummary(s model.BehaviorScenario) string {
 	var parts []string
 	if s.Given != nil {
-		parts = append(parts, fmt.Sprintf("given %s %s %s", s.Given.Target, s.Given.Op, s.Given.Value))
+		parts = append(parts, fmt.Sprintf("given %s: %s", s.Given.Target, s.Given.Value))
 	}
 	if s.Then != nil {
-		parts = append(parts, fmt.Sprintf("then %s %s %s", s.Then.Target, s.Then.Op, s.Then.Value))
+		parts = append(parts, fmt.Sprintf("then %s should be %s", s.Then.Target, s.Then.Value))
 	}
 	return strings.Join(parts, ", ")
+}
+
+// modelImport names the model file a state holds, if it holds one. A state
+// declaring `List<Task>` has to be able to say what a Task is.
+func modelImport(app *model.App, store model.Store) string {
+	m, ok := app.ElementModel(store.ValueType)
+	if !ok {
+		return ""
+	}
+	return fmt.Sprintf("import '../models/%s.dart';\n", dart.SnakeCase(m.Name))
 }
