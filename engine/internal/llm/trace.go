@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/pietroid/metacode/engine/internal/core/log"
+	"github.com/pietroid/metacode/engine/internal/log"
 )
 
 // TraceDirName is the directory, relative to the project root, where every

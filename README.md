@@ -22,25 +22,28 @@ Two shared domains:
 Automated tests are the centerpiece of Metacode. The format is very simple:
 
 ```yaml
-When button is tapped, increment counter:
-    given: # any condition
-    when: homePage.counterButton.onPressed
-    then: counterStore.increment
+increments from 0:
+  given: counterStore.value is 0
+  when: incrementButton.onPressed
+  then: counterStore.value should be 1
 
-When counter is incremented, increment the store:
-    given: counterStore.value = 2
-    when: counterStore.increment
-    then: counterStore.value = 3
+not decrements when is 0:
+  given: counterStore.value is 0
+  when: decrementButton.onPressed
+  then: counterStore.value should be 0
 
 Show counter value on the home page:
-    given: counterStore.value = 5
-    when: # always
-    then: homePage.counterValue = 5
+  given: counterStore.value is 5
+  when: # always
+  then: homePage.counterValue is 5
 ```
+
+`is`, `should be` and `=` all read the same way. Each of those scenarios becomes
+exactly one test that pumps the whole app.
 
 It's the traditional standard of the industry on doing tests. But there are some catches:
 
-- What is `button.onPressed`?
+- What is `incrementButton.onPressed`?
 - What is `counterStore`?
 - What is `homePage`?
 
@@ -80,22 +83,52 @@ counterStore:
 
 ## How it works
 
-Metacode is generally composed of three stages:
+`metacode run` is ten stages. The first nine are deterministic: the same specs
+produce the same bytes, and no model is involved.
 
-1. Spec Parsing: Parses all Specs, including the test ones, extracts known symbols, check for errors.
-2. Graph resolution and planning: builds the internal relations between tests, data and UI specs, resolve symbols that will be eventually classes and functions.
-3. Code Generation: From the step 2, generate code either automatically or with the help of AI when needed.
+```
+ 1  discover      find the metacode/ folder above the working directory
+ 2  parse         read project.yaml, data.yaml, ui.yaml, behaviors.yaml
+ 3  build         raw YAML -> the model, by asking each spec kind's rules
+ 4  resolve       cross-reference symbols, resolve widget-event -> store-action
+ 5  scaffold      write the project, the stores, the dumb widgets
+ 6  plan          one wrapper per page, one test per scenario
+ 7  wrappers      write the layer that wires widgets to stores
+ 8  tests         write one test per scenario
+ 9  prune         delete generated files whose spec source is gone
+10  implement     one LLM request writes the behavior of the whole app
+11  verify        run the suite; on failure, one repair request per iteration
+```
+
+`engine/ARCHITECTURE.md` is the map of the code; `docs/decisions.md` is why the
+rules are what they are.
+
+### What is generated, and what a model may rewrite
+
+Everything under `lib/` and `test/` is generated. Of it, a model is allowed to
+rewrite exactly two things: the Cubit method bodies and the wrappers. The dumb
+widgets, the state classes and the tests are derived from the specs and are
+never handed over, because a model that rewrites a test to match its code has
+verified nothing.
+
+| Path | May the model rewrite it? |
+|---|---|
+| `lib/stores/*_cubit.dart` | yes, the method bodies are business rules |
+| `lib/wrappers/*_wrapper.dart` | yes |
+| `lib/pages/`, `lib/widgets/`, `lib/stores/*_state.dart` | no |
+| `test/` | never |
 
 ### The non-deterministic generation loop
 
-We rely on non-deterministic generation simply because we know that a fully determinstic code generated from a simpler set of instructions is not only informationally feasible, but maybe impossible. 
+We rely on non-deterministic generation because a fully deterministic app
+generated from a simpler set of instructions is not just informationally
+infeasible, it may be impossible. We also want the specs to stay simple, so we
+delegate the part code solves well: business rules.
 
-Also, we want to be simple enough so we delegate the harder parts that code can solve well (business rules).
+The loop is test-driven development.
 
-But for that, we should have a loop, which is very simple and is just a Test-Driven-Development approach.
-
-1. Every behavior scenario becomes exactly one test, against the whole app.
-   A scenario is never split by layer: one behavior, one test, whatever the
+1. Every behavior scenario becomes exactly one test, against the whole app. A
+   scenario is never split by layer: one behavior, one test, whatever the
    trigger happens to be.
 2. Everything derivable from the specs is scaffolded deterministically: the
    stores, the widgets, the wrappers, the tests, their names and their paths.
@@ -104,10 +137,10 @@ But for that, we should have a loop, which is very simple and is just a Test-Dri
 4. `flutter test` runs. Each fix iteration is one more request, carrying every
    failure at once.
 
-Asking once matters. Generating a wrapper at a time and then repairing a test
-at a time meant every request saw one slice of the problem, which is how a
-Cubit came back with placeholder method bodies: the request that wrote it had
-never been shown the tests those methods had to satisfy.
+Asking once matters. Generating a wrapper at a time and then repairing a test at
+a time meant every request saw one slice of the problem, which is how a Cubit
+came back with placeholder method bodies: the request that wrote it had never
+been shown the tests those methods had to satisfy.
 
 ### Code generation optimization
 

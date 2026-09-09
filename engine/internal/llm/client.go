@@ -13,7 +13,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/pietroid/metacode/engine/internal/core/log"
+	"github.com/pietroid/metacode/engine/internal/log"
 )
 
 // Call is a single request to a model. Label is a short, human-readable name

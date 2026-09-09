@@ -12,12 +12,10 @@ class HomePageWrapper extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocSelector<CounterCubit, CounterState, String>(
       selector: (state) => state.value.toString(),
-      builder: (context, counterValue) => HomePage(
-        counterValue: counterValue,
-        incrementButtonOnPressed: () =>
-            context.read<CounterCubit>().increment(),
-        decrementButtonOnPressed: () =>
-            context.read<CounterCubit>().decrement(),
+      builder: (context, value) => HomePage(
+        counterValue: value,
+        decrementButtonOnPressed: () => context.read<CounterCubit>().decrement(),
+        incrementButtonOnPressed: () => context.read<CounterCubit>().increment(),
       ),
     );
   }

@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/pietroid/metacode/engine/internal/core/log"
+	"github.com/pietroid/metacode/engine/internal/log"
 )
 
 // clearLLMEnv resets every variable ConfigFromEnv reads, so a test starts from

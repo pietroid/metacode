@@ -7,7 +7,7 @@ import (
 	"github.com/anthropics/anthropic-sdk-go"
 	"github.com/anthropics/anthropic-sdk-go/option"
 
-	"github.com/pietroid/metacode/engine/internal/core/log"
+	"github.com/pietroid/metacode/engine/internal/log"
 )
 
 // anthropicClient talks to the Anthropic Messages API through the official Go

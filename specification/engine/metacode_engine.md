@@ -22,12 +22,12 @@ _Goal: identify symbols, correlate them, classify them_
 
 ### 3. Planning
 
-_Goal: plan the order of execution of code and tests generation_
+_Goal: decide what will be generated, before anything is written_
 
-1. Scan each scenario from behaviors and identify what is the location of each of the references (UI, store, etc)
-2. Break down scenario into subscenarios according to its unit parts (e.g. if a scenario involves multiple layers break down into unit tests). 
-3. Create TBD namings and placeholders. (e.g. a store is needed to be created for a scenario, the naming is TBD).
-4. Order the execution of each on the priority: 1. fully deterministic specs. 2. TBDs. 3. Tests generation. 4. Code insertions (connections on top of existing units). 5. AI code generation.
+1. Scan each scenario from behaviors and identify where each reference lives (UI, store, etc).
+2. **One scenario becomes exactly one test, against the whole app.** A scenario is never broken down by layer. An earlier version of this document asked for the opposite — split a multi-layer scenario into unit tests — and that was wrong: a scenario that compiled down to a store unit test passed while the button that was supposed to call the store was wired to nothing. See `docs/decisions.md`, "One scenario, one test, against the whole app".
+3. Plan the wrappers: one per page. A page's generated widget takes a callback for every event of every widget it embeds, so one wrapper at the top wires the whole screen.
+4. The plan names work, not files. Where the work lands on disk and what its classes are called belong to the target language.
 
 ### 4. Execution
 
@@ -41,22 +41,27 @@ _Goal: Actually generate code and test it_
 
 ### Code conventions
 
-- The engine is highly modularized, with each folder corresponding to the step and each file corresponding to sub-step.
-- The code is highly commented
-- Have always a main function that call any subfunctions inside the file itself.
-- All parts tied to concrete and specific specs/code execution should live inside a separate part from the core logic of the engine, that way we can increase and scale independently.
+- **A folder is a spec kind or a language, nothing else.** A spec kind has `rules/` for interpreting itself and `codegen/<language>/` for generating from itself. A new directory level needs a reason on one of those two axes.
+
+  An earlier version of this document asked for a folder per pipeline step and a file per sub-step. That produced 25 packages for 6,000 lines, six of them named `flutter`, and a `modules/codegen/flutter/` sitting beside `modules/ui/codegen/flutter/` at the same depth meaning something different. See `engine/ARCHITECTURE.md` for the layout that replaced it.
+- One package, one job, stated in its doc comment in a sentence.
+- Comments carry the rule, not the history. A rule that cost something to learn gets an entry in `docs/decisions.md` and a one-line pointer at the code.
+- Anything tied to a concrete spec or a concrete language lives with that spec or that language, never in `core/`. `core/` is what every spec and every language has in common.
+- `make check` gates the tree: vet, tests, the golden example, zero unreachable code, and a complexity cap per function.
 
 ### Internal representation
 
-- From step 2 (internal representation), we should have very definite objects in the engine that match to their meaning. In this way, we can debug and sort them easily later.
-- The planning part should use a very compreehensive set of objects connecting the spec, the program that executes that spec, and any other metadata necessary.
+- From step 2 we have definite objects that match their meaning: the project, its stores, its widgets, its scenarios, and the symbols and bindings resolved between them. They live in `core/model`, which imports nothing.
+- The plan is deliberately not comprehensive. It carries identity only — this page needs a wrapper, this scenario needs a test. An earlier version of this document asked for objects connecting the spec, the program and "any other metadata necessary"; what that produced was a Task struct carrying three prose fields that were built on every run and read by nothing.
 
 ### Layered Architecture
 
-The engine is layered such as:
+Two axes, and the folders say which:
 
-1. Core part: The common part that encompasses all that is listed above.
-2. Modules: Everything related to how actually code is generated, the rules for each kind of spec, the libraries of ui components, etc. should live inside its speficic modules so we can have a kind of "plug and play".
+1. **Spec kind** — `specs/{project,data,ui}/` and `behavior/`, each with `rules/` and `codegen/<language>/`. Behaviors sit at the top level because they are the centerpiece: they are what the tests verify and what the implement stage is asked to satisfy.
+2. **Target language** — `codegen/dart/` is the writing toolkit below every generator, `codegen/flutter/` is the step order. A second language is a sibling of both.
+
+`core/` is what is common to every spec and every language: the model, spec loading, building, planning, and running. It never imports a generator; the pipeline reaches one through `run.Target`, assembled in `cmd/metacode`.
 
 ### Logging
 
