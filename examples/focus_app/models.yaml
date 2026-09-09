@@ -1,0 +1,5 @@
+task:
+  description: string
+  date: datetime
+  duration: number # duration in minutes
+  done: boolean

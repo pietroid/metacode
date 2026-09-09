@@ -1,0 +1,14 @@
+show empty state when taskStore is empty:
+  given: taskStore.value is []
+  when: # always
+  then: homeContent = emptyState
+
+show default state when taskStore has one item:
+  given: taskStore.value is [{description: "Buy milk", done: false}]
+  when: # always
+  then: homeContent = defaultState
+
+render the item inside the list when taskStore has one item:
+  given: taskStore.value is [{description: "Buy milk", done: false}]
+  when: # always
+  then: itemDescription = "Buy milk"
