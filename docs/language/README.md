@@ -53,6 +53,30 @@ The tests are never handed to the model. They come from your scenarios, they
 are regenerated from your scenarios on every run, and a model that could edit
 them would have verified nothing.
 
+## Running twice
+
+The first run writes the whole app. The second one only writes what your edits
+reached.
+
+After every run, Metacode copies your spec files into `metacode/.lock/`. The
+next run compares the two and works out which parts of the app your changes
+touch. Rename a button and the wiring is rewritten. Change an appBar title and
+nothing is: the widget is regenerated from the spec either way, and no model is
+asked for anything. Edit one scenario and only the store and the widget that
+scenario reaches are rewritten, while the rest stays as it is.
+
+The generated tests are rebuilt from your scenarios on every run regardless,
+and the whole suite runs on every run. If something you did not expect to break
+breaks, the fix loop opens the whole app back up. The lock makes the common
+case cheap; it never decides whether your app is correct.
+
+Commit `metacode/.lock/` along with your specs, so a teammate who pulls your
+branch gets the same short run you did.
+
+To ignore it for one run, use `metacode run -regenerate`, or delete the
+directory. Do that when the generated code and your specs have drifted apart in
+a way the diff is clearly not seeing.
+
 ## Where to go next
 
 | | |

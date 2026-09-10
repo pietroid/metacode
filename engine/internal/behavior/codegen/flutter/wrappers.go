@@ -44,8 +44,15 @@ func GenerateWrappers(app *model.App, work plan.Work, outDir string) error {
 		if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
 			return fmt.Errorf("create target dir: %w", err)
 		}
-		if err := os.WriteFile(path, []byte(withMarker(code)), 0644); err != nil {
-			return fmt.Errorf("write wrapper %s: %w", path, err)
+		// A wrapper a model has wired is left alone. The baseline below is
+		// only a starting point, and rewriting it every run threw away the
+		// wiring before the implement stage had a chance to keep it.
+		// app.dart still has to name the wrapper, so this skips the write and
+		// not the registration.
+		if !dart.IsImplemented(path) {
+			if err := os.WriteFile(path, []byte(withMarker(code)), 0644); err != nil {
+				return fmt.Errorf("write wrapper %s: %w", path, err)
+			}
 		}
 		generated[target] = dart.WrapperClass(widget)
 	}
@@ -60,9 +67,13 @@ func GenerateWrappers(app *model.App, work plan.Work, outDir string) error {
 // output. Rendering writes the header itself; a model writes whatever header it
 // likes, and an unmarked file is one that stale-output pruning cannot safely
 // delete.
+//
+// The header this writes is the stub one, because everything this file
+// renders is a baseline no model has seen. That is what tells the next run it
+// may overwrite the file, and the implement stage that it still needs wiring.
 func withMarker(code string) string {
 	if strings.Contains(code, dart.Marker) {
 		return code
 	}
-	return "// " + dart.Marker + " - DO NOT EDIT BY HAND\n" + code
+	return dart.StubHeader + "\n" + code
 }

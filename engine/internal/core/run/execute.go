@@ -5,8 +5,10 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path/filepath"
 	"time"
 
+	"github.com/pietroid/metacode/engine/internal/core/lock"
 	"github.com/pietroid/metacode/engine/internal/core/spec"
 	"github.com/pietroid/metacode/engine/internal/llm"
 	"github.com/pietroid/metacode/engine/internal/log"
@@ -21,6 +23,7 @@ func Execute(target Target) error {
 	fs := flag.NewFlagSet("metacode", flag.ContinueOnError)
 	verbose := fs.Bool("v", false, "log every LLM prompt and response in full")
 	quiet := fs.Bool("q", false, "log stage results only")
+	regenerate := fs.Bool("regenerate", false, "ignore the lock and rewrite every store and wrapper")
 
 	if err := fs.Parse(os.Args[1:]); err != nil {
 		return err
@@ -34,7 +37,7 @@ func Execute(target Target) error {
 
 	switch args[0] {
 	case "run":
-		return runCommand(target, *verbose, *quiet)
+		return runCommand(target, Options{Regenerate: *regenerate}, *verbose, *quiet)
 	case "help", "--help", "-h":
 		usage(os.Stdout)
 		return nil
@@ -48,12 +51,13 @@ func usage(w *os.File) {
 	fmt.Fprintln(w, "Commands:")
 	fmt.Fprintln(w, "  run   run the Metacode generator")
 	fmt.Fprintln(w, "Options:")
-	fmt.Fprintln(w, "  -v    log every LLM prompt and response in full")
-	fmt.Fprintln(w, "  -q    log stage results only")
+	fmt.Fprintln(w, "  -v            log every LLM prompt and response in full")
+	fmt.Fprintln(w, "  -q            log stage results only")
+	fmt.Fprintln(w, "  -regenerate   ignore the lock and rewrite every store and wrapper")
 	fmt.Fprintf(w, "\nEvery run writes one file per LLM call to %s.\n", llm.TraceDirName)
 }
 
-func runCommand(target Target, verbose, quiet bool) (runErr error) {
+func runCommand(target Target, opts Options, verbose, quiet bool) (runErr error) {
 	logger := log.New(os.Stdout, logLevel(verbose, quiet))
 	reporter := log.NewReporter(os.Stdout, logger)
 
@@ -81,7 +85,7 @@ func runCommand(target Target, verbose, quiet bool) (runErr error) {
 		return err
 	}
 
-	app, work, err := Scaffold(target, reporter, logger, paths, paths.Root)
+	app, work, err := Scaffold(target, opts, reporter, logger, paths, paths.Root)
 	if err != nil {
 		return err
 	}
@@ -110,13 +114,36 @@ func runCommand(target Target, verbose, quiet bool) (runErr error) {
 	tests := NewTestRunner(paths.Root, target.TestCommand, logger)
 	tests.Progress = log.NewSpinner(os.Stdout)
 
-	if _, err := stage(reporter, "Running tests", func() (struct{}, error) {
+	_, verifyErr := stage(reporter, "Running tests", func() (struct{}, error) {
 		return struct{}{}, Verify(context.Background(), tests, repairer, logger)
-	}); err != nil {
-		return err
+	})
+
+	// The lock is written whether or not the suite passed, and only after the
+	// suite has been attempted. Those are the same rule seen from two sides:
+	// what must not be recorded is input the run never understood, because the
+	// next run would then diff against a state that never existed. A red suite
+	// is understood input, and recording it costs nothing, because the next
+	// run observes the failures again and the repair loop unfreezes everything
+	// anyway. See docs/proposals/lock-and-diff.md.
+	if err := writeLock(logger, target, paths); err != nil {
+		logger.Warnf("could not write %s: %s", lock.DirName, err)
+	}
+
+	if verifyErr != nil {
+		return verifyErr
 	}
 	logger.Infof("tests passed (%s)", Strategy(repairer))
 
+	return nil
+}
+
+// writeLock records the specs this run understood, so the next one can tell
+// what changed.
+func writeLock(logger log.Logger, target Target, paths spec.Paths) error {
+	if err := lock.Write(paths, lock.Stamp{RulesHash: lock.HashRules(target.PromptRules)}); err != nil {
+		return err
+	}
+	logger.Infof("recorded the specs in %s/%s", filepath.Base(paths.Metacode), lock.DirName)
 	return nil
 }
 

@@ -12,7 +12,12 @@ import (
 	"github.com/pietroid/metacode/engine/internal/core/run"
 )
 
-const rules = `Rules:
+// PromptRules is the standing instruction block every request of a run opens
+// with. It is exported because the lock stamps a hash of it: a preserved
+// implementation was written under these words, and when they change the
+// engine cannot assume the code still answers to them. Nothing else in a run
+// invalidates preserved work, since every deterministic stage reruns in full.
+const PromptRules = `Rules:
 - The dumb widgets, the state classes and the tests are generated from the specs. Never rewrite them.
 - Business rules live in the Cubit. A widget calls Cubit methods; a widget never calls emit.
 - A wrapper instantiates its own dumb widget and passes its constructor parameters, and that is all it
@@ -46,7 +51,7 @@ func (im *Implementer) buildPrefix() (string, error) {
 	b.WriteString("specification. The scaffolding is complete and correct: the classes, their names, and the\n")
 	b.WriteString("files they live in all come from the spec. What is missing is behavior — the bodies of the\n")
 	b.WriteString("store actions and the wiring between widgets and stores.\n\n")
-	b.WriteString(rules)
+	b.WriteString(PromptRules)
 	b.WriteString("\n")
 
 	if err := im.writeContext(&b); err != nil {
@@ -57,14 +62,22 @@ func (im *Implementer) buildPrefix() (string, error) {
 
 // buildImplementSuffix is the half of the implement request that the repairs
 // do not share: the files as they stand, and the instruction.
-func (im *Implementer) buildImplementSuffix(files []editableFile) (string, error) {
+//
+// owned is every file this stage can write; writable is the subset this run is
+// asking for. They differ when the lock says the rest is already correct.
+func (im *Implementer) buildImplementSuffix(owned, writable []editableFile) (string, error) {
 	var b strings.Builder
 
-	if err := im.writeEditable(&b, files); err != nil {
+	if err := im.writeEditable(&b, owned, writable); err != nil {
 		return "", err
 	}
-	writeOutputFormat(&b, files)
-	b.WriteString("Write the behavior of the whole app.\n")
+	writeOutputFormat(&b, writable)
+	if len(writable) == len(owned) {
+		b.WriteString("Write the behavior of the whole app.\n")
+		return b.String(), nil
+	}
+	b.WriteString("The rest of the app is already implemented and its tests pass. Change only the files\n")
+	b.WriteString("listed above as yours to write, and leave the behavior they depend on as it is.\n")
 	return b.String(), nil
 }
 
@@ -72,7 +85,7 @@ func (im *Implementer) buildImplementSuffix(files []editableFile) (string, error
 func (im *Implementer) buildRepairSuffix(files []editableFile, failures []run.Failure) (string, error) {
 	var b strings.Builder
 
-	if err := im.writeEditable(&b, files); err != nil {
+	if err := im.writeEditable(&b, files, files); err != nil {
 		return "", err
 	}
 
@@ -218,13 +231,34 @@ func writeTestHoles(b *strings.Builder, tc TestCase) {
 	fmt.Fprintf(b, "    assert %s\n", tc.AssertionExpression)
 }
 
-// writeEditable writes the current contents of every file the model owns.
-func (im *Implementer) writeEditable(b *strings.Builder, files []editableFile) error {
-	b.WriteString("=== The files you are writing, as they stand now ===\n")
-	for _, f := range files {
-		fmt.Fprintf(b, "\n// role: %s", f.Role)
+// writeEditable writes the current contents of every file the model owns, each
+// marked as one this run is asking for or one it must leave alone.
+//
+// A frozen file is printed in full rather than omitted. It is working code the
+// writable files call into, and a model that cannot see the store it is wiring
+// a button to has to guess at the method name.
+func (im *Implementer) writeEditable(b *strings.Builder, owned, writable []editableFile) error {
+	open := make(map[string]bool, len(writable))
+	for _, f := range writable {
+		open[f.Path] = true
+	}
+
+	b.WriteString("=== The files you own, as they stand now ===\n")
+	for _, f := range owned {
+		if open[f.Path] {
+			fmt.Fprintf(b, "\n// YOURS TO WRITE. role: %s", f.Role)
+		} else {
+			fmt.Fprintf(b, "\n// ALREADY CORRECT, do not return it. role: %s", f.Role)
+		}
 		if f.Class != "" {
-			fmt.Fprintf(b, ", must declare class %s", f.Class)
+			fmt.Fprintf(b, ", declares class %s", f.Class)
+		}
+		if missing := im.missingSignatures(f); len(missing) > 0 {
+			// The scaffold no longer rewrites an implemented file, so a method
+			// the specs added since is simply not there. Naming it is the
+			// whole repair: the engine will not patch Dart, and a model that
+			// is not told will keep the file it was shown.
+			fmt.Fprintf(b, "//   add the missing action(s): %s\n", strings.Join(missing, ", "))
 		}
 		b.WriteString("\n")
 		if err := appendFile(b, im.ProjectDir, f.Path); err != nil {

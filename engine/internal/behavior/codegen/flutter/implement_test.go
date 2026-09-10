@@ -289,7 +289,11 @@ func fixtureReply() string {
 func TestEditableFilesOwnsOnlyStoresAndWrappers(t *testing.T) {
 	impl, _ := newImplementer(t, &recordingClient{})
 
-	files := impl.editableFiles()
+	// ownedFiles rather than editableFiles: the allowlist is what this stage
+	// can ever write, and editableFiles is the smaller set one run asks for.
+	// Pinning the filtered set would let the allowlist widen unnoticed on any
+	// run whose diff happened to be narrow.
+	files := impl.ownedFiles()
 	if len(files) == 0 {
 		t.Fatal("expected the stage to own something")
 	}

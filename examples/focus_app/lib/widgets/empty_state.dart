@@ -10,7 +10,7 @@ class EmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
     key: const Key('emptyState'),
-    child: Text('Adicione uma nova tarefa')
+    child: Text('Bla')
 );
   }
 }

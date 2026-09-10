@@ -9,6 +9,7 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/pietroid/metacode/engine/internal/behavior/rules"
 	"github.com/pietroid/metacode/engine/internal/codegen/dart"
 	"github.com/pietroid/metacode/engine/internal/core/model"
 )
@@ -68,23 +69,27 @@ func Generate(app *model.App, outDir string) error {
 			InitialLiteral: initialLiteral,
 			Methods:        methods,
 		}
-		if err := dart.ExecuteTemplate(tmpl, "cubit.dart.tmpl", filepath.Join(storesDir, cubitFile), cubitData); err != nil {
+		// A Cubit whose bodies a model has written is not re-scaffolded: the
+		// bodies are the run's expensive output and the stub would erase them.
+		// The signatures the specs imply can drift out of such a file, which
+		// the implement stage detects and repairs. See AGENTS.md, "Lock and
+		// diff".
+		cubitPath := filepath.Join(storesDir, cubitFile)
+		if dart.IsImplemented(cubitPath) {
+			continue
+		}
+		if err := dart.ExecuteTemplate(tmpl, "cubit.dart.tmpl", cubitPath, cubitData); err != nil {
 			return fmt.Errorf("cubit %s: %w", store.Name, err)
 		}
 	}
 	return nil
 }
 
-// storeAction is one method the generated Cubit must expose, together with the
-// scenarios that specify what it does.
-type storeAction struct {
-	Name string
-	// Indexed actions are run by a widget that is rendered once per row, so
-	// they take the row. The signature is the contract the implement stage
-	// writes a body for, and a contract the model has to correct is not one.
-	Indexed   bool
-	Scenarios []model.BehaviorScenario
-}
+// storeAction is one action of a store as this generator writes it. The
+// action set itself comes from behavior/rules, because which actions a store
+// has is a behavior fact; what this adds is the Dart the signature is written
+// in.
+type storeAction struct{ behaviorrules.StoreAction }
 
 // Params is the action's parameter list, in the target language.
 func (a storeAction) Params() string {
@@ -94,42 +99,12 @@ func (a storeAction) Params() string {
 	return ""
 }
 
-// collectActions gathers the actions a store must expose. They come from two
-// places, both of them the spec: a widget event bound to the store (resolved in
-// behavior/rules, see model.Binding) and an explicit "when: storeName.action".
-//
-// Nothing is inferred from the store's type. See AGENTS.md, "A store action
-// body is business logic, so no generator writes it".
 func collectActions(app *model.App, store model.Store) []storeAction {
-	index := make(map[string]int)
-	var actions []storeAction
-
-	add := func(name string, indexed bool, scenarioID string) {
-		i, ok := index[name]
-		if !ok {
-			index[name] = len(actions)
-			actions = append(actions, storeAction{Name: name})
-			i = len(actions) - 1
-		}
-		actions[i].Indexed = actions[i].Indexed || indexed
-		if s, ok := app.ScenarioByID(scenarioID); ok {
-			actions[i].Scenarios = append(actions[i].Scenarios, s)
-		}
+	from := behaviorrules.StoreActions(app, store)
+	actions := make([]storeAction, 0, len(from))
+	for _, a := range from {
+		actions = append(actions, storeAction{a})
 	}
-
-	for _, b := range app.Symbols.BindingsForStore(store.Name) {
-		for _, id := range b.ScenarioIDs {
-			add(b.Action, b.Indexed, id)
-		}
-	}
-
-	for _, b := range app.Behaviors {
-		root, action := model.SplitRef(b.When)
-		if root == store.Name && action != "" {
-			add(action, false, b.ID)
-		}
-	}
-
 	return actions
 }
 

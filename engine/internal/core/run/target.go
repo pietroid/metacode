@@ -47,6 +47,12 @@ type Target struct {
 
 	// TestCommand runs the generated suite, as command and arguments.
 	TestCommand []string
+
+	// PromptRules is the standing instruction block this target's implement
+	// stage opens every request with. The lock stamps a hash of it, so that a
+	// preserved implementation written under different words is regenerated
+	// rather than trusted.
+	PromptRules string
 }
 
 // Implementer fills in the behavior a spec describes but cannot derive, and
@@ -71,6 +77,7 @@ func (t Target) validate() error {
 		"Prune":          t.Prune != nil,
 		"NewImplementer": t.NewImplementer != nil,
 		"TestCommand":    len(t.TestCommand) > 0,
+		"PromptRules":    t.PromptRules != "",
 	} {
 		if !set {
 			missing = append(missing, name)

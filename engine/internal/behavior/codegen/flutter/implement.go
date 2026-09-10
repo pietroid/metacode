@@ -17,6 +17,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/pietroid/metacode/engine/internal/behavior/rules"
 	"github.com/pietroid/metacode/engine/internal/codegen/dart"
 	"github.com/pietroid/metacode/engine/internal/core/model"
 	"github.com/pietroid/metacode/engine/internal/core/plan"
@@ -55,13 +56,14 @@ type editableFile struct {
 	Path  string // relative to the project root
 	Class string // empty when no particular class name is required
 	Role  string // "store" or "wrapper", for the prompt
+	Name  string // the store or widget it belongs to, as the specs name it
 }
 
-// editableFiles is the complete set of files this stage owns. Nothing outside
-// it is written, whatever the reply contains: the dumb widgets, the state
-// classes and the tests are derived from the specs, and a model that rewrites
-// a test to match its code has verified nothing.
-func (im *Implementer) editableFiles() []editableFile {
+// ownedFiles is the complete set of files this stage may ever write. Nothing
+// outside it is written, whatever the reply contains: the dumb widgets, the
+// state classes and the tests are derived from the specs, and a model that
+// rewrites a test to match its code has verified nothing.
+func (im *Implementer) ownedFiles() []editableFile {
 	var files []editableFile
 
 	for _, store := range im.App.Stores {
@@ -69,6 +71,7 @@ func (im *Implementer) editableFiles() []editableFile {
 			Path:  dart.CubitFile(store.Name),
 			Class: dart.CubitClass(store.Name),
 			Role:  "store",
+			Name:  store.Name,
 		})
 	}
 
@@ -77,10 +80,112 @@ func (im *Implementer) editableFiles() []editableFile {
 			Path:  dart.WrapperFile(widget),
 			Class: dart.WrapperClass(widget),
 			Role:  "wrapper",
+			Name:  widget,
 		})
 	}
 
 	return files
+}
+
+// editableFiles is the subset of the owned files this run offers to a model.
+//
+// The rest are frozen. They are still printed, as code to read and not change,
+// so the model writes against the whole app rather than the slice that
+// changed. Freezing shows up in what the model is asked to produce rather than
+// in what it is shown, which is where the cost is: output is the expensive
+// half of a request, and a narrower write is a more accurate one.
+//
+// Frozen files stay in the suffix rather than moving to the read-only section
+// of the prefix, because the prefix is byte-identical across a run and a
+// repair has to be able to reach a file the implement call could not. A file
+// listed as "never change" in a cached prefix and as writable in a repair
+// would be two instructions about one file.
+//
+// Three things unfreeze a file, and they answer different questions. The diff
+// says what the author changed. The stub header says the file has never been
+// implemented, which is the only signal that survives a deleted lib/ or a
+// fresh clone, neither of which a spec diff can see. Signature drift says the
+// specs have moved under a preserved file, which happens because the scaffold
+// no longer rewrites it.
+func (im *Implementer) editableFiles() []editableFile {
+	var files []editableFile
+	for _, f := range im.ownedFiles() {
+		if reason, ok := im.unfrozen(f); ok {
+			im.Logger.Debugf("%s is open for rewriting: %s", f.Path, reason)
+			files = append(files, f)
+			continue
+		}
+		im.Logger.Debugf("%s is frozen: nothing this run changed reaches it", f.Path)
+	}
+	return files
+}
+
+// unfrozen reports whether a model may write this file, and why.
+func (im *Implementer) unfrozen(f editableFile) (string, bool) {
+	stale := im.Work.Stale
+	switch f.Role {
+	case "store":
+		if stale.HasStore(f.Name) {
+			return "the specs behind it changed", true
+		}
+	case "wrapper":
+		if stale.HasWrapper(f.Name) {
+			return "the specs behind it changed", true
+		}
+	}
+
+	full := filepath.Join(im.ProjectDir, f.Path)
+	if !dart.IsImplemented(full) {
+		return "it has never been implemented", true
+	}
+	if missing := im.missingSignatures(f); len(missing) > 0 {
+		return "it is missing " + strings.Join(missing, ", "), true
+	}
+	return "", false
+}
+
+// missingSignatures reports the store actions the specs imply that a
+// preserved file does not declare.
+//
+// This is the cost of not re-scaffolding a Cubit: an action added to
+// behaviors.yaml no longer arrives as a stub method, because the generator
+// that would have written it skipped the file. The answer is not to patch
+// Dart, which would put a second code writer in the engine. It is to notice
+// and delegate: the file is unfrozen, and the prompt is told which signatures
+// it owes.
+//
+// The check is a name search rather than a parse. A false positive unfreezes a
+// file that did not need it, which costs part of one request; a parser here
+// would cost a parser here.
+func (im *Implementer) missingSignatures(f editableFile) []string {
+	if f.Role != "store" {
+		return nil
+	}
+	store, ok := im.storeNamed(f.Name)
+	if !ok {
+		return nil
+	}
+	code, err := os.ReadFile(filepath.Join(im.ProjectDir, f.Path))
+	if err != nil {
+		return nil
+	}
+
+	var missing []string
+	for _, action := range behaviorrules.StoreActions(im.App, store) {
+		if !strings.Contains(string(code), action.Name+"(") {
+			missing = append(missing, action.Name)
+		}
+	}
+	return missing
+}
+
+func (im *Implementer) storeNamed(name string) (model.Store, bool) {
+	for _, store := range im.App.Stores {
+		if store.Name == name {
+			return store, true
+		}
+	}
+	return model.Store{}, false
 }
 
 // Implement makes the one request that writes the behavior of the whole app.
@@ -89,9 +194,13 @@ func (im *Implementer) Implement(ctx context.Context) error {
 		return fmt.Errorf("no LLM client configured")
 	}
 
+	// An empty set is the lock paying off: every owned file is already
+	// implemented and nothing this run changed reaches it, so the one
+	// expensive stage is skipped entirely. The suite still runs, and a failure
+	// still enters the repair loop, which opens everything.
 	files := im.editableFiles()
 	if len(files) == 0 {
-		im.Logger.Infof("nothing to implement: no stores and no wrappers")
+		im.Logger.Infof("nothing to implement: every store and wrapper is up to date")
 		return nil
 	}
 
@@ -99,12 +208,13 @@ func (im *Implementer) Implement(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("build prompt: %w", err)
 	}
-	suffix, err := im.buildImplementSuffix(files)
+	suffix, err := im.buildImplementSuffix(im.ownedFiles(), files)
 	if err != nil {
 		return fmt.Errorf("build prompt: %w", err)
 	}
 
-	im.Logger.Infof("implementing %d file(s) in one request: %s", len(files), strings.Join(paths(files), ", "))
+	im.Logger.Infof("implementing %d of %d owned file(s) in one request: %s",
+		len(files), len(im.ownedFiles()), strings.Join(paths(files), ", "))
 
 	result, err := im.Client.Complete(ctx, llm.Call{Label: "implement", Prefix: prefix, Prompt: suffix})
 	if err != nil {
@@ -132,7 +242,13 @@ func (im *Implementer) Repair(ctx context.Context, iteration int, failures []run
 		return nil
 	}
 
-	files := im.editableFiles()
+	// Every owned file, not just the ones the diff opened. A run reaches here
+	// because something the diff called untouched is in fact broken, which is
+	// exactly the case the classification is allowed to get wrong: a renamed
+	// variable that changes logic looks like a layout edit. The suite is what
+	// catches it, and the repair is what fixes it, so the repair sees
+	// everything.
+	files := im.ownedFiles()
 	prefix, err := im.buildPrefix()
 	if err != nil {
 		return fmt.Errorf("build prompt: %w", err)
@@ -213,8 +329,7 @@ func (im *Implementer) writeFile(file editableFile, code string) error {
 	}
 
 	full := filepath.Join(im.ProjectDir, file.Path)
-	existing, _ := os.ReadFile(full)
-	code = preserveMarker(string(existing), code)
+	code = preserveMarker(code)
 
 	if err := os.MkdirAll(filepath.Dir(full), 0755); err != nil {
 		return fmt.Errorf("create dir for %s: %w", file.Path, err)
@@ -226,19 +341,23 @@ func (im *Implementer) writeFile(file editableFile, code string) error {
 	return nil
 }
 
-// preserveMarker keeps the generated-file header when a reply drops it. Stale
-// output is pruned by that marker, so an unmarked file is one nothing can
-// clean up later.
-func preserveMarker(oldCode, newCode string) string {
-	if strings.Contains(newCode, dart.Marker) {
-		return newCode
-	}
-	for _, line := range strings.Split(oldCode, "\n") {
+// preserveMarker gives the file the model just wrote the implemented header.
+// Stale output is pruned by the marker, so an unmarked file is one nothing can
+// clean up later, and a file that kept the stub header would be re-scaffolded
+// on the next run and lose exactly the work this stage paid for.
+//
+// A reply that carried its own marker line has it replaced rather than
+// trusted: the model is copying the header it was shown, which is the stub
+// one whenever this is the first implement pass over the file.
+func preserveMarker(newCode string) string {
+	var kept []string
+	for _, line := range strings.Split(newCode, "\n") {
 		if strings.Contains(line, dart.Marker) {
-			return line + "\n" + newCode
+			continue
 		}
+		kept = append(kept, line)
 	}
-	return "// " + dart.Marker + " - DO NOT EDIT BY HAND\n" + newCode
+	return dart.ImplementedHeader + "\n" + strings.TrimLeft(strings.Join(kept, "\n"), "\n")
 }
 
 func mentions(blocks []FileBlock, path string) bool {

@@ -25,6 +25,7 @@ func main() {
 			return behaviorflutter.New(client, logger, app, work, outDir)
 		},
 		TestCommand: []string{"flutter", "test"},
+		PromptRules: behaviorflutter.PromptRules,
 	}
 
 	if err := run.Execute(flutterTarget); err != nil {

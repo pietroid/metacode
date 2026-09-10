@@ -15,4 +15,9 @@ type Work struct {
 	// Tests names the scenarios to verify, in spec order: exactly one test
 	// each.
 	Tests []string
+	// Stale is the part of that work a model still has to write. It is filled
+	// after Build, by the stage that diffs the specs against the lock, because
+	// what needs writing depends on what the last run left behind and Build
+	// answers from the model alone.
+	Stale Stale
 }

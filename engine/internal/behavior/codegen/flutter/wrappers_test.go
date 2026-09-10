@@ -169,3 +169,89 @@ func TestWrappersNest(t *testing.T) {
 		}
 	}
 }
+
+// TestAnImplementedWrapperSurvivesTheNextRun is the wrapper half of what the
+// lock rests on. The baseline this generator renders is a starting point, and
+// rewriting it every run threw away the wiring before the implement stage
+// could keep it.
+func TestAnImplementedWrapperSurvivesTheNextRun(t *testing.T) {
+	app := counterAppTwoButtons(t)
+	work, err := plan.Build(app)
+	if err != nil {
+		t.Fatalf("plan: %v", err)
+	}
+	out := setupGeneratedFiles(t, app)
+	if err := GenerateWrappers(app, work, out); err != nil {
+		t.Fatalf("first run: %v", err)
+	}
+
+	path := filepath.Join(out, dart.WrapperFile("incrementButton"))
+	wired := dart.ImplementedHeader + "\nclass IncrementButtonWrapper { /* wired */ }\n"
+	if err := os.WriteFile(path, []byte(wired), 0644); err != nil {
+		t.Fatalf("write: %v", err)
+	}
+
+	if err := GenerateWrappers(app, work, out); err != nil {
+		t.Fatalf("second run: %v", err)
+	}
+
+	got, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("read: %v", err)
+	}
+	if string(got) != wired {
+		t.Errorf("the second run overwrote a wired wrapper:\n%s", got)
+	}
+}
+
+// TestAPreservedWrapperIsStillRegisteredInAppDart: skipping the write must not
+// skip the registration, or the app stops naming a wrapper it still uses.
+func TestAPreservedWrapperIsStillRegisteredInAppDart(t *testing.T) {
+	app := counterAppTwoButtons(t)
+	work, err := plan.Build(app)
+	if err != nil {
+		t.Fatalf("plan: %v", err)
+	}
+	out := setupGeneratedFiles(t, app)
+	if err := GenerateWrappers(app, work, out); err != nil {
+		t.Fatalf("first run: %v", err)
+	}
+	for _, widget := range work.Wrappers {
+		path := filepath.Join(out, dart.WrapperFile(widget))
+		body := dart.ImplementedHeader + "\nclass " + dart.WrapperClass(widget) + " {}\n"
+		if err := os.WriteFile(path, []byte(body), 0644); err != nil {
+			t.Fatalf("write: %v", err)
+		}
+	}
+
+	if err := GenerateWrappers(app, work, out); err != nil {
+		t.Fatalf("second run: %v", err)
+	}
+
+	appDart, err := os.ReadFile(filepath.Join(out, "lib", "app.dart"))
+	if err != nil {
+		t.Fatalf("read app.dart: %v", err)
+	}
+	if !strings.Contains(string(appDart), dart.WrapperClass("homePage")) {
+		t.Errorf("app.dart no longer names the page wrapper:\n%s", appDart)
+	}
+}
+
+// TestAFreshWrapperIsMarkedAsAStub: everything this generator renders is a
+// baseline no model has seen, and the header is what says so.
+func TestAFreshWrapperIsMarkedAsAStub(t *testing.T) {
+	app := counterAppTwoButtons(t)
+	work, err := plan.Build(app)
+	if err != nil {
+		t.Fatalf("plan: %v", err)
+	}
+	out := setupGeneratedFiles(t, app)
+	if err := GenerateWrappers(app, work, out); err != nil {
+		t.Fatalf("generate: %v", err)
+	}
+
+	path := filepath.Join(out, dart.WrapperFile("incrementButton"))
+	if !dart.IsStub(path) {
+		t.Error("a freshly rendered wrapper is not marked as a stub")
+	}
+}
