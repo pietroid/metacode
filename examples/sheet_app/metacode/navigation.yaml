@@ -1,0 +1,10 @@
+initialRoute: home
+
+routes:
+  home:
+    child: homePage
+    type: page
+
+  addTask:
+    child: addTaskSheet
+    type: bottomSheet

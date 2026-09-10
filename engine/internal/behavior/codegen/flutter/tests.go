@@ -30,6 +30,21 @@ func generateTestFiles(cases []TestCase, outDir string) error {
 		return fmt.Errorf("parse templates: %w", err)
 	}
 
+	// The recorder is written once for the whole suite, because every test of
+	// a routed app hands one to the router whether or not its scenario reads
+	// it back. It lives under test/ for the same reason it is a NavigatorObserver
+	// and not a port: navigation is the one native action Flutter already
+	// gives the suite a way to watch.
+	if len(cases) > 0 && cases[0].UsesRouter {
+		path := filepath.Join(outDir, filepath.FromSlash(dart.NavigationSpyFile()))
+		if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
+			return fmt.Errorf("create test support dir: %w", err)
+		}
+		if err := dart.ExecuteTemplate(tmpl, "navigation_spy.dart.tmpl", path, nil); err != nil {
+			return fmt.Errorf("navigation spy: %w", err)
+		}
+	}
+
 	for _, tc := range cases {
 		path := filepath.Join(outDir, tc.TargetFile)
 		if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {

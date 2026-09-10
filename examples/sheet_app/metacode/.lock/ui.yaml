@@ -1,0 +1,50 @@
+widgets:
+  homePage:
+    scaffold:
+      body: homeContent
+      floatingActionButton: addTaskButton
+
+  addTaskButton:
+    floatingActionButton:
+      child:
+        icon: icons.add
+      onPressed: onAddTask
+
+  emptyState:
+    center:
+      child:
+        text: "Nothing yet"
+
+  defaultState:
+    column:
+      - text: "My tasks"
+      - expanded:
+          listView:
+            items: taskList
+            item: taskTile
+
+  taskTile:
+    listTile:
+      title: taskTitle
+      leading: taskCheckbox
+
+  taskCheckbox:
+    checkbox:
+      value: taskDone
+      onChanged: taskToggled
+
+  addTaskSheet:
+    column:
+      - text: "New task"
+      - saveTaskButton
+      - cancelButton
+
+  saveTaskButton:
+    elevatedButton:
+      child: "Save"
+      onPressed: onSaveTask
+
+  cancelButton:
+    textButton:
+      child: "Cancel"
+      onPressed: onCancel

@@ -14,6 +14,7 @@ import (
 	"github.com/pietroid/metacode/engine/internal/core/model"
 	"github.com/pietroid/metacode/engine/internal/specs/data/codegen/flutter"
 	"github.com/pietroid/metacode/engine/internal/specs/model/codegen/flutter"
+	"github.com/pietroid/metacode/engine/internal/specs/navigation/codegen/flutter"
 	"github.com/pietroid/metacode/engine/internal/specs/project/codegen/flutter"
 	"github.com/pietroid/metacode/engine/internal/specs/ui/catalog"
 	"github.com/pietroid/metacode/engine/internal/specs/ui/codegen/flutter"
@@ -33,6 +34,12 @@ func GenerateAll(app *model.App, outDir string) error {
 	}
 	if err := uiflutter.Generate(app, catalog.Default(), outDir); err != nil {
 		return fmt.Errorf("widget generation: %w", err)
+	}
+	// The router comes after the widgets, because it names the wrapper of
+	// every route's child and the wrappers are named from the same rule the
+	// widget generator just applied.
+	if err := navigationflutter.Generate(app, outDir); err != nil {
+		return fmt.Errorf("router generation: %w", err)
 	}
 	return nil
 }

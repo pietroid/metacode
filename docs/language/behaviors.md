@@ -4,11 +4,11 @@ Behaviors are the centerpiece of Metacode. Everything else exists so a scenario
 has names to refer to.
 
 A behavior is not an integration test and not a unit test. It describes what
-the app does, at the surface: an event goes in, a value comes out. It never
-mentions a class, a layer, or a method. "The counter increments when the button
-is pressed" is a behavior; "CounterCubit.increment emits state+1" is an
-implementation detail, and Metacode is the thing that decides implementation
-details.
+the app does, at the surface: an event goes in, state settles and actions
+fire. It never mentions a class, a layer, or a method. "The counter increments
+when the button is pressed" is a behavior; "CounterCubit.increment emits
+state+1" is an implementation detail, and Metacode is the thing that decides
+implementation details.
 
 Each scenario becomes exactly one test, and that test drives the whole app the
 way a user would.
@@ -49,11 +49,36 @@ A value the store's type cannot hold is an error, not a coercion. Seeding
 `"[]"` into a list store used to produce a test that ran, passed, and checked
 nothing.
 
+A given can also say where the app starts, which is the one precondition that
+is not a value:
+
+```yaml
+saving appends the task:
+  given:
+    navigator.route: addTask
+    taskStore.value: []
+  when: saveTaskButton.onSaveTask
+  then: taskStore.value.first.description should be "New task"
+```
+
+Without it, a scenario about a button inside a sheet has nothing to tap: the
+button is not on screen until the app is there. See
+[navigation.md](navigation.md#starting-somewhere-else).
+
 **`when`** is the event that happens. Leave it empty (`when: # always`) for a
 scenario about what is on screen rather than about something a user did.
 
-**`then`** is the expectation, written `<target> should be <value>`. That is
-the only operator; `is` and `=` read the same way.
+**`then`** is the expectation, written `<target> should <predicate>`. There
+are two predicates. `be <value>` is a fact about state the app settled on, and
+it is the one most scenarios need. A verb is an action the app performed:
+
+```yaml
+pressing add opens the sheet:
+  when: addTaskButton.onAddTask
+  then: navigator should push addTask
+```
+
+State is expected, an action is verified. See [actions.md](actions.md).
 
 ## Addressing things
 
@@ -117,7 +142,8 @@ A row selector is not part of the event. `taskCheckbox.first.taskToggled` and
 `taskCheckbox.last.taskToggled` are one event fired by two different rows.
 
 `when` can also name a store action directly, `counterStore.decrement`, for a
-rule with no UI behind it.
+rule with no UI behind it. An action, though, always needs a widget event: a
+push with nothing to fire it is a test that checks a call nobody made.
 
 ## Grouping
 

@@ -6,7 +6,8 @@ engine works, to write it.
 
 ## The idea in one page
 
-A Metacode project has a `metacode/` folder holding four or five files:
+A Metacode project has a `metacode/` folder holding four required files and
+two optional ones:
 
 ```
 metacode/
@@ -14,6 +15,7 @@ metacode/
 ├── data.yaml        what the app stores
 ├── models.yaml      the shapes it stores (optional)
 ├── ui.yaml          what is on screen
+├── navigation.yaml  where the app can go (optional)
 └── behaviors.yaml   what the app does
 ```
 
@@ -84,11 +86,14 @@ a way the diff is clearly not seeing.
 | [behaviors.md](behaviors.md) | scenarios, given/when/then, grouping. **Start here.** |
 | [ui.md](ui.md) | declaring widgets, variables, and event names |
 | [catalog.md](catalog.md) | the widget and icon vocabulary |
+| [navigation.md](navigation.md) | routes, and how each one appears |
+| [actions.md](actions.md) | what the app does rather than holds, and how it is verified |
 | [data.md](data.md) | stores |
 | [models.md](models.md) | models and enums |
 | [project.md](project.md) | the project file |
 
-Two complete examples live in `examples/counter_app` and `examples/focus_app`.
+Complete examples live in `examples/counter_app`, `examples/focus_app` and
+`examples/sheet_app`, the last of which is the one with routes.
 
 ## The one rule worth internalising
 

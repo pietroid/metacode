@@ -30,6 +30,11 @@ func ResolveBindings(app *model.App) error {
 		if b.Then == nil {
 			continue
 		}
+		if !b.Then.IsState() {
+			// The scenario verifies an action rather than a value. Nothing in
+			// the store answers for it: see specs/actions/rules.
+			continue
+		}
 		store, field := model.SplitRef(b.Then.Target)
 		if field == "" {
 			continue

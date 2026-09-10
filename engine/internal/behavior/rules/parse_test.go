@@ -23,7 +23,7 @@ func TestParseAssertionShouldBe(t *testing.T) {
 }
 
 func TestParseGivenMapping(t *testing.T) {
-	assertion, err := ParseGiven(map[string]any{"counterStore.value": 0})
+	assertion, _, err := ParseGiven(map[string]any{"counterStore.value": 0})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -36,7 +36,7 @@ func TestParseGivenMapping(t *testing.T) {
 }
 
 func TestParseGivenList(t *testing.T) {
-	assertion, err := ParseGiven(map[string]any{
+	assertion, _, err := ParseGiven(map[string]any{
 		"taskStore.value": []any{map[string]any{"description": "Buy milk", "done": false}},
 	})
 	if err != nil {
@@ -48,13 +48,42 @@ func TestParseGivenList(t *testing.T) {
 }
 
 func TestParseGivenRejectsString(t *testing.T) {
-	if _, err := ParseGiven("counterStore.value is 0"); err == nil {
+	if _, _, err := ParseGiven("counterStore.value is 0"); err == nil {
 		t.Fatal("expected error for a given written as a string")
 	}
 }
 
+func TestParseGivenReadsTheRoute(t *testing.T) {
+	assertion, route, err := ParseGiven(map[string]any{
+		"navigator.route":  "addTask",
+		"draftStore.value": "Buy milk",
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if route != "addTask" {
+		t.Errorf("expected route addTask, got %q", route)
+	}
+	if assertion == nil || assertion.Target != "draftStore.value" {
+		t.Errorf("expected the value given to survive beside the route, got %+v", assertion)
+	}
+}
+
+func TestParseGivenRouteAlone(t *testing.T) {
+	assertion, route, err := ParseGiven(map[string]any{"navigator.route": "addTask"})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if route != "addTask" {
+		t.Errorf("expected route addTask, got %q", route)
+	}
+	if assertion != nil {
+		t.Errorf("expected no value given, got %+v", assertion)
+	}
+}
+
 func TestParseGivenRejectsTwoTargets(t *testing.T) {
-	_, err := ParseGiven(map[string]any{"a.value": 1, "b.value": 2})
+	_, _, err := ParseGiven(map[string]any{"a.value": 1, "b.value": 2})
 	if err == nil {
 		t.Fatal("expected error for a given naming two targets")
 	}

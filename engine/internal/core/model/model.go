@@ -11,14 +11,15 @@ import "strings"
 
 // App is the single internal representation produced from the raw specs.
 type App struct {
-	Project   Project
-	Stores    []Store
-	UI        []UIComponent
-	Behaviors []BehaviorScenario
-	Models    []Model
-	Enums     []Enum
-	Symbols   SymbolTable
-	Warnings  []string
+	Project    Project
+	Navigation Navigation
+	Stores     []Store
+	UI         []UIComponent
+	Behaviors  []BehaviorScenario
+	Models     []Model
+	Enums      []Enum
+	Symbols    SymbolTable
+	Warnings   []string
 }
 
 // ScenarioByID returns the scenario with the given ID. Three packages used to

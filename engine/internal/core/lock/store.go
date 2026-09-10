@@ -74,6 +74,7 @@ var specFiles = []struct {
 	{"ui.yaml", func(p *spec.Paths) *string { return &p.UI }},
 	{"behaviors.yaml", func(p *spec.Paths) *string { return &p.Behaviors }},
 	{"models.yaml", func(p *spec.Paths) *string { return &p.Models }},
+	{"navigation.yaml", func(p *spec.Paths) *string { return &p.Navigation }},
 }
 
 // Dir is where the lock lives for a project.

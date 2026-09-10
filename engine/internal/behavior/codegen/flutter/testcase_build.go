@@ -10,6 +10,8 @@ import (
 	"github.com/pietroid/metacode/engine/internal/core/model"
 	"github.com/pietroid/metacode/engine/internal/core/plan"
 	"github.com/pietroid/metacode/engine/internal/order"
+	"github.com/pietroid/metacode/engine/internal/specs/actions/catalog"
+	"github.com/pietroid/metacode/engine/internal/specs/actions/codegen/flutter"
 	"github.com/pietroid/metacode/engine/internal/specs/project/rules"
 	"github.com/pietroid/metacode/engine/internal/specs/ui/catalog"
 )
@@ -59,12 +61,24 @@ func buildTestCase(app *model.App, scenario model.BehaviorScenario) (TestCase, e
 		StateFile:   dart.LibImport(dart.StateFile(store.Name)),
 	}
 
-	pageName := dart.FirstPageName(app.UI)
-	if pageName == "" {
-		return TestCase{}, fmt.Errorf("scenario %q requires a page for a widget test", scenario.ID)
+	// A routed app is driven through its router: that is the app, and a test
+	// that pumped one page directly would verify a screen the user never
+	// reaches that way. Everything a scenario looks for is still found by key.
+	if app.Navigation.Declared() {
+		tc.UsesRouter = true
+		tc.RouterFile = dart.LibImport(dart.RouterFile())
+		tc.SpyFile = dart.TestSupportImport(dart.NavigationSpyFile())
+		tc.SpyClass = actionsflutter.SpyClass
+		tc.SpyVar = actionsflutter.SpyVariable
+		tc.GivenRoute = scenario.GivenRoute
+	} else {
+		pageName := dart.FirstPageName(app.UI)
+		if pageName == "" {
+			return TestCase{}, fmt.Errorf("scenario %q requires a page for a widget test", scenario.ID)
+		}
+		tc.PageWrapperClass = dart.WrapperClass(pageName)
+		tc.PageWrapperFile = dart.LibImport(dart.WrapperFile(pageName))
 	}
-	tc.PageWrapperClass = dart.WrapperClass(pageName)
-	tc.PageWrapperFile = dart.LibImport(dart.WrapperFile(pageName))
 
 	if err := buildWidgetTestCase(app, scenario, &tc, store); err != nil {
 		return TestCase{}, err
@@ -98,7 +112,29 @@ func buildWidgetTestCase(app *model.App, scenario model.BehaviorScenario, tc *Te
 	}
 	tc.AssertionExpression = assertion
 	tc.Imports = append(tc.Imports, imports...)
+	tc.Settle = startsTransition(scenario, app)
 	return nil
+}
+
+// startsTransition reports whether the scenario's action moves the app between
+// routes, which is the one thing a single pump cannot see through.
+//
+// It is asked per scenario rather than set for every test of a routed app,
+// because pumpAndSettle waits for every animation to end and there are
+// widgets, a progress indicator among them, whose animation never does. A test
+// waits only when a route is what it is waiting for.
+func startsTransition(scenario model.BehaviorScenario, app *model.App) bool {
+	if scenario.Then != nil && !scenario.Then.IsState() {
+		return true
+	}
+	if scenario.When == "" {
+		return false
+	}
+	event, ok := app.Symbols.Events[scenario.When]
+	if !ok {
+		return false
+	}
+	return len(app.Symbols.ActionBindingsFor(event.Widget, event.Address)) > 0
 }
 
 // seedState renders the state a scenario's "Given" starts from. It is passed
@@ -214,6 +250,17 @@ func renderAssertion(scenario model.BehaviorScenario, app *model.App, store mode
 		return "", nil, fmt.Errorf("scenario has no then to assert")
 	}
 
+	// An action is verified rather than expected: the test reads the calls the
+	// app made off the recorder it handed the router, because a push leaves no
+	// state behind to look at.
+	if !then.IsState() {
+		expr, err := actionsflutter.Verify(then)
+		if err != nil {
+			return "", nil, err
+		}
+		return expr, nil, nil
+	}
+
 	ref := model.ParseRef(then.Target)
 	if sym, ok := app.Symbols.Lookup(ref.Root); ok && sym.Kind == "store" {
 		expr, err := storeExpression(ref, app, store)
@@ -231,10 +278,11 @@ func renderAssertion(scenario model.BehaviorScenario, app *model.App, store mode
 		return widgetAssertion(ref, scenario, app)
 	}
 
-	// A then whose root is neither a store nor a widget cannot be turned into an
-	// assertion, and must not fall back to one: see AGENTS.md, "A test with
-	// no interaction is not a test".
-	return "", nil, fmt.Errorf("cannot assert on %q: %q is neither a store nor a widget", then.Target, ref.Root)
+	// A then whose root is neither a store, a widget nor an action subject
+	// cannot be turned into an assertion, and must not fall back to one: see
+	// AGENTS.md, "A test with no interaction is not a test".
+	return "", nil, fmt.Errorf("cannot assert on %q: %q is not a store, a widget or one of %s",
+		then.Target, ref.Root, strings.Join(actioncatalog.Default().Names(), ", "))
 }
 
 // storeExpression walks a ref into the Dart that reads it off the state. A

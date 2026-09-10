@@ -51,6 +51,9 @@ func classifyOne(change Change, previous, current *model.App, stale *plan.Stale)
 
 	case KindModel:
 		classifyModel(change, current, stale)
+
+	case KindRoute:
+		classifyRoute(change, previous, current, stale)
 	}
 }
 
@@ -167,6 +170,29 @@ func isStore(app *model.App, name string) bool {
 		}
 	}
 	return false
+}
+
+// classifyRoute unfreezes the wrappers that reach a changed route: the ones
+// whose events push it, and the wrapper of the widget it shows.
+//
+// The router itself is regenerated deterministically on every run, so a
+// changed route costs nothing there. What a model wrote is the push, and a
+// push that now names a different destination is wiring the specs moved.
+func classifyRoute(change Change, previous, current *model.App, stale *plan.Stale) {
+	for _, app := range []*model.App{previous, current} {
+		if app == nil {
+			continue
+		}
+		for _, binding := range app.Symbols.ActionBindings {
+			if binding.Arg == change.ID {
+				stale.AddWrapper(binding.Widget)
+			}
+		}
+		if route, ok := app.Navigation.Route(change.ID); ok {
+			stale.AddWrapper(route.Child)
+		}
+	}
+	stale.AddReason(fmt.Sprintf("route %s %s", change.ID, change.Op))
 }
 
 // classifyModel unfreezes every store that holds the changed shape. Models and

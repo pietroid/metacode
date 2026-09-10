@@ -33,5 +33,26 @@ func WrapperWidgets(app *model.App) map[string]bool {
 			out[event.Widget] = true
 		}
 	}
+
+	// A widget that embeds a wrapped widget needs a wrapper too, whatever it
+	// declares of its own. The wired child is a slot in the generated widget,
+	// and a slot is filled by the wrapper of the widget that holds it, so a
+	// pure container of two wired buttons has to have one or the buttons are
+	// parameters nothing passes.
+	for changed := true; changed; {
+		changed = false
+		for _, comp := range app.UI {
+			if out[comp.Name] {
+				continue
+			}
+			for _, ref := range ReferencedWidgets(comp, app.Symbols) {
+				if out[ref] {
+					out[comp.Name] = true
+					changed = true
+					break
+				}
+			}
+		}
+	}
 	return out
 }

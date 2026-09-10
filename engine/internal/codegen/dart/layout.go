@@ -42,6 +42,26 @@ func WidgetClass(widget string) string {
 	return PascalCase(widget)
 }
 
+// RouterFile is the file the route table is written to. It is generated from
+// navigation.yaml on every run and no model writes it.
+func RouterFile() string { return "lib/navigation/router.dart" }
+
+// NavigationSpyFile is the recording NavigatorObserver a generated test uses
+// to verify a push or a pop. It lives under test/ because it is part of the
+// suite: nothing in lib/ needs a seam for navigation, since Flutter already
+// ships the one an observer plugs into.
+func NavigationSpyFile() string { return "test/support/navigation_spy.dart" }
+
+// TestSupportImport turns a path under test/ into the form a test file imports
+// it by: "test/support/navigation_spy.dart" becomes
+// "support/navigation_spy.dart".
+func TestSupportImport(testPath string) string { return strings.TrimPrefix(testPath, "test/") }
+
+// RoutePath is the location a declared route answers to. Route names are spec
+// symbols and paths are URLs, so the name stays the identity and the path is
+// derived from it once, here.
+func RoutePath(route string) string { return "/" + SnakeCase(route) }
+
 // CubitFile is the file a store's Cubit is written to.
 func CubitFile(store string) string {
 	return fmt.Sprintf("lib/stores/%s_cubit.dart", SnakeCase(StoreBaseName(store)))

@@ -9,6 +9,9 @@ type SymbolTable struct {
 
 	// Bindings link widget events to the store actions they run. See binding.go.
 	Bindings []Binding
+	// ActionBindings link widget events to the native actions they run. See
+	// action.go.
+	ActionBindings []ActionBinding
 }
 
 // KindWidgetVariable is the kind of a variable that holds a widget rather than
@@ -18,7 +21,7 @@ const KindWidgetVariable = "widget variable"
 // Symbol is a named entity referenced by the specs.
 type Symbol struct {
 	Name string
-	Kind string // "store", "widget", "action", "variable", "model", "enum", KindWidgetVariable
+	Kind string // "store", "widget", "action", "variable", "model", "enum", KindWidgetVariable, KindActionSubject
 }
 
 // EventRef is a widget event a behavior referenced, resolved.

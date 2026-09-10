@@ -14,10 +14,13 @@ suite, zero unreachable code, and a cyclomatic cap of 12 per non-test function.
 
 ```
  1  discover      find the metacode/ folder above the working directory
- 2  parse         read project.yaml, data.yaml, ui.yaml, behaviors.yaml, models.yaml
+ 2  parse         read project.yaml, data.yaml, ui.yaml, behaviors.yaml, models.yaml,
+                  navigation.yaml
  3  build         raw YAML -> model, by asking each spec kind's rules
- 4  resolve       cross-reference symbols, resolve widget-event -> store-action
- 5  scaffold      write the project, the models, the stores, the dumb widgets
+ 4  resolve       cross-reference symbols, resolve widget-event -> store action
+                  and widget-event -> native action
+ 5  scaffold      write the project, the models, the stores, the dumb widgets,
+                  the router
  6  plan          which widgets need wrappers, which scenarios need tests
  7  wrappers      write the layer that wires widgets to stores
  8  tests         write one test per scenario
@@ -48,8 +51,9 @@ inconsistent with the specs.
 | `lib/stores/*_state.dart` | data generator | no |
 | `lib/stores/*_cubit.dart` | data generator (signatures) | **yes** — bodies are business logic |
 | `lib/pages/*.dart`, `lib/widgets/*.dart` | ui generator | no |
+| `lib/navigation/router.dart` | navigation generator | no |
 | `lib/wrappers/*_wrapper.dart` | wrapper generator | **yes** |
-| `test/*_test.dart` | test generator | **never** |
+| `test/*_test.dart`, `test/support/*.dart` | test generator | **never** |
 
 The "yes" rows are the whole allowlist, built by `ownedFiles` in
 `behavior/codegen/flutter/implement.go`. `editableFiles` narrows it to what one
@@ -76,7 +80,7 @@ the same line so pruning still matches both with one string.
 
 The tree is open in two directions, and a folder is one or the other:
 
-- **spec kind** — ui, data, project, models, behaviors
+- **spec kind** — ui, data, project, models, navigation, actions, behaviors
 - **target language** — Flutter today
 
 A spec kind has `rules/` for interpreting itself and `codegen/<language>/` for
@@ -98,6 +102,8 @@ engine/
     │   ├── project/{rules,codegen/flutter}
     │   ├── model/{rules,codegen/flutter}
     │   ├── data/{rules,codegen/flutter}
+    │   ├── navigation/{rules,codegen/flutter}
+    │   ├── actions/{rules,catalog,codegen/flutter}
     │   └── ui/{rules,catalog,codegen/flutter}
     ├── behavior/            the centerpiece spec, at its own top level
     │   ├── rules/           scenarios, assertions, widget-event -> store-action
@@ -224,6 +230,42 @@ scenarios that slug to one name are an error rather than a silent overwrite.
 into an assertion, or an event with no test idiom, is an error. Falling back to
 something vacuous reports a scenario as covered when nothing checks it.
 
+**How a route appears is a property of the route.** `navigation.yaml` says a
+destination is a page, a bottom sheet or a dialog; `ui.yaml` declares the
+widget and knows nothing about it, and a scenario says the app pushed a route
+and never says what it looked like on the way. That is what keeps the word
+`bottomSheet` in one file, and what lets one widget be a sheet here and a page
+in the next project.
+
+**An action is verified, exactly once.** A `then` is `<target> should
+<predicate>`: `be <value>` for state the app settled on, a verb for something
+it did. State is read off the app; an action leaves nothing behind, so the
+test records the calls and checks the named one happened once. Once is not a
+default that can be relaxed quietly — a check that passed on a double push
+would be checking almost nothing, and `.count` can loosen it later in a way
+that tightening never could. The language needs no negative form either:
+closing a sheet is a pop, which is a positive fact about a different action.
+
+**A native action is a row in a table, never a branch.** `specs/actions/catalog`
+is the third closed vocabulary beside the widget catalog and the icons, and
+each entry carries two mappings: the call and the verification. navigator is
+cheap because Flutter ships `NavigatorObserver`, so the seam lives in the
+suite and nothing in `lib/` knows it exists. The next native — a sound, a
+notification — has nothing to observe and arrives with a generated port and a
+recording fake, which is a cost worth planning rather than a reason to write
+`if subject == "navigator"`.
+
+**Navigation runs in a wrapper, never in a Cubit.** `push` and `pop` need a
+BuildContext, which is the whole reason they are not just another thing the
+store does. An event that writes the store and moves the app is two scenarios
+about one press, and the wrapper runs both in that order.
+
+**A widget that holds a wrapped widget needs a wrapper.** A wired child is a
+slot in the generated widget, and a slot is filled by the wrapper of the widget
+that holds it. A pure container of two wired buttons has to have one, or the
+buttons are constructor parameters nothing passes. `uirules.WrapperWidgets`
+closes over that transitively.
+
 **Find widgets by key, not by type.** The one exception is `.count`, which is
 the single question a key cannot answer.
 
@@ -267,6 +309,13 @@ not what it used to be, unless the old behavior is the reason the rule exists.
   constructor parameter per variable, per event, and per wired child. It holds
   no logic.
 - Files are `snake_case`, classes `PascalCase`, members `lowerCamelCase`.
+- Routing is `go_router`, and only when navigation.yaml declares routes. A
+  route is a `GoRoute` with an explicit `pageBuilder`, so every page carries
+  its route name and an observer can read it back. A sheet and a dialog are
+  Page subclasses declared in the same file, because a modal is a route like
+  any other: it is pushed and popped the same way, and it sits below the
+  Navigator, which is below the BlocProvider, so a widget inside it reads the
+  same store the page underneath was reading.
 - Styling props are not generated. That is a spec kind that does not exist yet.
 
 ## The lock
@@ -294,6 +343,17 @@ engine on `examples/counter_app` or `examples/focus_app` and read the diff.
 ## Not built yet
 
 **Multiple stores.** One store per project, enforced at the resolve stage.
+
+**Route parameters.** `push taskDetail` cannot say which task, so a
+destination reads what it needs from the store. When they arrive, `route` gains
+fields and the address space has to hold them the way store fields are held.
+
+**More than one `then`.** "Adds the task, plays a chime, closes the sheet" is
+three scenarios sharing one `when`, and three tests performing the same tap.
+
+**Custom actions.** `actions.yaml` does not exist. The catalog is shaped for
+it: a project's own subjects would build rows of the same kind, and the
+generated port and fake are what the first non-navigator native pays for.
 
 **Grouping support beyond scenarios.** Groups nest in `behaviors.yaml` and
 become part of a scenario's identity, but nothing else reads the group path.

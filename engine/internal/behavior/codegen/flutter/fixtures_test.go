@@ -185,3 +185,83 @@ func listApp(t *testing.T) *model.App {
 	}
 	return &app
 }
+
+// sheetApp is a counter with a second destination: a bottom sheet holding a
+// save button that writes the store and closes the sheet, which is the case
+// every part of the navigation support has to agree on.
+func sheetApp() *model.App {
+	raw := spec.RawSpecs{
+		Project: map[string]any{"name": "sheet_app", "description": "A counter with a sheet"},
+		Data: map[string]any{
+			"stores": map[string]any{
+				"counterStore": map[string]any{
+					"value":        "int",
+					"initialValue": 0,
+					"strategy":     "ephemeral",
+				},
+			},
+		},
+		Navigation: map[string]any{
+			"initialRoute": "home",
+			"routes": map[string]any{
+				"home":   map[string]any{"child": "homePage", "type": "page"},
+				"addOne": map[string]any{"child": "addSheet", "type": "bottomSheet"},
+			},
+		},
+		UI: map[string]any{
+			"widgets": map[string]any{
+				"homePage": map[string]any{
+					"scaffold": map[string]any{
+						"body": map[string]any{
+							"center": map[string]any{
+								"column": []any{
+									map[string]any{"text": "counterValue"},
+									"openButton",
+								},
+							},
+						},
+					},
+				},
+				"openButton": map[string]any{
+					"elevatedButton": map[string]any{
+						"child":     "Open",
+						"onPressed": "onOpen",
+					},
+				},
+				"addSheet": map[string]any{
+					"column": []any{"saveButton"},
+				},
+				"saveButton": map[string]any{
+					"elevatedButton": map[string]any{
+						"child":     "Save",
+						"onPressed": "onSave",
+					},
+				},
+			},
+		},
+		Behaviors: map[string]any{
+			"opening the sheet": map[string]any{
+				"when": "openButton.onOpen",
+				"then": "navigator should push addOne",
+			},
+			"saving increments": map[string]any{
+				"given": map[string]any{"navigator.route": "addOne", "counterStore.value": 0},
+				"when":  "saveButton.onSave",
+				"then":  "counterStore.value should be 1",
+			},
+			"saving closes the sheet": map[string]any{
+				"given": map[string]any{"navigator.route": "addOne"},
+				"when":  "saveButton.onSave",
+				"then":  "navigator should pop",
+			},
+		},
+	}
+	app, err := build.App(raw)
+	if err != nil {
+		panic(err)
+	}
+	if err := build.Resolve(&app, catalog.Default()); err != nil {
+		panic(err)
+	}
+	return &app
+}

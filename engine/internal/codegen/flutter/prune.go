@@ -8,7 +8,7 @@ import (
 
 // generatedDirs are the directories this engine owns end to end. Everything in
 // them is either produced by a run or left over from an earlier one.
-var generatedDirs = []string{"lib/pages", "lib/widgets", "lib/stores", "lib/wrappers", "test"}
+var generatedDirs = []string{"lib/pages", "lib/widgets", "lib/stores", "lib/wrappers", "lib/navigation", "test"}
 
 // PruneStaleOutput deletes generated files whose spec source is gone: a renamed
 // widget, a removed scenario, a regrouped behaviors file. It returns the paths
@@ -43,6 +43,14 @@ func ExpectedFiles(app *model.App, work plan.Work) (map[string]bool, error) {
 	}
 	for _, scenarioID := range work.Tests {
 		expected[dart.TestFile(scenarioID)] = true
+	}
+
+	// The router and the observer the tests verify pushes with exist only
+	// while the project declares routes, so removing navigation.yaml removes
+	// them like any other spec source that is gone.
+	if app.Navigation.Declared() {
+		expected[dart.RouterFile()] = true
+		expected[dart.NavigationSpyFile()] = true
 	}
 
 	return expected, nil

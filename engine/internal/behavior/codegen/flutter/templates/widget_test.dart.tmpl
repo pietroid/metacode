@@ -6,20 +6,36 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:{{.PackageName}}/{{.CubitFile}}';
 import 'package:{{.PackageName}}/{{.StateFile}}';
-import 'package:{{.PackageName}}/{{.PageWrapperFile}}';{{range .Imports}}
+{{if .UsesRouter}}import 'package:{{.PackageName}}/{{.RouterFile}}';
+import '{{.SpyFile}}';{{else}}import 'package:{{.PackageName}}/{{.PageWrapperFile}}';{{end}}{{range .Imports}}
 import 'package:{{$.PackageName}}/{{.}}';{{end}}
 
 void main() {
   testWidgets({{dartQuote .Description}}, (tester) async {
     final cubit = {{if .SeedState}}{{.CubitClass}}.seeded({{.SeedState}}){{else}}{{.CubitClass}}(){{end}};
+{{if .UsesRouter}}    final {{.SpyVar}} = {{.SpyClass}}();
+    final router = buildRouter(observers: [{{.SpyVar}}]);
     await tester.pumpWidget(
+      BlocProvider.value(
+        value: cubit,
+        child: MaterialApp.router(routerConfig: router),
+      ),
+    );
+    await tester.pumpAndSettle();
+{{if .GivenRoute}}    // The scenario starts on this route, so the test goes there the way a
+    // user would. Getting there is setup, not behavior, so the recorder is
+    // emptied before the scenario begins.
+    router.pushNamed({{dartQuote .GivenRoute}});
+    await tester.pumpAndSettle();
+    {{.SpyVar}}.clear();
+{{end}}{{else}}    await tester.pumpWidget(
       BlocProvider.value(
         value: cubit,
         child: const MaterialApp(home: {{.PageWrapperClass}}()),
       ),
     );
-    {{if .ActionExpression}}{{.ActionExpression}}
-    await tester.pump();{{end}}
+{{end}}    {{if .ActionExpression}}{{.ActionExpression}}
+    await tester.{{if .Settle}}pumpAndSettle{{else}}pump{{end}}();{{end}}
     {{.AssertionExpression}}
   });
 }

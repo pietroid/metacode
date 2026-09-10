@@ -13,7 +13,8 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_bloc:
-  equatable:
+  equatable:{{if .UsesRouter}}
+  go_router:{{end}}
 
 dev_dependencies:
   flutter_test:

@@ -7,6 +7,7 @@ import (
 
 	"github.com/pietroid/metacode/engine/internal/codegen/dart"
 	"github.com/pietroid/metacode/engine/internal/core/model"
+	"github.com/pietroid/metacode/engine/internal/specs/actions/codegen/flutter"
 	"github.com/pietroid/metacode/engine/internal/specs/ui/rules"
 )
 
@@ -47,12 +48,12 @@ func wrapperBody(app *model.App, widget string, t tree) (string, error) {
 	// One store, checked in the resolve stage: see datarules.CheckSupported.
 	store := app.Stores[0]
 
-	args, refs := wrapperArgs(app, *comp, store, t)
+	args, refs, packages := wrapperArgs(app, *comp, store, t)
 	body := fmt.Sprintf("%s(\n%s,\n)", dart.WidgetClass(comp.Name), dart.IndentBy(strings.Join(args, ",\n"), 2))
 
 	return fmt.Sprintf(`import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-%s
+%s%s
 class %s extends StatelessWidget {
   const %s({super.key%s});
 %s
@@ -61,7 +62,7 @@ class %s extends StatelessWidget {
     return %s;
   }
 }
-`, wrapperImports(*comp, store, refs), class, class,
+`, packageImports(packages), wrapperImports(*comp, store, refs), class, class,
 		rowParam(t.indexed[comp.Name]), rowField(t.indexed[comp.Name]), dart.IndentLines(body, 4)), nil
 }
 
@@ -85,7 +86,7 @@ func rowField(isRow bool) string {
 
 // wrapperArgs is the argument list for the dumb widget, and every file the
 // arguments name.
-func wrapperArgs(app *model.App, comp model.UIComponent, store model.Store, t tree) ([]string, []string) {
+func wrapperArgs(app *model.App, comp model.UIComponent, store model.Store, t tree) ([]string, []string, []string) {
 	b := &argBuilder{app: app, comp: comp, store: store, tree: t}
 	if t.indexed[comp.Name] {
 		b.args = append(b.args, "index: index")
@@ -94,7 +95,25 @@ func wrapperArgs(app *model.App, comp model.UIComponent, store model.Store, t tr
 	b.addSlots()
 	b.addItemBuilders()
 	b.addEvents()
-	return b.args, b.refs
+
+	var packages []string
+	if b.usesActions {
+		packages = actionsflutter.Imports()
+	}
+	return b.args, b.refs, packages
+}
+
+// packageImports writes the package imports a wrapper needs beyond the two
+// every wrapper has.
+func packageImports(packages []string) string {
+	if len(packages) == 0 {
+		return ""
+	}
+	var b strings.Builder
+	for _, pkg := range packages {
+		fmt.Fprintf(&b, "import '%s';\n", pkg)
+	}
+	return b.String()
 }
 
 // argBuilder accumulates one wrapper's arguments and the imports they imply.
@@ -106,6 +125,9 @@ type argBuilder struct {
 
 	args []string
 	refs []string
+	// usesActions says one of the callbacks reaches a native action, so the
+	// file needs the package that call comes from.
+	usesActions bool
 }
 
 // addVariables fills the widget's own variables: a callback from the binding
@@ -121,8 +143,8 @@ func (b *argBuilder) addVariables() {
 	for _, v := range model.UniqueVariables(b.comp.Variables) {
 		switch {
 		case isCallbackType(v.Type):
-			if binding, ok := b.app.Symbols.BindingFor(b.comp.Name, v.Name); ok {
-				b.args = append(b.args, fmt.Sprintf("%s: %s => %s", v.Name, callbackHead(v.Type), b.action(binding)))
+			if body, ok := b.callbackFor(v.Name, callbackHead(v.Type)); ok {
+				b.args = append(b.args, fmt.Sprintf("%s: %s", v.Name, body))
 			}
 		case v.Type == model.TypeWidget:
 			b.args = append(b.args, fmt.Sprintf("%s: %s", v.Name, b.widgetFor(v.Name)))
@@ -160,11 +182,62 @@ func (b *argBuilder) addEvents() {
 	for _, v := range b.comp.Variables {
 		filled[v.Name] = true
 	}
-	for _, binding := range b.app.Symbols.Bindings {
-		if binding.Widget != b.comp.Name || filled[binding.Param] {
+	for _, param := range b.boundParams() {
+		if filled[param] {
 			continue
 		}
-		b.args = append(b.args, fmt.Sprintf("%s: () => %s", binding.Param, b.action(binding)))
+		if body, ok := b.callbackFor(param, "()"); ok {
+			b.args = append(b.args, fmt.Sprintf("%s: %s", param, body))
+		}
+	}
+}
+
+// boundParams lists the widget's parameters that anything is bound to, in
+// declaration order, without repeating one that is bound twice.
+func (b *argBuilder) boundParams() []string {
+	var out []string
+	for _, binding := range b.app.Symbols.Bindings {
+		if binding.Widget == b.comp.Name {
+			out = append(out, binding.Param)
+		}
+	}
+	for _, binding := range b.app.Symbols.ActionBindingsForWidget(b.comp.Name) {
+		out = append(out, binding.Param)
+	}
+	return dart.UniqueStrings(out)
+}
+
+// callbackFor is what one widget event does, which is everything the specs
+// bound to it: the store action it runs, and the actions it performs.
+//
+// Both can be there at once, and that is the ordinary case rather than an edge
+// one. "Saving adds the task and closes the sheet" is two scenarios about one
+// press, so the callback is two statements, and the store comes first because
+// the sheet is closing on work that is already done.
+func (b *argBuilder) callbackFor(param, head string) (string, bool) {
+	var stmts []string
+	if binding, ok := b.app.Symbols.BindingFor(b.comp.Name, param); ok {
+		stmts = append(stmts, b.action(binding))
+	}
+	for _, binding := range b.app.Symbols.ActionBindingsFor(b.comp.Name, param) {
+		call, err := actionsflutter.Call(binding)
+		if err != nil {
+			// The catalog resolved the verb, so a target with no mapping for
+			// it is an engine gap rather than a spec one. The scaffold leaves
+			// the control unwired and the suite reports it.
+			continue
+		}
+		b.usesActions = true
+		stmts = append(stmts, call)
+	}
+
+	switch len(stmts) {
+	case 0:
+		return "", false
+	case 1:
+		return head + " => " + stmts[0], true
+	default:
+		return head + " { " + strings.Join(stmts, "; ") + "; }", true
 	}
 }
 

@@ -5,6 +5,9 @@ import (
 
 	"github.com/pietroid/metacode/engine/internal/behavior/rules"
 	"github.com/pietroid/metacode/engine/internal/core/model"
+	"github.com/pietroid/metacode/engine/internal/specs/actions/catalog"
+	"github.com/pietroid/metacode/engine/internal/specs/actions/rules"
+	"github.com/pietroid/metacode/engine/internal/specs/navigation/rules"
 	"github.com/pietroid/metacode/engine/internal/specs/ui/catalog"
 	"github.com/pietroid/metacode/engine/internal/specs/ui/rules"
 )
@@ -21,6 +24,13 @@ func Resolve(app *model.App, c *catalog.Catalog) error {
 	app.Symbols.Widgets = make(map[string]model.UIComponent, len(app.UI))
 	app.Symbols.Events = make(map[string]model.EventRef)
 	app.Symbols.Bindings = nil
+	app.Symbols.ActionBindings = nil
+
+	// The action subjects are registered before anything is resolved, because
+	// `navigator` is a root a scenario can write and the lookup that decides
+	// what a root is has to know about it.
+	actions := actioncatalog.Default()
+	actionrules.Register(actions, &app.Symbols)
 
 	for _, s := range app.Stores {
 		app.Symbols.Stores[s.Name] = s
@@ -30,16 +40,28 @@ func Resolve(app *model.App, c *catalog.Catalog) error {
 		app.Symbols.Widgets[w.Name] = w
 	}
 
+	// The route table is checked before the scenarios, so `push addTask`
+	// against a route that is not there is reported as the missing route
+	// rather than as a widget nobody declared.
+	if errs := navigationrules.Validate(app); len(errs) > 0 {
+		return errs[0]
+	}
+
 	for _, b := range app.Behaviors {
-		if err := resolveBehavior(app, b, c); err != nil {
+		if err := resolveBehavior(app, b, c, actions); err != nil {
 			return err
 		}
 	}
 
 	applyWidgetVariableTypes(app)
 
-	// Bindings need the symbol table complete, so they resolve last.
-	return behaviorrules.ResolveBindings(app)
+	// Bindings need the symbol table complete, so they resolve last. Store
+	// bindings and action bindings are two lists over the same events: an
+	// event that writes a store and closes a sheet appears in both.
+	if err := behaviorrules.ResolveBindings(app); err != nil {
+		return err
+	}
+	return actionrules.ResolveActionBindings(app, actions)
 }
 
 // applyWidgetVariableTypes writes back what the behaviors just said: a variable
@@ -57,11 +79,11 @@ func applyWidgetVariableTypes(app *model.App) {
 	}
 }
 
-func resolveBehavior(app *model.App, b model.BehaviorScenario, c *catalog.Catalog) error {
-	if err := resolveAssertion(app, b.Given, c); err != nil {
+func resolveBehavior(app *model.App, b model.BehaviorScenario, c *catalog.Catalog, actions *actioncatalog.Catalog) error {
+	if err := resolveAssertion(app, b.Given, c, actions); err != nil {
 		return fmt.Errorf("scenario %q given: %w", b.ID, err)
 	}
-	if err := resolveAssertion(app, b.Then, c); err != nil {
+	if err := resolveAssertion(app, b.Then, c, actions); err != nil {
 		return fmt.Errorf("scenario %q then: %w", b.ID, err)
 	}
 	if b.When != "" {
@@ -69,10 +91,15 @@ func resolveBehavior(app *model.App, b model.BehaviorScenario, c *catalog.Catalo
 			return fmt.Errorf("scenario %q when: %w", b.ID, err)
 		}
 	}
+	// The when has to be resolved before this: whether an action has anything
+	// to fire it is a question about the event, not about the text.
+	if err := actionrules.CheckScenario(app, b, actions); err != nil {
+		return fmt.Errorf("scenario %q: %w", b.ID, err)
+	}
 	return nil
 }
 
-func resolveAssertion(app *model.App, a *model.Assertion, c *catalog.Catalog) error {
+func resolveAssertion(app *model.App, a *model.Assertion, c *catalog.Catalog, actions *actioncatalog.Catalog) error {
 	if a == nil {
 		return nil
 	}
@@ -81,35 +108,47 @@ func resolveAssertion(app *model.App, a *model.Assertion, c *catalog.Catalog) er
 		return err
 	}
 
-	root := ref.Root
-	if sym, ok := app.Symbols.Lookup(root); ok {
-		switch sym.Kind {
-		case "store":
-			if len(ref.Members) == 0 {
-				return fmt.Errorf("store %q cannot be used as a whole value", root)
-			}
-			// model.Store field access is valid for assertions.
-			return nil
-		case "widget":
-			if len(ref.Members) == 0 {
-				return fmt.Errorf("widget %q cannot be used as a whole value", root)
-			}
-			// A widget member in an assertion is a variable the widget renders.
-			// When the value names another widget, the variable holds a widget
-			// rather than a string, and the UI generator has no other way to
-			// know: `body: homeContent` says nothing about what homeContent is.
-			if sym, ok := app.Symbols.Lookup(a.Value); ok && sym.Kind == "widget" {
-				app.Symbols.Register(a.Target, model.KindWidgetVariable)
-			}
-			return nil
+	sym, ok := app.Symbols.Lookup(ref.Root)
+	if !ok {
+		if c.IsKnown(ref.Root) {
+			return fmt.Errorf("catalog widget %q cannot be asserted on directly", ref.Root)
 		}
+		return fmt.Errorf("undefined symbol %q in assertion %q", ref.Root, a.Target)
 	}
 
-	if c.IsKnown(root) {
-		return fmt.Errorf("catalog widget %q cannot be asserted on directly", root)
+	switch sym.Kind {
+	case model.KindActionSubject:
+		// A subject is addressed whole: the verb says what happens to it, so
+		// there is nothing to reach into.
+		if len(ref.Members) > 0 {
+			return fmt.Errorf("%q is an action subject, so %q addresses nothing. Write `%s should <action>`", ref.Root, a.Target, ref.Root)
+		}
+		return actionrules.CheckAssertion(app, a, actions)
+	case "store":
+		if len(ref.Members) == 0 {
+			return fmt.Errorf("store %q cannot be used as a whole value", ref.Root)
+		}
+		// A store field access is valid for assertions.
+		return nil
+	case "widget":
+		return resolveWidgetAssertion(app, ref, a)
 	}
+	return nil
+}
 
-	return fmt.Errorf("undefined symbol %q in assertion %q", root, a.Target)
+// resolveWidgetAssertion reads what a then about a widget says about the
+// widget. A widget member is a variable the widget renders, and when the value
+// names another widget the variable holds a widget rather than a string: the
+// UI generator has no other way to know, because `body: homeContent` says
+// nothing about what homeContent is.
+func resolveWidgetAssertion(app *model.App, ref model.Ref, a *model.Assertion) error {
+	if len(ref.Members) == 0 {
+		return fmt.Errorf("widget %q cannot be used as a whole value", ref.Root)
+	}
+	if sym, ok := app.Symbols.Lookup(a.Value); ok && sym.Kind == "widget" {
+		app.Symbols.Register(a.Target, model.KindWidgetVariable)
+	}
+	return nil
 }
 
 // checkRefShape states how deep a path may go. A row selector buys one extra

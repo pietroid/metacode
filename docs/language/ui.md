@@ -180,6 +180,12 @@ The row widget, and everything inside it, is built once per element and knows
 which element it is. That is what makes `taskTile.first` addressable from a
 behavior, and what lets a checkbox inside the row toggle its own task.
 
+## Widgets a route shows
+
+A widget a route shows is declared here like any other, and says nothing about
+being a destination. Which routes exist, and whether one arrives as a page, a
+sheet or a dialog, is [navigation.yaml](navigation.md).
+
 ## What is not here
 
 Styling is deliberately absent: no `style`, `theme`, `color`, or `elevation`.

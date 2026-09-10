@@ -17,10 +17,10 @@ import (
 	"github.com/pietroid/metacode/engine/internal/order"
 )
 
-// op is the only assertion operator. A `given` writes it as the YAML colon, a
-// `then` spells it out, so an assertion carries a target and a value and never
-// a choice of operator.
-const op = "should be"
+// op is the assertion operator. A `given` writes it as the YAML colon, a
+// `then` spells it out and follows it with the predicate: `be` for a value the
+// app settled on, or the name of an action its subject performed.
+const op = "should"
 
 // ParseGiven reads a `given` block, which is a mapping of one target to the
 // value it holds:
@@ -30,22 +30,49 @@ const op = "should be"
 //
 // The colon is the operator, so the value stays YAML — a list or a mapping
 // needs no quoting and no second parser.
-func ParseGiven(raw any) (*model.Assertion, error) {
+// It also reads where the app starts, which is the one other precondition a
+// scenario can set:
+//
+//	given:
+//	  navigator.route: addTask
+//	  draftStore.value: "Buy milk"
+//
+// Where the app is and what it holds are two different kinds of fact, so they
+// are two fields rather than two entries in one list, and the value half is
+// still one target.
+func ParseGiven(raw any) (*model.Assertion, string, error) {
 	if raw == nil {
-		return nil, nil
+		return nil, "", nil
 	}
 	m, ok := raw.(map[string]any)
 	if !ok {
-		return nil, fmt.Errorf("given must be a mapping of a target to its value, as in `given:` then `counterStore.value: 0`; got %T", raw)
+		return nil, "", fmt.Errorf("given must be a mapping of a target to its value, as in `given:` then `counterStore.value: 0`; got %T", raw)
 	}
-	if len(m) == 0 {
-		return nil, nil
+
+	route := ""
+	if v, ok := m[model.GivenRouteTarget]; ok {
+		name, ok := v.(string)
+		if !ok || name == "" {
+			return nil, "", fmt.Errorf("`%s` must name a route from navigation.yaml", model.GivenRouteTarget)
+		}
+		route = name
 	}
-	if len(m) > 1 {
-		return nil, fmt.Errorf("given names %d targets, expected one", len(m))
+
+	values := make(map[string]any, len(m))
+	for k, v := range m {
+		if k != model.GivenRouteTarget {
+			values[k] = v
+		}
 	}
-	target := order.Keys(m)[0]
-	return &model.Assertion{Target: target, Value: formatValue(m[target])}, nil
+	if len(values) == 0 {
+		return nil, route, nil
+	}
+	if len(values) > 1 {
+		return nil, "", fmt.Errorf("given names %d values, expected one", len(values))
+	}
+	target := order.Keys(values)[0]
+	// A precondition is state, so its verb is never anything else.
+	return &model.Assertion{Target: target, Verb: model.VerbBe, Value: formatValue(values[target])}, route, nil
 }
 
 // formatValue renders a YAML value as the string an Assertion carries. Scalars
@@ -73,8 +100,13 @@ func formatValue(v any) string {
 
 // ParseAssertion parses a `then` string into a model.Assertion.
 //
-// There is one operator, " should be ", and the whitespace around it is
-// required so that a value containing the words is not split incorrectly.
+// The sentence is "<target> should <verb> <value>", and the first word after
+// the operator is the verb. `be` is the state predicate and everything else is
+// an action, which is what lets `navigator should pop` carry no value at all
+// while `counterStore.value should be 6` reads exactly as it always did.
+//
+// The whitespace around the operator is required, so that a value containing
+// the word is not split incorrectly.
 func ParseAssertion(s string) (*model.Assertion, bool, error) {
 	s = strings.TrimSpace(s)
 	if s == "" {
@@ -83,15 +115,30 @@ func ParseAssertion(s string) (*model.Assertion, bool, error) {
 
 	idx := strings.Index(s, " "+op+" ")
 	if idx == -1 {
-		return nil, true, fmt.Errorf("malformed assertion %q (expected \"<target> should be <value>\")", s)
+		return nil, true, fmt.Errorf("malformed assertion %q (expected \"<target> should be <value>\" or \"<target> should <action>\")", s)
 	}
 
 	target := strings.TrimSpace(s[:idx])
-	value := unquote(strings.TrimSpace(s[idx+len(op)+2:]))
 	if target == "" {
 		return nil, true, fmt.Errorf("assertion has empty target: %q", s)
 	}
-	return &model.Assertion{Target: target, Value: value}, true, nil
+
+	verb, value := splitVerb(strings.TrimSpace(s[idx+len(op)+2:]))
+	if verb == "" {
+		return nil, true, fmt.Errorf("assertion %q says what should happen to %q but not what: expected a value after `should be`, or an action after `should`", s, target)
+	}
+	return &model.Assertion{Target: target, Verb: verb, Value: unquote(value)}, true, nil
+}
+
+// splitVerb takes the first word of what follows the operator as the verb, and
+// leaves the rest as the value. `be 6` is the verb `be` and the value `6`; a
+// verb with no argument leaves an empty value.
+func splitVerb(rest string) (string, string) {
+	verb, value, found := strings.Cut(rest, " ")
+	if !found {
+		return strings.TrimSpace(verb), ""
+	}
+	return strings.TrimSpace(verb), strings.TrimSpace(value)
 }
 
 // unquote strips the quotes around a written value. A `then` is a sentence, so
@@ -108,7 +155,7 @@ func unquote(value string) string {
 // ParseBehaviorScenario converts the raw string fields of a behavior scenario
 // into the structured model.BehaviorScenario representation.
 func ParseBehaviorScenario(id, description string, groupPath []string, givenRaw any, whenRaw, thenRaw string) (model.BehaviorScenario, error) {
-	given, err := ParseGiven(givenRaw)
+	given, route, err := ParseGiven(givenRaw)
 	if err != nil {
 		return model.BehaviorScenario{}, fmt.Errorf("scenario %q: given: %w", id, err)
 	}
@@ -126,6 +173,7 @@ func ParseBehaviorScenario(id, description string, groupPath []string, givenRaw 
 		Description: description,
 		GroupPath:   groupPath,
 		Given:       given,
+		GivenRoute:  route,
 		When:        strings.TrimSpace(whenRaw),
 		Then:        then,
 	}, nil

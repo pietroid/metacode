@@ -20,6 +20,7 @@ import (
 	"github.com/pietroid/metacode/engine/internal/order"
 	"github.com/pietroid/metacode/engine/internal/specs/data/rules"
 	"github.com/pietroid/metacode/engine/internal/specs/model/rules"
+	"github.com/pietroid/metacode/engine/internal/specs/navigation/rules"
 	"github.com/pietroid/metacode/engine/internal/specs/project/rules"
 	"github.com/pietroid/metacode/engine/internal/specs/ui/rules"
 )
@@ -31,6 +32,7 @@ func App(raw spec.RawSpecs) (model.App, error) {
 	app.Warnings = append(app.Warnings, unknownKeys("project.yaml", raw.Project, []string{"name", "description"})...)
 	app.Warnings = append(app.Warnings, unknownKeys("data.yaml", raw.Data, []string{"stores", "models", "enums"})...)
 	app.Warnings = append(app.Warnings, unknownKeys("ui.yaml", raw.UI, []string{"widgets"})...)
+	app.Warnings = append(app.Warnings, unknownKeys("navigation.yaml", raw.Navigation, []string{"routes", "initialRoute"})...)
 	// behaviors.yaml top-level keys are user-defined scenario group names; do not warn.
 
 	project, err := projectrules.Build(raw.Project)
@@ -68,6 +70,12 @@ func App(raw spec.RawSpecs) (model.App, error) {
 		return model.App{}, fmt.Errorf("ui: %w", err)
 	}
 	app.UI = ui
+
+	navigation, err := navigationrules.Build(raw.Navigation)
+	if err != nil {
+		return model.App{}, fmt.Errorf("navigation: %w", err)
+	}
+	app.Navigation = navigation
 
 	behaviors, err := behaviorrules.BuildScenarios(raw.Behaviors)
 	if err != nil {

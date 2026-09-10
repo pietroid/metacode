@@ -9,24 +9,39 @@ import (
 
 // Paths holds absolute file system locations for the discovered specs.
 type Paths struct {
-	Root      string // absolute path to project root
-	Metacode  string // absolute path to metacode folder
-	Project   string
-	Data      string
-	UI        string
-	Behaviors string
-	Models    string // optional: "" when the project declares no models
+	Root       string // absolute path to project root
+	Metacode   string // absolute path to metacode folder
+	Project    string
+	Data       string
+	UI         string
+	Behaviors  string
+	Models     string // optional: "" when the project declares no models
+	Navigation string // optional: "" when the project declares no routes
 }
 
-// requiredFiles maps the canonical spec filename to its Paths field.
+// requiredFiles is every spec a project must have: the canonical file name,
+// and the field of Paths that carries it. The accessor is a function rather
+// than a name so one table both fills the field and reads it back; two tables
+// drifted the first time a spec kind was added to only one of them.
 var requiredFiles = []struct {
 	name  string
-	field string
+	field func(*Paths) *string
 }{
-	{"project.yaml", "Project"},
-	{"data.yaml", "Data"},
-	{"ui.yaml", "UI"},
-	{"behaviors.yaml", "Behaviors"},
+	{"project.yaml", func(p *Paths) *string { return &p.Project }},
+	{"data.yaml", func(p *Paths) *string { return &p.Data }},
+	{"ui.yaml", func(p *Paths) *string { return &p.UI }},
+	{"behaviors.yaml", func(p *Paths) *string { return &p.Behaviors }},
+}
+
+// optionalFiles are the specs a project may leave out. models.yaml is absent
+// when every store holds a primitive; navigation.yaml is absent when the app
+// is one page, and the UI spec already names it.
+var optionalFiles = []struct {
+	name  string
+	field func(*Paths) *string
+}{
+	{"models.yaml", func(p *Paths) *string { return &p.Models }},
+	{"navigation.yaml", func(p *Paths) *string { return &p.Navigation }},
 }
 
 // Discover walks upward from startDir looking for a metacode/ folder and
@@ -55,33 +70,32 @@ func Discover(startDir string) (Paths, error) {
 		Behaviors: filepath.Join(metacodeDir, "behaviors.yaml"),
 	}
 
-	// models.yaml is optional: an app whose stores hold only primitives has no
-	// models to declare, and a missing file is that app rather than an error.
-	if modelsPath := filepath.Join(metacodeDir, "models.yaml"); fileExists(modelsPath) {
-		paths.Models = modelsPath
+	for _, f := range optionalFiles {
+		if path := filepath.Join(metacodeDir, f.name); fileExists(path) {
+			*f.field(&paths) = path
+		}
 	}
 
 	for _, req := range requiredFiles {
-		var path string
-		switch req.field {
-		case "Project":
-			path = paths.Project
-		case "Data":
-			path = paths.Data
-		case "UI":
-			path = paths.UI
-		case "Behaviors":
-			path = paths.Behaviors
-		}
-		if _, err := os.Stat(path); err != nil {
-			if os.IsNotExist(err) {
-				return Paths{}, fmt.Errorf("required spec file missing: %s/%s", metacodeDir, req.name)
-			}
-			return Paths{}, fmt.Errorf("stat %s: %w", path, err)
+		if err := requireFile(*req.field(&paths), metacodeDir, req.name); err != nil {
+			return Paths{}, err
 		}
 	}
 
 	return paths, nil
+}
+
+// requireFile reports a spec the project has to have and does not.
+func requireFile(path, metacodeDir, name string) error {
+	_, err := os.Stat(path)
+	switch {
+	case err == nil:
+		return nil
+	case os.IsNotExist(err):
+		return fmt.Errorf("required spec file missing: %s/%s", metacodeDir, name)
+	default:
+		return fmt.Errorf("stat %s: %w", path, err)
+	}
 }
 
 // findMetacodeRoot walks upward from dir until it finds a directory that

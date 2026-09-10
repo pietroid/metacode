@@ -1,0 +1,5 @@
+stores:
+  taskStore:
+    value: list(task)
+    initialValue: []
+    strategy: local

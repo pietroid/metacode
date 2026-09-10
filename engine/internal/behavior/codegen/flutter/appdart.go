@@ -11,21 +11,17 @@ import (
 	"github.com/pietroid/metacode/engine/internal/core/model"
 )
 
-// updateAppDart points lib/app.dart at the home page wrapper and provides the
-// Cubits the wrappers read. wrappers maps target file to wrapper class name.
+// updateAppDart points lib/app.dart at the widgets the wrappers wrap and
+// provides the Cubits they read. wrappers maps target file to wrapper class
+// name.
+//
+// A routed app needs only the second half: the router already names every
+// wrapper, and it is generated from navigation.yaml rather than patched here.
+// What both shapes need is the provider, and it goes above the MaterialApp so
+// that a route pushed onto the Navigator — a page, a sheet, a dialog — is
+// still below it and reads the same store its opener was reading.
 func updateAppDart(app *model.App, outDir string, wrappers map[string]string) error {
-	if len(wrappers) == 0 {
-		return nil
-	}
-
-	pageName := dart.FirstPageName(app.UI)
-	if pageName == "" {
-		return nil
-	}
-
-	wrapperFile := fmt.Sprintf("lib/wrappers/%s_wrapper.dart", dart.SnakeCase(pageName))
-	wrapperClass, ok := wrappers[wrapperFile]
-	if !ok {
+	if len(wrappers) == 0 && !app.Navigation.Declared() {
 		return nil
 	}
 
@@ -36,35 +32,14 @@ func updateAppDart(app *model.App, outDir string, wrappers map[string]string) er
 	}
 
 	updated := string(content)
-
-	// Add required imports if missing.
-	wrapperImport := fmt.Sprintf("import 'wrappers/%s_wrapper.dart';", dart.SnakeCase(pageName))
-	if !strings.Contains(updated, wrapperImport) {
-		updated = strings.Replace(updated, "import 'pages/", wrapperImport+"\nimport 'pages/", 1)
-	}
-	if !strings.Contains(updated, "import 'package:flutter_bloc/flutter_bloc.dart';") {
-		updated = strings.Replace(updated, "import 'package:flutter/material.dart';", "import 'package:flutter/material.dart';\nimport 'package:flutter_bloc/flutter_bloc.dart';", 1)
-	}
-
-	// Replace page instantiation with wrapper instantiation.
-	updated = replacePageWithWrapper(updated, dart.WidgetClass(pageName), wrapperClass)
-
-	// One store, checked in the resolve stage: see datarules.CheckSupported.
-	if len(app.Stores) == 1 {
-		store := app.Stores[0]
-		base := dart.StoreBaseName(store.Name)
-		cubitClass := dart.PascalCase(base) + "Cubit"
-		cubitImport := fmt.Sprintf("import 'stores/%s_cubit.dart';", dart.SnakeCase(base))
-		if !strings.Contains(updated, cubitImport) {
-			updated = strings.Replace(updated, "import 'pages/", cubitImport+"\nimport 'pages/", 1)
+	if app.Navigation.Declared() {
+		updated = provideStores(app, updated, "import 'navigation/router.dart';")
+	} else {
+		updated, err = pointAtPageWrapper(app, updated, wrappers)
+		if err != nil {
+			return err
 		}
-		updated = wrapWithBlocProvider(updated, cubitClass)
 	}
-
-	// Remove the now-unused page import.
-	pageImport := fmt.Sprintf("import 'pages/%s.dart';", dart.SnakeCase(pageName))
-	updated = strings.Replace(updated, pageImport+"\n", "", 1)
-	updated = strings.Replace(updated, pageImport, "", 1)
 
 	if updated == string(content) {
 		return nil
@@ -76,6 +51,55 @@ func updateAppDart(app *model.App, outDir string, wrappers map[string]string) er
 		return fmt.Errorf("rewriting app.dart produced unbalanced brackets; left the file as it was")
 	}
 	return os.WriteFile(appDartPath, []byte(updated), 0644)
+}
+
+// pointAtPageWrapper is the shape an app with no routes has: one page, reached
+// directly, wrapped in place by its own wrapper.
+func pointAtPageWrapper(app *model.App, updated string, wrappers map[string]string) (string, error) {
+	pageName := dart.FirstPageName(app.UI)
+	if pageName == "" {
+		return updated, nil
+	}
+
+	wrapperFile := fmt.Sprintf("lib/wrappers/%s_wrapper.dart", dart.SnakeCase(pageName))
+	wrapperClass, ok := wrappers[wrapperFile]
+	if !ok {
+		return updated, nil
+	}
+
+	pageImport := fmt.Sprintf("import 'pages/%s.dart';", dart.SnakeCase(pageName))
+	wrapperImport := fmt.Sprintf("import 'wrappers/%s_wrapper.dart';", dart.SnakeCase(pageName))
+	if !strings.Contains(updated, wrapperImport) {
+		updated = strings.Replace(updated, "import 'pages/", wrapperImport+"\nimport 'pages/", 1)
+	}
+
+	updated = replacePageWithWrapper(updated, dart.WidgetClass(pageName), wrapperClass)
+	updated = provideStores(app, updated, pageImport)
+
+	// Remove the now-unused page import.
+	updated = strings.Replace(updated, pageImport+"\n", "", 1)
+	return strings.Replace(updated, pageImport, "", 1), nil
+}
+
+// provideStores wraps the MaterialApp in the Cubit every wrapper reads.
+// anchor is an import line the new ones are inserted before, so the file keeps
+// one import block whatever shape it has.
+func provideStores(app *model.App, updated, anchor string) string {
+	// One store, checked in the resolve stage: see datarules.CheckSupported.
+	if len(app.Stores) != 1 {
+		return updated
+	}
+	if !strings.Contains(updated, "import 'package:flutter_bloc/flutter_bloc.dart';") {
+		updated = strings.Replace(updated, "import 'package:flutter/material.dart';", "import 'package:flutter/material.dart';\nimport 'package:flutter_bloc/flutter_bloc.dart';", 1)
+	}
+
+	store := app.Stores[0]
+	base := dart.StoreBaseName(store.Name)
+	cubitImport := fmt.Sprintf("import 'stores/%s_cubit.dart';", dart.SnakeCase(base))
+	if !strings.Contains(updated, cubitImport) {
+		updated = strings.Replace(updated, anchor, cubitImport+"\n"+anchor, 1)
+	}
+	return wrapWithBlocProvider(updated, dart.PascalCase(base)+"Cubit")
 }
 
 // replacePageWithWrapper swaps `const HomePage(...)` for the wrapper, finding
@@ -106,14 +130,21 @@ func wrapWithBlocProvider(appDart, cubitClass string) string {
 		return appDart
 	}
 
-	prefix := "return MaterialApp("
-	idx := strings.Index(appDart, prefix)
+	// Both shapes are matched: an app with routes returns MaterialApp.router,
+	// an app without one returns MaterialApp, and the provider goes outside
+	// either.
+	idx := strings.Index(appDart, "return MaterialApp")
 	if idx == -1 {
 		return appDart
 	}
+	open := strings.Index(appDart[idx:], "(")
+	if open == -1 {
+		return appDart
+	}
+	constructor := appDart[idx+len("return ") : idx+open]
 
 	before := appDart[:idx]
-	after := appDart[idx+len(prefix):]
+	after := appDart[idx+open+1:]
 
 	// Find the closing paren of the MaterialApp call.
 	closeIdx := findMatchingClose(after, '(', ')')
@@ -126,8 +157,8 @@ func wrapWithBlocProvider(appDart, cubitClass string) string {
 	tail := after[closeIdx:]
 
 	wrapped := fmt.Sprintf(
-		"return BlocProvider(\n      create: (_) => %s(),\n      child: MaterialApp(\n%s\n      ),\n    );",
-		cubitClass, dart.IndentBy(inner, 8),
+		"return BlocProvider(\n      create: (_) => %s(),\n      child: %s(\n%s\n      ),\n    );",
+		cubitClass, constructor, dart.IndentBy(inner, 8),
 	)
 
 	// tail starts with ");" — replace the leading ");" since wrapped already ends with ";".

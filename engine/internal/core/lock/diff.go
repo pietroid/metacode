@@ -22,6 +22,7 @@ const (
 	KindWidget   Kind = "widget"
 	KindScenario Kind = "scenario"
 	KindModel    Kind = "model"
+	KindRoute    Kind = "route"
 	KindRules    Kind = "rules"
 )
 
@@ -93,6 +94,7 @@ func Diff(locked Locked, current *model.App, c *catalog.Catalog, rulesHash strin
 	changes = append(changes, diffWidgets(previous.UI, current.UI)...)
 	changes = append(changes, diffScenarios(previous.Behaviors, current.Behaviors)...)
 	changes = append(changes, diffModels(&previous, current)...)
+	changes = append(changes, diffRoutes(previous.Navigation, current.Navigation)...)
 
 	sort.Slice(changes, func(i, j int) bool {
 		if changes[i].Kind != changes[j].Kind {
@@ -159,6 +161,17 @@ func diffModels(previous, current *model.App) []Change {
 	return append(changes, compare(KindModel, keyed(previous.Enums, func(e model.Enum) string { return e.Name }),
 		keyed(current.Enums, func(e model.Enum) string { return e.Name }),
 		deepEqual[model.Enum])...)
+}
+
+// diffRoutes compares the route table. The initial route is carried on every
+// route rather than compared on its own: which route the app opens on reaches
+// the generated router, so a change to it is a change to the table.
+func diffRoutes(previous, current model.Navigation) []Change {
+	key := func(r model.Route) string { return r.Name }
+	same := func(a, b model.Route) bool {
+		return a == b && (previous.InitialRoute == current.InitialRoute)
+	}
+	return compare(KindRoute, keyed(previous.Routes, key), keyed(current.Routes, key), same)
 }
 
 // deepEqual is reflect.DeepEqual at one type, so it can be handed to compare.

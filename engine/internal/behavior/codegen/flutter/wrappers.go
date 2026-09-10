@@ -23,12 +23,15 @@ func GenerateWrappers(app *model.App, work plan.Work, outDir string) error {
 		return nil
 	}
 
-	if len(work.Wrappers) == 0 {
-		return nil
-	}
-
 	if err := os.MkdirAll(filepath.Join(outDir, "lib", "wrappers"), 0755); err != nil {
 		return fmt.Errorf("create wrappers dir: %w", err)
+	}
+
+	// A routed app still needs app.dart pointed at its stores even when no
+	// widget has anything to wire, because the router names the widgets and
+	// the provider has to sit above it either way.
+	if len(work.Wrappers) == 0 && !app.Navigation.Declared() {
+		return nil
 	}
 
 	t := treeOf(app)

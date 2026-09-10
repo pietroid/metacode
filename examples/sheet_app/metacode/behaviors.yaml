@@ -1,0 +1,48 @@
+homeState:
+  show empty state when taskStore is empty:
+    given:
+      taskStore.value: []
+    when: # always
+    then: homePage.homeContent should be emptyState
+
+  show default state when taskStore has one item:
+    given:
+      taskStore.value:
+        - description: "Buy milk"
+          done: false
+    when: # always
+    then: homePage.homeContent should be defaultState
+
+adding:
+  pressing add opens the sheet:
+    when: addTaskButton.onAddTask
+    then: navigator should push addTask
+
+  saving appends the task to the list:
+    given:
+      navigator.route: addTask
+      taskStore.value: []
+    when: saveTaskButton.onSaveTask
+    then: taskStore.value.first.description should be "New task"
+
+  saving closes the sheet:
+    given:
+      navigator.route: addTask
+    when: saveTaskButton.onSaveTask
+    then: navigator should pop
+
+  cancelling closes the sheet without adding:
+    given:
+      navigator.route: addTask
+    when: cancelButton.onCancel
+    then: navigator should pop
+
+toggling:
+  toggling a row marks its task done:
+    given:
+      taskStore.value:
+        - description: "Buy milk"
+          done: false
+    when: taskCheckbox.first.taskToggled
+    then: taskStore.value.first.done should be true
+

@@ -32,6 +32,11 @@ const PromptRules = `Rules:
 - Keep every declaration a file already has, including the seeded constructor and methods no test exercises.
 - Implement the behavior described by the scenarios, not only the literal values the tests check.
   "not decrements when is 0" is a rule about every value at the floor, not about the number 0.
+- Navigation is spelled by the spec, not chosen. A scenario that says the app pushes a route becomes
+  context.pushNamed('<route>') and one that says it pops becomes context.pop(), both in the wrapper of
+  the widget whose event runs it. A Cubit has no BuildContext and never navigates.
+- How a route appears — a page, a bottom sheet, a dialog — is decided by the generated router. Never
+  call showModalBottomSheet or showDialog, and never build a Navigator or a route of your own.
 `
 
 // buildPrefix assembles the part of a request that is byte-identical across
@@ -115,6 +120,16 @@ func (im *Implementer) writeContext(b *strings.Builder) error {
 		return err
 	}
 
+	if app.Navigation.Declared() {
+		b.WriteString("=== Specification: routes ===\n")
+		b.WriteString("The router is generated from these and is not yours to write. Reach a route by name.\n")
+		fmt.Fprintf(b, "the app opens on %s\n", app.Navigation.InitialRoute)
+		for _, route := range app.Navigation.Routes {
+			fmt.Fprintf(b, "%s: shows %s as a %s\n", route.Name, route.Child, route.Type)
+		}
+		b.WriteString("\n")
+	}
+
 	b.WriteString("=== Specification: stores ===\n")
 	for _, store := range app.Stores {
 		fmt.Fprintf(b, "%s: value type %s, initial %v, strategy %s\n", store.Name, store.ValueType, store.InitialValue, store.Strategy)
@@ -126,6 +141,15 @@ func (im *Implementer) writeContext(b *strings.Builder) error {
 		b.WriteString("These are resolved from the spec. Wire exactly these.\n")
 		for _, binding := range app.Symbols.Bindings {
 			fmt.Fprintf(b, "%s -> %s.%s\n", binding.FullPath(), binding.Store, binding.Action)
+		}
+		b.WriteString("\n")
+	}
+
+	if len(app.Symbols.ActionBindings) > 0 {
+		b.WriteString("=== Widget events and the actions they run ===\n")
+		b.WriteString("These are resolved from the spec. Wire exactly these, in the wrapper of the widget named.\n")
+		for _, binding := range app.Symbols.ActionBindings {
+			fmt.Fprintf(b, "%s -> %s\n", binding.FullPath(), binding.Call())
 		}
 		b.WriteString("\n")
 	}
@@ -183,17 +207,26 @@ func (im *Implementer) writeScenarios(b *strings.Builder) error {
 }
 
 // writeTestSkeleton prints the shape every test shares, once. Every file is
-// this with four holes filled, so printing it eleven times said the same six
+// this with a few holes filled, so printing it eleven times said the same six
 // imports and the same pumpWidget call eleven times.
 //
-// The single pump is part of the contract and is why the skeleton is here at
-// all: the app has one frame to settle, and a model that has never seen the
-// file cannot know that.
+// A routed app has its own shape, and it is the app's: every test drives the
+// router, because that is how a user reaches any of these screens. Only the
+// one this project uses is printed, so the file the model is looking at and
+// the shape it is told about are the same file.
+//
+// The pump is part of the contract and is why the skeleton is here at all: a
+// model that has never seen the file cannot know whether the app has one frame
+// to settle or a transition to wait out.
 func writeTestSkeleton(b *strings.Builder, cases []TestCase) {
 	if len(cases) == 0 {
 		return
 	}
 	tc := cases[0]
+	if tc.UsesRouter {
+		writeRoutedSkeleton(b, tc)
+		return
+	}
 	fmt.Fprintf(b, `Each test is one file under test/, and they share one shape:
 
   void main() {
@@ -215,6 +248,38 @@ Only the four holes differ, and they are listed per scenario below. Note the
 single pump: the app has one frame to settle.
 
 `, tc.PageWrapperClass)
+}
+
+// writeRoutedSkeleton is the same thing for an app with routes. The recorder
+// is in every test rather than in the ones that read it, so the shape stays
+// one shape.
+func writeRoutedSkeleton(b *strings.Builder, tc TestCase) {
+	fmt.Fprintf(b, `Each test is one file under test/, and they share one shape:
+
+  void main() {
+    testWidgets(<description>, (tester) async {
+      final cubit = <cubit>;
+      final %s = %s();
+      await tester.pumpWidget(
+        BlocProvider.value(
+          value: cubit,
+          child: MaterialApp.router(
+            routerConfig: buildRouter(observers: [%s]),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      <action>          // absent when the scenario has no action
+      await tester.pump();     // pumpAndSettle when the action moves between routes
+      <assert>
+    });
+  }
+
+The test drives the whole app through its router, which is how a user reaches
+any of these screens. The recorder is what an assertion about a push or a pop
+reads: %s.pushed and %s.popped hold the route names, in order.
+
+`, tc.SpyVar, tc.SpyClass, tc.SpyVar, tc.SpyVar, tc.SpyVar)
 }
 
 // writeTestHoles prints what one scenario's test fills the skeleton with.
@@ -294,6 +359,9 @@ func (im *Implementer) readOnlyFiles() []string {
 	}
 
 	out = append(out, "lib/app.dart")
+	if im.App.Navigation.Declared() {
+		out = append(out, dart.RouterFile())
+	}
 
 	sort.Strings(out)
 	return out
@@ -310,7 +378,7 @@ func writeScenario(b *strings.Builder, s model.BehaviorScenario) {
 		fmt.Fprintf(b, "    when   %s\n", s.When)
 	}
 	if s.Then != nil {
-		fmt.Fprintf(b, "    then   %s should be %s\n", s.Then.Target, s.Then.Value)
+		fmt.Fprintf(b, "    then   %s\n", s.Then.Sentence())
 	}
 }
 

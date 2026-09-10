@@ -25,6 +25,23 @@ type TestCase struct {
 	PageWrapperClass string
 	PageWrapperFile  string // relative import path, e.g. "wrappers/home_page_wrapper.dart"
 
+	// Navigation context. A routed app is pumped through its router rather
+	// than through one page, and every test passes the router a recorder, so
+	// a scenario that verifies a push has something to read it off.
+	UsesRouter bool
+	RouterFile string // relative import path, e.g. "navigation/router.dart"
+	SpyFile    string // relative to test/, e.g. "support/navigation_spy.dart"
+	SpyClass   string
+	SpyVar     string
+	// GivenRoute is the route the test drives to before the scenario starts.
+	// It is empty when the scenario starts where the app opens.
+	GivenRoute string
+
+	// Settle says the action this scenario fires starts a transition, so the
+	// test waits for it rather than pumping one frame. A route animates; a
+	// button that only writes a store does not.
+	Settle bool
+
 	// Imports the assertion needs on top of the standard ones, relative to lib/.
 	Imports []string
 

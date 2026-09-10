@@ -64,6 +64,9 @@ func Generate(app *model.App, outDir string) error {
 
 type projectData struct {
 	PackageName string
+	// UsesRouter says navigation.yaml declared routes, so the app is built
+	// around a router rather than around one home page.
+	UsesRouter  bool
 	Description string
 	PageName    string
 	FileName    string
@@ -76,6 +79,7 @@ func buildProjectData(app *model.App) projectData {
 	pageName := dart.FirstPageName(app.UI)
 	return projectData{
 		PackageName: projectrules.PackageName(app.Project.Name),
+		UsesRouter:  app.Navigation.Declared(),
 		Description: app.Project.Description,
 		PageName:    pageName,
 		FileName:    dart.SnakeCase(pageName) + ".dart",
