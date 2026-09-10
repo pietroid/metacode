@@ -11,9 +11,7 @@ package flutter
 import (
 	"fmt"
 
-	"github.com/pietroid/metacode/engine/internal/behavior/codegen/flutter"
 	"github.com/pietroid/metacode/engine/internal/core/model"
-	"github.com/pietroid/metacode/engine/internal/core/plan"
 	"github.com/pietroid/metacode/engine/internal/specs/data/codegen/flutter"
 	"github.com/pietroid/metacode/engine/internal/specs/model/codegen/flutter"
 	"github.com/pietroid/metacode/engine/internal/specs/project/codegen/flutter"
@@ -37,16 +35,4 @@ func GenerateAll(app *model.App, outDir string) error {
 		return fmt.Errorf("widget generation: %w", err)
 	}
 	return nil
-}
-
-// GenerateWrappers writes the wrapper layer that wires widgets to Cubits.
-// Wrappers are scaffolded from the IR so the project compiles, and the
-// implement stage rewrites them together with the stores in a single request.
-func GenerateWrappers(app *model.App, work plan.Work, outDir string) error {
-	return behaviorflutter.GenerateWrappers(app, work, outDir)
-}
-
-// GenerateTests emits one widget test per planned scenario.
-func GenerateTests(app *model.App, work plan.Work, outDir string) error {
-	return behaviorflutter.GenerateTests(app, work, outDir)
 }

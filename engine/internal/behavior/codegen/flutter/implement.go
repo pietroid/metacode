@@ -6,8 +6,8 @@
 // which stores, widgets, wrappers and tests exist, what they are called, and
 // where they live. What is left is the body of a store action and the wiring of
 // a widget, and that is what a model is asked for — once, with the whole spec,
-// every test, and every file it may write. See docs/decisions.md, "Ask once,
-// with everything".
+// every test, and every file it may write. See AGENTS.md, "Ask once, with
+// everything".
 package behaviorflutter
 
 import (
@@ -72,10 +72,10 @@ func (im *Implementer) editableFiles() []editableFile {
 		})
 	}
 
-	for _, wrapper := range im.Work.Wrappers {
+	for _, widget := range im.Work.Wrappers {
 		files = append(files, editableFile{
-			Path:  dart.WrapperFile(wrapper.Widget),
-			Class: dart.WrapperClass(wrapper.Widget),
+			Path:  dart.WrapperFile(widget),
+			Class: dart.WrapperClass(widget),
 			Role:  "wrapper",
 		})
 	}
@@ -95,14 +95,18 @@ func (im *Implementer) Implement(ctx context.Context) error {
 		return nil
 	}
 
-	prompt, err := im.buildImplementPrompt(files)
+	prefix, err := im.buildPrefix()
+	if err != nil {
+		return fmt.Errorf("build prompt: %w", err)
+	}
+	suffix, err := im.buildImplementSuffix(files)
 	if err != nil {
 		return fmt.Errorf("build prompt: %w", err)
 	}
 
 	im.Logger.Infof("implementing %d file(s) in one request: %s", len(files), strings.Join(paths(files), ", "))
 
-	result, err := im.Client.Complete(ctx, llm.Call{Label: "implement", Prompt: prompt})
+	result, err := im.Client.Complete(ctx, llm.Call{Label: "implement", Prefix: prefix, Prompt: suffix})
 	if err != nil {
 		return fmt.Errorf("LLM complete: %w", err)
 	}
@@ -119,7 +123,7 @@ func (im *Implementer) Implement(ctx context.Context) error {
 
 // Repair makes one request per fix iteration, carrying every failure at once:
 // the failures of a run are usually the same mistake seen from several
-// scenarios. See docs/decisions.md, "Ask once, with everything".
+// scenarios. See AGENTS.md, "Ask once, with everything".
 func (im *Implementer) Repair(ctx context.Context, iteration int, failures []run.Failure) error {
 	if im.Client == nil {
 		return fmt.Errorf("no LLM client configured")
@@ -129,7 +133,11 @@ func (im *Implementer) Repair(ctx context.Context, iteration int, failures []run
 	}
 
 	files := im.editableFiles()
-	prompt, err := im.buildRepairPrompt(files, failures)
+	prefix, err := im.buildPrefix()
+	if err != nil {
+		return fmt.Errorf("build prompt: %w", err)
+	}
+	suffix, err := im.buildRepairSuffix(files, failures)
 	if err != nil {
 		return fmt.Errorf("build prompt: %w", err)
 	}
@@ -137,7 +145,7 @@ func (im *Implementer) Repair(ctx context.Context, iteration int, failures []run
 	im.Logger.Infof("repairing %d failure(s) in one request", len(failures))
 
 	label := fmt.Sprintf("repair %d", iteration)
-	result, err := im.Client.Complete(ctx, llm.Call{Label: label, Prompt: prompt})
+	result, err := im.Client.Complete(ctx, llm.Call{Label: label, Prefix: prefix, Prompt: suffix})
 	if err != nil {
 		return fmt.Errorf("LLM complete: %w", err)
 	}

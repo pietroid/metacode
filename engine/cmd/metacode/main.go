@@ -18,8 +18,8 @@ func main() {
 	flutterTarget := run.Target{
 		Name:     "flutter",
 		Scaffold: flutter.GenerateAll,
-		Wrappers: flutter.GenerateWrappers,
-		Tests:    flutter.GenerateTests,
+		Wrappers: behaviorflutter.GenerateWrappers,
+		Tests:    behaviorflutter.GenerateTests,
 		Prune:    flutter.PruneStaleOutput,
 		NewImplementer: func(client llm.Client, logger log.Logger, app *model.App, work plan.Work, outDir string) run.Implementer {
 			return behaviorflutter.New(client, logger, app, work, outDir)

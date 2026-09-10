@@ -78,12 +78,14 @@ func (t *Tracer) Complete(ctx context.Context, call Call) (Result, error) {
 		label = "call"
 	}
 
-	t.logger.Infof("LLM call #%d [%s]: sending %s", seq, label, humanBytes(len(call.Prompt)))
-	t.logger.Debugf("LLM call #%d [%s] prompt:\n%s", seq, label, call.Prompt)
+	full := call.Text()
+	t.logger.Infof("LLM call #%d [%s]: sending %s (%s of it cacheable)",
+		seq, label, humanBytes(len(full)), humanBytes(len(call.Prefix)))
+	t.logger.Debugf("LLM call #%d [%s] prompt:\n%s", seq, label, full)
 
 	spinner := log.NewSpinner(t.progress)
 	spinner.Start(fmt.Sprintf("LLM call #%d [%s] waiting for the model", seq, label))
-	spinner.Detail(fmt.Sprintf("prompt %s", humanBytes(len(call.Prompt))))
+	spinner.Detail(fmt.Sprintf("prompt %s", humanBytes(len(full))))
 
 	start := time.Now()
 	out, err := t.inner.Complete(ctx, call)
@@ -92,7 +94,7 @@ func (t *Tracer) Complete(ctx context.Context, call Call) (Result, error) {
 
 	if err != nil {
 		t.logger.Errorf("LLM call #%d [%s] failed after %s: %s", seq, label, elapsed.Round(time.Millisecond), err)
-		t.write(seq, label, call.Prompt, "ERROR: "+err.Error(), elapsed, Usage{})
+		t.write(seq, label, full, "ERROR: "+err.Error(), elapsed, Usage{})
 		return Result{}, err
 	}
 
@@ -105,7 +107,7 @@ func (t *Tracer) Complete(ctx context.Context, call Call) (Result, error) {
 		seq, label, humanBytes(len(out.Text)), elapsed.Round(time.Millisecond),
 		out.Usage, humanCount(total.Total()))
 	t.logger.Debugf("LLM call #%d [%s] response:\n%s", seq, label, out.Text)
-	t.write(seq, label, call.Prompt, out.Text, elapsed, out.Usage)
+	t.write(seq, label, full, out.Text, elapsed, out.Usage)
 
 	return out, nil
 }

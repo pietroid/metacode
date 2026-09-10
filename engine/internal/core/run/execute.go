@@ -158,7 +158,7 @@ func newLLMClient(logger log.Logger, projectDir string) *llm.Tracer {
 	cfg, err := llm.ConfigFromEnv()
 	if err != nil {
 		logger.Warnf("LLM not configured: %s", err)
-		logger.Warnf("set ANTHROPIC_API_KEY in a .env file (see .spec.example) to enable generation, or METACODE_LLM_PROVIDER=openai with METACODE_LLM_BASE_URL and METACODE_LLM_API_KEY")
+		logger.Warnf("set ANTHROPIC_API_KEY in a .env file (see .env.example) to enable generation, or METACODE_LLM_PROVIDER=openai with METACODE_LLM_BASE_URL and METACODE_LLM_API_KEY")
 		return nil
 	}
 

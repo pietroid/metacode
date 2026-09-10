@@ -6,6 +6,7 @@ import (
 	"unicode"
 
 	"github.com/pietroid/metacode/engine/internal/core/model"
+	"github.com/pietroid/metacode/engine/internal/specs/ui/rules"
 )
 
 // ResolveBindings derives one binding per widget event that changes a store.
@@ -19,6 +20,7 @@ import (
 func ResolveBindings(app *model.App) error {
 	index := make(map[string]int)
 	var bindings []model.Binding
+	rows := uirules.RowWidgets(app.UI, app.Symbols)
 
 	for _, b := range app.Behaviors {
 		widget, address, event, ok := splitWidgetEvent(app, b.When)
@@ -40,7 +42,7 @@ func ResolveBindings(app *model.App) error {
 
 		// The address is what names the action, not the prop: two buttons in
 		// one row share onPressed and are two different things to do.
-		action, err := ActionNameFor(widget, address)
+		action, err := ActionNameFor(widget, address, event)
 		if err != nil {
 			return fmt.Errorf("scenario %q: %w", b.ID, err)
 		}
@@ -62,6 +64,7 @@ func ResolveBindings(app *model.App) error {
 			Event:       event,
 			Store:       store,
 			Action:      action,
+			Indexed:     rows[widget],
 			ScenarioIDs: []string{b.ID},
 		})
 	}
@@ -71,29 +74,40 @@ func ResolveBindings(app *model.App) error {
 }
 
 // widgetKindSuffixes are the naming suffixes a widget carries to say what it is
-// rather than what it does. Stripping one leaves the verb.
+// rather than what it does. Stripping one leaves the verb. They are the last
+// resort: see ActionNameFor.
 var widgetKindSuffixes = []string{
 	"Button", "Field", "Input", "Switch", "Checkbox", "Slider", "Tile", "Icon",
 }
 
-// ActionNameFor derives the store action a widget event runs from the widget's
-// name: decrementButton.onPressed becomes decrement, saveButton.onPressed
-// becomes save.
+// ActionNameFor derives the store action a widget event runs.
 //
-// The name comes from the spec, never from the values a scenario uses. See
-// docs/decisions.md, "The action a widget event runs comes from the spec".
-func ActionNameFor(widget, event string) (string, error) {
+// The spec answers first. Writing `onChanged: taskToggled` in ui.yaml names
+// that event, and a name the author chose beats anything derived from the
+// widget: taskCheckbox.taskToggled runs taskToggled, not task. A leading `on`
+// is dropped, so `onPressed: onAddTask` runs addTask.
+//
+// Only a raw catalog prop leaves nothing to go on, and then the widget's name
+// supplies the verb: incrementButton.onPressed runs increment.
+//
+// The name never comes from the values a scenario uses. See AGENTS.md, "The
+// action a widget event runs comes from the spec".
+func ActionNameFor(widget, address, prop string) (string, error) {
+	if address != prop && address != "" {
+		return lowerFirst(strings.TrimPrefix(address, "on")), nil
+	}
 	for _, suffix := range widgetKindSuffixes {
 		if trimmed := strings.TrimSuffix(widget, suffix); trimmed != widget && trimmed != "" {
 			return lowerFirst(trimmed), nil
 		}
 	}
-	// No kind suffix to strip. Fall back to the event, so that a widget named
-	// for what it does rather than what it is still yields a usable name.
-	if verb := strings.TrimPrefix(event, "on"); verb != event && verb != "" {
+	// No alias and no kind suffix to strip. Fall back to the prop, so that a
+	// widget named for what it does rather than what it is still yields a
+	// usable name.
+	if verb := strings.TrimPrefix(prop, "on"); verb != prop && verb != "" {
 		return lowerFirst(widget) + capitalizeFirst(verb), nil
 	}
-	return "", fmt.Errorf("cannot derive a store action from %q.%q: name the widget after what it does, e.g. %sButton", widget, event, widget)
+	return "", fmt.Errorf("cannot derive a store action from %q.%q: name the event in ui.yaml, e.g. %s: doSomething", widget, prop, prop)
 }
 
 // splitWidgetEvent reads back the widget, the name it answers to, and the prop

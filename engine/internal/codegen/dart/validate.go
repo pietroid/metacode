@@ -46,8 +46,9 @@ func RenameClass(code, want string) string {
 // Balanced reports whether brackets are balanced, ignoring anything inside a
 // string literal or a comment.
 //
-// Comments have to be skipped, not just strings: see docs/decisions.md, "The
-// bracket check has to read comments".
+// Comments have to be skipped, not just strings. A check that could not read
+// comments once discarded three good replies in a row over a bracket inside a
+// doc comment, and reported the untouched scaffolding as the result.
 func Balanced(code string) bool {
 	depth := 0
 	runes := []rune(code)

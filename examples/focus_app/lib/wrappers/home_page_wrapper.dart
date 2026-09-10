@@ -15,10 +15,12 @@ class HomePageWrapper extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocSelector<TaskCubit, TaskState, bool>(
       selector: (state) => state.value.isEmpty,
-      builder: (context, isEmpty) => HomePage(
-        homeContent: isEmpty ? const EmptyState() : const DefaultStateWrapper(),
-        addTaskButton: const AddTaskButtonWrapper(),
-      ),
+      builder: (context, isEmpty) {
+        return HomePage(
+          homeContent: isEmpty ? const EmptyState() : const DefaultStateWrapper(),
+          addTaskButton: const AddTaskButtonWrapper(),
+        );
+      },
     );
   }
 }

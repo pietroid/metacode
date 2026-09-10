@@ -9,8 +9,8 @@ import (
 )
 
 // This file is the single answer to "where does generated code go, and what is
-// it called". Nothing else in the tree restates it: see docs/decisions.md,
-// "Where a generated file goes is decided once".
+// it called". Nothing else in the tree restates it: see AGENTS.md, "Where a
+// generated file goes is decided once".
 //
 // The rules belong to the target language, not to the specs. A scenario is
 // "increments from 0" whatever it compiles to, which is what lets a second
@@ -68,8 +68,9 @@ func TestFile(scenarioID string) string {
 }
 
 // ScenarioSlug turns a scenario path into a token usable in a file name.
-// Scenario names are prose: see docs/decisions.md, "Scenario names are prose,
-// so file names are slugs".
+// Scenario names are prose, so file names are slugs. Two scenarios that slug
+// to one name are rejected in BuildTestCases rather than silently overwriting
+// each other.
 func ScenarioSlug(scenarioID string) string {
 	var b strings.Builder
 	lastUnderscore := true // never start with a separator

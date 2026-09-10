@@ -29,39 +29,52 @@ const rules = `Rules:
   "not decrements when is 0" is a rule about every value at the floor, not about the number 0.
 `
 
-// buildImplementPrompt assembles the single request that implements the app.
-func (im *Implementer) buildImplementPrompt(files []editableFile) (string, error) {
+// buildPrefix assembles the part of a request that is byte-identical across
+// every call of one run: the standing instructions, the spec, the tests, and
+// the generated code the model reads but never writes. Nothing in it is
+// rewritten between the implement call and the repairs that follow, so it is
+// sent once and re-read.
+//
+// The task itself is deliberately not here. "Implement this" and "fix these
+// failures" are one word apart in cost and would split the prefix in two, so
+// they go in the suffix and this stays one cache entry per run. See AGENTS.md,
+// "One prefix per run".
+func (im *Implementer) buildPrefix() (string, error) {
 	var b strings.Builder
 
-	b.WriteString("You are implementing a Flutter app that has already been scaffolded from a specification.\n")
-	b.WriteString("The scaffolding is complete and correct: the classes, their names, and the files they live in\n")
-	b.WriteString("all come from the spec. What is missing is behavior — the bodies of the store actions and the\n")
-	b.WriteString("wiring between widgets and stores.\n\n")
+	b.WriteString("You are writing the behavior of a Flutter app that has already been scaffolded from a\n")
+	b.WriteString("specification. The scaffolding is complete and correct: the classes, their names, and the\n")
+	b.WriteString("files they live in all come from the spec. What is missing is behavior — the bodies of the\n")
+	b.WriteString("store actions and the wiring between widgets and stores.\n\n")
 	b.WriteString(rules)
 	b.WriteString("\n")
 
 	if err := im.writeContext(&b); err != nil {
 		return "", err
 	}
+	return b.String(), nil
+}
+
+// buildImplementSuffix is the half of the implement request that the repairs
+// do not share: the files as they stand, and the instruction.
+func (im *Implementer) buildImplementSuffix(files []editableFile) (string, error) {
+	var b strings.Builder
 
 	if err := im.writeEditable(&b, files); err != nil {
 		return "", err
 	}
-
 	writeOutputFormat(&b, files)
+	b.WriteString("Write the behavior of the whole app.\n")
 	return b.String(), nil
 }
 
-// buildRepairPrompt assembles a request that carries every failure of one test
-// run.
-func (im *Implementer) buildRepairPrompt(files []editableFile, failures []run.Failure) (string, error) {
+// buildRepairSuffix carries every failure of one test run.
+func (im *Implementer) buildRepairSuffix(files []editableFile, failures []run.Failure) (string, error) {
 	var b strings.Builder
 
-	b.WriteString("You are fixing a Flutter app whose generated tests are failing.\n")
-	b.WriteString("The tests are generated from the specification and are correct by definition: make the app\n")
-	b.WriteString("satisfy them. Fix the cause, not the assertion.\n\n")
-	b.WriteString(rules)
-	b.WriteString("\n")
+	if err := im.writeEditable(&b, files); err != nil {
+		return "", err
+	}
 
 	b.WriteString("=== Failing tests ===\n")
 	for _, f := range failures {
@@ -73,15 +86,9 @@ func (im *Implementer) buildRepairPrompt(files []editableFile, failures []run.Fa
 	}
 	b.WriteString("\n")
 
-	if err := im.writeContext(&b); err != nil {
-		return "", err
-	}
-
-	if err := im.writeEditable(&b, files); err != nil {
-		return "", err
-	}
-
 	writeOutputFormat(&b, files)
+	b.WriteString("The tests are generated from the specification and are correct by definition: make the app\n")
+	b.WriteString("satisfy them. Fix the cause, not the assertion.\n")
 	b.WriteString("Return only the files you are changing. Files you leave out keep their current contents.\n")
 	return b.String(), nil
 }
@@ -91,12 +98,9 @@ func (im *Implementer) buildRepairPrompt(files []editableFile, failures []run.Fa
 func (im *Implementer) writeContext(b *strings.Builder) error {
 	app := im.App
 
-	b.WriteString("=== Specification: behaviors ===\n")
-	b.WriteString("Every scenario below is verified by exactly one test.\n\n")
-	for _, s := range app.Behaviors {
-		writeScenario(b, s)
+	if err := im.writeScenarios(b); err != nil {
+		return err
 	}
-	b.WriteString("\n")
 
 	b.WriteString("=== Specification: stores ===\n")
 	for _, store := range app.Stores {
@@ -121,16 +125,97 @@ func (im *Implementer) writeContext(b *strings.Builder) error {
 	}
 	b.WriteString("\n")
 
-	b.WriteString("=== The tests, all of them ===\n")
-	b.WriteString("These are the definition of done. Every one of them must pass.\n\n")
-	for _, test := range im.Work.Tests {
-		if err := appendFile(b, im.ProjectDir, dart.TestFile(test.ScenarioID)); err != nil {
-			return err
+	return nil
+}
+
+// writeScenarios writes the specification and the suite in one section,
+// because they are one thing said twice: every scenario becomes exactly one
+// test, and printing the scenario and then the whole generated file repeated
+// the given, the when and the then in two notations.
+//
+// What the file adds over the scenario is the Dart the engine chose, and only
+// that is printed. It is not derivable by reading the scenario: two `then`
+// lines that look alike compile to different idioms, one searching rendered
+// text and the other reading a property off a widget, and a row selector
+// became an index by counting the given. A model left to guess at the
+// assertion it has to satisfy guesses wrong some of the time, and every wrong
+// guess costs a repair.
+//
+// The cases come from BuildTestCases, the same function that renders the
+// files, so this cannot drift from what is on disk.
+func (im *Implementer) writeScenarios(b *strings.Builder) error {
+	cases, err := BuildTestCases(im.App, im.Work)
+	if err != nil {
+		return fmt.Errorf("build test cases: %w", err)
+	}
+
+	b.WriteString("=== The scenarios, and the test each one compiles to ===\n")
+	b.WriteString("These are the specification and the definition of done. Every test must pass.\n")
+	b.WriteString("Implement what the scenario describes, not only the value its test checks.\n\n")
+	writeTestSkeleton(b, cases)
+
+	byID := make(map[string]TestCase, len(cases))
+	for _, tc := range cases {
+		byID[tc.ID] = tc
+	}
+	for _, s := range im.App.Behaviors {
+		writeScenario(b, s)
+		if tc, ok := byID[s.ID]; ok {
+			writeTestHoles(b, tc)
 		}
+		b.WriteString("\n")
 	}
 	b.WriteString("\n")
-
 	return nil
+}
+
+// writeTestSkeleton prints the shape every test shares, once. Every file is
+// this with four holes filled, so printing it eleven times said the same six
+// imports and the same pumpWidget call eleven times.
+//
+// The single pump is part of the contract and is why the skeleton is here at
+// all: the app has one frame to settle, and a model that has never seen the
+// file cannot know that.
+func writeTestSkeleton(b *strings.Builder, cases []TestCase) {
+	if len(cases) == 0 {
+		return
+	}
+	tc := cases[0]
+	fmt.Fprintf(b, `Each test is one file under test/, and they share one shape:
+
+  void main() {
+    testWidgets(<description>, (tester) async {
+      final cubit = <cubit>;
+      await tester.pumpWidget(
+        BlocProvider.value(
+          value: cubit,
+          child: const MaterialApp(home: %s()),
+        ),
+      );
+      <action>          // absent when the scenario has no action
+      await tester.pump();
+      <assert>
+    });
+  }
+
+Only the four holes differ, and they are listed per scenario below. Note the
+single pump: the app has one frame to settle.
+
+`, tc.PageWrapperClass)
+}
+
+// writeTestHoles prints what one scenario's test fills the skeleton with.
+func writeTestHoles(b *strings.Builder, tc TestCase) {
+	fmt.Fprintf(b, "  -> %s\n", tc.TargetFile)
+	cubit := tc.CubitClass + "()"
+	if tc.SeedState != "" {
+		cubit = fmt.Sprintf("%s.seeded(%s)", tc.CubitClass, tc.SeedState)
+	}
+	fmt.Fprintf(b, "    cubit  %s\n", cubit)
+	if tc.ActionExpression != "" {
+		fmt.Fprintf(b, "    action %s\n", tc.ActionExpression)
+	}
+	fmt.Fprintf(b, "    assert %s\n", tc.AssertionExpression)
 }
 
 // writeEditable writes the current contents of every file the model owns.
@@ -180,24 +265,19 @@ func (im *Implementer) readOnlyFiles() []string {
 	return out
 }
 
+// writeScenario prints one scenario in the words the spec used. The ID
+// already carries the group path and the description, so neither is repeated.
 func writeScenario(b *strings.Builder, s model.BehaviorScenario) {
-	fmt.Fprintf(b, "Scenario: %s\n", s.ID)
-	if len(s.GroupPath) > 0 {
-		fmt.Fprintf(b, "  Group: %s\n", strings.Join(s.GroupPath, " > "))
-	}
-	if s.Description != "" && s.Description != s.ID {
-		fmt.Fprintf(b, "  Description: %s\n", s.Description)
-	}
+	fmt.Fprintf(b, "%s\n", s.ID)
 	if s.Given != nil {
-		fmt.Fprintf(b, "  Given: %s: %s\n", s.Given.Target, s.Given.Value)
+		fmt.Fprintf(b, "    given  %s: %s\n", s.Given.Target, s.Given.Value)
 	}
 	if s.When != "" {
-		fmt.Fprintf(b, "  When: %s\n", s.When)
+		fmt.Fprintf(b, "    when   %s\n", s.When)
 	}
 	if s.Then != nil {
-		fmt.Fprintf(b, "  Then: %s should be %s\n", s.Then.Target, s.Then.Value)
+		fmt.Fprintf(b, "    then   %s should be %s\n", s.Then.Target, s.Then.Value)
 	}
-	b.WriteString("\n")
 }
 
 // appendFile writes a file into the prompt under its own path. A file that is

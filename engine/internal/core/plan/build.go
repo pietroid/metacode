@@ -22,9 +22,9 @@ func Build(app *model.App) (Work, error) {
 		return Work{}, fmt.Errorf("ir is nil")
 	}
 
-	tests := make([]Test, 0, len(app.Behaviors))
+	tests := make([]string, 0, len(app.Behaviors))
 	for _, scenario := range app.Behaviors {
-		tests = append(tests, Test{ScenarioID: scenario.ID})
+		tests = append(tests, scenario.ID)
 	}
 
 	// One wrapper per widget that has something to wire, and a wrapper for
@@ -37,27 +37,27 @@ func Build(app *model.App) (Work, error) {
 	// of the whole app, so a page wrapper exists even when no scenario names
 	// the page.
 	needsWrapper := uirules.WrapperWidgets(app)
-	var wrappers []Wrapper
+	var wrappers []string
 	for _, comp := range app.UI {
 		if needsWrapper[comp.Name] || dart.IsPageName(comp.Name) {
-			wrappers = append(wrappers, Wrapper{Widget: comp.Name})
+			wrappers = append(wrappers, comp.Name)
 		}
 	}
 	if !hasPage(wrappers) {
 		if page := dart.FirstPageName(app.UI); page != "" {
-			wrappers = append(wrappers, Wrapper{Widget: page})
+			wrappers = append(wrappers, page)
 		}
 	}
-	sort.Slice(wrappers, func(i, j int) bool { return wrappers[i].Widget < wrappers[j].Widget })
+	sort.Strings(wrappers)
 
 	return Work{Wrappers: wrappers, Tests: tests}, nil
 }
 
 // hasPage reports whether the planned wrappers already cover a page. Every run
 // needs one, because that is what a test pumps.
-func hasPage(wrappers []Wrapper) bool {
+func hasPage(wrappers []string) bool {
 	for _, w := range wrappers {
-		if dart.IsPageName(w.Widget) {
+		if dart.IsPageName(w) {
 			return true
 		}
 	}

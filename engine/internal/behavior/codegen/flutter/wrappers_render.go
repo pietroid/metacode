@@ -33,28 +33,22 @@ func treeOf(app *model.App) tree {
 // children: the generated widget already exposes a parameter per variable, per
 // event and per wired child, put there for this purpose. A wrapper is one
 // constructor call, which is what keeps the shape of the tree in the generated
-// widgets. See docs/decisions.md, "A widget that needs wiring is reached
-// through its own wrapper".
-func wrapperBody(app *model.App, wrapper Wrapper, t tree) (string, error) {
-	comp := dart.FindComponent(app.UI, wrapper.WidgetName)
+// widgets. See AGENTS.md, "A wrapper composes the dumb widget; it does not
+// re-render it".
+func wrapperBody(app *model.App, widget string, t tree) (string, error) {
+	comp := dart.FindComponent(app.UI, widget)
 	if comp == nil {
-		return "", fmt.Errorf("widget %q not found in the UI spec", wrapper.WidgetName)
+		return "", fmt.Errorf("widget %q not found in the UI spec", widget)
 	}
 	if len(app.Stores) == 0 {
-		return "", fmt.Errorf("wrapper %q has no store to wire", wrapper.WidgetName)
+		return "", fmt.Errorf("wrapper %q has no store to wire", widget)
 	}
+	class := dart.WrapperClass(widget)
 	// One store, checked in the resolve stage: see datarules.CheckSupported.
 	store := app.Stores[0]
 
-	args, selector, refs := wrapperArgs(app, *comp, store, t)
-	widget := fmt.Sprintf("%s(\n%s,\n)", dart.WidgetClass(comp.Name), dart.IndentBy(strings.Join(args, ",\n"), 2))
-
-	body := widget
-	if selector != "" {
-		// A value read from the store has to rebuild when the store changes.
-		body = fmt.Sprintf("BlocSelector<%s, %s, String>(\n  selector: (state) => %s,\n  builder: (context, %s) => %s,\n)",
-			dart.CubitClass(store.Name), dart.StateClass(store.Name), selector, selectorVariable, dart.IndentLines(widget, 2))
-	}
+	args, refs := wrapperArgs(app, *comp, store, t)
+	body := fmt.Sprintf("%s(\n%s,\n)", dart.WidgetClass(comp.Name), dart.IndentBy(strings.Join(args, ",\n"), 2))
 
 	return fmt.Sprintf(`import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -67,13 +61,14 @@ class %s extends StatelessWidget {
     return %s;
   }
 }
-`, wrapperImports(*comp, store, selector, refs), wrapper.ClassName, wrapper.ClassName,
+`, wrapperImports(*comp, store, refs), class, class,
 		rowParam(t.indexed[comp.Name]), rowField(t.indexed[comp.Name]), dart.IndentLines(body, 4)), nil
 }
 
 // A row wrapper is built once per element and told which one it is, so it can
-// read that row and so the widget below it keys itself by the same index. See
-// docs/decisions.md, "A row knows which row it is".
+// read that row and so the widget below it keys itself by the same index. N
+// rows sharing one key is both an ambiguous finder for a test and a duplicate
+// key at runtime.
 func rowParam(isRow bool) string {
 	if !isRow {
 		return ""
@@ -88,13 +83,9 @@ func rowField(isRow bool) string {
 	return "  final int index;\n"
 }
 
-// selectorVariable is the name the BlocSelector builder binds the selected
-// value to. There is one selector per wrapper, so one name is enough.
-const selectorVariable = "value"
-
-// wrapperArgs is the argument list for the dumb widget: the store expression it
-// has to select on, if any, and every file the arguments name.
-func wrapperArgs(app *model.App, comp model.UIComponent, store model.Store, t tree) ([]string, string, []string) {
+// wrapperArgs is the argument list for the dumb widget, and every file the
+// arguments name.
+func wrapperArgs(app *model.App, comp model.UIComponent, store model.Store, t tree) ([]string, []string) {
 	b := &argBuilder{app: app, comp: comp, store: store, tree: t}
 	if t.indexed[comp.Name] {
 		b.args = append(b.args, "index: index")
@@ -103,27 +94,30 @@ func wrapperArgs(app *model.App, comp model.UIComponent, store model.Store, t tr
 	b.addSlots()
 	b.addItemBuilders()
 	b.addEvents()
-	return b.args, b.selector, b.refs
+	return b.args, b.refs
 }
 
-// argBuilder accumulates one wrapper's arguments, together with the store
-// expression and the imports they imply.
+// argBuilder accumulates one wrapper's arguments and the imports they imply.
 type argBuilder struct {
 	app   *model.App
 	comp  model.UIComponent
 	store model.Store
 	tree  tree
 
-	args     []string
-	selector string
-	refs     []string
+	args []string
+	refs []string
 }
 
-// addVariables fills the widget's own variables: a value from the store when
-// the scenarios say where it comes from, a callback from the binding that
-// names its action, and a widget from the widget a scenario says goes there.
+// addVariables fills the widget's own variables: a callback from the binding
+// that names its action, a widget from the widget a scenario says goes there,
+// and a placeholder for a value.
+//
+// A value is a placeholder on purpose. Which store field a variable displays,
+// and what it looks like once it gets there, is behavior: the implement stage
+// writes the BlocSelector that reads it. The scaffold used to guess by matching
+// a scenario's given against its then, which answered only for a store holding
+// one scalar and was overwritten everywhere else.
 func (b *argBuilder) addVariables() {
-	bound := storeBackedVariables(b.app, b.comp.Name, b.store)
 	for _, v := range model.UniqueVariables(b.comp.Variables) {
 		switch {
 		case isCallbackType(v.Type):
@@ -133,17 +127,7 @@ func (b *argBuilder) addVariables() {
 		case v.Type == model.TypeWidget:
 			b.args = append(b.args, fmt.Sprintf("%s: %s", v.Name, b.widgetFor(v.Name)))
 		default:
-			expression, ok := bound[v.Name]
-			if !ok {
-				// No scenario says where this value comes from. A placeholder
-				// of the right type compiles, and the scenario that needed it
-				// fails with something a reader can act on rather than a
-				// missing parameter.
-				b.args = append(b.args, fmt.Sprintf("%s: %s", v.Name, dart.VariablePlaceholder(v.Type)))
-				continue
-			}
-			b.selector = expression
-			b.args = append(b.args, fmt.Sprintf("%s: %s", v.Name, selectorVariable))
+			b.args = append(b.args, fmt.Sprintf("%s: %s", v.Name, dart.VariablePlaceholder(v.Type)))
 		}
 	}
 }
@@ -184,8 +168,14 @@ func (b *argBuilder) addEvents() {
 	}
 }
 
+// action is the call a widget event makes. A row's action is told which row
+// made it, because the wrapper of a row already knows.
 func (b *argBuilder) action(binding model.Binding) string {
-	return fmt.Sprintf("context.read<%s>().%s()", dart.CubitClass(binding.Store), binding.Action)
+	arg := ""
+	if binding.Indexed {
+		arg = "index"
+	}
+	return fmt.Sprintf("context.read<%s>().%s(%s)", dart.CubitClass(binding.Store), binding.Action, arg)
 }
 
 // child renders the expression that fills a slot: the child's wrapper when it
@@ -235,13 +225,10 @@ func callbackHead(t string) string {
 	return "(_)"
 }
 
-func wrapperImports(comp model.UIComponent, store model.Store, selector string, refs []string) string {
+func wrapperImports(comp model.UIComponent, store model.Store, refs []string) string {
 	imports := []string{
 		"import '" + relativeLibImport(dart.WidgetFile(comp.Name)) + "';",
 		"import '" + relativeLibImport(dart.CubitFile(store.Name)) + "';",
-	}
-	if selector != "" {
-		imports = append(imports, "import '"+relativeLibImport(dart.StateFile(store.Name))+"';")
 	}
 	for _, ref := range dart.UniqueStrings(refs) {
 		imports = append(imports, "import '"+relativeLibImport(ref)+"';")
@@ -254,33 +241,4 @@ func wrapperImports(comp model.UIComponent, store model.Store, selector string, 
 // lib/wrappers/.
 func relativeLibImport(libPath string) string {
 	return "../" + dart.LibImport(libPath)
-}
-
-// storeBackedVariables works out which of a widget's variables display a store
-// field, by reading the scenarios that assert on them: "given
-// counterStore.value is 5, then homePage.counterValue is 5" says counterValue
-// shows counterStore.value.
-func storeBackedVariables(app *model.App, widget string, store model.Store) map[string]string {
-	bound := make(map[string]string)
-	storeNames := map[string]bool{store.Name: true, dart.StoreBaseName(store.Name): true}
-
-	for _, scenario := range app.Behaviors {
-		if scenario.Then == nil || scenario.Given == nil {
-			continue
-		}
-		if !strings.HasPrefix(scenario.Then.Target, widget+".") {
-			continue
-		}
-		root, field := model.SplitRef(scenario.Given.Target)
-		if !storeNames[root] || field == "" {
-			continue
-		}
-		// The scenario asserts the widget shows what the store holds, so the
-		// two values match: that is what makes it a binding rather than a
-		// transformation this engine cannot derive.
-		if scenario.Then.Value == scenario.Given.Value {
-			bound[strings.TrimPrefix(scenario.Then.Target, widget+".")] = fmt.Sprintf("state.%s.toString()", field)
-		}
-	}
-	return bound
 }

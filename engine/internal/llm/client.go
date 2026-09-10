@@ -19,9 +19,31 @@ import (
 // Call is a single request to a model. Label is a short, human-readable name
 // for what the call is for ("implement", "repair 1"); it exists so the trace
 // log can say which stage of a run each request came from.
+//
+// Prefix and Prompt are one message, sent in that order. They are separate
+// because the split is where the cache breakpoint goes: see Prefix.
 type Call struct {
-	Label  string
+	Label string
+
+	// Prefix is the part of the request that is byte-identical across every
+	// call of a run: the spec, the generated code the model reads, the tests.
+	// A provider that supports prompt caching marks the end of it, so the
+	// repair calls of a run re-read those tokens instead of paying for them
+	// again. Empty means the whole request is in Prompt.
+	Prefix string
+
+	// Prompt is the part that differs per call: the files as they stand now,
+	// the failures being repaired, the instruction.
 	Prompt string
+}
+
+// Text is the whole request as one string, for a provider with no cache
+// breakpoint to place and for the transcript.
+func (c Call) Text() string {
+	if c.Prefix == "" {
+		return c.Prompt
+	}
+	return c.Prefix + c.Prompt
 }
 
 // Client is the abstract interface implemented by the LLM client.
@@ -81,7 +103,8 @@ type choice struct {
 // Complete sends a single user message to the configured chat completions
 // endpoint and returns the assistant message content.
 func (c *openAIClient) Complete(ctx context.Context, call Call) (Result, error) {
-	prompt := call.Prompt
+	// One block: this endpoint has no cache breakpoint to place.
+	prompt := call.Text()
 	reqBody := chatRequest{
 		Model: c.cfg.Model,
 		Messages: []message{

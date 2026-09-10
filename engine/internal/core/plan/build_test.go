@@ -95,14 +95,14 @@ func TestPlanCounterAppProducesWrappersAndTests(t *testing.T) {
 
 	widgets := make(map[string]bool)
 	for _, w := range work.Wrappers {
-		widgets[w.Widget] = true
+		widgets[w] = true
 	}
 	// The page, and every widget with something to wire. A button whose event a
 	// behavior binds is reached through its own wrapper, and the page takes it
 	// as a slot.
 	for _, want := range []string{"homePage", "incrementButton"} {
 		if !widgets[want] {
-			t.Errorf("expected a wrapper for %s, got %v", want, work.Widgets())
+			t.Errorf("expected a wrapper for %s, got %v", want, work.Wrappers)
 		}
 	}
 }
@@ -122,8 +122,8 @@ func TestPlanIsOrdered(t *testing.T) {
 		if err != nil {
 			t.Fatalf("plan failed: %v", err)
 		}
-		if strings.Join(again.Widgets(), ",") != strings.Join(first.Widgets(), ",") {
-			t.Fatalf("wrapper order is not stable: %v then %v", first.Widgets(), again.Widgets())
+		if strings.Join(again.Wrappers, ",") != strings.Join(first.Wrappers, ",") {
+			t.Fatalf("wrapper order is not stable: %v then %v", first.Wrappers, again.Wrappers)
 		}
 	}
 
@@ -131,8 +131,8 @@ func TestPlanIsOrdered(t *testing.T) {
 		t.Fatalf("expected one test per scenario, got %d tests for %d scenarios", len(first.Tests), len(app.Behaviors))
 	}
 	for i, test := range first.Tests {
-		if test.ScenarioID != app.Behaviors[i].ID {
-			t.Errorf("test %d verifies %q, expected %q", i, test.ScenarioID, app.Behaviors[i].ID)
+		if test != app.Behaviors[i].ID {
+			t.Errorf("test %d verifies %q, expected %q", i, test, app.Behaviors[i].ID)
 		}
 	}
 }
@@ -147,12 +147,12 @@ func TestPlanNamesWhatItPlans(t *testing.T) {
 	}
 
 	for _, test := range work.Tests {
-		if test.ScenarioID == "" {
+		if test == "" {
 			t.Error("a planned test names no scenario")
 		}
 	}
 	for _, wrapper := range work.Wrappers {
-		if wrapper.Widget == "" {
+		if wrapper == "" {
 			t.Error("a planned wrapper names no widget")
 		}
 	}
@@ -174,11 +174,11 @@ func TestPlanAlwaysWrapsThePage(t *testing.T) {
 		t.Fatalf("plan failed: %v", err)
 	}
 	for _, wrapper := range work.Wrappers {
-		if wrapper.Widget == "homePage" {
+		if wrapper == "homePage" {
 			return
 		}
 	}
-	t.Errorf("no wrapper for the page, got %v", work.Widgets())
+	t.Errorf("no wrapper for the page, got %v", work.Wrappers)
 }
 
 // TestPlanWrapsEachWidgetOnce covers the widget named by several scenarios:
@@ -192,7 +192,7 @@ func TestPlanWrapsEachWidgetOnce(t *testing.T) {
 
 	seen := make(map[string]int)
 	for _, wrapper := range work.Wrappers {
-		seen[wrapper.Widget]++
+		seen[wrapper]++
 	}
 	for widget, count := range seen {
 		if count > 1 {

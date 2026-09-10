@@ -10,8 +10,8 @@ import (
 // A widget with nothing to wire is embedded by its parent as it always was. A
 // widget that does have something to wire is reached through its own wrapper,
 // so the shape of the tree stays in the generated widgets and only the wiring
-// is written per widget. See docs/decisions.md, "A widget that needs wiring is
-// reached through its own wrapper".
+// is written per widget. See AGENTS.md, "A wrapper composes the dumb widget;
+// it does not re-render it".
 //
 // It is a rule about the UI spec rather than a planning decision, because two
 // stages have to agree on it before there is a plan: the widget generator asks

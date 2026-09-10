@@ -20,22 +20,21 @@ class TaskCubit extends Cubit<TaskState> {
   ///   adding/adding a second task appends it to the list with counter: given taskStore.value: [{"description":"Buy milk","done":false}], then taskStore.value.first.description should be New task 2
   ///   adding/adding a task appends it to the list: given taskStore.value: [], then taskStore.value.first.description should be New task
   void addTask() {
-    final tasks = List<Task>.of(state.value);
-    final number = tasks.length + 1;
-    final description = number == 1 ? 'New task' : 'New task $number';
-    tasks.insert(0, Task(description: description, done: false));
-    emit(state.copyWith(value: tasks));
+    final count = state.value.length + 1;
+    final description = count == 1 ? 'New task' : 'New task $count';
+    final newTask = Task(description: description, done: false);
+    emit(state.copyWith(value: [newTask, ...state.value]));
   }
 
   /// Specified by:
   ///   toggling/toggling a row leaves the other rows alone: given taskStore.value: [{"description":"Buy milk","done":false},{"description":"Call mom","done":false}], then taskStore.value.first.done should be false
   ///   toggling/toggling a row marks its task done: given taskStore.value: [{"description":"Buy milk","done":false}], then taskStore.value.first.done should be true
   ///   toggling/toggling a row twice returns it to open: given taskStore.value: [{"description":"Buy milk","done":true}], then taskStore.value.first.done should be false
-  void task(int index) {
-    if (index < 0 || index >= state.value.length) return;
-    final tasks = List<Task>.of(state.value);
-    final current = tasks[index];
-    tasks[index] = Task(description: current.description, done: !current.done);
+  void taskToggled(int index) {
+    final tasks = List<Task>.from(state.value);
+    final task = tasks[index];
+    tasks[index] = Task(description: task.description, done: !task.done);
     emit(state.copyWith(value: tasks));
   }
+
 }

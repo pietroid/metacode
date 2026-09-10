@@ -102,19 +102,22 @@ func TestPromptCarriesTheWholeProblem(t *testing.T) {
 	if err := impl.Implement(context.Background()); err != nil {
 		t.Fatalf("implement: %v", err)
 	}
-	prompt := client.calls[0].Prompt
+	prompt := client.calls[0].Text()
 
 	for _, want := range []string{
 		// Every scenario, by name and by clause, not just the one a task named.
-		"Scenario: increments from 0",
-		"Scenario: not decrements when is 0",
-		"Then: counterStore.value should be 1",
+		"increments from 0",
+		"not decrements when is 0",
+		"then   counterStore.value should be 1",
 		// The resolved bindings, so the model calls the Cubit rather than emit.
 		"incrementButton.onPressed -> counterStore.increment",
 		"decrementButton.onPressed -> counterStore.decrement",
-		// Every test, because they are the definition of done.
-		"testWidgets(",
-		"find.byKey(const Key('incrementButton'))",
+		// What every test does, because they are the definition of done. The
+		// shared shape once, and the holes each scenario fills.
+		"testWidgets(<description>",
+		"await tester.pump();",
+		"await tester.tap(find.byKey(const Key('incrementButton')));",
+		"expect(cubit.state.value, 1);",
 		// The code it must write against and the code it must write.
 		"class CounterState",
 		"class HomePage",
@@ -124,6 +127,40 @@ func TestPromptCarriesTheWholeProblem(t *testing.T) {
 		if !strings.Contains(prompt, want) {
 			t.Errorf("expected the prompt to contain %q", want)
 		}
+	}
+}
+
+// TestRepairReusesTheImplementPrefix pins the split the cache breakpoint sits
+// on: everything a repair shares with the implement call has to be
+// byte-identical, or the prefix is written again instead of read and the
+// breakpoint is a surcharge rather than a saving.
+//
+// It is a real risk rather than a theoretical one: the two requests used to
+// open with different sentences, which put the difference at byte zero.
+func TestRepairReusesTheImplementPrefix(t *testing.T) {
+	client := &recordingClient{responses: []string{fixtureReply(), fixtureReply()}}
+	impl, _ := newImplementer(t, client)
+
+	if err := impl.Implement(context.Background()); err != nil {
+		t.Fatalf("implement: %v", err)
+	}
+	failures := []run.Failure{{File: "test/increments_from_0_test.dart", Name: "increments from 0"}}
+	if err := impl.Repair(context.Background(), 1, failures); err != nil {
+		t.Fatalf("repair: %v", err)
+	}
+
+	implement, repair := client.calls[0], client.calls[1]
+	if implement.Prefix == "" {
+		t.Fatal("the implement call carries no cacheable prefix")
+	}
+	if implement.Prefix != repair.Prefix {
+		t.Error("the repair prefix differs from the implement prefix, so nothing is re-read")
+	}
+	if !strings.Contains(repair.Prompt, failures[0].File) {
+		t.Error("the failure has to be in the suffix; in the prefix it would break the cache")
+	}
+	if strings.Contains(implement.Prefix, "lib/wrappers/home_page_wrapper.dart") {
+		t.Error("the editable files change between calls and cannot sit in the prefix")
 	}
 }
 
@@ -190,7 +227,7 @@ func TestRepairSendsOneCallForEveryFailure(t *testing.T) {
 		t.Fatalf("expected 1 LLM call for 2 failures, got %d", len(client.calls))
 	}
 
-	prompt := client.calls[0].Prompt
+	prompt := client.calls[0].Text()
 	for _, want := range []string{
 		"Expected: <1> Actual: <0>",
 		"Expected: <0> Actual: <-1>",
@@ -242,4 +279,26 @@ func fixtureReply() string {
 		"}",
 		"```",
 	}, "\n")
+}
+
+// TestEditableFilesOwnsOnlyStoresAndWrappers is the structural half of the
+// guarantee TestApplyIgnoresFilesItDoesNotOwn checks behaviorally: whatever
+// roles this stage grows, none of them may reach a test or a generated widget.
+// The allowlist is the only thing standing between a model and a suite it can
+// rewrite to pass.
+func TestEditableFilesOwnsOnlyStoresAndWrappers(t *testing.T) {
+	impl, _ := newImplementer(t, &recordingClient{})
+
+	files := impl.editableFiles()
+	if len(files) == 0 {
+		t.Fatal("expected the stage to own something")
+	}
+	for _, f := range files {
+		switch {
+		case strings.HasPrefix(f.Path, "lib/stores/") && strings.HasSuffix(f.Path, "_cubit.dart"):
+		case strings.HasPrefix(f.Path, "lib/wrappers/"):
+		default:
+			t.Errorf("the implement stage owns %q; only Cubits and wrappers may be handed to a model", f.Path)
+		}
+	}
 }

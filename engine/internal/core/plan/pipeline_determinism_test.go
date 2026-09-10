@@ -14,6 +14,7 @@ import (
 	"strings"
 	"testing"
 
+	behaviorflutter "github.com/pietroid/metacode/engine/internal/behavior/codegen/flutter"
 	codegenflutter "github.com/pietroid/metacode/engine/internal/codegen/flutter"
 	"github.com/pietroid/metacode/engine/internal/core/build"
 	"github.com/pietroid/metacode/engine/internal/core/plan"
@@ -104,19 +105,19 @@ func generateOnce(t *testing.T, outDir string) []string {
 	if err != nil {
 		t.Fatalf("plan: %v", err)
 	}
-	if err := codegenflutter.GenerateWrappers(&app, work, outDir); err != nil {
+	if err := behaviorflutter.GenerateWrappers(&app, work, outDir); err != nil {
 		t.Fatalf("generate wrappers: %v", err)
 	}
-	if err := codegenflutter.GenerateTests(&app, work, outDir); err != nil {
+	if err := behaviorflutter.GenerateTests(&app, work, outDir); err != nil {
 		t.Fatalf("generate tests: %v", err)
 	}
 
 	ids := make([]string, 0, len(work.Wrappers)+len(work.Tests))
 	for _, wrapper := range work.Wrappers {
-		ids = append(ids, "wrapper:"+wrapper.Widget)
+		ids = append(ids, "wrapper:"+wrapper)
 	}
 	for _, test := range work.Tests {
-		ids = append(ids, "test:"+test.ScenarioID)
+		ids = append(ids, "test:"+test)
 	}
 	return ids
 }

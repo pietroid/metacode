@@ -69,7 +69,7 @@ func validateIcon(comp model.UIComponent, val any, c *catalog.Catalog) []error {
 		return []error{fmt.Errorf("ui.yaml > %s: icon %q must name the icon vocabulary, as in `icon: %sadd`", comp.Name, name, catalog.IconPrefix)}
 	}
 	if _, ok := c.FindIcon(name); !ok {
-		return []error{fmt.Errorf("ui.yaml > %s: unknown icon %q (see specification/base_specs/ui_catalog.md)", comp.Name, name)}
+		return []error{fmt.Errorf("ui.yaml > %s: unknown icon %q (see docs/language/catalog.md)", comp.Name, name)}
 	}
 	return nil
 }

@@ -11,29 +11,6 @@ import (
 	"github.com/pietroid/metacode/engine/internal/core/plan"
 )
 
-// Wrapper is one wrapper file to write: which widget it wraps, what class it
-// declares, and where it goes. The last two come from the layout rules, so
-// every stage that reads a wrapper file — the pruner, the implementer, the
-// tests — computes the same answer.
-type Wrapper struct {
-	WidgetName string
-	ClassName  string
-	TargetFile string
-}
-
-// WrapperFiles turns the planned wrappers into the files that render them.
-func WrapperFiles(work plan.Work) []Wrapper {
-	out := make([]Wrapper, 0, len(work.Wrappers))
-	for _, wrapper := range work.Wrappers {
-		out = append(out, Wrapper{
-			WidgetName: wrapper.Widget,
-			ClassName:  dart.WrapperClass(wrapper.Widget),
-			TargetFile: dart.WrapperFile(wrapper.Widget),
-		})
-	}
-	return out
-}
-
 // GenerateWrappers writes one wrapper file per planned wrapper, then rewrites
 // lib/app.dart to use them.
 //
@@ -46,8 +23,7 @@ func GenerateWrappers(app *model.App, work plan.Work, outDir string) error {
 		return nil
 	}
 
-	wrappers := WrapperFiles(work)
-	if len(wrappers) == 0 {
+	if len(work.Wrappers) == 0 {
 		return nil
 	}
 
@@ -57,20 +33,21 @@ func GenerateWrappers(app *model.App, work plan.Work, outDir string) error {
 
 	t := treeOf(app)
 	generated := make(map[string]string) // target file -> wrapper class name
-	for _, wrapper := range wrappers {
-		code, err := wrapperBody(app, wrapper, t)
+	for _, widget := range work.Wrappers {
+		code, err := wrapperBody(app, widget, t)
 		if err != nil {
-			return fmt.Errorf("wrapper %s: %w", wrapper.WidgetName, err)
+			return fmt.Errorf("wrapper %s: %w", widget, err)
 		}
 
-		path := filepath.Join(outDir, wrapper.TargetFile)
+		target := dart.WrapperFile(widget)
+		path := filepath.Join(outDir, target)
 		if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
 			return fmt.Errorf("create target dir: %w", err)
 		}
 		if err := os.WriteFile(path, []byte(withMarker(code)), 0644); err != nil {
 			return fmt.Errorf("write wrapper %s: %w", path, err)
 		}
-		generated[wrapper.TargetFile] = wrapper.ClassName
+		generated[target] = dart.WrapperClass(widget)
 	}
 
 	if err := updateAppDart(app, outDir, generated); err != nil {

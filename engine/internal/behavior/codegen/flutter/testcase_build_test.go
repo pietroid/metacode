@@ -121,9 +121,9 @@ func TestDartLiteralForValueRejectsAValueTheStoreCannotHold(t *testing.T) {
 
 func TestBuildTestCasesRejectsTwoScenariosWritingOneFile(t *testing.T) {
 	app := counterApp()
-	work := plan.Work{Tests: []plan.Test{
-		{ScenarioID: "counterStore/increments from 0"},
-		{ScenarioID: "counterStore/increments from 0"},
+	work := plan.Work{Tests: []string{
+		"counterStore/increments from 0",
+		"counterStore/increments from 0",
 	}}
 	if _, err := BuildTestCases(app, work); err == nil {
 		t.Fatal("expected an error when two scenarios target one test file")

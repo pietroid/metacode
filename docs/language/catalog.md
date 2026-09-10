@@ -1,8 +1,16 @@
-# Common UI
+# The widget catalog
 
-Catalog of UI elements that is used on metacode for now.
+The vocabulary `ui.yaml` is written in. Each entry is a key you can use, the
+Flutter widget it becomes, and the props it accepts.
 
-This catalog follows the UI spec format: each component is a key, its value is a nested mapping, and the `child` / `children` syntax sugars apply whenever possible.
+The catalog is Metacode's own vocabulary, not Flutter's. Where a name matches
+Flutter that is a coincidence worth keeping; where it does not, the mapping
+column is what moves. A second target language changes the mapping and leaves
+every spec alone.
+
+The authoritative list, with the type of every prop, lives in
+`engine/internal/specs/ui/catalog/definitions.go`. This page is the readable
+version of it.
 
 ## Components
 
@@ -128,7 +136,7 @@ mapping and leaves every spec alone.
 | `icons.moreVertical` | Icons.more_vert |
 | `icons.moreHorizontal` | Icons.more_horiz |
 
-## Usage notes
+## How the sugar works
 
 - **Symbol** is the key used in the UI spec. It maps to a Flutter Material widget.
 - **Default content** means a direct child (`widget`) or list (`- widget`) can be written as syntax sugar for that prop. For example:

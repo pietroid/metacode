@@ -146,25 +146,31 @@ func TestResolveBindingsGroupsScenariosByEvent(t *testing.T) {
 // where a scenario has then equal to given.
 func TestActionNameComesFromTheWidgetNotTheNumbers(t *testing.T) {
 	cases := []struct {
-		widget string
-		event  string
-		want   string
+		widget  string
+		address string
+		prop    string
+		want    string
 	}{
-		{"decrementButton", "onPressed", "decrement"},
-		{"incrementButton", "onPressed", "increment"},
-		{"saveButton", "onPressed", "save"},
-		{"nameField", "onChanged", "name"},
-		// No kind suffix to strip, so the event supplies the verb.
-		{"submit", "onPressed", "submitPressed"},
+		// No alias: the widget's name supplies the verb.
+		{"decrementButton", "onPressed", "onPressed", "decrement"},
+		{"incrementButton", "onPressed", "onPressed", "increment"},
+		{"saveButton", "onPressed", "onPressed", "save"},
+		{"nameField", "onChanged", "onChanged", "name"},
+		// No alias and no kind suffix to strip, so the prop supplies the verb.
+		{"submit", "onPressed", "onPressed", "submitPressed"},
+		// An alias wins over both, because the spec author wrote it. Stripping
+		// the widget's suffix here would name the action "task".
+		{"taskCheckbox", "taskToggled", "onChanged", "taskToggled"},
+		{"addTaskButton", "onAddTask", "onPressed", "addTask"},
 	}
 	for _, tc := range cases {
-		got, err := behaviorrules.ActionNameFor(tc.widget, tc.event)
+		got, err := behaviorrules.ActionNameFor(tc.widget, tc.address, tc.prop)
 		if err != nil {
-			t.Errorf("behaviorrules.ActionNameFor(%q, %q): %v", tc.widget, tc.event, err)
+			t.Errorf("behaviorrules.ActionNameFor(%q, %q, %q): %v", tc.widget, tc.address, tc.prop, err)
 			continue
 		}
 		if got != tc.want {
-			t.Errorf("behaviorrules.ActionNameFor(%q, %q) = %q, want %q", tc.widget, tc.event, got, tc.want)
+			t.Errorf("behaviorrules.ActionNameFor(%q, %q, %q) = %q, want %q", tc.widget, tc.address, tc.prop, got, tc.want)
 		}
 	}
 }

@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/pietroid/metacode/engine/internal/behavior/codegen/flutter"
 	"github.com/pietroid/metacode/engine/internal/core/plan"
 )
 
@@ -17,7 +18,7 @@ func TestGenerateTestsCreatesFiles(t *testing.T) {
 	if err != nil {
 		t.Fatalf("plan failed: %v", err)
 	}
-	if err := GenerateTests(app, plan, dir); err != nil {
+	if err := behaviorflutter.GenerateTests(app, plan, dir); err != nil {
 		t.Fatalf("generate tests failed: %v", err)
 	}
 
@@ -38,7 +39,7 @@ func TestGenerateTestsWidgetTestImports(t *testing.T) {
 		t.Fatalf("plan failed: %v", err)
 	}
 
-	if err := GenerateTests(app, plan, dir); err != nil {
+	if err := behaviorflutter.GenerateTests(app, plan, dir); err != nil {
 		t.Fatalf("generate tests failed: %v", err)
 	}
 
@@ -72,7 +73,7 @@ func TestGenerateTestsWidgetTestSeedsAndAsserts(t *testing.T) {
 		t.Fatalf("plan failed: %v", err)
 	}
 
-	if err := GenerateTests(app, plan, dir); err != nil {
+	if err := behaviorflutter.GenerateTests(app, plan, dir); err != nil {
 		t.Fatalf("generate tests failed: %v", err)
 	}
 
@@ -99,7 +100,7 @@ func TestGenerateTestsWidgetTestTapsButton(t *testing.T) {
 		t.Fatalf("plan failed: %v", err)
 	}
 
-	if err := GenerateTests(app, plan, dir); err != nil {
+	if err := behaviorflutter.GenerateTests(app, plan, dir); err != nil {
 		t.Fatalf("generate tests failed: %v", err)
 	}
 
@@ -137,7 +138,7 @@ func TestGenerateTestsStoreActionStaysAWidgetTest(t *testing.T) {
 		t.Fatalf("plan failed: %v", err)
 	}
 
-	if err := GenerateTests(app, plan, dir); err != nil {
+	if err := behaviorflutter.GenerateTests(app, plan, dir); err != nil {
 		t.Fatalf("generate tests failed: %v", err)
 	}
 

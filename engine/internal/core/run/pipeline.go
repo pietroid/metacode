@@ -154,7 +154,7 @@ func planWork(logger log.Logger, app *model.App) (plan.Work, error) {
 		return work, err
 	}
 	logger.Infof("planned %d wrapper(s) and %d test(s)", len(work.Wrappers), len(work.Tests))
-	logger.Debugf("wrappers: %s", strings.Join(work.Widgets(), ", "))
+	logger.Debugf("wrappers: %s", strings.Join(work.Wrappers, ", "))
 	return work, nil
 }
 

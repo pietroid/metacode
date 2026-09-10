@@ -15,8 +15,9 @@ import (
 // Target is one language the engine can generate. It is assembled once, in
 // cmd/metacode, and the pipeline calls it without naming Flutter anywhere.
 //
-// A struct of functions rather than an interface: see docs/decisions.md, "One
-// target, assembled in cmd, behind a struct of functions".
+// A struct of functions rather than an interface. There is one target and one
+// assembly point, so an interface would buy a second name for every stage and
+// nothing else.
 //
 // Implementing behavior and running the suite are deliberately not here. The
 // implement stage reaches a model through llm.Client and the fix loop reaches
@@ -60,7 +61,7 @@ type Implementer interface {
 
 // validate reports a target that is missing a stage, so an incomplete assembly
 // fails by name at the start of a run rather than as a nil call in the middle
-// of one. See docs/decisions.md, "One target, assembled in cmd".
+// of one.
 func (t Target) validate() error {
 	missing := []string{}
 	for name, set := range map[string]bool{

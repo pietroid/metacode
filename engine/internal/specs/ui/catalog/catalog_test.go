@@ -40,7 +40,7 @@ func TestFindUnknownWidget(t *testing.T) {
 }
 
 // expectedSymbols is the first column of the UI catalog table in
-// specification/base_specs/ui_catalog.md. Keeping this list in the test makes
+// docs/language/catalog.md. Keeping this list in the test makes
 // the catalog<->spec coupling explicit and fail loudly if they drift.
 var expectedSymbols = []string{
 	"appBar",

@@ -12,13 +12,14 @@ class TaskCheckboxWrapper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocSelector<TaskCubit, TaskState, bool>(
-      selector: (state) =>
-          index >= 0 && index < state.value.length ? state.value[index].done : false,
-      builder: (context, taskDone) => TaskCheckbox(
-        index: index,
-        taskToggled: (_) => context.read<TaskCubit>().task(index),
-        taskDone: taskDone,
-      ),
+      selector: (state) => state.value[index].done,
+      builder: (context, done) {
+        return TaskCheckbox(
+          index: index,
+          taskToggled: (_) => context.read<TaskCubit>().taskToggled(index),
+          taskDone: done,
+        );
+      },
     );
   }
 }

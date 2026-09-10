@@ -1,7 +1,7 @@
 // Package order provides deterministic iteration over maps.
 //
 // Anywhere a map walk can reach generated code, warning text or planned work,
-// the walk must be ordered: see docs/decisions.md, "Map iteration is sorted
+// the walk must be ordered: see AGENTS.md, "Map iteration is sorted
 // everywhere it can reach output".
 //
 // It has no dependencies and is safe to import from anywhere in the tree.

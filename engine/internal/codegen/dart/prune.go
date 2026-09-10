@@ -20,8 +20,8 @@ const markerScanLimit = 512
 // run did not produce. Paths in expected are relative to root, slash-separated.
 //
 // A file is removed only if it carries Marker, so hand-written files in the same
-// directory survive. See docs/decisions.md, "Generated output is marked, and
-// stale output is pruned".
+// directory survive. The engine owns lib/ and test/ end to end, so a marked
+// file whose spec source is gone is output nothing will regenerate.
 func Prune(root string, dirs []string, expected map[string]bool) ([]string, error) {
 	var removed []string
 

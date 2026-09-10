@@ -38,11 +38,11 @@ func ExpectedFiles(app *model.App, work plan.Work) (map[string]bool, error) {
 		expected[dart.StateFile(store.Name)] = true
 		expected[dart.CubitFile(store.Name)] = true
 	}
-	for _, wrapper := range work.Wrappers {
-		expected[dart.WrapperFile(wrapper.Widget)] = true
+	for _, widget := range work.Wrappers {
+		expected[dart.WrapperFile(widget)] = true
 	}
-	for _, test := range work.Tests {
-		expected[dart.TestFile(test.ScenarioID)] = true
+	for _, scenarioID := range work.Tests {
+		expected[dart.TestFile(scenarioID)] = true
 	}
 
 	return expected, nil

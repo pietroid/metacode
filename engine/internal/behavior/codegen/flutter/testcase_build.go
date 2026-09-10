@@ -22,20 +22,20 @@ func BuildTestCases(app *model.App, work plan.Work) ([]TestCase, error) {
 	// being checked, and the suite stays green while the app is broken. Two IDs
 	// can slug to one file name, and the second write would overwrite the first.
 	byFile := make(map[string]string, len(work.Tests))
-	for _, planned := range work.Tests {
-		scenario, ok := app.ScenarioByID(planned.ScenarioID)
+	for _, scenarioID := range work.Tests {
+		scenario, ok := app.ScenarioByID(scenarioID)
 		if !ok {
-			return nil, fmt.Errorf("scenario %q not found", planned.ScenarioID)
+			return nil, fmt.Errorf("scenario %q not found", scenarioID)
 		}
 		tc, err := buildTestCase(app, scenario)
 		if err != nil {
-			return nil, fmt.Errorf("test for %q: %w", planned.ScenarioID, err)
+			return nil, fmt.Errorf("test for %q: %w", scenarioID, err)
 		}
-		tc.TargetFile = dart.TestFile(planned.ScenarioID)
+		tc.TargetFile = dart.TestFile(scenarioID)
 		if other, clash := byFile[tc.TargetFile]; clash {
-			return nil, fmt.Errorf("scenarios %q and %q both write %s: rename one so both are tested", other, planned.ScenarioID, tc.TargetFile)
+			return nil, fmt.Errorf("scenarios %q and %q both write %s: rename one so both are tested", other, scenarioID, tc.TargetFile)
 		}
-		byFile[tc.TargetFile] = planned.ScenarioID
+		byFile[tc.TargetFile] = scenarioID
 		cases = append(cases, tc)
 	}
 	return cases, nil
@@ -166,7 +166,7 @@ func renderAction(scenario model.BehaviorScenario, app *model.App) (string, erro
 		// fires onTap, a button fires onPressed.
 		return fmt.Sprintf("await tester.tap(%s);", finder), nil
 	default:
-		// An error, not an empty action: see docs/decisions.md, "A test with no
+		// An error, not an empty action: see AGENTS.md, "A test with no
 		// interaction is not a test".
 		return "", fmt.Errorf("no test idiom for event %q on widget %q", event, ref.Root)
 	}
@@ -174,7 +174,7 @@ func renderAction(scenario model.BehaviorScenario, app *model.App) (string, erro
 
 // widgetFinder finds a widget by its key. A ref naming a row finds that row's
 // key, which carries the index the widget was built with.
-// See docs/decisions.md, "Find widgets by key, not by type".
+// See AGENTS.md, "Find widgets by key, not by type".
 func widgetFinder(ref model.Ref, scenario model.BehaviorScenario, key string) (string, error) {
 	if row, ok := ref.RowSelector(); ok {
 		index, err := rowIndex(row, scenario)
@@ -232,8 +232,8 @@ func renderAssertion(scenario model.BehaviorScenario, app *model.App, store mode
 	}
 
 	// A then whose root is neither a store nor a widget cannot be turned into an
-	// assertion, and must not fall back to one: see docs/decisions.md, "A test
-	// with no interaction is not a test".
+	// assertion, and must not fall back to one: see AGENTS.md, "A test with
+	// no interaction is not a test".
 	return "", nil, fmt.Errorf("cannot assert on %q: %q is neither a store nor a widget", then.Target, ref.Root)
 }
 

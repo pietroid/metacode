@@ -78,27 +78,40 @@ func Generate(app *model.App, outDir string) error {
 // storeAction is one method the generated Cubit must expose, together with the
 // scenarios that specify what it does.
 type storeAction struct {
-	Name      string
+	Name string
+	// Indexed actions are run by a widget that is rendered once per row, so
+	// they take the row. The signature is the contract the implement stage
+	// writes a body for, and a contract the model has to correct is not one.
+	Indexed   bool
 	Scenarios []model.BehaviorScenario
+}
+
+// Params is the action's parameter list, in the target language.
+func (a storeAction) Params() string {
+	if a.Indexed {
+		return "int index"
+	}
+	return ""
 }
 
 // collectActions gathers the actions a store must expose. They come from two
 // places, both of them the spec: a widget event bound to the store (resolved in
 // behavior/rules, see model.Binding) and an explicit "when: storeName.action".
 //
-// Nothing is inferred from the store's type. See docs/decisions.md, "A store
-// action body is business logic".
+// Nothing is inferred from the store's type. See AGENTS.md, "A store action
+// body is business logic, so no generator writes it".
 func collectActions(app *model.App, store model.Store) []storeAction {
 	index := make(map[string]int)
 	var actions []storeAction
 
-	add := func(name, scenarioID string) {
+	add := func(name string, indexed bool, scenarioID string) {
 		i, ok := index[name]
 		if !ok {
 			index[name] = len(actions)
 			actions = append(actions, storeAction{Name: name})
 			i = len(actions) - 1
 		}
+		actions[i].Indexed = actions[i].Indexed || indexed
 		if s, ok := app.ScenarioByID(scenarioID); ok {
 			actions[i].Scenarios = append(actions[i].Scenarios, s)
 		}
@@ -106,14 +119,14 @@ func collectActions(app *model.App, store model.Store) []storeAction {
 
 	for _, b := range app.Symbols.BindingsForStore(store.Name) {
 		for _, id := range b.ScenarioIDs {
-			add(b.Action, id)
+			add(b.Action, b.Indexed, id)
 		}
 	}
 
 	for _, b := range app.Behaviors {
 		root, action := model.SplitRef(b.When)
 		if root == store.Name && action != "" {
-			add(action, b.ID)
+			add(action, false, b.ID)
 		}
 	}
 
@@ -124,7 +137,8 @@ func collectActions(app *model.App, store model.Store) []storeAction {
 //
 // The bodies are deliberately absent: an action body is business logic, and it
 // comes from the behavior scenarios through the implement stage. See
-// docs/decisions.md, "A store action body is business logic".
+// AGENTS.md, "A store action body is business logic, so no generator
+// writes it".
 //
 // Each method carries the scenarios that specify it, so the implement stage and
 // a human reader see the same requirement in the same place.
@@ -137,7 +151,7 @@ func buildMethods(app *model.App, store model.Store) string {
 		for _, line := range specificationComment(action) {
 			fmt.Fprintf(&b, "  %s\n", line)
 		}
-		fmt.Fprintf(&b, "  void %s() {\n", action.Name)
+		fmt.Fprintf(&b, "  void %s(%s) {\n", action.Name, action.Params())
 		fmt.Fprintf(&b, "    throw UnimplementedError('%s is not implemented yet');\n", action.Name)
 		b.WriteString("  }\n")
 	}

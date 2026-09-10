@@ -39,21 +39,19 @@ func newAnthropicClient(cfg Config, logger log.Logger) Client {
 // thinking config.
 func (c *anthropicClient) Complete(ctx context.Context, call Call) (Result, error) {
 	client := anthropic.NewClient(c.opts...)
-	prompt := call.Prompt
 
 	maxTokens := c.cfg.MaxTokens
 	if maxTokens <= 0 {
 		maxTokens = DefaultMaxTokens
 	}
 
-	c.logger.Debugf("LLM request [%s]: anthropic messages model=%s max_tokens=%d prompt_len=%d", call.Label, c.cfg.Model, maxTokens, len(prompt))
+	c.logger.Debugf("LLM request [%s]: anthropic messages model=%s max_tokens=%d prefix_len=%d prompt_len=%d",
+		call.Label, c.cfg.Model, maxTokens, len(call.Prefix), len(call.Prompt))
 
 	resp, err := client.Messages.New(ctx, anthropic.MessageNewParams{
 		Model:     anthropic.Model(c.cfg.Model),
 		MaxTokens: maxTokens,
-		Messages: []anthropic.MessageParam{
-			anthropic.NewUserMessage(anthropic.NewTextBlock(prompt)),
-		},
+		Messages:  []anthropic.MessageParam{anthropic.NewUserMessage(blocksFor(call)...)},
 	})
 	if err != nil {
 		return Result{}, fmt.Errorf("anthropic messages: %w", err)
@@ -86,4 +84,27 @@ func (c *anthropicClient) Complete(ctx context.Context, call Call) (Result, erro
 		return Result{}, fmt.Errorf("anthropic returned no text content (stop reason %q)", resp.StopReason)
 	}
 	return Result{Text: out, Usage: usage}, nil
+}
+
+// blocksFor splits a call into the content blocks one user message carries.
+//
+// A call with a prefix becomes two blocks with a cache breakpoint between
+// them. The default five-minute window is the right one: the calls of a run
+// are separated by a test suite, not by a coffee break, and the longer TTL
+// costs twice as much to write for a lifetime nothing here needs.
+//
+// A breakpoint is a request to cache, not a promise: a prefix under the
+// model's minimum is silently not cached, which shows up as a zero in the
+// usage line rather than as an error.
+func blocksFor(call Call) []anthropic.ContentBlockParamUnion {
+	if call.Prefix == "" {
+		return []anthropic.ContentBlockParamUnion{anthropic.NewTextBlock(call.Prompt)}
+	}
+	return []anthropic.ContentBlockParamUnion{
+		{OfText: &anthropic.TextBlockParam{
+			Text:         call.Prefix,
+			CacheControl: anthropic.NewCacheControlEphemeralParam(),
+		}},
+		anthropic.NewTextBlock(call.Prompt),
+	}
 }

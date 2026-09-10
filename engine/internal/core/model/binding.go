@@ -6,11 +6,14 @@ package model
 // It is resolved once, by behavior/rules, and read by every generator that has
 // to agree about it.
 type Binding struct {
-	Widget      string   // decrementButton
-	Param       string   // the name the widget exposes: onPressed, or an alias
-	Event       string   // the catalog prop that name fills: onPressed
-	Store       string   // counterStore
-	Action      string   // decrement
+	Widget string // decrementButton
+	Param  string // the name the widget exposes: onPressed, or an alias
+	Event  string // the catalog prop that name fills: onPressed
+	Store  string // counterStore
+	Action string // decrement
+	// Indexed says the widget is rendered once per row, so the action it runs
+	// has to be told which row fired it.
+	Indexed     bool
 	ScenarioIDs []string // every scenario that exercises this binding
 }
 

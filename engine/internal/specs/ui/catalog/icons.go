@@ -19,7 +19,7 @@ type Icon struct {
 }
 
 // defaultIcons is the hard-coded icon vocabulary, synchronized with
-// specification/base_specs/ui_catalog.md.
+// docs/language/catalog.md.
 var defaultIcons = []Icon{
 	{"add", "Icons.add"},
 	{"remove", "Icons.remove"},

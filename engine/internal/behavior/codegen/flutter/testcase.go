@@ -6,8 +6,8 @@ package behaviorflutter
 //
 // One scenario produces exactly one TestCase, and that test runs against the
 // whole app: it pumps the composed page and drives it the way a user would.
-// Tests are never split by layer. See docs/decisions.md, "One scenario, one
-// test, against the whole app".
+// Tests are never split by layer. See AGENTS.md, "One scenario, one test,
+// against the whole app".
 type TestCase struct {
 	ID          string
 	Description string

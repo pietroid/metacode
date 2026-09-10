@@ -78,7 +78,7 @@ type Symbol struct {
 }
 
 // defaultSymbols is the hard-coded catalog synchronized with
-// specification/base_specs/ui_catalog.md.
+// docs/language/catalog.md.
 var defaultSymbols = []Symbol{
 	{
 		Name:          "appBar",

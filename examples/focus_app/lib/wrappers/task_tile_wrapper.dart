@@ -13,14 +13,14 @@ class TaskTileWrapper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocSelector<TaskCubit, TaskState, String>(
-      selector: (state) => index >= 0 && index < state.value.length
-          ? state.value[index].description
-          : '',
-      builder: (context, taskTitle) => TaskTile(
-        index: index,
-        taskTitle: taskTitle,
-        taskCheckbox: TaskCheckboxWrapper(index: index),
-      ),
+      selector: (state) => state.value[index].description,
+      builder: (context, title) {
+        return TaskTile(
+          index: index,
+          taskTitle: title,
+          taskCheckbox: TaskCheckboxWrapper(index: index),
+        );
+      },
     );
   }
 }
