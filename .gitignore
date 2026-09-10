@@ -6,18 +6,24 @@
 .env.local
 !.env.example
 
-# Build artifacts
-bin/
+# Build artifacts. Anchored on purpose: an unanchored `bin/` or `build/`
+# matches a directory of that name at any depth, and `internal/core/build`
+# is a Go package, not output. Git cannot re-include a file whose parent
+# directory is excluded, so scoping the pattern is the only fix.
+engine/bin/
 /tmp/
 *.exe
 
 # Flutter/Dart build output in examples
 .dart_tool/
-build/
+examples/*/build/
 
-# IDE
-.idea/
-.vscode/
+# IDE. Anchored for the same reason: the project generator ships a
+# .vscode/launch.json.tmpl inside its embedded templates.
+/.idea/
+/.vscode/
+examples/*/.idea/
+examples/*/.vscode/
 *.swp
 *.swo
 *~
