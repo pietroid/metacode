@@ -7,114 +7,318 @@ import 'state.dart';
 import '../actions/actions.dart';
 import '../bindings/bindings.dart';
 
-String $action_updateDraft(String stateJson, String paramsJson) {
+String $action_goToPage(String stateJson, String paramsJson) {
   final state = State.fromJson(jsonDecode(stateJson) as Map);
   final params = jsonDecode(paramsJson) as Map;
-  return jsonEncode(updateDraft(state, params['value'] as String).toJson());
+  return jsonEncode(goToPage(state, params['value'] as int).toJson());
 }
 
-String $action_addTask(String stateJson, String paramsJson) {
-  final state = State.fromJson(jsonDecode(stateJson) as Map);
-  return jsonEncode(addTask(state).toJson());
-}
-
-String $action_toggleTask(String stateJson, String paramsJson) {
+String $action_updateEntryTitle(String stateJson, String paramsJson) {
   final state = State.fromJson(jsonDecode(stateJson) as Map);
   final params = jsonDecode(paramsJson) as Map;
-  return jsonEncode(toggleTask(state, params['index'] as int).toJson());
+  return jsonEncode(updateEntryTitle(state, params['value'] as String).toJson());
 }
 
-String $action_deleteTask(String stateJson, String paramsJson) {
+String $action_updateEntryAmount(String stateJson, String paramsJson) {
   final state = State.fromJson(jsonDecode(stateJson) as Map);
   final params = jsonDecode(paramsJson) as Map;
-  return jsonEncode(deleteTask(state, params['index'] as int).toJson());
+  return jsonEncode(updateEntryAmount(state, params['value'] as String).toJson());
 }
 
-String $action_clearCompleted(String stateJson, String paramsJson) {
+String $action_selectIncome(String stateJson, String paramsJson) {
   final state = State.fromJson(jsonDecode(stateJson) as Map);
-  return jsonEncode(clearCompleted(state).toJson());
+  return jsonEncode(selectIncome(state).toJson());
 }
 
-String $action_setFilterAll(String stateJson, String paramsJson) {
+String $action_selectExpense(String stateJson, String paramsJson) {
   final state = State.fromJson(jsonDecode(stateJson) as Map);
-  return jsonEncode(setFilterAll(state).toJson());
+  return jsonEncode(selectExpense(state).toJson());
 }
 
-String $action_setFilterOpen(String stateJson, String paramsJson) {
+String $action_addEntry(String stateJson, String paramsJson) {
   final state = State.fromJson(jsonDecode(stateJson) as Map);
-  return jsonEncode(setFilterOpen(state).toJson());
+  return jsonEncode(addEntry(state).toJson());
 }
 
-String $action_setFilterDone(String stateJson, String paramsJson) {
+String $action_deleteEntry(String stateJson, String paramsJson) {
   final state = State.fromJson(jsonDecode(stateJson) as Map);
-  return jsonEncode(setFilterDone(state).toJson());
+  final params = jsonDecode(paramsJson) as Map;
+  return jsonEncode(deleteEntry(state, params['index'] as int).toJson());
 }
 
-String $binding_visibleTasks(String stateJson, String paramsJson) {
+String $action_updateGoalName(String stateJson, String paramsJson) {
   final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final result = visibleTasks(state);
+  final params = jsonDecode(paramsJson) as Map;
+  return jsonEncode(updateGoalName(state, params['value'] as String).toJson());
+}
+
+String $action_updateGoalTarget(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final params = jsonDecode(paramsJson) as Map;
+  return jsonEncode(updateGoalTarget(state, params['value'] as String).toJson());
+}
+
+String $action_updateContribution(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final params = jsonDecode(paramsJson) as Map;
+  return jsonEncode(updateContribution(state, params['value'] as String).toJson());
+}
+
+String $action_addGoal(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  return jsonEncode(addGoal(state).toJson());
+}
+
+String $action_contributeToGoal(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final params = jsonDecode(paramsJson) as Map;
+  return jsonEncode(contributeToGoal(state, params['index'] as int).toJson());
+}
+
+String $action_deleteGoal(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final params = jsonDecode(paramsJson) as Map;
+  return jsonEncode(deleteGoal(state, params['index'] as int).toJson());
+}
+
+String $action_updateProfileName(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final params = jsonDecode(paramsJson) as Map;
+  return jsonEncode(updateProfileName(state, params['value'] as String).toJson());
+}
+
+String $action_updateProfileEmail(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final params = jsonDecode(paramsJson) as Map;
+  return jsonEncode(updateProfileEmail(state, params['value'] as String).toJson());
+}
+
+String $action_updateCurrency(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final params = jsonDecode(paramsJson) as Map;
+  return jsonEncode(updateCurrency(state, params['value'] as String).toJson());
+}
+
+String $action_toggleNotifications(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final params = jsonDecode(paramsJson) as Map;
+  return jsonEncode(toggleNotifications(state, params['value'] as bool).toJson());
+}
+
+String $action_resetData(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  return jsonEncode(resetData(state).toJson());
+}
+
+String $binding_pageIndex(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final result = pageIndex(state);
+  return jsonEncode(result);
+}
+
+String $binding_pageTitle(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final result = pageTitle(state);
+  return jsonEncode(result);
+}
+
+String $binding_currentPage(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final result = currentPage(state);
+  return jsonEncode(result);
+}
+
+String $binding_balanceValue(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final result = balanceValue(state);
+  return jsonEncode(result);
+}
+
+String $binding_balanceText(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final result = balanceText(state);
+  return jsonEncode(result);
+}
+
+String $binding_incomeText(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final result = incomeText(state);
+  return jsonEncode(result);
+}
+
+String $binding_expenseText(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final result = expenseText(state);
+  return jsonEncode(result);
+}
+
+String $binding_entryList(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final result = entryList(state);
   return jsonEncode(result.map((e) => e.toJson()).toList());
 }
 
-String $binding_taskList(String stateJson, String paramsJson) {
+String $binding_entryTitleAt(String stateJson, String paramsJson) {
   final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final result = taskList(state);
+  final params = jsonDecode(paramsJson) as Map;
+  final result = entryTitleAt(state, params['index'] as int);
+  return jsonEncode(result);
+}
+
+String $binding_entryDateAt(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final params = jsonDecode(paramsJson) as Map;
+  final result = entryDateAt(state, params['index'] as int);
+  return jsonEncode(result);
+}
+
+String $binding_entryAmountAt(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final params = jsonDecode(paramsJson) as Map;
+  final result = entryAmountAt(state, params['index'] as int);
+  return jsonEncode(result);
+}
+
+String $binding_entryIsIncome(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final params = jsonDecode(paramsJson) as Map;
+  final result = entryIsIncome(state, params['index'] as int);
+  return jsonEncode(result);
+}
+
+String $binding_entryTitleValue(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final result = entryTitleValue(state);
+  return jsonEncode(result);
+}
+
+String $binding_entryAmountValue(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final result = entryAmountValue(state);
+  return jsonEncode(result);
+}
+
+String $binding_kindIsIncome(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final result = kindIsIncome(state);
+  return jsonEncode(result);
+}
+
+String $binding_kindIsExpense(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final result = kindIsExpense(state);
+  return jsonEncode(result);
+}
+
+String $binding_goalList(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final result = goalList(state);
   return jsonEncode(result.map((e) => e.toJson()).toList());
 }
 
-String $binding_draftValue(String stateJson, String paramsJson) {
-  final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final result = draftValue(state);
-  return jsonEncode(result);
-}
-
-String $binding_taskTitle(String stateJson, String paramsJson) {
+String $binding_goalNameAt(String stateJson, String paramsJson) {
   final state = State.fromJson(jsonDecode(stateJson) as Map);
   final params = jsonDecode(paramsJson) as Map;
-  final result = taskTitle(state, params['index'] as int);
+  final result = goalNameAt(state, params['index'] as int);
   return jsonEncode(result);
 }
 
-String $binding_taskDone(String stateJson, String paramsJson) {
+String $binding_goalAmountsAt(String stateJson, String paramsJson) {
   final state = State.fromJson(jsonDecode(stateJson) as Map);
   final params = jsonDecode(paramsJson) as Map;
-  final result = taskDone(state, params['index'] as int);
+  final result = goalAmountsAt(state, params['index'] as int);
   return jsonEncode(result);
 }
 
-String $binding_taskDate(String stateJson, String paramsJson) {
+String $binding_goalProgressAt(String stateJson, String paramsJson) {
   final state = State.fromJson(jsonDecode(stateJson) as Map);
   final params = jsonDecode(paramsJson) as Map;
-  final result = taskDate(state, params['index'] as int);
+  final result = goalProgressAt(state, params['index'] as int);
   return jsonEncode(result);
 }
 
-String $binding_hasCompletedTasks(String stateJson, String paramsJson) {
+String $binding_goalPercentAt(String stateJson, String paramsJson) {
   final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final result = hasCompletedTasks(state);
+  final params = jsonDecode(paramsJson) as Map;
+  final result = goalPercentAt(state, params['index'] as int);
   return jsonEncode(result);
 }
 
-String $binding_clearCompletedText(String stateJson, String paramsJson) {
+String $binding_goalReachedAt(String stateJson, String paramsJson) {
   final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final result = clearCompletedText(state);
+  final params = jsonDecode(paramsJson) as Map;
+  final result = goalReachedAt(state, params['index'] as int);
   return jsonEncode(result);
 }
 
-String $binding_filterIsAll(String stateJson, String paramsJson) {
+String $binding_goalNameValue(String stateJson, String paramsJson) {
   final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final result = filterIsAll(state);
+  final result = goalNameValue(state);
   return jsonEncode(result);
 }
 
-String $binding_filterIsOpen(String stateJson, String paramsJson) {
+String $binding_goalTargetValue(String stateJson, String paramsJson) {
   final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final result = filterIsOpen(state);
+  final result = goalTargetValue(state);
   return jsonEncode(result);
 }
 
-String $binding_filterIsDone(String stateJson, String paramsJson) {
+String $binding_contributionValue(String stateJson, String paramsJson) {
   final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final result = filterIsDone(state);
+  final result = contributionValue(state);
+  return jsonEncode(result);
+}
+
+String $binding_contributionLabel(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final result = contributionLabel(state);
+  return jsonEncode(result);
+}
+
+String $binding_profileName(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final result = profileName(state);
+  return jsonEncode(result);
+}
+
+String $binding_profileEmail(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final result = profileEmail(state);
+  return jsonEncode(result);
+}
+
+String $binding_profileInitials(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final result = profileInitials(state);
+  return jsonEncode(result);
+}
+
+String $binding_profileCurrency(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final result = profileCurrency(state);
+  return jsonEncode(result);
+}
+
+String $binding_currencyOptions(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final result = currencyOptions(state);
+  return jsonEncode(result);
+}
+
+String $binding_notificationsOn(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final result = notificationsOn(state);
+  return jsonEncode(result);
+}
+
+String $binding_entryCountText(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final result = entryCountText(state);
+  return jsonEncode(result);
+}
+
+String $binding_goalCountText(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final result = goalCountText(state);
   return jsonEncode(result);
 }

@@ -8,32 +8,101 @@
 import '../generated/state.dart';
 import '../bindings/bindings.dart';
 
-State updateDraft(State state, String value) => state.copyWith(draft: value);
-
-State addTask(State state) {
-  if (state.draft.isEmpty) return state;
-  state.tasks.add(Task(title: state.draft, done: false, createdAt: DateTime.now()));
-  return state.copyWith(draft: '');
+num? _parseAmount(String text) {
+  final n = num.tryParse(text.trim().replaceAll(',', '.'));
+  if (n == null || n <= 0) return null;
+  return n;
 }
 
-State toggleTask(State state, int index) {
-  final task = visibleTasks(state)[index];
-  task.done = !task.done;
+// Navigation
+
+State goToPage(State state, int value) {
+  if (value == 1) return state.copyWith(page: Page.goals);
+  if (value == 2) return state.copyWith(page: Page.menu);
+  return state.copyWith(page: Page.finances);
+}
+
+// Finances
+
+State updateEntryTitle(State state, String value) => state.copyWith(entryTitle: value);
+
+State updateEntryAmount(State state, String value) => state.copyWith(entryAmount: value);
+
+State selectIncome(State state) => state.copyWith(entryKind: EntryKind.income);
+
+State selectExpense(State state) => state.copyWith(entryKind: EntryKind.expense);
+
+State addEntry(State state) {
+  final amount = _parseAmount(state.entryAmount);
+  final title = state.entryTitle.trim();
+  if (amount == null || title.isEmpty) return state;
+  state.entries.add(Entry(
+    title: title,
+    amount: amount,
+    kind: state.entryKind,
+    date: DateTime.now(),
+  ));
+  return state.copyWith(entryTitle: '', entryAmount: '');
+}
+
+State deleteEntry(State state, int index) {
+  state.entries.remove(entryList(state)[index]);
   return state;
 }
 
-State deleteTask(State state, int index) {
-  state.tasks.remove(visibleTasks(state)[index]);
+// Goals
+
+State updateGoalName(State state, String value) => state.copyWith(goalName: value);
+
+State updateGoalTarget(State state, String value) => state.copyWith(goalTarget: value);
+
+State updateContribution(State state, String value) => state.copyWith(contribution: value);
+
+State addGoal(State state) {
+  final target = _parseAmount(state.goalTarget);
+  final name = state.goalName.trim();
+  if (target == null || name.isEmpty) return state;
+  state.goals.add(Goal(name: name, target: target, saved: 0));
+  return state.copyWith(goalName: '', goalTarget: '');
+}
+
+State contributeToGoal(State state, int index) {
+  final amount = _parseAmount(state.contribution);
+  if (amount == null) return state;
+  final goal = state.goals[index];
+  goal.saved = goal.saved + amount;
   return state;
 }
 
-State clearCompleted(State state) {
-  state.tasks.removeWhere((Task task) => task.done);
+State deleteGoal(State state, int index) {
+  state.goals.removeAt(index);
   return state;
 }
 
-State setFilterAll(State state) => state.copyWith(filter: Filter.all);
+// Menu
 
-State setFilterOpen(State state) => state.copyWith(filter: Filter.open);
+State updateProfileName(State state, String value) {
+  state.profile.name = value;
+  return state;
+}
 
-State setFilterDone(State state) => state.copyWith(filter: Filter.done);
+State updateProfileEmail(State state, String value) {
+  state.profile.email = value;
+  return state;
+}
+
+State updateCurrency(State state, String value) {
+  state.profile.currency = value;
+  return state;
+}
+
+State toggleNotifications(State state, bool value) {
+  state.profile.notifications = value;
+  return state;
+}
+
+State resetData(State state) {
+  state.entries.clear();
+  state.goals.clear();
+  return state;
+}

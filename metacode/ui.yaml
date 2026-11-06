@@ -6,130 +6,259 @@ widgets:
   homePage:
     scaffold:
       appBar:
-        title: "Task List"
+        title: pageTitle
       body:
-        column:
-          - taskInput
-          - filterChips
-          - expanded:
-              taskListView
-          - if:
-              condition: hasCompletedTasks
-              then:
-                clearCompletedButton
+        match:
+          value: currentPage
+          cases:
+            finances: financesPage
+            goals: goalsPage
+            menu: menuPage
+      bottomBar:
+        navigationBar:
+          destinations:
+            - {icon: wallet, label: Finances}
+            - {icon: flag, label: Goals}
+            - {icon: menu, label: Menu}
+          selected: pageIndex
+          onSelected: goToPage
 
-  taskInput:
-    padding:
-      all: 16
-      child:
-        row:
-          - expanded:
-              draftField
-          - sizedBox:
-              width: 12
-          - addButton
+  # ---------- Finances ----------
 
-  filterChips:
+  financesPage:
+    column:
+      - balanceCard
+      - entryForm
+      - padding:
+          horizontal: 16
+          top: 8
+          child:
+            text: {value: "Transactions", style: {variant: titleMedium}}
+      - expanded:
+          listView:
+            data: entryList
+            itemBuilder: entryTile
+            empty: entriesEmpty
+
+  balanceCard:
     padding:
       horizontal: 16
-      bottom: 8
+      top: 16
       child:
-        wrap:
-          spacing: 8
-          children:
-            - filterChipAll
-            - filterChipOpen
-            - filterChipDone
+        card:
+          color: primaryContainer
+          child:
+            column:
+              crossAxisAlignment: stretch
+              spacing: 8
+              children:
+                - text: {value: "Balance", style: {variant: labelLarge, color: onPrimaryContainer}}
+                - text: {value: balanceText, style: {variant: headlineMedium, fontWeight: bold, color: onPrimaryContainer}}
+                - row:
+                    - expanded:
+                        row:
+                          spacing: 4
+                          children:
+                            - icon: {name: trendingUp, size: 18, color: green}
+                            - text: {value: incomeText, style: {variant: bodyMedium, color: onPrimaryContainer}}
+                    - expanded:
+                        row:
+                          spacing: 4
+                          children:
+                            - icon: {name: payment, size: 18, color: red}
+                            - text: {value: expenseText, style: {variant: bodyMedium, color: onPrimaryContainer}}
 
-  filterChipAll:
-    choiceChip:
-      label: "All"
-      selected: filterIsAll
-      onSelected: setFilterAll
+  entryForm:
+    padding:
+      horizontal: 16
+      top: 8
+      child:
+        card:
+          child:
+            column:
+              crossAxisAlignment: stretch
+              spacing: 8
+              children:
+                - textField: {value: entryTitleValue, label: "Description", onChanged: updateEntryTitle}
+                - textField: {value: entryAmountValue, label: "Amount", onChanged: updateEntryAmount}
+                - row:
+                    spacing: 8
+                    children:
+                      - choiceChip: {label: "Income", selected: kindIsIncome, onSelected: selectIncome}
+                      - choiceChip: {label: "Expense", selected: kindIsExpense, onSelected: selectExpense}
+                      - spacer: {}
+                      - filledButton: {text: "Add", icon: add, onPressed: addEntry}
 
-  filterChipOpen:
-    choiceChip:
-      label: "Open"
-      selected: filterIsOpen
-      onSelected: setFilterOpen
+  entryTile:
+    padding:
+      horizontal: 16
+      vertical: 4
+      child:
+        card:
+          padding: 12
+          child:
+            row:
+              spacing: 12
+              children:
+                - if:
+                    condition: entryIsIncome
+                    then: {icon: {name: trendingUp, color: green}}
+                    else: {icon: {name: payment, color: red}}
+                - expanded:
+                    column:
+                      crossAxisAlignment: start
+                      children:
+                        - text: {value: entryTitleAt, style: {variant: titleSmall}}
+                        - text: {value: entryDateAt, style: {variant: bodySmall, color: onSurfaceVariant}}
+                - text: {value: entryAmountAt, style: {variant: titleSmall, fontWeight: bold}}
+                - iconButton: {icon: delete, tooltip: "Delete", onPressed: deleteEntry}
 
-  filterChipDone:
-    choiceChip:
-      label: "Done"
-      selected: filterIsDone
-      onSelected: setFilterDone
-
-  draftField:
-    textField:
-      value: draftValue
-      hint: "What needs to be done?"
-      onChanged: updateDraft
-
-  addButton:
-    iconButton:
-      icon: add
-      tooltip: "Add task"
-      onPressed: addTask
-
-  taskListView:
-    listView:
-      data: taskList
-      empty: emptyState
-      itemBuilder: taskTile
-
-  taskTile:
-    listTile:
-      title: taskTitle
-      subtitle: taskDate
-      leading: taskCheckbox
-      trailing: deleteButton
-
-  taskCheckbox:
-    checkbox:
-      value: taskDone
-      onChanged: toggleTask
-
-  deleteButton:
-    iconButton:
-      icon: delete
-      tooltip: "Delete task"
-      onPressed: deleteTask
-
-  emptyState:
+  entriesEmpty:
     center:
       padding:
         all: 32
         child:
           column:
-            - icon:
-                name: inbox
-                size: 64
-                color: "#9CA3AF"
-            - sizedBox:
-                height: 16
-            - text:
-                value: "No tasks yet"
-                style:
-                  fontSize: 18
-                  color: "#6B7280"
-            - text:
-                value: "Add one above to get started"
-                style:
-                  fontSize: 14
-                  color: "#9CA3AF"
+            spacing: 8
+            children:
+              - icon: {name: wallet, size: 48, color: grey}
+              - text: {value: "No transactions yet", style: {variant: bodyLarge, color: onSurfaceVariant}}
 
-  clearCompletedButton:
+  # ---------- Goals ----------
+
+  goalsPage:
+    column:
+      - goalForm
+      - padding:
+          horizontal: 16
+          top: 8
+          child:
+            row:
+              spacing: 12
+              children:
+                - expanded:
+                    text: {value: "Your goals", style: {variant: titleMedium}}
+                - sizedBox:
+                    width: 140
+                    child:
+                      textField: {value: contributionValue, label: "Add per tap", onChanged: updateContribution}
+      - expanded:
+          listView:
+            data: goalList
+            itemBuilder: goalTile
+            empty: goalsEmpty
+
+  goalForm:
     padding:
       horizontal: 16
-      vertical: 8
+      top: 16
       child:
-        row:
-          - expanded:
-              text:
-                value: clearCompletedText
-                style:
-                  fontSize: 14
-                  color: "#6B7280"
-          - textButton:
-              text: "Clear completed"
-              onPressed: clearCompleted
+        card:
+          child:
+            column:
+              crossAxisAlignment: stretch
+              spacing: 8
+              children:
+                - textField: {value: goalNameValue, label: "Goal name", onChanged: updateGoalName}
+                - row:
+                    spacing: 8
+                    children:
+                      - expanded:
+                          textField: {value: goalTargetValue, label: "Target amount", onChanged: updateGoalTarget}
+                      - filledButton: {text: "Add goal", icon: add, onPressed: addGoal}
+
+  goalTile:
+    padding:
+      horizontal: 16
+      vertical: 4
+      child:
+        card:
+          child:
+            column:
+              crossAxisAlignment: stretch
+              spacing: 8
+              children:
+                - row:
+                    spacing: 8
+                    children:
+                      - if:
+                          condition: goalReachedAt
+                          then: {icon: {name: checkCircle, color: green}}
+                          else: {icon: {name: flag, color: primary}}
+                      - expanded:
+                          text: {value: goalNameAt, style: {variant: titleMedium}}
+                      - text: {value: goalPercentAt, style: {variant: labelLarge, color: primary}}
+                      - iconButton: {icon: delete, tooltip: "Delete goal", onPressed: deleteGoal}
+                - progress: {value: goalProgressAt}
+                - row:
+                    children:
+                      - expanded:
+                          text: {value: goalAmountsAt, style: {variant: bodyMedium, color: onSurfaceVariant}}
+                      - textButton: {text: contributionLabel, icon: add, onPressed: contributeToGoal}
+
+  goalsEmpty:
+    center:
+      padding:
+        all: 32
+        child:
+          column:
+            spacing: 8
+            children:
+              - icon: {name: flag, size: 48, color: grey}
+              - text: {value: "No goals yet", style: {variant: bodyLarge, color: onSurfaceVariant}}
+
+  # ---------- Menu ----------
+
+  menuPage:
+    scroll:
+      padding:
+        all: 16
+        child:
+          column:
+            crossAxisAlignment: stretch
+            spacing: 12
+            children:
+              - profileHeader
+              - card:
+                  child:
+                    column:
+                      crossAxisAlignment: stretch
+                      spacing: 8
+                      children:
+                        - text: {value: "Profile", style: {variant: titleMedium}}
+                        - textField: {value: profileName, label: "Name", onChanged: updateProfileName}
+                        - textField: {value: profileEmail, label: "Email", onChanged: updateProfileEmail}
+              - card:
+                  child:
+                    column:
+                      crossAxisAlignment: stretch
+                      spacing: 8
+                      children:
+                        - text: {value: "Preferences", style: {variant: titleMedium}}
+                        - row:
+                            children:
+                              - expanded:
+                                  text: "Currency"
+                              - sizedBox:
+                                  width: 100
+                                  child:
+                                    dropdown: {value: profileCurrency, options: currencyOptions, onChanged: updateCurrency}
+                        - toggle: {value: notificationsOn, label: "Notifications", onChanged: toggleNotifications}
+              - card:
+                  child:
+                    column:
+                      crossAxisAlignment: stretch
+                      children:
+                        - text: {value: "Summary", style: {variant: titleMedium}}
+                        - listTile: {leading: {icon: {name: list}}, title: "Transactions", trailing: entryCountText}
+                        - listTile: {leading: {icon: {name: flag}}, title: "Goals", trailing: goalCountText}
+                        - listTile: {leading: {icon: {name: wallet}}, title: "Balance", trailing: balanceText}
+              - outlinedButton: {text: "Reset all data", icon: delete, onPressed: resetData}
+
+  profileHeader:
+    column:
+      spacing: 8
+      children:
+        - avatar: {text: profileInitials, radius: 40, color: primaryContainer}
+        - text: {value: profileName, style: {variant: titleLarge}}
+        - text: {value: profileEmail, style: {variant: bodyMedium, color: onSurfaceVariant}}

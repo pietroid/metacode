@@ -5,11 +5,30 @@ import '../generated/test_app.dart';
 final app = TestApp();
 
 /// A small state to start tests from.
-State sample({Filter filter = Filter.all, String draft = ''}) => State(
-      tasks: [
-        Task(title: 'Buy milk', done: false, createdAt: DateTime(2026, 11, 5)),
-        Task(title: 'Walk the dog', done: true, createdAt: DateTime(2026, 11, 4)),
+State sample({
+  Page page = Page.finances,
+  String entryTitle = '',
+  String entryAmount = '',
+  EntryKind entryKind = EntryKind.expense,
+  String goalName = '',
+  String goalTarget = '',
+  String contribution = '50',
+}) =>
+    State(
+      page: page,
+      entries: [
+        Entry(title: 'Salary', amount: 1000, kind: EntryKind.income, date: DateTime(2026, 11, 1)),
+        Entry(title: 'Rent', amount: 400, kind: EntryKind.expense, date: DateTime(2026, 11, 2)),
       ],
-      draft: draft,
-      filter: filter,
+      goals: [
+        Goal(name: 'Trip', target: 200, saved: 50),
+        Goal(name: 'Bike', target: 100, saved: 100),
+      ],
+      profile: Profile(name: 'Ada Lovelace', email: 'ada@example.com', currency: '\$', notifications: true),
+      entryTitle: entryTitle,
+      entryAmount: entryAmount,
+      entryKind: entryKind,
+      goalName: goalName,
+      goalTarget: goalTarget,
+      contribution: contribution,
     );

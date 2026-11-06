@@ -6,17 +6,40 @@
 # `state` is reserved: it types the app state in state.yaml and becomes the
 # `State` class that actions and bindings receive.
 
-task:
-  title: string
-  done: boolean
-  createdAt: datetime
+page:
+  - finances
+  - goals
+  - menu
 
-filter:
-  - all
-  - open
-  - done
+entryKind:
+  - income
+  - expense
+
+entry:
+  title: string
+  amount: number
+  kind: entryKind
+  date: datetime
+
+goal:
+  name: string
+  target: number
+  saved: number
+
+profile:
+  name: string
+  email: string
+  currency: string
+  notifications: boolean
 
 state:
-  tasks: list(task)
-  draft: string
-  filter: filter
+  page: page
+  entries: list(entry)
+  goals: list(goal)
+  profile: profile
+  entryTitle: string
+  entryAmount: string
+  entryKind: entryKind
+  goalName: string
+  goalTarget: string
+  contribution: string

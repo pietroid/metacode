@@ -24,82 +24,227 @@ class TestApp {
     return State.fromJson(jsonDecode(jsonEncode(doc['state'])) as Map);
   }
 
-  State updateDraft(State state, String value) => State.fromJson(
-      _program.action('updateDraft', state.toJson(), {'value': value}));
+  State goToPage(State state, int value) => State.fromJson(
+      _program.action('goToPage', state.toJson(), {'value': value}));
 
-  State addTask(State state) => State.fromJson(
-      _program.action('addTask', state.toJson()));
+  State updateEntryTitle(State state, String value) => State.fromJson(
+      _program.action('updateEntryTitle', state.toJson(), {'value': value}));
 
-  State toggleTask(State state, int index) => State.fromJson(
-      _program.action('toggleTask', state.toJson(), {'index': index}));
+  State updateEntryAmount(State state, String value) => State.fromJson(
+      _program.action('updateEntryAmount', state.toJson(), {'value': value}));
 
-  State deleteTask(State state, int index) => State.fromJson(
-      _program.action('deleteTask', state.toJson(), {'index': index}));
+  State selectIncome(State state) => State.fromJson(
+      _program.action('selectIncome', state.toJson()));
 
-  State clearCompleted(State state) => State.fromJson(
-      _program.action('clearCompleted', state.toJson()));
+  State selectExpense(State state) => State.fromJson(
+      _program.action('selectExpense', state.toJson()));
 
-  State setFilterAll(State state) => State.fromJson(
-      _program.action('setFilterAll', state.toJson()));
+  State addEntry(State state) => State.fromJson(
+      _program.action('addEntry', state.toJson()));
 
-  State setFilterOpen(State state) => State.fromJson(
-      _program.action('setFilterOpen', state.toJson()));
+  State deleteEntry(State state, int index) => State.fromJson(
+      _program.action('deleteEntry', state.toJson(), {'index': index}));
 
-  State setFilterDone(State state) => State.fromJson(
-      _program.action('setFilterDone', state.toJson()));
+  State updateGoalName(State state, String value) => State.fromJson(
+      _program.action('updateGoalName', state.toJson(), {'value': value}));
 
-  List<Task> visibleTasks(State state) {
-    final result = _program.binding('visibleTasks', state.toJson());
-    return (result as List).map((e) => Task.fromJson(e as Map)).toList();
+  State updateGoalTarget(State state, String value) => State.fromJson(
+      _program.action('updateGoalTarget', state.toJson(), {'value': value}));
+
+  State updateContribution(State state, String value) => State.fromJson(
+      _program.action('updateContribution', state.toJson(), {'value': value}));
+
+  State addGoal(State state) => State.fromJson(
+      _program.action('addGoal', state.toJson()));
+
+  State contributeToGoal(State state, int index) => State.fromJson(
+      _program.action('contributeToGoal', state.toJson(), {'index': index}));
+
+  State deleteGoal(State state, int index) => State.fromJson(
+      _program.action('deleteGoal', state.toJson(), {'index': index}));
+
+  State updateProfileName(State state, String value) => State.fromJson(
+      _program.action('updateProfileName', state.toJson(), {'value': value}));
+
+  State updateProfileEmail(State state, String value) => State.fromJson(
+      _program.action('updateProfileEmail', state.toJson(), {'value': value}));
+
+  State updateCurrency(State state, String value) => State.fromJson(
+      _program.action('updateCurrency', state.toJson(), {'value': value}));
+
+  State toggleNotifications(State state, bool value) => State.fromJson(
+      _program.action('toggleNotifications', state.toJson(), {'value': value}));
+
+  State resetData(State state) => State.fromJson(
+      _program.action('resetData', state.toJson()));
+
+  int pageIndex(State state) {
+    final result = _program.binding('pageIndex', state.toJson());
+    return (result as num).toInt();
   }
 
-  List<Task> taskList(State state) {
-    final result = _program.binding('taskList', state.toJson());
-    return (result as List).map((e) => Task.fromJson(e as Map)).toList();
-  }
-
-  String draftValue(State state) {
-    final result = _program.binding('draftValue', state.toJson());
+  String pageTitle(State state) {
+    final result = _program.binding('pageTitle', state.toJson());
     return result as String;
   }
 
-  String taskTitle(State state, int index) {
-    final result = _program.binding('taskTitle', state.toJson(), {'index': index});
+  String currentPage(State state) {
+    final result = _program.binding('currentPage', state.toJson());
     return result as String;
   }
 
-  bool taskDone(State state, int index) {
-    final result = _program.binding('taskDone', state.toJson(), {'index': index});
-    return result as bool;
+  num balanceValue(State state) {
+    final result = _program.binding('balanceValue', state.toJson());
+    return result as num;
   }
 
-  String taskDate(State state, int index) {
-    final result = _program.binding('taskDate', state.toJson(), {'index': index});
+  String balanceText(State state) {
+    final result = _program.binding('balanceText', state.toJson());
     return result as String;
   }
 
-  bool hasCompletedTasks(State state) {
-    final result = _program.binding('hasCompletedTasks', state.toJson());
-    return result as bool;
-  }
-
-  String clearCompletedText(State state) {
-    final result = _program.binding('clearCompletedText', state.toJson());
+  String incomeText(State state) {
+    final result = _program.binding('incomeText', state.toJson());
     return result as String;
   }
 
-  bool filterIsAll(State state) {
-    final result = _program.binding('filterIsAll', state.toJson());
+  String expenseText(State state) {
+    final result = _program.binding('expenseText', state.toJson());
+    return result as String;
+  }
+
+  List<Entry> entryList(State state) {
+    final result = _program.binding('entryList', state.toJson());
+    return (result as List).map((e) => Entry.fromJson(e as Map)).toList();
+  }
+
+  String entryTitleAt(State state, int index) {
+    final result = _program.binding('entryTitleAt', state.toJson(), {'index': index});
+    return result as String;
+  }
+
+  String entryDateAt(State state, int index) {
+    final result = _program.binding('entryDateAt', state.toJson(), {'index': index});
+    return result as String;
+  }
+
+  String entryAmountAt(State state, int index) {
+    final result = _program.binding('entryAmountAt', state.toJson(), {'index': index});
+    return result as String;
+  }
+
+  bool entryIsIncome(State state, int index) {
+    final result = _program.binding('entryIsIncome', state.toJson(), {'index': index});
     return result as bool;
   }
 
-  bool filterIsOpen(State state) {
-    final result = _program.binding('filterIsOpen', state.toJson());
+  String entryTitleValue(State state) {
+    final result = _program.binding('entryTitleValue', state.toJson());
+    return result as String;
+  }
+
+  String entryAmountValue(State state) {
+    final result = _program.binding('entryAmountValue', state.toJson());
+    return result as String;
+  }
+
+  bool kindIsIncome(State state) {
+    final result = _program.binding('kindIsIncome', state.toJson());
     return result as bool;
   }
 
-  bool filterIsDone(State state) {
-    final result = _program.binding('filterIsDone', state.toJson());
+  bool kindIsExpense(State state) {
+    final result = _program.binding('kindIsExpense', state.toJson());
     return result as bool;
+  }
+
+  List<Goal> goalList(State state) {
+    final result = _program.binding('goalList', state.toJson());
+    return (result as List).map((e) => Goal.fromJson(e as Map)).toList();
+  }
+
+  String goalNameAt(State state, int index) {
+    final result = _program.binding('goalNameAt', state.toJson(), {'index': index});
+    return result as String;
+  }
+
+  String goalAmountsAt(State state, int index) {
+    final result = _program.binding('goalAmountsAt', state.toJson(), {'index': index});
+    return result as String;
+  }
+
+  double goalProgressAt(State state, int index) {
+    final result = _program.binding('goalProgressAt', state.toJson(), {'index': index});
+    return (result as num).toDouble();
+  }
+
+  String goalPercentAt(State state, int index) {
+    final result = _program.binding('goalPercentAt', state.toJson(), {'index': index});
+    return result as String;
+  }
+
+  bool goalReachedAt(State state, int index) {
+    final result = _program.binding('goalReachedAt', state.toJson(), {'index': index});
+    return result as bool;
+  }
+
+  String goalNameValue(State state) {
+    final result = _program.binding('goalNameValue', state.toJson());
+    return result as String;
+  }
+
+  String goalTargetValue(State state) {
+    final result = _program.binding('goalTargetValue', state.toJson());
+    return result as String;
+  }
+
+  String contributionValue(State state) {
+    final result = _program.binding('contributionValue', state.toJson());
+    return result as String;
+  }
+
+  String contributionLabel(State state) {
+    final result = _program.binding('contributionLabel', state.toJson());
+    return result as String;
+  }
+
+  String profileName(State state) {
+    final result = _program.binding('profileName', state.toJson());
+    return result as String;
+  }
+
+  String profileEmail(State state) {
+    final result = _program.binding('profileEmail', state.toJson());
+    return result as String;
+  }
+
+  String profileInitials(State state) {
+    final result = _program.binding('profileInitials', state.toJson());
+    return result as String;
+  }
+
+  String profileCurrency(State state) {
+    final result = _program.binding('profileCurrency', state.toJson());
+    return result as String;
+  }
+
+  List<String> currencyOptions(State state) {
+    final result = _program.binding('currencyOptions', state.toJson());
+    return (result as List).map((e) => e as String).toList();
+  }
+
+  bool notificationsOn(State state) {
+    final result = _program.binding('notificationsOn', state.toJson());
+    return result as bool;
+  }
+
+  String entryCountText(State state) {
+    final result = _program.binding('entryCountText', state.toJson());
+    return result as String;
+  }
+
+  String goalCountText(State state) {
+    final result = _program.binding('goalCountText', state.toJson());
+    return result as String;
   }
 }
