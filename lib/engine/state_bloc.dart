@@ -28,7 +28,7 @@ class StateBloc extends Cubit<Map<String, dynamic>> {
       _stateFile = File(_overridePath);
       if (_stateFile!.existsSync()) {
         final doc = loadYaml(await _stateFile!.readAsString());
-        emit(Map<String, dynamic>.from(_yamlToMap(doc['state']) ?? {}));
+        emit(Map<String, dynamic>.from(yamlToDart(doc['state']) ?? {}));
         return;
       }
     }
@@ -43,7 +43,7 @@ class StateBloc extends Cubit<Map<String, dynamic>> {
     if (_stateFile!.existsSync()) {
       final content = await _stateFile!.readAsString();
       final doc = loadYaml(content);
-      emit(Map<String, dynamic>.from(_yamlToMap(doc['state']) ?? {}));
+      emit(Map<String, dynamic>.from(yamlToDart(doc['state']) ?? {}));
     } else {
       final initial = Map<String, dynamic>.from(config.initialState);
       emit(initial);
@@ -62,17 +62,6 @@ class StateBloc extends Cubit<Map<String, dynamic>> {
     await _stateFile!.writeAsString('state:\n$yaml');
   }
 
-  static dynamic _yamlToMap(dynamic node) {
-    if (node is YamlMap) {
-      return Map<String, dynamic>.fromEntries(
-        node.entries.map((e) => MapEntry(e.key.toString(), _yamlToMap(e.value))),
-      );
-    }
-    if (node is YamlList) {
-      return node.map(_yamlToMap).toList();
-    }
-    return node;
-  }
 
   String _toYaml(dynamic value, {int indent = 1}) {
     final prefix = '  ' * indent;

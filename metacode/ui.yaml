@@ -12,7 +12,7 @@ widgets:
           - taskInput
           - filterChips
           - expanded:
-              taskList
+              taskListView
           - if:
               condition: hasCompletedTasks
               then:
@@ -71,7 +71,7 @@ widgets:
       tooltip: "Add task"
       onPressed: addTask
 
-  taskList:
+  taskListView:
     listView:
       data: taskList
       empty: emptyState
@@ -99,24 +99,24 @@ widgets:
     center:
       padding:
         all: 32
-      child:
-        column:
-          - icon:
-              name: inbox
-              size: 64
-              color: "#9CA3AF"
-          - sizedBox:
-              height: 16
-          - text:
-              value: "No tasks yet"
-              style:
-                fontSize: 18
-                color: "#6B7280"
-          - text:
-              value: "Add one above to get started"
-              style:
-                fontSize: 14
+        child:
+          column:
+            - icon:
+                name: inbox
+                size: 64
                 color: "#9CA3AF"
+            - sizedBox:
+                height: 16
+            - text:
+                value: "No tasks yet"
+                style:
+                  fontSize: 18
+                  color: "#6B7280"
+            - text:
+                value: "Add one above to get started"
+                style:
+                  fontSize: 14
+                  color: "#9CA3AF"
 
   clearCompletedButton:
     padding:

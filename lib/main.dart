@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'engine/action_runtime.dart';
-import 'engine/binding_runtime.dart';
 import 'engine/project_config.dart';
 import 'engine/state_bloc.dart';
 import 'engine/ui_renderer.dart';
@@ -29,13 +27,7 @@ class MetacodeApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bindings = BindingRuntime(source: config.bindingsSource);
-    final actions = ActionRuntime(source: config.actionsSource);
-    final renderer = UiRenderer(
-      ui: config.ui,
-      bindings: bindings,
-      actions: actions,
-    );
+    final renderer = UiRenderer(ui: config.ui, program: config.program);
 
     return MaterialApp(
       title: config.projectName,

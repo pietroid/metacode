@@ -1,0 +1,25 @@
+{
+  "actions": [
+    "updateDraft",
+    "addTask",
+    "toggleTask",
+    "deleteTask",
+    "clearCompleted",
+    "setFilterAll",
+    "setFilterOpen",
+    "setFilterDone"
+  ],
+  "bindings": [
+    "visibleTasks",
+    "taskList",
+    "draftValue",
+    "taskTitle",
+    "taskDone",
+    "taskDate",
+    "hasCompletedTasks",
+    "clearCompletedText",
+    "filterIsAll",
+    "filterIsOpen",
+    "filterIsDone"
+  ]
+}

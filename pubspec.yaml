@@ -1,5 +1,5 @@
-name: new_metacode
-description: "A new Flutter project."
+name: metacode
+description: "Metacode engine: YAML-driven apps with typed actions and bindings."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -37,10 +37,6 @@ dependencies:
   dart_eval: ^0.8.5
   path_provider: ^2.1.5
   collection: ^1.19.1
-  new_metacode_bindings:
-    path: bindings
-  new_metacode_actions:
-    path: actions
 
 dev_dependencies:
   flutter_test:
@@ -52,6 +48,7 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  analyzer: ^8.4.1
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -66,11 +63,10 @@ flutter:
 
   assets:
     - metacode/project.yaml
-    - metacode/models.yaml
     - metacode/state.yaml
     - metacode/ui.yaml
-    - bindings/lib/bindings.dart
-    - actions/lib/actions.dart
+    - metacode/generated/program.evc
+    - metacode/generated/manifest.json
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

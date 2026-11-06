@@ -1,38 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'action_runtime.dart';
-import 'binding_runtime.dart';
+import 'program.dart';
 import 'state_bloc.dart';
 
 /// Renders the YAML UI tree into Flutter widgets.
 ///
-/// The renderer dispatches each YAML node to a builder. Bindings are resolved
-/// by calling functions in the `bindings/` package through [BindingRuntime];
-/// user gestures submit new states via [ActionRuntime].
+/// The renderer dispatches each YAML node to a builder (see `catalog.dart`
+/// for the contract). Bindings are read and actions run through the project's
+/// [MetacodeProgram].
 class UiRenderer {
   final Map<String, dynamic> ui;
-  final BindingRuntime bindings;
-  final ActionRuntime actions;
-  final Set<String> bindingNames;
-  final Set<String> actionNames;
+  final MetacodeProgram program;
 
-  UiRenderer({
-    required this.ui,
-    required this.bindings,
-    required this.actions,
-  })  : bindingNames = _extractFunctionNames(bindings.source),
-        actionNames = _extractFunctionNames(actions.source);
+  UiRenderer({required this.ui, required this.program});
 
-  static Set<String> _extractFunctionNames(String source) {
-    // Top-level functions: `<ReturnType> name(` at column 0. Private (`_`)
-    // helpers are excluded so they can't be invoked from the UI.
-    final regex = RegExp(
-      r'^[A-Za-z_][\w<>?, ]*\s+([a-zA-Z][a-zA-Z0-9_]*)\s*\(',
-      multiLine: true,
-    );
-    return regex.allMatches(source).map((m) => m.group(1)!).toSet();
-  }
+  Set<String> get bindingNames => program.bindings;
+  Set<String> get actionNames => program.actions;
+
+  dynamic _binding(
+    String name,
+    Map<String, dynamic> state,
+    Map<String, dynamic> contextMap,
+  ) =>
+      program.binding(name, state, contextMap);
 
   /// Build a widget from a YAML node.
   ///
@@ -56,7 +47,7 @@ class UiRenderer {
         return build(context, widgets[node], state, contextMap: contextMap);
       }
       if (bindingNames.contains(node)) {
-        return _buildText(bindings.call(node, state, context: contextMap));
+        return _buildText(_binding(node, state, contextMap));
       }
       return _buildText(node);
     }
@@ -77,7 +68,9 @@ class UiRenderer {
         'center' => _buildCenter(context, value, state, contextMap),
         'padding' => _buildPadding(context, value, state, contextMap),
         'sizedBox' => _buildSizedBox(value),
-        'text' => _buildTextWidget(context, value, state, contextMap),
+        'text' => value is Map<String, dynamic>
+            ? _buildTextWidget(context, value, state, contextMap)
+            : _buildTextWidget(context, {'value': value}, state, contextMap),
         'textField' => _buildTextField(context, value, state, contextMap),
         'iconButton' => _buildIconButton(context, value, state, contextMap),
         'floatingActionButton' =>
@@ -181,7 +174,7 @@ class UiRenderer {
   ) {
     if (actionName == null || !actionNames.contains(actionName)) return;
     final params = Map<String, dynamic>.from(contextMap)..addAll(extraParams);
-    final newState = actions.call(actionName, state, params: params);
+    final newState = program.action(actionName, state, params);
     context.read<StateBloc>().setState(newState);
   }
 
@@ -358,7 +351,7 @@ class UiRenderer {
   ) {
     dynamic content = value['text'] ?? value['value'];
     if (content is String && bindingNames.contains(content)) {
-      content = bindings.call(content, state, context: contextMap);
+      content = _binding(content, state, contextMap);
     }
     return Text(
       content?.toString() ?? '',
@@ -374,7 +367,7 @@ class UiRenderer {
   ) {
     final bindingName = value['value'];
     final currentValue = bindingName is String && bindingNames.contains(bindingName)
-        ? bindings.call(bindingName, state, context: contextMap).toString()
+        ? _binding(bindingName, state, contextMap).toString()
         : (bindingName ?? '').toString();
     final hint = value['hint']?.toString();
     final actionName = value['onChanged']?.toString();
@@ -471,7 +464,7 @@ class UiRenderer {
   ) {
     final dataBinding = value['data']?.toString();
     final items = dataBinding != null && bindingNames.contains(dataBinding)
-        ? bindings.call(dataBinding, state, context: contextMap) as List
+        ? _binding(dataBinding, state, contextMap) as List
         : <dynamic>[];
 
     if (items.isEmpty) {
@@ -529,14 +522,14 @@ class UiRenderer {
   ) {
     final bindingName = value['value']?.toString();
     final checked = bindingName != null && bindingNames.contains(bindingName)
-        ? bindings.call(bindingName, state, context: contextMap) == true
+        ? _binding(bindingName, state, contextMap) == true
         : false;
     final actionName = value['onChanged']?.toString();
 
     return Checkbox(
       value: checked,
       onChanged: actionName != null
-          ? (_) => _runAction(context, actionName, state, contextMap, {})
+          ? (v) => _runAction(context, actionName, state, contextMap, {'value': v})
           : null,
     );
   }
@@ -567,7 +560,7 @@ class UiRenderer {
     final selectedBinding = value['selected']?.toString();
     final selected = selectedBinding != null &&
             bindingNames.contains(selectedBinding)
-        ? bindings.call(selectedBinding, state, context: contextMap) == true
+        ? _binding(selectedBinding, state, contextMap) == true
         : false;
     final actionName = value['onSelected']?.toString();
 
@@ -575,7 +568,7 @@ class UiRenderer {
       label: build(context, value['label'], state, contextMap: contextMap),
       selected: selected,
       onSelected: actionName != null
-          ? (_) => _runAction(context, actionName, state, contextMap, {})
+          ? (v) => _runAction(context, actionName, state, contextMap, {'value': v})
           : null,
     );
   }
@@ -596,7 +589,7 @@ class UiRenderer {
   ) {
     final condition = value['condition']?.toString();
     final passes = condition != null && bindingNames.contains(condition)
-        ? bindings.call(condition, state, context: contextMap) == true
+        ? _binding(condition, state, contextMap) == true
         : false;
     if (passes) {
       return build(context, value['then'], state, contextMap: contextMap);
