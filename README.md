@@ -10,19 +10,24 @@ metacode/
   project.yaml      name, description
   models.yaml       data shapes; the reserved `state` model types state.yaml
   state.yaml        the app state (validated against `state`)
-  ui.yaml           widgets (see lib/engine/catalog.dart)
+  ui.yaml           widgets (catalog: packages/app_ui/lib/spec.dart)
   actions/*.dart    State -> State transfer functions
   bindings/*.dart   State -> value for the UI
+  test/             tests for actions and bindings
   generated/        produced by the tool, do not edit
+packages/app_ui/    the UI catalog (spec + one builder per widget)
 lib/engine/         the Flutter engine
 tool/metacode.dart  validator + code generator
 ```
 
+Agents: see [AGENTS.md](AGENTS.md) and the skills in `.claude/skills/`.
+
 ## Workflow
 
 ```sh
-dart run tool/metacode.dart         # validate everything and generate
-dart run tool/metacode.dart check   # validate only
+tool/check.sh                       # app loop: generate, analyze, test metacode/
+tool/check_engine.sh                # everything: also engine and app_ui tests
+dart run tool/metacode.dart         # just validate + generate
 ```
 
 In VS Code, F5 runs the generator first (`preLaunchTask`).
@@ -36,6 +41,8 @@ action/binding it names exists). Then it generates:
 - `generated/main.dart`: the JSON bridge the engine calls. You never touch JSON.
 - `generated/program.evc` and `manifest.json`: the compiled bytecode the
   engine loads.
+- `generated/test_app.dart`: typed wrappers that run your actions and
+  bindings through the compiled program, for `metacode/test/`.
 
 ## Models
 

@@ -1,0 +1,15 @@
+name: app_ui
+description: The Metacode UI catalog. Every widget ui.yaml can use lives here.
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: ^3.12.1
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter

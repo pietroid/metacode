@@ -5,7 +5,8 @@
 //
 // Steps: models.yaml -> state.yaml (against the `state` model) -> actions and
 // bindings (signatures) -> ui.yaml -> generated/state.dart, generated/main.dart
-// -> compiled generated/program.evc + generated/manifest.json.
+// -> compiled generated/program.evc + generated/manifest.json, and
+// generated/test_app.dart (typed test harness for metacode/test/).
 
 import 'dart:convert';
 import 'dart:io';
@@ -99,6 +100,7 @@ void _generate(
   final generated = {
     'generated/state.dart': generateState(models),
     'generated/main.dart': generateMain(actions, bindings, userFiles, models),
+    'generated/test_app.dart': generateTestApp(actions, bindings, models),
   };
 
   final outDir = Directory('${root.path}/generated')..createSync();
@@ -113,6 +115,7 @@ void _generate(
       File('${root.path}/$f').readAsStringSync(),
     generated['generated/main.dart']!,
   ]);
+  // (test_app.dart runs on the host, not in the interpreter.)
 
   try {
     final program = Compiler().compile({

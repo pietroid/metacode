@@ -1,4 +1,4 @@
-import 'package:metacode/engine/catalog.dart';
+import 'package:app_ui/spec.dart';
 
 import 'issues.dart';
 
@@ -73,18 +73,12 @@ class _UiValidator {
   }
 
   void widget(WidgetSpec spec, dynamic value, String path) {
-    switch (spec.shorthand) {
-      case Shorthand.nodes when value is List:
-        return nodes(value, path);
-      case Shorthand.node when value is! Map || !value.containsKey('child'):
-        return node(value, path);
-      case Shorthand.bindingOrLiteral when value is! Map:
-        return;
-      default:
+    final props = normalizeProps(spec, value);
+    if (props == null) {
+      return error(path, 'expected a map of properties'
+          '${spec.shorthand.prop == null ? '' : ' or a ${spec.shorthand.prop}'}');
     }
-
-    if (value is! Map) return error(path, 'expected a map of properties');
-    for (final entry in value.entries) {
+    for (final entry in props.entries) {
       final prop = entry.key.toString();
       final kind = spec.props[prop];
       final propPath = '$path.$prop';
@@ -93,11 +87,11 @@ class _UiValidator {
             'unknown property; available: ${spec.props.keys.join(', ')}');
         continue;
       }
-      property(kind, entry.value, propPath);
+      property(kind, entry.value, propPath, spec.inline[prop]);
     }
   }
 
-  void property(PropKind kind, dynamic value, String path) {
+  void property(PropKind kind, dynamic value, String path, String? inline) {
     switch (kind) {
       case PropKind.node:
         node(value, path);
@@ -114,8 +108,8 @@ class _UiValidator {
           error(path, '"$value" is not a binding; '
               'available: ${bindings.isEmpty ? '(none)' : bindings.join(', ')}');
         }
-      case PropKind.appBarProps:
-        widget(widgetCatalog['appBar']!, value, path);
+      case PropKind.inline:
+        widget(widgetCatalog[inline]!, value, path);
       case PropKind.bindingOrLiteral:
       case PropKind.literal:
         break;

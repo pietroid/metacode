@@ -37,6 +37,8 @@ dependencies:
   dart_eval: ^0.8.5
   path_provider: ^2.1.5
   collection: ^1.19.1
+  app_ui:
+    path: packages/app_ui
 
 dev_dependencies:
   flutter_test:

@@ -229,3 +229,86 @@ String _encodeDart(String type, String expr, Map<String, Model> models) {
   if (inner == v) return expr;
   return optional ? '$expr == null ? null : $inner' : inner;
 }
+
+/// Generates `generated/test_app.dart`: typed wrappers that run each action
+/// and binding through the compiled program (dart_eval), exactly like the
+/// engine. Used by metacode/test/.
+String generateTestApp(
+  List<UserFunction> actions,
+  List<UserFunction> bindings,
+  Map<String, Model> models,
+) {
+  final out = StringBuffer(_header)
+    ..writeln()
+    ..writeln("import 'dart:convert';")
+    ..writeln("import 'dart:io';")
+    ..writeln("import 'dart:typed_data';")
+    ..writeln()
+    ..writeln("import 'package:metacode/engine/program.dart';")
+    ..writeln("import 'package:yaml/yaml.dart';")
+    ..writeln()
+    ..writeln("import 'state.dart';")
+    ..writeln()
+    ..writeln('/// Runs actions and bindings through the compiled program, like the')
+    ..writeln('/// engine does, with typed inputs and outputs.')
+    ..writeln('class TestApp {')
+    ..writeln('  final MetacodeProgram _program = MetacodeProgram(')
+    ..writeln("    ByteData.sublistView(File('metacode/generated/program.evc').readAsBytesSync()),")
+    ..writeln("    jsonDecode(File('metacode/generated/manifest.json').readAsStringSync())")
+    ..writeln('        as Map<String, dynamic>,')
+    ..writeln('  );')
+    ..writeln()
+    ..writeln('  /// The state in metacode/state.yaml.')
+    ..writeln('  State get initialState {')
+    ..writeln("    final doc = loadYaml(File('metacode/state.yaml').readAsStringSync());")
+    ..writeln("    return State.fromJson(jsonDecode(jsonEncode(doc['state'])) as Map);")
+    ..writeln('  }');
+
+  String signature(UserFunction fn) =>
+      ['State state', for (final p in fn.params) '${p.type} ${p.name}'].join(', ');
+  String params(UserFunction fn) => fn.params.isEmpty
+      ? ''
+      : ', {${fn.params.map((p) => "'${p.name}': ${p.name}").join(', ')}}';
+
+  for (final fn in actions) {
+    out
+      ..writeln()
+      ..writeln('  State ${fn.name}(${signature(fn)}) => State.fromJson(')
+      ..writeln("      _program.action('${fn.name}', state.toJson()${params(fn)}));");
+  }
+  for (final fn in bindings) {
+    final raw = "_program.binding('${fn.name}', state.toJson()${params(fn)})";
+    out
+      ..writeln()
+      ..writeln('  ${fn.returnType} ${fn.name}(${signature(fn)}) {')
+      ..writeln('    final result = $raw;')
+      ..writeln('    return ${_decodeDart(fn.returnType, 'result', models)};')
+      ..writeln('  }');
+  }
+  out.writeln('}');
+  return out.toString();
+}
+
+/// Decodes a JSON value back into the Dart type a binding returned.
+String _decodeDart(String type, String expr, Map<String, Model> models) {
+  var t = type.trim();
+  final optional = t.endsWith('?');
+  if (optional) t = t.substring(0, t.length - 1);
+
+  final String inner;
+  final list = RegExp(r'^List<(.+)>$').firstMatch(t);
+  if (list != null) {
+    inner = '($expr as List).map((e) => ${_decodeDart(list.group(1)!, 'e', models)}).toList()';
+  } else {
+    final model = models.values.where((m) => m.className == t).firstOrNull;
+    inner = switch ((t, model)) {
+      ('DateTime', _) => 'DateTime.parse($expr as String)',
+      ('int', _) => '($expr as num).toInt()',
+      ('double', _) => '($expr as num).toDouble()',
+      (_, EnumModel m) => '\$${m.name}FromJson($expr as String)',
+      (_, ClassModel m) => '${m.className}.fromJson($expr as Map)',
+      _ => '$expr as $t',
+    };
+  }
+  return optional ? '$expr == null ? null : $inner' : inner;
+}

@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:analyzer/dart/analysis/utilities.dart';
 import 'package:analyzer/dart/ast/ast.dart';
-import 'package:metacode/engine/catalog.dart';
+import 'package:app_ui/spec.dart';
 
 import 'issues.dart';
 import 'models.dart';
