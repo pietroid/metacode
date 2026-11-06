@@ -1,4 +1,5 @@
 import 'package:app_ui/app_ui.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -23,5 +24,21 @@ void main() {
         expect(entry.value.props, contains(prop), reason: entry.key);
       }
     }
+  });
+
+  test('every icon name is mapped', () {
+    expect(icons.keys.toSet(), iconNames.toSet());
+  });
+
+  testWidgets('every color name and text variant resolves', (tester) async {
+    late BuildContext context;
+    await tester.pumpWidget(MaterialApp(
+      home: Builder(builder: (c) {
+        context = c;
+        return const SizedBox();
+      }),
+    ));
+    expect(themeColors(context).keys.toSet(), colorNames.toSet());
+    expect(textVariantStyles(context).keys.toSet(), textVariants.toSet());
   });
 }

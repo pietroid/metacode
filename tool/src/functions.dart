@@ -24,7 +24,7 @@ class UserFunction {
 }
 
 /// Allowed Dart types for each context param.
-const _contextParamTypes = {
+const contextParamTypes = {
   'index': {'int'},
   'value': {'String', 'bool', 'num', 'int', 'double'},
 };
@@ -108,7 +108,7 @@ UserFunction? _readFunction(
       continue;
     }
 
-    final allowed = _contextParamTypes[paramName];
+    final allowed = contextParamTypes[paramName];
     if (allowed == null) {
       fail('unknown parameter "$paramName"; available: '
           '${contextParams.join(', ')}');

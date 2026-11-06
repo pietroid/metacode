@@ -1,24 +1,42 @@
 import 'ui.dart';
 import 'widgets/app_bar.dart';
+import 'widgets/avatar.dart';
+import 'widgets/card.dart';
 import 'widgets/center.dart';
 import 'widgets/checkbox.dart';
 import 'widgets/choice_chip.dart';
 import 'widgets/column.dart';
+import 'widgets/container.dart';
+import 'widgets/divider.dart';
+import 'widgets/dropdown.dart';
 import 'widgets/elevated_button.dart';
 import 'widgets/expanded.dart';
+import 'widgets/filled_button.dart';
 import 'widgets/floating_action_button.dart';
+import 'widgets/grid_view.dart';
 import 'widgets/icon.dart';
 import 'widgets/icon_button.dart';
 import 'widgets/if_widget.dart';
+import 'widgets/image.dart';
 import 'widgets/list_tile.dart';
 import 'widgets/list_view.dart';
+import 'widgets/match.dart';
+import 'widgets/navigation_bar.dart';
+import 'widgets/outlined_button.dart';
 import 'widgets/padding.dart';
+import 'widgets/progress.dart';
 import 'widgets/row.dart';
 import 'widgets/scaffold.dart';
+import 'widgets/scroll.dart';
 import 'widgets/sized_box.dart';
+import 'widgets/slider.dart';
+import 'widgets/spacer.dart';
+import 'widgets/stack.dart';
+import 'widgets/tappable.dart';
 import 'widgets/text.dart';
 import 'widgets/text_button.dart';
 import 'widgets/text_field.dart';
+import 'widgets/toggle.dart';
 import 'widgets/wrap.dart';
 
 /// Catalog widget name -> builder. Every key of `widgetCatalog` (spec.dart)
@@ -29,25 +47,45 @@ const widgetBuilders = <String, UiWidgetBuilder>{
   'appBar': buildAppBar,
   'column': buildColumn,
   'row': buildRow,
+  'stack': buildStack,
   'wrap': buildWrap,
   'expanded': buildExpanded,
+  'spacer': buildSpacer,
   'center': buildCenter,
   'padding': buildPadding,
   'sizedBox': buildSizedBox,
+  'container': buildContainer,
+  'card': buildCard,
+  'scroll': buildScroll,
+  'divider': buildDivider,
+
+  // Navigation
+  'match': buildMatch,
+  'navigationBar': buildNavigationBar,
 
   // Content
   'text': buildText,
   'icon': buildIcon,
+  'image': buildImage,
+  'avatar': buildAvatar,
+  'progress': buildProgress,
   'listView': buildListView,
+  'gridView': buildGridView,
   'listTile': buildListTile,
   'if': buildIf,
 
   // Input
   'textField': buildTextField,
   'checkbox': buildCheckbox,
+  'toggle': buildToggle,
+  'slider': buildSlider,
+  'dropdown': buildDropdown,
   'choiceChip': buildChoiceChip,
   'iconButton': buildIconButton,
+  'filledButton': buildFilledButton,
+  'outlinedButton': buildOutlinedButton,
   'textButton': buildTextButton,
   'elevatedButton': buildElevatedButton,
   'floatingActionButton': buildFloatingActionButton,
+  'tappable': buildTappable,
 };

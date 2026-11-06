@@ -6,6 +6,9 @@ cd "$(dirname "$0")/.."
 echo "== generate"
 dart run tool/metacode.dart 2>&1 | sed 's/Running build hooks\.\.\.//g'
 
+echo "== reference"
+dart run tool/reference.dart 2>&1 | sed 's/Running build hooks\.\.\.//g'
+
 echo "== analyze"
 flutter analyze
 

@@ -18,7 +18,7 @@ Never launch the app. `test/renderer_test.dart` renders ui.yaml and taps it. Ext
 | Change | Where |
 |---|---|
 | New model primitive or type syntax | `tool/src/models.dart` (`primitives`, `TypeRef`, `validateState`), then the `_fromJson`/`_toJson`/`dartType` functions in `tool/src/codegen.dart` |
-| Action/binding signature rules, context params | `tool/src/functions.dart` (`_contextParamTypes`, `isEncodable`). The param names list is `contextParams` in `packages/app_ui/lib/spec.dart` |
+| Action/binding signature rules, context params | `tool/src/functions.dart` (`contextParamTypes`, `isEncodable`). The param names list is `contextParams` in `packages/app_ui/lib/spec.dart` |
 | ui.yaml validation | `tool/src/ui.dart` (uses `widgetCatalog` and `normalizeProps` from `spec.dart`) |
 | Generated code | `tool/src/codegen.dart`: `generateState`, `generateMain` (engine bridge, `$action_x`/`$binding_x`), `generateTestApp`, `_encodeDart`/`_decodeDart` |
 | Compile/bundle and manifest | `tool/metacode.dart` (`_generate`, `_bundle`) |
@@ -26,6 +26,7 @@ Never launch the app. `test/renderer_test.dart` renders ui.yaml and taps it. Ext
 | Node resolution, actions to state | `lib/engine/ui_renderer.dart` (`_EngineUi implements Ui`) |
 | State persistence | `lib/engine/state_bloc.dart` (`METACODE_STATE_PATH` dart-define, else the app documents folder) |
 | Asset loading | `lib/engine/project_config.dart` and `pubspec.yaml` assets |
+| App-author reference | `tool/reference.dart` generates `.claude/skills/metacode-app/REFERENCE.md`. Update its static text when types or signatures change. |
 
 ## Contracts to keep
 

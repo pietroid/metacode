@@ -9,22 +9,29 @@ Three edits in `packages/app_ui/lib/`, then the check.
 
 ## 1. Spec: `spec.dart`
 
-Add an entry to `widgetCatalog`, in the right group (Layout, Content, Input):
+Add an entry to `widgetCatalog` under its group (`_layout`, `_navigation`, `_content`, `_input`):
 
 ```dart
-'switchToggle': WidgetSpec('On/off switch; `onChanged` gets `value` (bool).', {
-  'value': PropKind.binding,
-  'onChanged': PropKind.action,
-}),
+'rating': WidgetSpec(
+  _input,
+  'Pick 1-5 stars.',
+  {'value': PropKind.binding, 'color': PropKind.color, 'onChanged': PropKind.action},
+  notes: {'onChanged': 'gets `value` (int): the star tapped'},
+),
 ```
 
-Prop kinds:
+`description` and `notes` end up in REFERENCE.md, which is what app authors read. Always note the `value` type an input passes.
+
+Prop kinds (validated by the tool):
 - `node`: one child.
 - `nodes`: a list of children.
+- `nodeMap`: a map of value to node.
 - `action`: names an action.
 - `binding`: names a binding.
 - `bindingOrLiteral`: a binding name or a literal.
-- `literal`: a plain value.
+- `literal`: anything.
+- `icon`: a name from `iconNames`.
+- `color`: `#hex` or a name from `colorNames`.
 - `inline`: another widget's props; also set `inline: {'prop': 'widget'}`.
 
 Optional `shorthand`:
@@ -39,10 +46,18 @@ import 'package:flutter/material.dart';
 
 import '../ui.dart';
 
-Widget buildSwitchToggle(Ui ui, Map<String, dynamic> p) => Switch(
-      value: ui.binding(p['value']) == true,
-      onChanged: ui.actionWithValue<bool>(p['onChanged']),
-    );
+Widget buildRating(Ui ui, Map<String, dynamic> p) {
+  final value = (ui.binding(p['value']) as num?)?.toInt() ?? 0;
+  final onChanged = ui.actionWithValue<int>(p['onChanged']);
+  final color = parseColor(p['color'], ui.context) ?? Colors.amber;
+  return Row(mainAxisSize: MainAxisSize.min, children: [
+    for (var i = 1; i <= 5; i++)
+      IconButton(
+        icon: Icon(i <= value ? Icons.star : Icons.star_border, color: color),
+        onPressed: onChanged == null ? null : () => onChanged(i),
+      ),
+  ]);
+}
 ```
 
 `Ui` API (`src/ui.dart`):
@@ -52,16 +67,27 @@ Widget buildSwitchToggle(Ui ui, Map<String, dynamic> p) => Switch(
 - `withParams({'index': i})`: per-item context.
 - `widget(type, props)`: build another catalog widget.
 
-Literal parsers (color, text style, icon, padding, alignment) are in `src/parsers.dart`. New icon names go in its `icons` map. If an input passes a value, the action receives it as `value`. Add its type to `_contextParamTypes` in `tool/src/functions.dart` if it's new.
+Literal parsers are in `src/parsers.dart`:
+- `parseColor(v, ui.context)`
+- `parseTextStyle(v, ui.context)`
+- `parseIcon`
+- `parseEdgeInsets` (a number or a map)
+- `parseAlignment`, `parseBoxFit`, `parseDouble`
+
+New icon, color or text variant names go both in `spec.dart` (`iconNames`, `colorNames`, `textVariants`) and in parsers.dart's maps. If an input passes a value of a new type, add the type to `contextParamTypes` in `tool/src/functions.dart`.
 
 ## 3. Register: `src/registry.dart`
 
-Add the import and `'switchToggle': buildSwitchToggle,` to `widgetBuilders`.
+Add the import and `'rating': buildRating,` to `widgetBuilders`, under the same group.
 
-## 4. Check
+## 4. Test: `packages/app_ui/test/widgets_test.dart`
+
+Add a `testWidgets` with `render(tester, {'rating': {...}}, bindings: {...}, actions: {...})`. It returns the recorded action calls. Compare them with `fmt(call)`, e.g. `'rate {value: 3}'`.
+
+## 5. Check
 
 ```sh
 tool/check_engine.sh
 ```
 
-`packages/app_ui/test/catalog_test.dart` fails if the spec and the registry disagree. The tool validates ui.yaml against the new spec right away. To use the widget in the app, continue with the `metacode-app` skill.
+This also regenerates `.claude/skills/metacode-app/REFERENCE.md`, so app authors see the new widget. `catalog_test.dart` fails if spec, registry, icons or colors disagree. To use the widget in the app, continue with the `metacode-app` skill.

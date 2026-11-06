@@ -2,18 +2,33 @@ import 'package:flutter/material.dart';
 
 import '../ui.dart';
 
-Widget buildTextField(Ui ui, Map<String, dynamic> p) =>
-    _TextField(ui.resolve(p['value'])?.toString() ?? '', p['hint']?.toString(),
-        ui.actionWithValue<String>(p['onChanged']));
+Widget buildTextField(Ui ui, Map<String, dynamic> p) => _TextField(
+      value: ui.resolve(p['value'])?.toString() ?? '',
+      hint: p['hint']?.toString(),
+      label: p['label']?.toString(),
+      multiline: p['multiline'] == true,
+      onChanged: ui.actionWithValue<String>(p['onChanged']),
+      onSubmitted: ui.actionWithValue<String>(p['onSubmitted']),
+    );
 
 /// Keeps a controller so the field follows the state (e.g. cleared after an
 /// action) without losing the cursor while typing.
 class _TextField extends StatefulWidget {
   final String value;
   final String? hint;
+  final String? label;
+  final bool multiline;
   final ValueChanged<String>? onChanged;
+  final ValueChanged<String>? onSubmitted;
 
-  const _TextField(this.value, this.hint, this.onChanged);
+  const _TextField({
+    required this.value,
+    this.hint,
+    this.label,
+    this.multiline = false,
+    this.onChanged,
+    this.onSubmitted,
+  });
 
   @override
   State<_TextField> createState() => _TextFieldState();
@@ -38,8 +53,12 @@ class _TextFieldState extends State<_TextField> {
   Widget build(BuildContext context) => TextField(
         controller: controller,
         onChanged: widget.onChanged,
+        onSubmitted: widget.onSubmitted,
+        minLines: widget.multiline ? 3 : 1,
+        maxLines: widget.multiline ? null : 1,
         decoration: InputDecoration(
           hintText: widget.hint,
+          labelText: widget.label,
           border: const OutlineInputBorder(),
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 16, vertical: 14),

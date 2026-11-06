@@ -1,32 +1,26 @@
 // The UI catalog contract: every widget ui.yaml can use and what each
 // property means. Pure Dart (no Flutter) so `tool/metacode.dart` validates
-// ui.yaml against exactly what the renderer implements.
+// ui.yaml against exactly what the renderer implements, and
+// `tool/reference.dart` documents it.
 //
 // Each entry here has a builder in lib/src/widgets/<name>.dart, registered in
 // lib/src/registry.dart. test/catalog_test.dart keeps the two in sync.
 
 enum PropKind {
-  /// One UI node: a widget id, a binding, an inline widget or literal text.
-  node,
+  node('node', 'a widget id, a binding, an inline widget, or literal text'),
+  nodes('nodes', 'a list of nodes'),
+  nodeMap('cases', 'a map of value -> node'),
+  action('action', 'name of an action'),
+  binding('binding', 'name of a binding'),
+  bindingOrLiteral('value', 'a binding name or a literal'),
+  literal('literal', 'a literal (number, text, list, map)'),
+  icon('icon', 'an icon name (see Icons)'),
+  color('color', 'a color (see Colors)'),
+  inline('inline', "another widget's properties, written inline");
 
-  /// A list of UI nodes.
-  nodes,
-
-  /// Must name an action.
-  action,
-
-  /// Must name a binding.
-  binding,
-
-  /// A binding name or a literal value.
-  bindingOrLiteral,
-
-  /// A literal value (number, string, color, style map...).
-  literal,
-
-  /// The properties of another catalog widget, written inline
-  /// (e.g. scaffold's `appBar: {title: ...}`). See [WidgetSpec.inline].
-  inline,
+  final String label;
+  final String doc;
+  const PropKind(this.label, this.doc);
 }
 
 /// How a widget may be written when its value is not a property map.
@@ -49,6 +43,7 @@ enum Shorthand {
 }
 
 class WidgetSpec {
+  final String group;
   final String description;
   final Map<String, PropKind> props;
   final Shorthand shorthand;
@@ -56,151 +51,426 @@ class WidgetSpec {
   /// For [PropKind.inline] props: which catalog widget's properties they take.
   final Map<String, String> inline;
 
+  /// Extra notes on specific props, shown in the reference.
+  final Map<String, String> notes;
+
   const WidgetSpec(
+    this.group,
     this.description,
     this.props, {
     this.shorthand = Shorthand.none,
     this.inline = const {},
+    this.notes = const {},
   });
 }
 
+const _layout = 'Layout';
+const _navigation = 'Navigation';
+const _content = 'Content';
+const _input = 'Input';
+
 const _alignment = {
-  'mainAxisAlignment': PropKind.literal, // start, end, center, spaceBetween, spaceAround, spaceEvenly
-  'crossAxisAlignment': PropKind.literal, // start, end, center, stretch
+  'mainAxisAlignment': PropKind.literal,
+  'crossAxisAlignment': PropKind.literal,
 };
 
-const _padding = {
-  'all': PropKind.literal,
-  'horizontal': PropKind.literal,
-  'vertical': PropKind.literal,
-  'left': PropKind.literal,
-  'right': PropKind.literal,
-  'top': PropKind.literal,
-  'bottom': PropKind.literal,
+const _alignmentNotes = {
+  'mainAxisAlignment': 'start, end, center, spaceBetween, spaceAround, spaceEvenly',
+  'crossAxisAlignment': 'start, end, center, stretch',
+};
+
+const _box = {
+  'padding': PropKind.literal,
+  'margin': PropKind.literal,
+  'color': PropKind.color,
+  'radius': PropKind.literal,
+  'width': PropKind.literal,
+  'height': PropKind.literal,
+};
+
+const _boxNotes = {
+  'padding': 'a number (all sides) or {all|horizontal|vertical|left|right|top|bottom}',
+  'margin': 'same as padding',
+  'radius': 'corner radius',
 };
 
 const widgetCatalog = <String, WidgetSpec>{
   // Layout
   'scaffold': WidgetSpec(
-    'A page: optional app bar, body and floating action button.',
+    _layout,
+    'A page: app bar, body, floating button and bottom navigation.',
     {
       'appBar': PropKind.inline,
       'body': PropKind.node,
       'floatingActionButton': PropKind.node,
+      'bottomBar': PropKind.node,
     },
     inline: {'appBar': 'appBar'},
+    notes: {'bottomBar': 'usually a navigationBar'},
   ),
-  'appBar': WidgetSpec('Top bar of a page.', {
+  'appBar': WidgetSpec(_layout, 'Top bar of a page.', {
     'title': PropKind.node,
     'actions': PropKind.nodes,
-    'backgroundColor': PropKind.literal,
+    'backgroundColor': PropKind.color,
   }),
   'column': WidgetSpec(
+    _layout,
     'Vertical list of children.',
-    {'children': PropKind.nodes, ..._alignment},
+    {'children': PropKind.nodes, 'spacing': PropKind.literal, ..._alignment},
     shorthand: Shorthand.nodes,
+    notes: _alignmentNotes,
   ),
   'row': WidgetSpec(
+    _layout,
     'Horizontal list of children.',
-    {'children': PropKind.nodes, ..._alignment},
+    {'children': PropKind.nodes, 'spacing': PropKind.literal, ..._alignment},
     shorthand: Shorthand.nodes,
+    notes: _alignmentNotes,
+  ),
+  'stack': WidgetSpec(
+    _layout,
+    'Children layered on top of each other.',
+    {'children': PropKind.nodes, 'alignment': PropKind.literal},
+    shorthand: Shorthand.nodes,
+    notes: {
+      'alignment': 'topLeft, topCenter, topRight, centerLeft, center, '
+          'centerRight, bottomLeft, bottomCenter, bottomRight',
+    },
   ),
   'wrap': WidgetSpec(
+    _layout,
     'Children that wrap onto new lines.',
-    {'children': PropKind.nodes, 'spacing': PropKind.literal},
+    {
+      'children': PropKind.nodes,
+      'spacing': PropKind.literal,
+      'runSpacing': PropKind.literal,
+    },
     shorthand: Shorthand.nodes,
   ),
   'expanded': WidgetSpec(
+    _layout,
     'Fills the remaining space inside a row or column.',
     {'child': PropKind.node, 'flex': PropKind.literal},
     shorthand: Shorthand.node,
   ),
+  'spacer': WidgetSpec(
+    _layout,
+    'Flexible empty space inside a row or column. Write `spacer: {}`.',
+    {'flex': PropKind.literal},
+  ),
   'center': WidgetSpec(
+    _layout,
     'Centers its child.',
     {'child': PropKind.node},
     shorthand: Shorthand.node,
   ),
   'padding': WidgetSpec(
-    'Space around a child. `all`, or `horizontal`/`vertical`, or each side.',
-    {'child': PropKind.node, ..._padding},
+    _layout,
+    'Space around a child.',
+    {
+      'child': PropKind.node,
+      'all': PropKind.literal,
+      'horizontal': PropKind.literal,
+      'vertical': PropKind.literal,
+      'left': PropKind.literal,
+      'right': PropKind.literal,
+      'top': PropKind.literal,
+      'bottom': PropKind.literal,
+    },
   ),
-  'sizedBox': WidgetSpec('Fixed-size empty space.', {
+  'sizedBox': WidgetSpec(_layout, 'Fixed-size box or empty space.', {
     'width': PropKind.literal,
     'height': PropKind.literal,
+    'child': PropKind.node,
   }),
+  'container': WidgetSpec(
+    _layout,
+    'A box with padding, margin, background color, size and rounded corners.',
+    {'child': PropKind.node, ..._box},
+    notes: _boxNotes,
+  ),
+  'card': WidgetSpec(
+    _layout,
+    'A raised surface. Tappable with `onTap`.',
+    {
+      'child': PropKind.node,
+      'padding': PropKind.literal,
+      'color': PropKind.color,
+      'onTap': PropKind.action,
+    },
+    shorthand: Shorthand.node,
+    notes: {'padding': 'inner padding, default 16'},
+  ),
+  'scroll': WidgetSpec(
+    _layout,
+    'Makes its child scrollable. Do not put `expanded` directly inside.',
+    {'child': PropKind.node, 'horizontal': PropKind.literal},
+    shorthand: Shorthand.node,
+  ),
+  'divider': WidgetSpec(_layout, 'A thin line. Write `divider: {}`.', {
+    'height': PropKind.literal,
+    'color': PropKind.color,
+  }),
+
+  // Navigation
+  'match': WidgetSpec(
+    _navigation,
+    'Shows the case matching a binding value (e.g. the current page). '
+        'Falls back to `default`.',
+    {
+      'value': PropKind.binding,
+      'cases': PropKind.nodeMap,
+      'default': PropKind.node,
+    },
+    notes: {'cases': 'keys are compared to the value as text (enum names work)'},
+  ),
+  'navigationBar': WidgetSpec(
+    _navigation,
+    'Bottom navigation. Put it in `scaffold.bottomBar`.',
+    {
+      'destinations': PropKind.literal,
+      'selected': PropKind.binding,
+      'onSelected': PropKind.action,
+    },
+    notes: {
+      'destinations': 'list of {icon, label}',
+      'selected': 'binding returning the selected index (int)',
+      'onSelected': 'gets `value` (int): the tapped index',
+    },
+  ),
 
   // Content
   'text': WidgetSpec(
-    'Text. `style`: {fontSize, fontWeight (bold, w100..w900), color}.',
-    {'value': PropKind.bindingOrLiteral, 'style': PropKind.literal},
+    _content,
+    'Text.',
+    {
+      'value': PropKind.bindingOrLiteral,
+      'style': PropKind.literal,
+      'align': PropKind.literal,
+      'maxLines': PropKind.literal,
+    },
     shorthand: Shorthand.value,
+    notes: {
+      'style': '{variant (see Text variants), fontSize, fontWeight '
+          '(bold, w100..w900), color, italic}',
+      'align': 'left, center, right',
+    },
   ),
-  'icon': WidgetSpec('A Material icon by name (see src/parsers.dart).', {
-    'name': PropKind.literal,
-    'size': PropKind.literal,
-    'color': PropKind.literal,
-  }),
+  'icon': WidgetSpec(
+    _content,
+    'An icon.',
+    {'name': PropKind.icon, 'size': PropKind.literal, 'color': PropKind.color},
+  ),
+  'image': WidgetSpec(
+    _content,
+    'An image from a URL (http...) or an app asset path.',
+    {
+      'src': PropKind.bindingOrLiteral,
+      'width': PropKind.literal,
+      'height': PropKind.literal,
+      'fit': PropKind.literal,
+      'radius': PropKind.literal,
+    },
+    shorthand: Shorthand.none,
+    notes: {'fit': 'cover, contain, fill, fitWidth, fitHeight'},
+  ),
+  'avatar': WidgetSpec(
+    _content,
+    'A circle with an image or short text (initials).',
+    {
+      'text': PropKind.bindingOrLiteral,
+      'image': PropKind.bindingOrLiteral,
+      'radius': PropKind.literal,
+      'color': PropKind.color,
+    },
+  ),
+  'progress': WidgetSpec(
+    _content,
+    'Progress indicator. Without `value` it spins forever.',
+    {'value': PropKind.bindingOrLiteral, 'circular': PropKind.literal},
+    notes: {'value': 'a number from 0 to 1', 'circular': 'true for a circle'},
+  ),
   'listView': WidgetSpec(
-    'Scrollable list. `data` binding returns a list; `itemBuilder` is built '
-        'per item with `index` available to bindings and actions.',
+    _content,
+    'Scrollable list. `itemBuilder` is built once per item of `data`.',
     {
       'data': PropKind.binding,
       'itemBuilder': PropKind.node,
       'empty': PropKind.node,
     },
+    notes: {
+      'data': 'binding returning a list',
+      'itemBuilder': 'bindings and actions inside get `index`',
+    },
   ),
-  'listTile': WidgetSpec('A list row.', {
+  'gridView': WidgetSpec(
+    _content,
+    'Scrollable grid. `itemBuilder` is built once per item of `data`.',
+    {
+      'data': PropKind.binding,
+      'itemBuilder': PropKind.node,
+      'empty': PropKind.node,
+      'columns': PropKind.literal,
+      'spacing': PropKind.literal,
+      'aspectRatio': PropKind.literal,
+    },
+    notes: {
+      'columns': 'default 2',
+      'aspectRatio': 'item width / height, default 1',
+      'itemBuilder': 'bindings and actions inside get `index`',
+    },
+  ),
+  'listTile': WidgetSpec(_content, 'A list row.', {
     'title': PropKind.node,
     'subtitle': PropKind.node,
     'leading': PropKind.node,
     'trailing': PropKind.node,
     'onTap': PropKind.action,
   }),
-  'if': WidgetSpec('Shows `then` when the binding is true, else `else`.', {
+  'if': WidgetSpec(_content, 'Shows `then` when the binding is true, else `else`.', {
     'condition': PropKind.binding,
     'then': PropKind.node,
     'else': PropKind.node,
   }),
 
   // Input
-  'textField': WidgetSpec('Text input; `onChanged` gets `value` (String).', {
-    'value': PropKind.bindingOrLiteral,
-    'hint': PropKind.literal,
-    'onChanged': PropKind.action,
-  }),
-  'checkbox': WidgetSpec('Checkbox; `onChanged` gets `value` (bool).', {
-    'value': PropKind.binding,
-    'onChanged': PropKind.action,
-  }),
-  'choiceChip': WidgetSpec('Selectable chip; `onSelected` gets `value` (bool).', {
-    'label': PropKind.node,
-    'selected': PropKind.binding,
-    'onSelected': PropKind.action,
-  }),
-  'iconButton': WidgetSpec('Icon that runs an action.', {
-    'icon': PropKind.literal,
+  'textField': WidgetSpec(
+    _input,
+    'Text input.',
+    {
+      'value': PropKind.bindingOrLiteral,
+      'hint': PropKind.literal,
+      'label': PropKind.literal,
+      'multiline': PropKind.literal,
+      'onChanged': PropKind.action,
+      'onSubmitted': PropKind.action,
+    },
+    notes: {'onChanged': 'gets `value` (String)', 'onSubmitted': 'gets `value` (String)'},
+  ),
+  'checkbox': WidgetSpec(
+    _input,
+    'Checkbox.',
+    {'value': PropKind.binding, 'onChanged': PropKind.action},
+    notes: {'onChanged': 'gets `value` (bool)'},
+  ),
+  'toggle': WidgetSpec(
+    _input,
+    'On/off switch, optionally with a label.',
+    {'value': PropKind.binding, 'label': PropKind.node, 'onChanged': PropKind.action},
+    notes: {'onChanged': 'gets `value` (bool)'},
+  ),
+  'slider': WidgetSpec(
+    _input,
+    'Pick a number in a range.',
+    {
+      'value': PropKind.binding,
+      'min': PropKind.literal,
+      'max': PropKind.literal,
+      'divisions': PropKind.literal,
+      'onChanged': PropKind.action,
+    },
+    notes: {'min': 'default 0', 'max': 'default 1', 'onChanged': 'gets `value` (double)'},
+  ),
+  'dropdown': WidgetSpec(
+    _input,
+    'Pick one option from a list.',
+    {
+      'value': PropKind.binding,
+      'options': PropKind.bindingOrLiteral,
+      'hint': PropKind.literal,
+      'onChanged': PropKind.action,
+    },
+    notes: {'options': 'list of strings', 'onChanged': 'gets `value` (String)'},
+  ),
+  'choiceChip': WidgetSpec(
+    _input,
+    'Selectable chip.',
+    {'label': PropKind.node, 'selected': PropKind.binding, 'onSelected': PropKind.action},
+    notes: {'onSelected': 'gets `value` (bool)'},
+  ),
+  'iconButton': WidgetSpec(_input, 'Icon that runs an action.', {
+    'icon': PropKind.icon,
     'tooltip': PropKind.literal,
+    'color': PropKind.color,
     'onPressed': PropKind.action,
   }),
-  'textButton': WidgetSpec('Flat button.', {
-    'text': PropKind.node,
-    'onPressed': PropKind.action,
-  }),
-  'elevatedButton': WidgetSpec('Raised button.', {
+  'filledButton': WidgetSpec(
+    _input,
+    'Primary button.',
+    {'text': PropKind.node, 'icon': PropKind.icon, 'onPressed': PropKind.action},
+  ),
+  'outlinedButton': WidgetSpec(
+    _input,
+    'Secondary button.',
+    {'text': PropKind.node, 'icon': PropKind.icon, 'onPressed': PropKind.action},
+  ),
+  'textButton': WidgetSpec(
+    _input,
+    'Low-emphasis button.',
+    {'text': PropKind.node, 'icon': PropKind.icon, 'onPressed': PropKind.action},
+  ),
+  'elevatedButton': WidgetSpec(_input, 'Raised button.', {
     'child': PropKind.node,
     'onPressed': PropKind.action,
   }),
-  'floatingActionButton': WidgetSpec('Round floating button.', {
+  'floatingActionButton': WidgetSpec(_input, 'Round floating button.', {
+    'icon': PropKind.icon,
     'child': PropKind.node,
     'onPressed': PropKind.action,
   }),
+  'tappable': WidgetSpec(
+    _input,
+    'Makes any child tappable.',
+    {'child': PropKind.node, 'onTap': PropKind.action},
+  ),
 };
 
 /// Event params an action or binding can ask for, by parameter name.
 ///
-/// - `index`: position of the current item inside a `listView`.
-/// - `value`: the new value from an input (`textField`, `checkbox`, ...).
+/// - `index`: position of the current item inside a `listView`/`gridView`.
+/// - `value`: the new value from an input (`textField`, `slider`, ...).
 const contextParams = {'index', 'value'};
+
+/// Icon names usable in [PropKind.icon] props. Mapped in src/parsers.dart.
+const iconNames = [
+  'add', 'remove', 'edit', 'delete', 'close', 'check', 'done', 'clear',
+  'search', 'settings', 'home', 'person', 'people', 'favorite',
+  'favoriteBorder', 'star', 'starBorder', 'share', 'menu', 'moreVert',
+  'moreHoriz', 'arrowBack', 'arrowForward', 'chevronLeft', 'chevronRight',
+  'expandMore', 'expandLess', 'refresh', 'info', 'warning', 'error', 'help',
+  'notifications', 'email', 'phone', 'calendar', 'schedule', 'alarm',
+  'location', 'map', 'camera', 'image', 'photo', 'play', 'pause', 'stop',
+  'music', 'shoppingCart', 'payment', 'wallet', 'list', 'grid', 'filter',
+  'sort', 'bookmark', 'label', 'flag', 'lock', 'visibility', 'visibilityOff',
+  'inbox', 'send', 'chat', 'attach', 'download', 'upload', 'cloud', 'folder',
+  'file', 'link', 'logout', 'login', 'lightMode', 'darkMode', 'timer',
+  'checkCircle', 'radioUnchecked', 'trendingUp', 'barChart', 'fitness',
+  'restaurant', 'local', 'work', 'school', 'pets', 'flight', 'car',
+];
+
+/// Theme color names usable in [PropKind.color] props, besides `#RRGGBB` and
+/// `#AARRGGBB`. Theme names follow the app's color scheme (light/dark).
+const colorNames = [
+  'primary', 'onPrimary', 'primaryContainer', 'onPrimaryContainer',
+  'secondary', 'onSecondary', 'secondaryContainer', 'onSecondaryContainer',
+  'tertiary', 'surface', 'onSurface', 'onSurfaceVariant', 'outline', 'error',
+  'transparent', 'white', 'black', 'grey', 'red', 'green', 'blue', 'orange',
+  'amber', 'purple', 'pink', 'teal',
+];
+
+/// Text style variants (`text.style.variant`), from the app's theme.
+const textVariants = [
+  'displayLarge', 'displayMedium', 'displaySmall', 'headlineLarge',
+  'headlineMedium', 'headlineSmall', 'titleLarge', 'titleMedium', 'titleSmall',
+  'bodyLarge', 'bodyMedium', 'bodySmall', 'labelLarge', 'labelMedium',
+  'labelSmall',
+];
+
+/// Whether [value] is a valid [PropKind.color].
+bool isColor(dynamic value) =>
+    value is String &&
+    (colorNames.contains(value) ||
+        RegExp(r'^#([0-9a-fA-F]{6}|[0-9a-fA-F]{8})$').hasMatch(value));
 
 /// Turns a widget's raw YAML value into its property map, expanding the
 /// shorthand form. Returns null when the value is not valid for the widget.

@@ -26,31 +26,34 @@ It validates everything, regenerates, type-checks and runs `metacode/test`. Repe
 
 Import `../generated/state.dart` for `State`, the model classes (`Task`...), enums and `copyWith`.
 
-## ui.yaml
+## Reference
 
-The widget catalog is `packages/app_ui/lib/spec.dart`: every widget, its props and their kinds. Read it before writing UI.
+**[REFERENCE.md](REFERENCE.md)** is the single spec: types, signatures, every widget with its props, icons, colors and text variants. It is generated from the catalog, so it is always current. Look things up there instead of reading `packages/`.
 
-- A string node is a widget id, else a binding, else literal text.
-- `action` props (`onPressed`, `onChanged`...) must name an action. `binding` props (`data`, `selected`, `condition`, checkbox `value`) must name a binding.
-- Inside `listView.itemBuilder`, bindings and actions get `index`. Inputs pass `value`.
-- Widget ids must not collide with binding or action names.
+Most common patterns:
 
 ```yaml
-widgets:
-  homePage:
-    scaffold:
-      appBar: {title: "Notes"}
-      body:
-        listView: {data: noteList, itemBuilder: noteTile, empty: "Nothing yet"}
-  noteTile:
-    listTile: {title: noteTitle, onTap: openNote}
+homePage:
+  scaffold:
+    appBar: {title: "Notes"}
+    body: {match: {value: currentPage, cases: {list: noteList, edit: noteEditor}}}
+    bottomBar: {navigationBar: {destinations: [{icon: list, label: Notes}, {icon: settings, label: Settings}], selected: pageIndex, onSelected: goToPage}}
+noteList:
+  listView: {data: notes, itemBuilder: noteTile, empty: "No notes"}
+noteTile:
+  card: {onTap: openNote, child: {text: {value: noteTitle, style: {variant: titleMedium}}}}
 ```
+
+- Multiple screens: keep the current page in state (an enum), show it with `match`, change it with actions.
+- `index` reaches bindings and actions inside `listView`/`gridView` items. Inputs pass `value`.
 
 ## dart_eval rules (the tool reports violations)
 
 - Type closure params: `where((Task t) => t.done)`.
 - Don't interpolate ints from `DateTime` getters. Use `toIso8601String()`.
 - `dart:` imports only. Private helpers need unique names across files.
+
+If the catalog lacks something, use the `metacode-add-widget` skill. Don't fake it in the app.
 
 ## Example: add a "priority" to tasks
 

@@ -110,6 +110,20 @@ class _UiValidator {
         }
       case PropKind.inline:
         widget(widgetCatalog[inline]!, value, path);
+      case PropKind.nodeMap:
+        if (value is! Map) return error(path, 'expected a map of value: node');
+        for (final entry in value.entries) {
+          node(entry.value, '$path.${entry.key}');
+        }
+      case PropKind.icon:
+        if (!iconNames.contains(value)) {
+          error(path, 'unknown icon "$value"; see Icons in REFERENCE.md');
+        }
+      case PropKind.color:
+        if (!isColor(value)) {
+          error(path, 'unknown color "$value"; use #RRGGBB or a name from '
+              'Colors in REFERENCE.md');
+        }
       case PropKind.bindingOrLiteral:
       case PropKind.literal:
         break;
