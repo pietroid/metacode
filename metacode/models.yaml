@@ -1,0 +1,12 @@
+# Type definitions used by the engine. The runtime is dynamic, but models
+# document the shape of state values.
+
+task:
+  title: string
+  done: boolean
+  createdAt: string
+
+filter:
+  - all
+  - open
+  - done

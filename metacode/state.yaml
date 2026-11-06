@@ -1,0 +1,13 @@
+state:
+  tasks:
+    - title: Buy milk
+      done: false
+      createdAt: 2026-11-05
+    - title: Walk the dog
+      done: true
+      createdAt: 2026-11-04
+    - title: he
+      done: false
+      createdAt: 2026-11-05
+  draft: oiiiii caramba que louco
+  filter: all

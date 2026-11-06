@@ -1,0 +1,24 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "metacode (macOS)",
+      "type": "dart",
+      "request": "launch",
+      "program": "lib/main.dart",
+      "deviceId": "macos",
+      "args": [
+        "--dart-define=METACODE_STATE_PATH=${workspaceFolder}/metacode/state.yaml"
+      ]
+    },
+    {
+      "name": "metacode (pick device)",
+      "type": "dart",
+      "request": "launch",
+      "program": "lib/main.dart",
+      "args": [
+        "--dart-define=METACODE_STATE_PATH=${workspaceFolder}/metacode/state.yaml"
+      ]
+    }
+  ]
+}

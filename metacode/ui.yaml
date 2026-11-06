@@ -1,0 +1,135 @@
+# UI definition. Each key under `widgets` is a widget identifier that the
+# engine can render. Bindings are Dart functions in the `bindings/` package;
+# actions are Dart functions in the `actions/` package.
+
+widgets:
+  homePage:
+    scaffold:
+      appBar:
+        title: "Task List"
+      body:
+        column:
+          - taskInput
+          - filterChips
+          - expanded:
+              taskList
+          - if:
+              condition: hasCompletedTasks
+              then:
+                clearCompletedButton
+
+  taskInput:
+    padding:
+      all: 16
+      child:
+        row:
+          - expanded:
+              draftField
+          - sizedBox:
+              width: 12
+          - addButton
+
+  filterChips:
+    padding:
+      horizontal: 16
+      bottom: 8
+      child:
+        wrap:
+          spacing: 8
+          children:
+            - filterChipAll
+            - filterChipOpen
+            - filterChipDone
+
+  filterChipAll:
+    choiceChip:
+      label: "All"
+      selected: filterIsAll
+      onSelected: setFilterAll
+
+  filterChipOpen:
+    choiceChip:
+      label: "Open"
+      selected: filterIsOpen
+      onSelected: setFilterOpen
+
+  filterChipDone:
+    choiceChip:
+      label: "Done"
+      selected: filterIsDone
+      onSelected: setFilterDone
+
+  draftField:
+    textField:
+      value: draftValue
+      hint: "What needs to be done?"
+      onChanged: updateDraft
+
+  addButton:
+    iconButton:
+      icon: add
+      tooltip: "Add task"
+      onPressed: addTask
+
+  taskList:
+    listView:
+      data: taskList
+      empty: emptyState
+      itemBuilder: taskTile
+
+  taskTile:
+    listTile:
+      title: taskTitle
+      subtitle: taskDate
+      leading: taskCheckbox
+      trailing: deleteButton
+
+  taskCheckbox:
+    checkbox:
+      value: taskDone
+      onChanged: toggleTask
+
+  deleteButton:
+    iconButton:
+      icon: delete
+      tooltip: "Delete task"
+      onPressed: deleteTask
+
+  emptyState:
+    center:
+      padding:
+        all: 32
+      child:
+        column:
+          - icon:
+              name: inbox
+              size: 64
+              color: "#9CA3AF"
+          - sizedBox:
+              height: 16
+          - text:
+              value: "No tasks yet"
+              style:
+                fontSize: 18
+                color: "#6B7280"
+          - text:
+              value: "Add one above to get started"
+              style:
+                fontSize: 14
+                color: "#9CA3AF"
+
+  clearCompletedButton:
+    padding:
+      horizontal: 16
+      vertical: 8
+      child:
+        row:
+          - expanded:
+              text:
+                value: clearCompletedText
+                style:
+                  fontSize: 14
+                  color: "#6B7280"
+          - textButton:
+              text: "Clear completed"
+              onPressed: clearCompleted
