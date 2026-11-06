@@ -5,6 +5,8 @@ description: Change the Metacode app (models, state, UI, actions, bindings, test
 
 # Change the app
 
+**First**, record the starting point for the cost report (see the end of this file): run `date +%s`, and call the `session_cost` tool if it's available (`mcp__usage-bars__session_cost`).
+
 **Only edit `metacode/`** (never `metacode/generated/`). Then run:
 
 ```sh
@@ -63,3 +65,15 @@ If the catalog lacks something, use the `metacode-add-widget` skill. Don't fake 
 4. `ui.yaml`: `trailing: {iconButton: {icon: add, onPressed: bumpPriority}}`.
 5. `test/actions_test.dart`: `expect(app.bumpPriority(sample(), 0).tasks[0].priority, 1);`.
 6. `tool/check.sh`.
+
+## Report cost (always, at the end)
+
+After `tool/check.sh` prints `OK`, run `date +%s` and call `session_cost` again. End your reply with one line:
+
+```
+⏱ 2m 14s · $0.42 · 85.3k tokens · 3 check runs
+```
+
+- Time: the difference between the two `date +%s` readings.
+- Cost and tokens: the difference between the two `session_cost` readings (total tokens). If the tool isn't available, write `cost n/a`.
+- Check runs: how many times you ran `tool/check.sh`.
