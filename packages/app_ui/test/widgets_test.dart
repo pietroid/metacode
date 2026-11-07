@@ -49,6 +49,9 @@ class FakeUi implements Ui {
       : null;
 
   @override
+  Widget app(String name) => Text('app $name');
+
+  @override
   Ui withParams(Map<String, dynamic> extra) =>
       FakeUi(context, bindings, actions, calls, {...params, ...extra});
 }

@@ -13,10 +13,10 @@ class Param {
   const Param(this.name, this.type);
 }
 
-/// A public top-level function from actions/ or bindings/.
+/// A public top-level function from actions/ or relations/.
 class UserFunction {
   final String name;
-  final String file; // relative to the metacode/ folder
+  final String file; // relative to its app folder
   final String returnType;
   final List<Param> params; // context params, after the State param
 
@@ -41,11 +41,11 @@ const actionParamTypes = {
 /// Every function must take the `State` as its first parameter; further
 /// parameters are matched by name: context params (see [contextParams]) and,
 /// for actions, `emit` and `core` (see [actionParamTypes]). Actions return
-/// `Future<void>` and change the state only through `emit`; bindings return
-/// something the engine can hand to the UI.
+/// `Future<void>` and change the state only through `emit`; relations return
+/// something the engine can hand to the UI (relations).
 List<UserFunction> readFunctions(
   Directory dir,
-  String kind, // 'actions' or 'bindings'
+  String kind, // 'actions' or 'relations'
   Map<String, Model> models,
   Issues issues,
 ) {
@@ -157,7 +157,7 @@ UserFunction? _readFunction(
       return null;
     }
   } else if (!isEncodable(returnType, models)) {
-    fail('bindings must return a model, enum, primitive or List of those, '
+    fail('relations must return a model, enum, primitive or List of those, '
         'got "$returnType"');
     return null;
   }

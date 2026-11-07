@@ -1,6 +1,6 @@
 ---
 name: metacode-add-widget
-description: Add a new widget (or a new property on an existing widget) to the Metacode UI catalog in packages/app_ui so ui.yaml can use it. Use when the app needs a widget, icon, or prop the catalog lacks.
+description: Add a new widget (or a new property on an existing widget) to the Metacode UI catalog in packages/app_ui so ui/ can use it. Use when the app needs a widget, icon, or prop the catalog lacks.
 ---
 
 # Add a widget to the catalog
@@ -27,8 +27,8 @@ Prop kinds (validated by the tool):
 - `nodes`: a list of children.
 - `nodeMap`: a map of value to node.
 - `action`: names an action.
-- `binding`: names a binding.
-- `bindingOrLiteral`: a binding name or a literal.
+- `binding`: names a relation (a function in `relations/`; the code keeps the old name).
+- `bindingOrLiteral`: a relation name or a literal.
 - `literal`: anything.
 - `icon`: a name from `iconNames`.
 - `color`: `#hex` or a name from `colorNames`.

@@ -1,0 +1,9 @@
+food:
+  name: string
+  kcal: number
+  protein: number      # grams per serving
+  count: number        # servings eaten today
+
+state:
+  calorieGoal: number
+  foods: list(food)

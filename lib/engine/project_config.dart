@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:app_ui/style.dart';
 import 'package:flutter/services.dart' show rootBundle;
@@ -7,9 +8,11 @@ import 'package:yaml/yaml.dart';
 import 'navigation.dart';
 import 'program.dart';
 
-/// In-memory representation of a Metacode project.
+/// In-memory representation of a Metacode app and, recursively, its
+/// sub-apps (`apps/<name>/`).
 ///
-/// Everything here is produced or validated by `dart run tool/metacode.dart`.
+/// Everything here is produced or validated by `dart run tool/metacode.dart`,
+/// which writes the whole tree to `metacode/generated/bundle.json`.
 class ProjectConfig {
   final String projectName;
   final String description;
@@ -17,11 +20,18 @@ class ProjectConfig {
   final Map<String, dynamic> initialState;
   final MetacodeProgram program;
 
-  /// navigation.yaml (validated by the tool), or a single `homePage`.
+  /// navigation/ (validated by the tool), or a single `homePage`.
   final Navigation navigation;
 
-  /// style.yaml merged over the Metacode style (see app_ui's style.dart).
+  /// style/ merged over the Metacode style (see app_ui's style.dart).
   final Map<String, dynamic> style;
+
+  /// Whether the app has its own style/. Sub-apps without one inherit the
+  /// theme of the app that embeds them.
+  final bool hasOwnStyle;
+
+  /// Sub-apps by folder name, embedded with the `app:` widget.
+  final Map<String, ProjectConfig> apps;
 
   ProjectConfig({
     required this.projectName,
@@ -31,43 +41,36 @@ class ProjectConfig {
     required this.program,
     Map<String, dynamic>? style,
     Navigation? navigation,
+    this.apps = const {},
   })  : style = style ?? resolveStyle(null),
+        hasOwnStyle = style != null,
         navigation = navigation ?? Navigation.fallback;
 
-  static Future<ProjectConfig> load() async {
-    final project = (await _loadYaml('metacode/project.yaml'))!;
-    final ui = (await _loadYaml('metacode/ui.yaml'))!;
-    final stateDoc = (await _loadYaml('metacode/state.yaml'))!;
-    final style = await _loadYaml('metacode/style.yaml', optional: true);
-    final navigation =
-        await _loadYaml('metacode/navigation.yaml', optional: true);
+  /// The engine's only project asset.
+  static const bundleAsset = 'metacode/generated/bundle.json';
 
-    final bytecode = await rootBundle.load('metacode/generated/program.evc');
-    final manifest = jsonDecode(
-      await rootBundle.loadString('metacode/generated/manifest.json'),
-    ) as Map<String, dynamic>;
+  static Future<ProjectConfig> load() async => ProjectConfig.fromBundle(
+      jsonDecode(await rootBundle.loadString(bundleAsset)) as Map);
 
+  /// Builds the app tree from `generated/bundle.json`.
+  factory ProjectConfig.fromBundle(Map json) {
+    final manifest = Map<String, dynamic>.from(json['manifest'] as Map);
+    final bytecode = base64Decode(json['program'] as String);
+    final style = json['style'];
+    final navigation = json['navigation'];
     return ProjectConfig(
-      projectName: project['name'] ?? 'metacode',
-      description: project['description'] ?? '',
-      ui: ui,
-      initialState: Map<String, dynamic>.from(stateDoc['state'] ?? {}),
-      program: MetacodeProgram(bytecode, manifest),
-      style: resolveStyle(style),
+      projectName: json['name'] as String? ?? 'metacode',
+      description: json['description'] as String? ?? '',
+      ui: Map<String, dynamic>.from(json['ui'] as Map),
+      initialState: Map<String, dynamic>.from(json['state'] as Map? ?? {}),
+      program: MetacodeProgram(ByteData.sublistView(bytecode), manifest),
+      style: style == null ? null : resolveStyle(style),
       navigation: navigation == null ? null : Navigation.parse(navigation),
+      apps: {
+        for (final e in ((json['apps'] as Map?) ?? {}).entries)
+          e.key.toString(): ProjectConfig.fromBundle(e.value as Map),
+      },
     );
-  }
-
-  static Future<Map<String, dynamic>?> _loadYaml(String asset,
-      {bool optional = false}) async {
-    final String text;
-    try {
-      text = await rootBundle.loadString(asset);
-    } catch (_) {
-      if (optional) return null;
-      rethrow;
-    }
-    return yamlToDart(loadYaml(text));
   }
 }
 

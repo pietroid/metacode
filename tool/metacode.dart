@@ -3,98 +3,44 @@
 //   dart run tool/metacode.dart          validate + generate
 //   dart run tool/metacode.dart check    validate only
 //
-// Steps: models.yaml -> state.yaml (against the `state` model) -> actions and
-// bindings (signatures) -> ui.yaml -> navigation.yaml (optional, routes) ->
-// style.yaml (optional, design tokens) -> generated/state.dart (+ StateDelta),
-// generated/core.dart (Core, Routes), generated/main.dart -> compiled
-// generated/program.evc + generated/manifest.json, and
-// generated/test_app.dart (typed test harness for metacode/test/).
+// An app is a folder (see tool/src/project.dart): app.yaml plus models/,
+// state/, ui/, navigation/, style/ (every .yaml in a folder is merged),
+// actions/ and relations/ (Dart), test/, and sub-apps in apps/<name>/, which
+// are apps themselves (recursive).
+//
+// Per app: models -> state (against the `state` model) -> actions and
+// relations (signatures) -> ui (widgets, and `app:` names against apps/) ->
+// navigation (optional) -> style (optional). Then, per app:
+// generated/state.dart (+ StateDelta), generated/core.dart (Core, Routes),
+// generated/main.dart, compiled generated/program.evc + manifest.json, and
+// generated/test_app.dart (typed test harness for its test/). The root also
+// gets generated/bundle.json: the whole app tree, which the engine loads as
+// its only asset (besides images).
 
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:app_ui/style.dart';
 import 'package:dart_eval/dart_eval.dart';
 import 'package:metacode/engine/host_plugin.dart';
-import 'package:metacode/engine/navigation.dart';
-import 'package:yaml/yaml.dart';
 
 import 'src/codegen.dart';
-import 'src/functions.dart';
 import 'src/issues.dart';
-import 'src/models.dart';
-import 'src/ui.dart';
+import 'src/project.dart';
 
 const projectDir = 'metacode';
 
 void main(List<String> args) {
   final checkOnly = args.contains('check');
   final issues = Issues();
-  final root = Directory(projectDir);
 
-  dynamic readYaml(String name) {
-    final file = File('$projectDir/$name');
-    if (!file.existsSync()) {
-      issues.error(name, '', 'file not found');
-      return null;
-    }
-    try {
-      return loadYaml(file.readAsStringSync());
-    } on YamlException catch (e) {
-      issues.error(name, '', e.message);
-      return null;
-    }
-  }
-
-  final models = parseModels(readYaml('models.yaml'), issues);
-  validateState(readYaml('state.yaml'), models, issues);
-
-  final actions = readFunctions(
-      Directory('${root.path}/actions'), 'actions', models, issues);
-  final bindings = readFunctions(
-      Directory('${root.path}/bindings'), 'bindings', models, issues);
-
-  final seen = <String, String>{};
-  for (final fn in [...actions, ...bindings]) {
-    final other = seen[fn.name];
-    if (other != null) {
-      issues.error(fn.file, fn.name, 'also defined in $other; names must be unique');
-    }
-    seen[fn.name] = fn.file;
-  }
-
-  final ui = readYaml('ui.yaml');
-  final hasNavigation = File('$projectDir/navigation.yaml').existsSync();
-  validateUi(
-    ui,
-    bindings.map((f) => f.name).toSet(),
-    actions.map((f) => f.name).toSet(),
-    issues,
-    requireHomePage: !hasNavigation,
-  );
-
-  var navigation = Navigation.fallback;
-  if (hasNavigation) {
-    final parsed = Navigation.parse(readYaml('navigation.yaml'),
-        (path, message) => issues.error('navigation.yaml', path, message));
-    final widgets = ui is Map && ui['widgets'] is Map ? ui['widgets'] as Map : {};
-    for (final route in parsed?.routes.values ?? const <RouteSpec>[]) {
-      if (!widgets.containsKey(route.widget)) {
-        issues.error('navigation.yaml', 'routes.${route.name}',
-            '"${route.widget}" is not a widget in ui.yaml');
-      }
-    }
-    navigation = parsed ?? navigation;
-  }
-
-  if (File('$projectDir/style.yaml').existsSync()) {
-    for (final (path, message) in validateStyle(readYaml('style.yaml'))) {
-      issues.error('style.yaml', path, message);
-    }
-  }
+  final root = loadApp(Directory(projectDir), projectDir, issues);
 
   if (!issues.hasErrors && !checkOnly) {
-    _generate(root, models, actions, bindings, navigation, issues);
+    final bundle = _generate(root, issues);
+    if (bundle != null && !issues.hasErrors) {
+      File('$projectDir/generated/bundle.json')
+          .writeAsStringSync(jsonEncode(bundle));
+    }
   }
 
   for (final w in issues.warnings) {
@@ -107,64 +53,84 @@ void main(List<String> args) {
     stderr.writeln('\n${issues.errors.length} error(s).');
     exit(1);
   }
+  final apps = root.tree.toList();
   stdout.writeln(checkOnly
-      ? 'OK: project is valid.'
-      : 'OK: ${actions.length} actions, ${bindings.length} bindings -> '
-          '$projectDir/generated/');
+      ? 'OK: ${apps.length} app(s) valid.'
+      : 'OK: ${apps.map((a) => '${a.label}: ${a.actions.length} actions, '
+          '${a.bindings.length} relations').join('; ')} -> generated/');
 }
 
-void _generate(
-  Directory root,
-  Map<String, Model> models,
-  List<UserFunction> actions,
-  List<UserFunction> bindings,
-  Navigation navigation,
-  Issues issues,
-) {
+/// Generates [app] and its sub-apps; returns its bundle node (null if
+/// compiling failed).
+Map<String, dynamic>? _generate(AppProject app, Issues issues) {
+  final apps = <String, dynamic>{};
+  for (final child in app.apps.values) {
+    final node = _generate(child, issues);
+    if (node == null) return null;
+    apps[child.name] = node;
+  }
+
+  final dir = app.dir.path;
   final userFiles = {
-    for (final fn in [...actions, ...bindings]) fn.file,
+    for (final fn in [...app.actions, ...app.bindings]) fn.file,
   }.toList()
     ..sort();
 
   final generated = {
-    'generated/state.dart': generateState(models),
-    'generated/core.dart': generateCore(navigation.routes.keys),
-    'generated/main.dart': generateMain(actions, bindings, userFiles, models),
-    'generated/test_app.dart': generateTestApp(actions, bindings, models),
+    'generated/state.dart': generateState(app.models),
+    'generated/core.dart': generateCore(app.navigation.routes.keys),
+    'generated/main.dart':
+        generateMain(app.actions, app.bindings, userFiles, app.models),
+    'generated/test_app.dart':
+        generateTestApp(app.actions, app.bindings, app.models, app.path),
   };
 
-  final outDir = Directory('${root.path}/generated')..createSync();
-  generated.forEach((path, code) => File('${root.path}/$path').writeAsStringSync(code));
+  final outDir = Directory('$dir/generated')..createSync();
+  generated.forEach((path, code) => File('$dir/$path').writeAsStringSync(code));
 
-  // The engine runs one bundled library. dart_eval mis-resolves some calls
-  // across libraries (e.g. an action calling a binding), so user files stay
-  // separate for editing and are merged here for execution.
+  // The engine runs one bundled library per app. dart_eval mis-resolves some
+  // calls across libraries (e.g. an action calling a relation), so user files
+  // stay separate for editing and are merged here for execution.
   final bundle = _bundle([
     generated['generated/state.dart']!,
     generated['generated/core.dart']!,
-    for (final f in _allDartFiles(root, ['actions', 'bindings']))
-      File('${root.path}/$f').readAsStringSync(),
+    for (final f in _allDartFiles(app.dir, ['actions', 'relations']))
+      File('$dir/$f').readAsStringSync(),
     generated['generated/main.dart']!,
   ]);
   // (test_app.dart runs on the host, not in the interpreter.)
 
+  final List<int> bytecode;
   try {
     final program = (Compiler()..addPlugin(const HostPlugin())).compile({
       'metacode': {'main.dart': bundle},
     });
-    File('${outDir.path}/program.evc').writeAsBytesSync(program.write());
+    bytecode = program.write();
+    File('${outDir.path}/program.evc').writeAsBytesSync(bytecode);
   } catch (e) {
-    issues.error('actions/bindings', '',
+    issues.scoped(app.prefix).error('actions/relations', '',
         'could not compile for the engine (dart_eval): $e');
-    return;
+    return null;
   }
 
   final manifest = {
-    'actions': [for (final f in actions) f.name],
-    'bindings': [for (final f in bindings) f.name],
+    'actions': [for (final f in app.actions) f.name],
+    'bindings': [for (final f in app.bindings) f.name],
   };
   File('${outDir.path}/manifest.json').writeAsStringSync(
       '${const JsonEncoder.withIndent('  ').convert(manifest)}\n');
+
+  return {
+    'name': app.title,
+    'description': app.description,
+    'ui': {'widgets': app.widgets},
+    'state': app.state,
+    'navigation': app.navigationDoc,
+    'style': app.styleDoc,
+    'manifest': manifest,
+    'program': base64Encode(bytecode),
+    'apps': apps,
+  };
 }
 
 /// Merges Dart sources into one library: relative imports are dropped (all
@@ -196,10 +162,12 @@ List<String> _allDartFiles(Directory root, List<String> folders) {
   return [
     for (final folder in folders)
       if (Directory('${root.path}/$folder').existsSync())
-        for (final f in Directory('${root.path}/$folder')
-            .listSync(recursive: true)
-            .whereType<File>()
-            .where((f) => f.path.endsWith('.dart')))
+        for (final f in (Directory('${root.path}/$folder')
+                .listSync(recursive: true)
+                .whereType<File>()
+                .where((f) => f.path.endsWith('.dart'))
+                .toList()
+              ..sort((a, b) => a.path.compareTo(b.path))))
           f.path.substring(root.path.length + 1),
   ];
 }

@@ -1,0 +1,27 @@
+state:
+  calorieGoal: 1800
+  foods:
+    - name: "Oatmeal with banana"
+      kcal: 350
+      protein: 12
+      count: 4
+    - name: "Grilled chicken salad"
+      kcal: 420
+      protein: 38
+      count: 0
+    - name: "Rice and beans"
+      kcal: 480
+      protein: 16
+      count: 0
+    - name: "Two eggs"
+      kcal: 155
+      protein: 13
+      count: 0
+    - name: "Greek yogurt"
+      kcal: 150
+      protein: 15
+      count: 0
+    - name: "Apple"
+      kcal: 95
+      protein: 0
+      count: 1

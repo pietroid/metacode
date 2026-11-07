@@ -1,0 +1,48 @@
+# Food tracker. Embedded in the landing page's examples carousel
+# (`app: food`), so the entry is a plain column, not a scaffold.
+
+widgets:
+  homePage:
+    column:
+      crossAxisAlignment: stretch
+      spacing: 10
+      children:
+        - row:
+            children:
+              - expanded: {text: {value: "Today", style: {variant: titleLarge}}}
+              - textButton: {text: "Clear", onPressed: clearFoods}
+        - text: {value: caloriesText, style: {variant: titleSmall}}
+        - progress: {value: caloriesProgress}
+        - text: {value: proteinText, style: {variant: bodySmall, color: ink3}}
+        - tip
+        - listView: {data: foodList, itemBuilder: foodRow}
+
+  tip:
+    container:
+      color: fill
+      radius: 12
+      padding: 12
+      child:
+        row:
+          spacing: 10
+          crossAxisAlignment: start
+          children:
+            - icon: {name: sparkle, size: 18, color: primary}
+            - expanded: {text: {value: foodTip, style: {variant: bodySmall}}}
+
+  foodRow:
+    padding:
+      vertical: 2
+      child:
+        row:
+          spacing: 4
+          children:
+            - expanded:
+                column:
+                  crossAxisAlignment: start
+                  children:
+                    - text: {value: foodName, style: {variant: titleSmall}}
+                    - text: {value: foodInfo, style: {variant: bodySmall, color: ink3}}
+            - iconButton: {icon: remove, tooltip: "Remove one", onPressed: removeFood}
+            - sizedBox: {width: 20, child: {text: {value: foodCount, style: {variant: labelLarge}, align: center}}}
+            - iconButton: {icon: add, tooltip: "Add one", onPressed: addFood}

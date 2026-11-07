@@ -6,36 +6,40 @@ A Flutter engine that runs an app described in YAML plus small Dart functions.
 
 | Path | What |
 |---|---|
-| `metacode/` | **The app.** `models.yaml`, `state.yaml`, `ui.yaml`, `navigation.yaml` (routes), `style.yaml` (design tokens), `actions/`, `bindings/`, `test/` |
-| `metacode/generated/` | Output of the tool. Never edit. |
-| `tool/metacode.dart` | CLI: validate + generate. `tool/reference.dart`: writes REFERENCE.md. `tool/src/`: `models.dart` (models/state), `functions.dart` (action/binding signatures, via analyzer), `ui.dart` (ui.yaml), `codegen.dart` (generated files) |
-| `packages/app_ui/` | **UI catalog.** `lib/spec.dart` (pure-Dart contract the tool validates against), `lib/style.dart` (style.yaml tokens + the default Metacode style, pure Dart), `lib/src/theme.dart` (tokens -> ThemeData + `MetacodeTokens`), `lib/src/widgets/*.dart` (one builder each), `lib/src/registry.dart`, `lib/src/parsers.dart`, `fonts/` (bundled type) |
-| `lib/engine/` | Runtime: `app.dart` (MetacodeApp), `program.dart` (loads bytecode, calls actions/bindings), `host.dart` + `host_plugin.dart` (bridge from interpreted code to the engine), `core_host.dart` (emit, http, Navigator), `navigation.dart` (navigation.yaml, pure Dart), `ui_renderer.dart` (resolves nodes, implements `Ui`), `state_bloc.dart` (state + persistence), `project_config.dart` (asset loading) |
-| `test/` | Engine tests (renders ui.yaml and taps) |
+| `metacode/` | **The root app** (the my-own.app website). An app is a folder: `app.yaml`, `models/`, `state/`, `ui/`, `navigation/` (routes), `style/` (design tokens), `actions/`, `relations/`, `test/`, and **sub-apps** in `apps/<name>/` with the same layout (recursive). Every `.yaml` in a folder is merged, so folders can be split (`ui/hero.yaml`...). |
+| `metacode/apps/` | Sub-apps: `food`, `music`, `work`, `plants` (the carousel examples), embedded with the `app: <name>` widget. Each has its own state, actions and relations. |
+| `*/generated/` | Output of the tool, per app. Never edit. The root's `generated/bundle.json` is the whole tree; the engine loads only that. |
+| `tool/metacode.dart` | CLI: validate + generate. `tool/reference.dart`: writes REFERENCE.md. `tool/src/`: `project.dart` (app folders, merging, recursion), `models.dart` (models/state), `functions.dart` (action/relation signatures, via analyzer), `ui.dart` (ui/), `codegen.dart` (generated files) |
+| `packages/app_ui/` | **UI catalog.** `lib/spec.dart` (pure-Dart contract the tool validates against), `lib/style.dart` (style tokens + the default Metacode style, pure Dart), `lib/src/theme.dart` (tokens -> ThemeData + `MetacodeTokens`), `lib/src/widgets/*.dart` (one builder each), `lib/src/registry.dart`, `lib/src/parsers.dart`, `fonts/` (bundled type) |
+| `lib/engine/` | Runtime: `app.dart` (MetacodeApp), `app_runtime.dart` (one running app: state, program, renderer, host; creates sub-apps), `program.dart` (loads bytecode, calls actions/relations), `host.dart` + `host_plugin.dart` (bridge from interpreted code to the engine), `core_host.dart` (emit, http, Navigator), `navigation.dart` (navigation/, pure Dart), `ui_renderer.dart` (resolves nodes, caches relation values per state, implements `Ui`), `state_bloc.dart` (state + persistence, per app), `project_config.dart` (loads `bundle.json`) |
+| `test/` | Engine tests (renders the bundle and taps) |
 
 ## Flow
 
 ```
-models.yaml ──────┐
-state.yaml ───────┼─ tool/metacode.dart ─> generated/state.dart     (typed State, StateDelta, models, enums)
+per app (root and each apps/<name>/):
+models/ ──────────┐
+state/ ───────────┼─ tool/metacode.dart ─> generated/state.dart     (typed State, StateDelta, models, enums)
 actions/ ─────────┤   (validate all)       generated/core.dart      (Core: api + navigator, Routes)
-bindings/ ────────┤                        generated/main.dart      (JSON bridge, engine-facing)
-ui.yaml ──────────┤                        generated/program.evc    (dart_eval bytecode, bundled)
-navigation.yaml ──┤                        generated/test_app.dart  (typed test harness, fake host)
-style.yaml ───────┘   (navigation/style: validated; the engine loads them as assets)
+relations/ ───────┤                        generated/main.dart      (JSON bridge, engine-facing)
+ui/ ──────────────┤                        generated/program.evc    (dart_eval bytecode)
+navigation/ ──────┤                        generated/test_app.dart  (typed test harness, fake host)
+style/ ───────────┘
+root only:                                 generated/bundle.json    (the whole tree: ui, state, routes, style, bytecode)
 
-Engine: state (Map) ─> binding ─> app_ui widget ─> tap ─> action(state, emit, core)
-        ─> emit(StateDelta) ─> merged into state ─> state.yaml
+Engine: state (Map) ─> relation ─> app_ui widget ─> tap ─> action(state, emit, core)
+        ─> emit(StateDelta) ─> merged into that app's state ─> its state.yaml
         core.api / core.navigator ─> hostCall ─> CoreHost (http, Navigator: pages, sheets, dialogs)
+        `app: food` ─> AppRuntime for apps/food (own StateBloc, program, renderer); its changes rebuild only it
 ```
 
 - Actions: `Future<void> name(State state, [void Function(StateDelta) emit], [Core core], [int index], [T value])`; params after State match by name. State changes only via `emit`.
-- Bindings: `T name(State state, [int index])`, return a primitive, model, enum or List of those.
-- User code runs in dart_eval. The tool bundles all user files into one library before compiling.
+- Relations (formerly bindings): `T name(State state, [int index])`, return a primitive, model, enum or List of those. Internally (spec `PropKind.binding`, `Ui.binding`, manifest `bindings`) the old name stays.
+- User code runs in dart_eval. The tool bundles each app's files into one library before compiling; apps don't share code.
 
 ## Commands (never launch the app to verify)
 
-- `tool/check.sh`: app loop (generate, analyze `metacode/`, `metacode/test`). About 15s.
+- `tool/check.sh`: app loop (generate, analyze `metacode/`, every app's `test/`). About 15s.
 - `tool/check_engine.sh`: everything (generate, analyze all, all tests).
 
 ## Reference

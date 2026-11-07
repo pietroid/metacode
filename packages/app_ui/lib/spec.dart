@@ -11,16 +11,17 @@ import 'style.dart';
 export 'style.dart';
 
 enum PropKind {
-  node('node', 'a widget id, a binding, an inline widget, or literal text'),
+  node('node', 'a widget id, a relation, an inline widget, or literal text'),
   nodes('nodes', 'a list of nodes'),
   nodeMap('cases', 'a map of value -> node'),
   action('action', 'name of an action'),
-  binding('binding', 'name of a binding'),
-  bindingOrLiteral('value', 'a binding name or a literal'),
+  binding('relation', 'name of a relation (a function in relations/)'),
+  bindingOrLiteral('value', 'a relation name or a literal'),
   literal('literal', 'a literal (number, text, list, map)'),
   icon('icon', 'an icon name (see Icons)'),
   color('color', 'a color (see Colors)'),
-  inline('inline', "another widget's properties, written inline");
+  inline('inline', "another widget's properties, written inline"),
+  app('app', 'name of a sub-app (a folder in apps/)');
 
   final String label;
   final String doc;
@@ -40,7 +41,10 @@ enum Shorthand {
   nodes('children'),
 
   /// `text: "Hello"` or `text: someBinding`.
-  value('value');
+  value('value'),
+
+  /// `app: food`.
+  name('name');
 
   final String? prop;
   const Shorthand(this.prop);
@@ -233,10 +237,19 @@ const widgetCatalog = <String, WidgetSpec>{
     'color': PropKind.color,
   }),
 
+  'app': WidgetSpec(
+    _layout,
+    'Embeds a sub-app from `apps/<name>/`: its initial page, with its own '
+        'state, actions and relations. It inherits the theme unless it has a '
+        'style/ folder.',
+    {'name': PropKind.app},
+    shorthand: Shorthand.name,
+  ),
+
   // Navigation
   'match': WidgetSpec(
     _navigation,
-    'Shows the case matching a binding value (e.g. the current page). '
+    'Shows the case matching a relation value (e.g. the current page). '
         'Falls back to `default`.',
     {
       'value': PropKind.binding,
@@ -255,7 +268,7 @@ const widgetCatalog = <String, WidgetSpec>{
     },
     notes: {
       'destinations': 'list of {icon, label}',
-      'selected': 'binding returning the selected index (int)',
+      'selected': 'relation returning the selected index (int)',
       'onSelected': 'gets `value` (int): the tapped index',
     },
   ),
@@ -273,7 +286,7 @@ const widgetCatalog = <String, WidgetSpec>{
     },
     shorthand: Shorthand.value,
     notes: {
-      'spans': 'instead of `value`, runs of text with their own style: a list of strings or {value, style}; each value is a binding or literal, each style overrides `style` (e.g. {color: primary})',
+      'spans': 'instead of `value`, runs of text with their own style: a list of strings or {value, style}; each value is a relation or literal, each style overrides `style` (e.g. {color: primary})',
       'style': '{variant (see Text variants), fontSize, fontWeight '
           '(bold, w100..w900), color, italic}',
       'align': 'left, center, right',
@@ -329,8 +342,8 @@ const widgetCatalog = <String, WidgetSpec>{
       'empty': PropKind.node,
     },
     notes: {
-      'data': 'binding returning a list',
-      'itemBuilder': 'bindings and actions inside get `index`',
+      'data': 'relation returning a list',
+      'itemBuilder': 'relations and actions inside get `index`',
     },
   ),
   'gridView': WidgetSpec(
@@ -347,7 +360,7 @@ const widgetCatalog = <String, WidgetSpec>{
     notes: {
       'columns': 'default 2',
       'aspectRatio': 'item width / height, default 1',
-      'itemBuilder': 'bindings and actions inside get `index`',
+      'itemBuilder': 'relations and actions inside get `index`',
     },
   ),
   'listTile': WidgetSpec(_content, 'A list row.', {
@@ -357,7 +370,7 @@ const widgetCatalog = <String, WidgetSpec>{
     'trailing': PropKind.node,
     'onTap': PropKind.action,
   }),
-  'if': WidgetSpec(_content, 'Shows `then` when the binding is true, else `else`.', {
+  'if': WidgetSpec(_content, 'Shows `then` when the relation is true, else `else`.', {
     'condition': PropKind.binding,
     'then': PropKind.node,
     'else': PropKind.node,
@@ -458,7 +471,7 @@ const widgetCatalog = <String, WidgetSpec>{
   ),
 };
 
-/// Event params an action or binding can ask for, by parameter name.
+/// Event params an action or relation can ask for, by parameter name.
 ///
 /// - `index`: position of the current item inside a `listView`/`gridView`.
 /// - `value`: the new value from an input (`textField`, `slider`, ...).

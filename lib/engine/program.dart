@@ -53,9 +53,22 @@ class MetacodeProgram {
 
   dynamic _execute(String function, Map<String, dynamic> state, Map params) =>
       _runtime.executeLib(_library, function, [
-        $String(jsonEncode(state)),
-        $String(jsonEncode(params)),
+        $String(_encode(state)),
+        $String(params.isEmpty ? '{}' : jsonEncode(params)),
       ]);
+
+  // A build evaluates many relations on the same state map (the engine
+  // replaces the map on every change, never mutates it), so encode it once.
+  Map<String, dynamic>? _encodedState;
+  String _encodedJson = '';
+
+  String _encode(Map<String, dynamic> state) {
+    if (!identical(state, _encodedState)) {
+      _encodedState = state;
+      _encodedJson = jsonEncode(state);
+    }
+    return _encodedJson;
+  }
 }
 
 class _NoHost implements MetacodeHost {

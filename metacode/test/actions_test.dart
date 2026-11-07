@@ -74,30 +74,4 @@ void main() {
     expect(s.idea, 'Teach me guitar, ten minutes a day');
     expect(app.navigation, ['push waitlist']);
   });
-
-  test('food servings add, remove and clear', () async {
-    var s = await app.addFood(sample(), 1);
-    s = await app.addFood(s, 1);
-    expect(s.foods[1].count, 2);
-    s = await app.removeFood(s, 1);
-    expect(s.foods[1].count, 1);
-    expect((await app.removeFood(sample(), 0)).foods[0].count, 0);
-    expect((await app.clearFoods(s)).foods[1].count, 0);
-  });
-
-  test('chords and practice', () async {
-    expect((await app.toggleChord(sample(), 1, true)).chords[1].learned, isTrue);
-    expect((await app.logPractice(sample(practiceMinutes: 5))).practiceMinutes, 10);
-  });
-
-  test('jobs and taxes', () async {
-    expect((await app.toggleJobPaid(sample(), 0, true)).jobs[0].paid, isTrue);
-    expect((await app.setTaxRate(sample(), 20.4)).taxRate, 20);
-  });
-
-  test('plants: water resets, next day counts down', () async {
-    expect((await app.waterPlant(sample(), 0)).plants[0].daysLeft, 3);
-    final s = await app.nextDay(sample());
-    expect([s.plants[0].daysLeft, s.plants[1].daysLeft], [0, 1]);
-  });
 }

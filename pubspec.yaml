@@ -64,14 +64,11 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
+  # The tool writes the whole app tree (every app's config, initial state
+  # and bytecode, sub-apps included) to one file, so adding an app needs no
+  # change here. Images live in metacode/assets/.
   assets:
-    - metacode/project.yaml
-    - metacode/state.yaml
-    - metacode/ui.yaml
-    - metacode/style.yaml
-    - metacode/navigation.yaml
-    - metacode/generated/program.evc
-    - metacode/generated/manifest.json
+    - metacode/generated/bundle.json
     - metacode/assets/
 
   # An image asset can refer to one or more resolution-specific "variants", see

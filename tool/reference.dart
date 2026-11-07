@@ -22,25 +22,38 @@ void main() {
         'packages/app_ui/lib/spec.dart and tool/src. Do not edit. -->')
     ..writeln()
     ..writeln('Contents: [Files](#files) · [Types](#types) · '
-        '[Actions and bindings](#actions-and-bindings) · [Core: api and navigator](#core-api-and-navigator) · [ui.yaml](#uiyaml) · '
+        '[Actions and relations](#actions-and-relations) · [Core: api and navigator](#core-api-and-navigator) · [ui.yaml](#uiyaml) · '
         '[Widgets](#widgets) · [Icons](#icons) · [Colors](#colors) · '
         '[Text variants](#text-variants) · [Style](#style) · '
         '[Interpreter rules](#interpreter-rules)')
     ..writeln()
     ..writeln('## Files')
     ..writeln()
-    ..writeln('All in `metacode/`. Never edit `generated/`.')
+    ..writeln('An app is a folder. The root app is `metacode/`; sub-apps live in `apps/<name>/` and have the same layout (recursive). Never edit `generated/`.')
     ..writeln()
-    ..writeln('| File | Holds |')
+    ..writeln('```')
+    ..writeln('app.yaml            name, description')
+    ..writeln('models/models.yaml  state/state.yaml  ui/ui.yaml  navigation/navigation.yaml  style/style.yaml')
+    ..writeln('actions/*.dart      relations/*.dart  test/')
+    ..writeln('apps/<name>/        sub-apps (same layout)')
+    ..writeln('```')
+    ..writeln()
+    ..writeln('Every `.yaml` in a folder is read and merged, so a big folder can be split (`ui/hero.yaml`, `ui/waitlist.yaml`). Top-level keys (widget ids, model names, state fields) must not repeat across files.')
+    ..writeln()
+    ..writeln('| Folder | Holds |')
     ..writeln('|---|---|')
-    ..writeln('| `models.yaml` | Models and enums. The reserved `state` model types state.yaml. |')
-    ..writeln('| `state.yaml` | `state:` initial values, validated against the `state` model. |')
-    ..writeln('| `ui.yaml` | `widgets:` map of id -> widget. The entry is the `initial` route of navigation.yaml (else `homePage`). |')
-    ..writeln('| `navigation.yaml` | Routes (pages, bottom sheets, dialogs) actions open with `core.navigator`. Optional. |')
-    ..writeln('| `style.yaml` | Design tokens: colors (light/dark), fonts, type, radius, spacing. Optional keys; see [Style](#style). |')
+    ..writeln('| `app.yaml` | `name`, `description`. |')
+    ..writeln('| `models/` | Models and enums. The reserved `state` model types the state. |')
+    ..writeln('| `state/` | `state:` initial values, validated against the `state` model. |')
+    ..writeln('| `ui/` | `widgets:` map of id -> widget, one namespace across files. The entry is the `initial` route of navigation/ (else `homePage`). |')
+    ..writeln('| `navigation/` | Routes (pages, bottom sheets, dialogs) actions open with `core.navigator`. Optional. |')
+    ..writeln('| `style/` | Design tokens: colors (light/dark), fonts, type, radius, spacing. Optional; a sub-app without it inherits the theme. See [Style](#style). |')
     ..writeln('| `actions/*.dart` | `Future<void>` functions that change the state with `emit(StateDelta(...))`. |')
-    ..writeln('| `bindings/*.dart` | Functions that return a value for the UI. |')
+    ..writeln('| `relations/*.dart` | Functions that return a value for the UI. |')
     ..writeln('| `test/*_test.dart` | Tests through `app.<function>(...)` (see `test/fixtures.dart`). Actions are async: `(await app.addTask(s)).tasks`; `app.emitted`, `app.navigation`, `app.requests` record the last action and `app.api = (method, url, body) => ApiResponse(...)` fakes the api. |')
+    ..writeln('| `apps/<name>/` | A sub-app. Embed it in ui/ with `app: <name>`: it runs with its own state, actions and relations (it can\'t see the parent\'s, and vice versa). |')
+    ..writeln()
+    ..writeln('Images go in the root `metacode/assets/` (`src: metacode/assets/x.jpg`), for every app.')
     ..writeln()
     ..writeln('## Types')
     ..writeln()
@@ -78,11 +91,11 @@ void main() {
         '(`Task(title: ..., tags: [...])`) and `copyWith(...)`. Import them with '
         "`import '../generated/state.dart';`.")
     ..writeln()
-    ..writeln('## Actions and bindings')
+    ..writeln('## Actions and relations')
     ..writeln()
     ..writeln('```dart')
     ..writeln('Future<void> actionName(State state, [void Function(StateDelta) emit], [Core core], [int index], [<type> value])')
-    ..writeln('T bindingName(State state, [int index])   // returns a value for the UI')
+    ..writeln('T relationName(State state, [int index])   // returns a value for the UI')
     ..writeln('```')
     ..writeln()
     ..writeln('```dart')
@@ -104,8 +117,8 @@ void main() {
   out
     ..writeln('- Actions never return a state. `StateDelta` (generated next to `State`) has every State field, all optional; set only the ones that change. Top-level fields are replaced whole, so for a list or model, change `state`\'s copy and emit it (`StateDelta(tasks: state.tasks)`). A delta can\'t set a field to null.')
     ..writeln('- `state` is a fresh copy taken when the action starts; it does not see its own emits.')
-    ..writeln('- Bindings return a primitive, a model, an enum, or a `List` of those (nullable allowed).')
-    ..writeln('- Names must be unique across all actions and bindings. Private helpers start with `_`.')
+    ..writeln('- Relations return a primitive, a model, an enum, or a `List` of those (nullable allowed).')
+    ..writeln('- Names must be unique across the app\'s actions and relations (each sub-app is separate). Private helpers start with `_`.')
     ..writeln()
     ..writeln('## Core: api and navigator')
     ..writeln()
@@ -131,12 +144,12 @@ void main() {
     ..writeln()
     ..writeln('Don\'t await `push` when the action should keep going while the route is open.')
     ..writeln()
-    ..writeln('### navigation.yaml')
+    ..writeln('### navigation/navigation.yaml')
     ..writeln()
     ..writeln('```yaml')
     ..writeln('initial: home                        # must be a page')
     ..writeln('routes:')
-    ..writeln('  home: homePage                     # page (shorthand); the value is a ui.yaml widget id')
+    ..writeln('  home: homePage                     # page (shorthand); the value is a ui/ widget id')
     ..writeln('  settings: {page: settingsPage}')
     ..writeln('  rate: {bottomSheet: rateSheet}')
     ..writeln('  confirmDelete: {dialog: confirmDeleteDialog}')
@@ -145,7 +158,7 @@ void main() {
     ..writeln('- Each route becomes a constant: `Routes.rate`. Sheets and dialogs size to their content and scroll if long; give them padding.')
     ..writeln('- Tab-style screens inside one page stay as state + `match` (see below); routes are for things that open on top.')
     ..writeln()
-    ..writeln('## ui.yaml')
+    ..writeln('## ui/ui.yaml')
     ..writeln()
     ..writeln('```yaml')
     ..writeln('widgets:')
@@ -156,12 +169,13 @@ void main() {
     ..writeln('  noteList:')
     ..writeln('    listView: {data: notes, itemBuilder: noteTile, empty: "No notes"}')
     ..writeln('  noteTile:')
-    ..writeln('    listTile: {title: noteTitle, onTap: openNote}   # binding, action')
+    ..writeln('    listTile: {title: noteTitle, onTap: openNote}   # relation, action')
     ..writeln('```')
     ..writeln()
     ..writeln('- A widget is a map with **one key**, its type: `text: {...}`.')
-    ..writeln('- A string node is: a widget id, else a binding (its value is shown as text), else literal text.')
-    ..writeln('- Widget ids must not equal a binding or action name.')
+    ..writeln('- A string node is: a widget id, else a relation (its value is shown as text), else literal text.')
+    ..writeln('- Widget ids must not equal a relation or action name.')
+    ..writeln('- `app: food` embeds the sub-app `apps/food/` (its initial page). Use it anywhere a widget goes, e.g. as a `match` case.')
     ..writeln('- Some widgets have a shorthand (shown below): `column: [a, b]`, `expanded: child`, `text: "Hi"`.')
     ..writeln('- Widgets with no required props are written with an empty map: `divider: {}`.')
     ..writeln()
@@ -201,6 +215,7 @@ void main() {
         final example = switch (spec.shorthand) {
           Shorthand.nodes => '$name: [a, b]',
           Shorthand.node => '$name: child',
+          Shorthand.name => '$name: food',
           _ => '$name: "Hello"',
         };
         out.writeln('Shorthand: `$example` (sets `$shorthand`).');
@@ -249,11 +264,11 @@ void main() {
     ..writeln()
     ..writeln('## Style')
     ..writeln()
-    ..writeln('`metacode/style.yaml` holds the design tokens every widget is themed '
+    ..writeln('`style/style.yaml` holds the design tokens every widget is themed '
         'from. Every key is optional: what is missing falls back to the Metacode '
         'style (classic and quiet: near-black ink, soft neutral page, white cards, '
         'one deep blue accent). Change the look '
-        'here, not by adding colors and sizes all over ui.yaml.')
+        'here, not by adding colors and sizes all over ui/.')
     ..writeln()
     ..writeln('```yaml')
     ..writeln('theme: system            # ${themeModes.join(' | ')}')
@@ -291,12 +306,12 @@ void main() {
     ..writeln()
     ..writeln('## Interpreter rules')
     ..writeln()
-    ..writeln('Actions and bindings run in dart_eval. `tool/check.sh` reports violations.')
+    ..writeln('Actions and relations run in dart_eval. `tool/check.sh` reports violations.')
     ..writeln()
     ..writeln('- Type closure parameters: `tasks.where((Task t) => t.done)`, not `(t) => ...`.')
     ..writeln('- Don\'t interpolate ints from `DateTime` getters (`\'\${d.month}\'`). Use `toIso8601String()`.')
-    ..writeln('- Only `dart:` imports and the project\'s own files.')
-    ..writeln('- All files are bundled together, so private helper names must be unique across files.');
+    ..writeln('- Only `dart:` imports and the app\'s own files (a sub-app can\'t import its parent\'s).')
+    ..writeln('- An app\'s files are bundled together, so private helper names must be unique across its files.');
 
   File(output).writeAsStringSync(out.toString());
   stdout.writeln('Wrote $output');

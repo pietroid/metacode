@@ -42,9 +42,9 @@ void main() {
   });
 
   test("the app's style.yaml is valid and spells out every token", () {
-    // metacode/style.yaml documents the template: it may change values, but
+    // metacode/style/style.yaml documents the template: it may change values, but
     // it names every key of the Metacode style so nothing is hidden.
-    final yaml = loadYaml(File('../../metacode/style.yaml').readAsStringSync()) as Map;
+    final yaml = loadYaml(File('../../metacode/style/style.yaml').readAsStringSync()) as Map;
     expect(validateStyle(yaml), isEmpty);
     final missing = <String>[];
     void walk(Map template, Map? app, String path) {

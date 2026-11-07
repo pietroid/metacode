@@ -1,0 +1,18 @@
+{
+  "actions": [
+    "toggleJobPaid",
+    "setTaxRate"
+  ],
+  "bindings": [
+    "jobList",
+    "jobClient",
+    "jobTask",
+    "jobAmount",
+    "jobPaid",
+    "receivedText",
+    "waitingText",
+    "taxRateValue",
+    "taxText",
+    "workTip"
+  ]
+}

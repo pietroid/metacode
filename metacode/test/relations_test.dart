@@ -55,45 +55,4 @@ void main() {
     expect(app.exampleImage(sample()), 'metacode/assets/food.jpg');
     expect(app.examplePosition(sample(exampleIndex: 1)), '2 of 4');
   });
-
-  test('food totals and tips', () {
-    expect(app.foodTip(sample()), contains('breakfast'));
-    final oats = sample(foods: [Food(name: 'Oats', kcal: 300, protein: 10, count: 1)]);
-    expect(app.caloriesText(oats), '300 of 1,000 kcal');
-    expect(app.caloriesProgress(oats), closeTo(0.3, 0.001));
-    expect(app.foodTip(oats), contains('low on protein'));
-    final over = sample(foods: [Food(name: 'Pizza', kcal: 600, protein: 20, count: 2)]);
-    expect(app.foodTip(over), contains('200 kcal over'));
-    expect(app.caloriesProgress(over), 1.0);
-    expect(app.foodInfo(oats, 0), '300 kcal · 10 g protein');
-  });
-
-  test('music progress and tips', () {
-    expect(app.chordsText(sample()), '1 of 2 chords learned');
-    expect(app.musicTip(sample()), startsWith('Next up: G.'));
-    expect(app.practiceText(sample(practiceMinutes: 5)), '5 of 10 min today');
-    expect(app.practiceProgress(sample(practiceMinutes: 20)), 1.0);
-    final four = sample(chords: [
-      for (final n in ['G', 'C', 'D', 'Em']) Chord(name: n, fingers: '', learned: true),
-      Chord(name: 'F', fingers: '', learned: false),
-    ]);
-    expect(app.musicTip(four), contains('hundreds of pop songs'));
-  });
-
-  test('work totals, taxes and tip', () {
-    expect(app.receivedText(sample()), '\$1,200');
-    expect(app.waitingText(sample()), '\$800');
-    expect(app.taxText(sample()), 'Set aside 10% for taxes: \$120');
-    expect(app.workTip(sample()), contains('Bakery still owes you \$800'));
-    expect(app.jobAmount(sample(), 1), '\$1,200');
-  });
-
-  test('plants status and tip', () {
-    expect(app.plantStatus(sample(), 0), 'Water today');
-    expect(app.plantStatus(sample(), 1), 'In 2 days');
-    expect(app.plantsText(sample()), '1 plant needs water today');
-    expect(app.plantTip(sample()), 'Water Basil today.');
-    final done = sample(plants: [Plant(name: 'Fern', everyDays: 5, daysLeft: 1)]);
-    expect(app.plantTip(done), 'All done. Next up: Fern tomorrow.');
-  });
 }

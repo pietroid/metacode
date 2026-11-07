@@ -1,0 +1,17 @@
+{
+  "actions": [
+    "addFood",
+    "removeFood",
+    "clearFoods"
+  ],
+  "bindings": [
+    "foodList",
+    "foodName",
+    "foodInfo",
+    "foodCount",
+    "caloriesText",
+    "proteinText",
+    "caloriesProgress",
+    "foodTip"
+  ]
+}

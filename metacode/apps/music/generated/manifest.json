@@ -1,0 +1,17 @@
+{
+  "actions": [
+    "toggleChord",
+    "logPractice"
+  ],
+  "bindings": [
+    "chordList",
+    "chordName",
+    "chordFingers",
+    "chordLearned",
+    "chordsText",
+    "chordsProgress",
+    "musicTip",
+    "practiceText",
+    "practiceProgress"
+  ]
+}

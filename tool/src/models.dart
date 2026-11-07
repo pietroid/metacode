@@ -61,9 +61,9 @@ class EnumModel extends Model {
 /// The reserved model that types state.yaml.
 const stateModelName = 'state';
 
-/// Parses and validates models.yaml.
+/// Validates the models (every file in models/, merged).
 Map<String, Model> parseModels(dynamic doc, Issues issues) {
-  const file = 'models.yaml';
+  const file = 'models/';
   final models = <String, Model>{};
 
   if (doc is! Map) {
@@ -154,13 +154,13 @@ void _checkResolves(
     _checkResolves(type.item!, models, issues, path);
   } else if (!primitives.containsKey(type.name) &&
       !models.containsKey(type.name)) {
-    issues.error('models.yaml', path, 'unknown type "${type.name}"');
+    issues.error('models/', path, 'unknown type "${type.name}"');
   }
 }
 
-/// Validates state.yaml's `state` map against the reserved `state` model.
+/// Validates the merged `state` map (state/) against the reserved `state` model.
 void validateState(dynamic doc, Map<String, Model> models, Issues issues) {
-  const file = 'state.yaml';
+  const file = 'state/';
   final stateModel = models[stateModelName];
   if (stateModel is! ClassModel) return;
 
@@ -174,7 +174,7 @@ void validateState(dynamic doc, Map<String, Model> models, Issues issues) {
 
 void _validateValue(dynamic value, TypeRef type, Map<String, Model> models,
     Issues issues, String path) {
-  const file = 'state.yaml';
+  const file = 'state/';
   void fail(String message) => issues.error(file, path, message);
 
   if (value == null) {

@@ -1,5 +1,5 @@
-// Renders metacode/ui.yaml through the engine + app_ui with the compiled
-// program and the app's style.yaml, and drives it with taps.
+// Renders the app (metacode/generated/bundle.json: every app, sub-apps
+// included) through the engine + app_ui, and drives it with taps.
 // Regenerate first: tool/check_engine.sh.
 
 import 'dart:convert';
@@ -13,22 +13,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:metacode/engine/app.dart';
-import 'package:metacode/engine/navigation.dart';
-import 'package:metacode/engine/program.dart';
 import 'package:metacode/engine/project_config.dart';
 import 'package:metacode/engine/state_bloc.dart';
 import 'package:yaml/yaml.dart';
 
 void main() {
-  final program = MetacodeProgram(
-    ByteData.sublistView(File('metacode/generated/program.evc').readAsBytesSync()),
-    jsonDecode(File('metacode/generated/manifest.json').readAsStringSync()),
-  );
-  final ui = yamlToDart(loadYaml(File('metacode/ui.yaml').readAsStringSync()));
-  final appStyle =
-      resolveStyle(loadYaml(File('metacode/style.yaml').readAsStringSync()));
-  final navigation = Navigation.parse(
-      loadYaml(File('metacode/navigation.yaml').readAsStringSync()))!;
+  final bundle = jsonDecode(
+      File('metacode/generated/bundle.json').readAsStringSync()) as Map;
+  final styleYaml = loadYaml(File('metacode/style/style.yaml').readAsStringSync()) as Map;
 
   // Real type and icons, so layout (and overflow) matches the app, not the
   // test font.
@@ -72,15 +64,13 @@ void main() {
     tester.platformDispatcher.accessibilityFeaturesTestValue =
         const FakeAccessibilityFeatures(disableAnimations: true);
     addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
-    final config = ProjectConfig(
-      projectName: 'test',
-      description: '',
-      ui: ui,
-      initialState: state,
-      program: program,
-      style: style ?? appStyle,
-      navigation: navigation,
-    );
+    // A fresh tree per pump: each app's program keeps its host and each
+    // sub-app starts from its own initial state.
+    final config = ProjectConfig.fromBundle({
+      ...bundle,
+      'state': state,
+      'style': ?style,
+    });
     final bloc = StateBloc(config: config, initial: state);
     await tester.pumpWidget(BlocProvider.value(
       value: bloc,
@@ -93,9 +83,8 @@ void main() {
     return bloc;
   }
 
-  // state.yaml (so new fields are always there), with a fresh hero and form.
-  final yamlState = Map<String, dynamic>.from(
-      yamlToDart(loadYaml(File('metacode/state.yaml').readAsStringSync()))['state'] as Map);
+  // state/ (so new fields are always there), with a fresh hero and form.
+  final yamlState = Map<String, dynamic>.from(bundle['state'] as Map);
   Map<String, dynamic> state() => {
         ...jsonDecode(jsonEncode(yamlState)) as Map<String, dynamic>,
         'idea': 'Remind me to water my plants',
@@ -183,11 +172,11 @@ void main() {
       for (final brightness in Brightness.values) {
         await pump(tester, state(),
             brightness: brightness,
-            style: resolveStyle({
-              ...loadYaml(File('metacode/style.yaml').readAsStringSync()) as Map,
+            style: {
+              ...styleYaml,
               'theme': brightness.name,
               'fonts': {'display': family, 'text': family},
-            }));
+            });
         expect(tester.takeException(), isNull, reason: '$family $brightness');
       }
     }
@@ -222,6 +211,8 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(water);
     await tester.pumpAndSettle();
-    expect((bloc.state['plants'] as List).first['daysLeft'], 7);
+    // The plants sub-app has its own state: Monstera is due again in 7 days.
+    expect(find.text('In 7 days'), findsOneWidget);
+    expect(bloc.state.containsKey('plants'), isFalse);
   });
 }

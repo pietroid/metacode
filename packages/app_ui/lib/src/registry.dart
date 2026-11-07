@@ -1,4 +1,5 @@
 import 'ui.dart';
+import 'widgets/app.dart';
 import 'widgets/app_bar.dart';
 import 'widgets/avatar.dart';
 import 'widgets/card.dart';
@@ -58,6 +59,7 @@ const widgetBuilders = <String, UiWidgetBuilder>{
   'sizedBox': buildSizedBox,
   'container': buildContainer,
   'responsive': buildResponsive,
+  'app': buildApp,
   'card': buildCard,
   'scroll': buildScroll,
   'divider': buildDivider,

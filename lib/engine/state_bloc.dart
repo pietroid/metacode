@@ -7,49 +7,81 @@ import 'package:yaml/yaml.dart';
 
 import 'project_config.dart';
 
-/// The single source of truth for the application's YAML state.
+/// The state of one app (each sub-app has its own), persisted as YAML.
 ///
-/// It loads [state.yaml] from the app's documents directory on startup
-/// (copying the bundled initial state if none exists yet) and writes the
-/// file back on every change.
+/// [initialize] loads `state.yaml` from the app documents folder
+/// (`<projectName>/state.yaml`, and `<projectName>/apps/<name>/state.yaml`
+/// for sub-apps), starting from the bundled initial state when there is
+/// none, and the file is written back on every change.
 class StateBloc extends Cubit<Map<String, dynamic>> {
   final ProjectConfig config;
+
+  /// Folders under the documents folder: `[metacode]`,
+  /// `[metacode, apps, food]`.
+  final List<String> path;
   File? _stateFile;
 
-  StateBloc({required this.config, Map<String, dynamic>? initial})
-      : super(initial ?? {});
+  StateBloc({
+    required this.config,
+    Map<String, dynamic>? initial,
+    List<String>? path,
+  })  : path = path ?? [config.projectName],
+        super(initial ?? {});
 
-  /// When set (via `--dart-define=METACODE_STATE_PATH=...`), state is read
-  /// from and written to this file directly — e.g. the project's own
-  /// `metacode/state.yaml` during development.
+  /// When set (via `--dart-define=METACODE_STATE_PATH=...`), the root app's
+  /// state is read from and written to this file directly, e.g. the
+  /// project's own `metacode/state/state.yaml` during development.
   static const _overridePath = String.fromEnvironment('METACODE_STATE_PATH');
 
+  /// Whether changes are written to disk (after [initialize]).
+  bool get persistent => _stateFile != null;
+
+  /// The state of the sub-app [name], persisted next to this one when this
+  /// one is.
+  StateBloc child(String name, ProjectConfig config) {
+    final bloc = StateBloc(
+      config: config,
+      initial: Map<String, dynamic>.from(config.initialState),
+      path: [...path, 'apps', name],
+    );
+    if (persistent) bloc.initialize();
+    return bloc;
+  }
+
   Future<void> initialize() async {
-    if (_overridePath.isNotEmpty) {
+    if (_overridePath.isNotEmpty && path.length == 1) {
       _stateFile = File(_overridePath);
       if (_stateFile!.existsSync()) {
-        final doc = loadYaml(await _stateFile!.readAsString());
-        emit(Map<String, dynamic>.from(yamlToDart(doc['state']) ?? {}));
+        await _load();
         return;
       }
     }
 
     final dir = await getApplicationDocumentsDirectory();
-    final folder = Directory('${dir.path}/${config.projectName}');
+    final folder = Directory([dir.path, ...path].join('/'));
     if (!folder.existsSync()) {
       folder.createSync(recursive: true);
     }
     _stateFile = File('${folder.path}/state.yaml');
 
     if (_stateFile!.existsSync()) {
-      final content = await _stateFile!.readAsString();
-      final doc = loadYaml(content);
-      emit(Map<String, dynamic>.from(yamlToDart(doc['state']) ?? {}));
+      await _load();
     } else {
       final initial = Map<String, dynamic>.from(config.initialState);
       emit(initial);
       await _writeState(initial);
     }
+  }
+
+  /// Saved values over the bundled initial state, so fields added since the
+  /// file was written get their initial value.
+  Future<void> _load() async {
+    final doc = loadYaml(await _stateFile!.readAsString());
+    final saved = doc is Map ? yamlToDart(doc['state']) : null;
+    emit({
+      ...config.initialState,
+      if (saved is Map) ...Map<String, dynamic>.from(saved),
+    });
   }
 
   Future<void> setState(Map<String, dynamic> newState) async {

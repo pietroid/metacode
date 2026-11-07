@@ -1,0 +1,45 @@
+# Plant watering. Embedded in the landing page's examples carousel
+# (`app: plants`).
+
+widgets:
+  homePage:
+    column:
+      crossAxisAlignment: stretch
+      spacing: 10
+      children:
+        - row:
+            children:
+              - expanded: {text: {value: "Plant care", style: {variant: titleLarge}}}
+              - textButton: {text: "Next day", icon: arrowForward, onPressed: nextDay}
+        - text: {value: plantsText, style: {variant: titleSmall}}
+        - tip
+        - listView: {data: plantList, itemBuilder: plantRow}
+
+  tip:
+    container:
+      color: fill
+      radius: 12
+      padding: 12
+      child:
+        row:
+          spacing: 10
+          crossAxisAlignment: start
+          children:
+            - icon: {name: sparkle, size: 18, color: primary}
+            - expanded: {text: {value: plantTip, style: {variant: bodySmall}}}
+
+  plantRow:
+    padding:
+      vertical: 2
+      child:
+        row:
+          spacing: 8
+          children:
+            - expanded:
+                column:
+                  crossAxisAlignment: start
+                  children:
+                    - text: {value: plantName, style: {variant: titleSmall}}
+                    - text: {value: plantSchedule, style: {variant: bodySmall, color: ink3}}
+            - text: {value: plantStatus, style: {variant: labelMedium, color: ink2}}
+            - iconButton: {icon: drop, tooltip: "Watered", color: primary, onPressed: waterPlant}

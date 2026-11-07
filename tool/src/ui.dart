@@ -2,49 +2,72 @@ import 'package:app_ui/spec.dart';
 
 import 'issues.dart';
 
-/// Validates ui.yaml against the widget catalog, the bindings and the actions.
-void validateUi(
-  dynamic doc,
+/// Validates the ui/ files against the widget catalog, the relations, the
+/// actions and the sub-apps. [files] maps each file (`ui/home.yaml`) to its
+/// parsed document; their `widgets:` maps share one namespace.
+///
+/// Returns every widget by id (empty on errors in the file shapes).
+Map<String, dynamic> validateUi(
+  Map<String, dynamic> files,
   Set<String> bindings,
   Set<String> actions,
+  Set<String> apps,
   Issues issues, {
-  bool requireHomePage = true, // false when navigation.yaml names the pages
+  bool requireHomePage = true, // false when navigation/ names the pages
 }) {
-  const file = 'ui.yaml';
-  if (doc is! Map || doc['widgets'] is! Map) {
-    issues.error(file, '', 'must contain a top-level "widgets:" map');
-    return;
-  }
-  final widgets = Map<String, dynamic>.from(doc['widgets'] as Map);
-
-  if (requireHomePage && !widgets.containsKey('homePage')) {
-    issues.error(file, 'widgets', 'missing "homePage", the entry widget');
-  }
-  for (final id in widgets.keys) {
-    if (bindings.contains(id) || actions.contains(id)) {
-      issues.error(file, 'widgets.$id',
-          'widget id is also the name of a ${bindings.contains(id) ? 'binding' : 'action'}');
+  final widgets = <String, dynamic>{};
+  final fileOf = <String, String>{};
+  for (final entry in files.entries) {
+    final file = entry.key;
+    final doc = entry.value;
+    if (doc is! Map || doc['widgets'] is! Map) {
+      issues.error(file, '', 'must contain a top-level "widgets:" map');
+      continue;
+    }
+    for (final w in (doc['widgets'] as Map).entries) {
+      final id = w.key.toString();
+      final other = fileOf[id];
+      if (other != null) {
+        issues.error(file, 'widgets.$id', 'also defined in $other');
+        continue;
+      }
+      fileOf[id] = file;
+      widgets[id] = w.value;
     }
   }
 
-  final v = _UiValidator(widgets, bindings, actions, issues);
-  for (final entry in widgets.entries) {
-    v.node(entry.value, 'widgets.${entry.key}');
+  if (requireHomePage && !widgets.containsKey('homePage')) {
+    issues.error('ui/', 'widgets', 'missing "homePage", the entry widget');
   }
+  for (final id in widgets.keys) {
+    if (bindings.contains(id) || actions.contains(id)) {
+      issues.error(fileOf[id]!, 'widgets.$id',
+          'widget id is also the name of a ${bindings.contains(id) ? 'relation' : 'action'}');
+    }
+  }
+
+  for (final entry in widgets.entries) {
+    _UiValidator(fileOf[entry.key]!, widgets, bindings, actions, apps, issues)
+        .node(entry.value, 'widgets.${entry.key}');
+  }
+  return widgets;
 }
 
 class _UiValidator {
+  final String file;
   final Map<String, dynamic> widgets;
   final Set<String> bindings;
   final Set<String> actions;
+  final Set<String> apps;
   final Issues issues;
 
-  _UiValidator(this.widgets, this.bindings, this.actions, this.issues);
+  _UiValidator(this.file, this.widgets, this.bindings, this.actions, this.apps,
+      this.issues);
 
   static final _looksLikeName = RegExp(r'^[a-z][a-zA-Z0-9]*$');
 
   void error(String path, String message) =>
-      issues.error('ui.yaml', path, message);
+      issues.error(file, path, message);
 
   void node(dynamic value, String path) {
     if (value == null) return;
@@ -52,8 +75,8 @@ class _UiValidator {
       if (_looksLikeName.hasMatch(value) &&
           !widgets.containsKey(value) &&
           !bindings.contains(value)) {
-        issues.warn('ui.yaml', path,
-            '"$value" is not a widget or binding; it will show as literal text');
+        issues.warn(file, path,
+            '"$value" is not a widget or relation; it will show as literal text');
       }
       return;
     }
@@ -106,8 +129,13 @@ class _UiValidator {
         }
       case PropKind.binding:
         if (!bindings.contains(value)) {
-          error(path, '"$value" is not a binding; '
+          error(path, '"$value" is not a relation; '
               'available: ${bindings.isEmpty ? '(none)' : bindings.join(', ')}');
+        }
+      case PropKind.app:
+        if (!apps.contains(value)) {
+          error(path, '"$value" is not a sub-app (a folder in apps/); '
+              'available: ${apps.isEmpty ? '(none)' : apps.join(', ')}');
         }
       case PropKind.inline:
         widget(widgetCatalog[inline]!, value, path);

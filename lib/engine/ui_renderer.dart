@@ -1,20 +1,47 @@
 import 'package:app_ui/app_ui.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'program.dart';
 import 'state_bloc.dart';
 
-/// Renders ui.yaml with the `app_ui` catalog.
+/// Renders one app's ui/ widgets with the `app_ui` catalog.
 ///
-/// Resolves node references (widget ids, bindings, literals), expands
+/// Resolves node references (widget ids, relations, literals), expands
 /// shorthands, and gives widget builders a [Ui] wired to the program.
+/// Actions run against [bloc]; `app:` widgets are built by [embed].
 class UiRenderer {
   final Map<String, dynamic> widgets;
   final MetacodeProgram program;
+  final StateBloc bloc;
+  final Widget Function(String app) embed;
 
-  UiRenderer({required Map<String, dynamic> ui, required this.program})
-      : widgets = Map<String, dynamic>.from(ui['widgets'] ?? {});
+  UiRenderer({
+    required Map<String, dynamic> ui,
+    required this.program,
+    required this.bloc,
+    required this.embed,
+  }) : widgets = Map<String, dynamic>.from(ui['widgets'] ?? {});
+
+  // Relations are pure functions of (state, params), so their values are
+  // kept until the state changes: rebuilds that don't change the state
+  // (resizing, a parent rebuilding, the same relation used twice) don't run
+  // the interpreter again.
+  Map<String, dynamic>? _cachedState;
+  final _cache = <String, dynamic>{};
+
+  dynamic relation(String name, Map<String, dynamic> state,
+      Map<String, dynamic> params) {
+    if (!identical(state, _cachedState)) {
+      _cachedState = state;
+      _cache.clear();
+    }
+    final key = params.isEmpty ? name : '$name ${_paramsKey(params)}';
+    if (_cache.containsKey(key)) return _cache[key];
+    return _cache[key] = program.binding(name, state, params);
+  }
+
+  static String _paramsKey(Map<String, dynamic> params) =>
+      [for (final e in params.entries) '${e.key}=${e.value}'].join('&');
 
   Widget build(BuildContext context, String id, Map<String, dynamic> state) =>
       _EngineUi(this, context, state, const {}).node(id);
@@ -63,14 +90,17 @@ class _EngineUi implements Ui {
 
   @override
   dynamic binding(dynamic name) => name is String && _program.bindings.contains(name)
-      ? _program.binding(name, state, params)
+      ? renderer.relation(name, state, params)
       : null;
 
   @override
   dynamic resolve(dynamic value) =>
       value is String && _program.bindings.contains(value)
-          ? _program.binding(value, state, params)
+          ? renderer.relation(value, state, params)
           : value;
+
+  @override
+  Widget app(String name) => renderer.embed(name);
 
   @override
   VoidCallback? action(dynamic name) =>
@@ -90,7 +120,7 @@ class _EngineUi implements Ui {
   /// Runs an action on the latest state. It changes the state through
   /// `emit` (see CoreHost), so nothing is applied here.
   Future<void> _run(String name, Map<String, dynamic> extra) async {
-    final bloc = context.read<StateBloc>();
+    final bloc = renderer.bloc;
     try {
       await _program.action(name, bloc.state, {...params, ...extra});
     } catch (e, stack) {

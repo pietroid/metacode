@@ -1,0 +1,155 @@
+# Hero: title, the live "make my app" demo and the idea chips.
+
+widgets:
+  hero:
+    container:
+      maxWidth: 1120
+      padding: {horizontal: 24, top: 96, bottom: 8}
+      child:
+        column:
+          spacing: 28
+          children:
+            - heroTitle
+            - container:
+                maxWidth: 560
+                child:
+                  text:
+                    value: "My Own App uses AI to build an app made just for you, in a few minutes. No tech skills needed. If you want it different, just ask."
+                    style: {variant: bodyLarge, color: ink2}
+                    align: center
+            - sizedBox: {height: 20}
+            - tryCard
+            - ideaChips
+
+  heroTitle:
+    responsive:
+      breakpoint: 760
+      narrow:
+        text:
+          spans: ["Say what you need. Get your ", {value: "own app.", style: {color: primary}}]
+          style: {variant: displayMedium}
+          align: center
+      wide:
+        container:
+          maxWidth: 820
+          child:
+            text:
+              spans: ["Say what you need. Get your ", {value: "own app.", style: {color: primary}}]
+              style: {variant: displayLarge}
+              align: center
+
+  tryCard:
+    container:
+      maxWidth: 760
+      color: surface
+      borderColor: line
+      radius: 20
+      child:
+        column:
+          crossAxisAlignment: stretch
+          children:
+            - padding:
+                left: 24
+                right: 16
+                top: 24
+                bottom: 20
+                child:
+                  column:
+                    crossAxisAlignment: stretch
+                    spacing: 14
+                    children:
+                      - text: {value: "What would make your day easier?", style: {variant: labelMedium, color: ink3}}
+                      - textField: {value: ideaValue, hint: "Remind me to water my plants", onChanged: updateIdea, onSubmitted: makeApp}
+                      - filledButton: {text: makeButtonText, onPressed: makeApp}
+            - divider: {height: 1}
+            - padding:
+                horizontal: 24
+                vertical: 24
+                child:
+                  column:
+                    crossAxisAlignment: stretch
+                    spacing: 18
+                    children:
+                      - step1
+                      - step2
+                      - step3
+                      - step4
+            - if:
+                condition: buildReady
+                then: readyBar
+
+  step1:
+    row:
+      spacing: 12
+      children:
+        - match: {value: step1State, cases: {done: stepDone, doing: stepDoing}, default: stepTodo}
+        - expanded: {text: {value: "Understanding what you need", style: {variant: bodyMedium}}}
+
+  step2:
+    row:
+      spacing: 12
+      children:
+        - match: {value: step2State, cases: {done: stepDone, doing: stepDoing}, default: stepTodo}
+        - expanded: {text: {value: "Designing your screens", style: {variant: bodyMedium}}}
+
+  step3:
+    row:
+      spacing: 12
+      children:
+        - match: {value: step3State, cases: {done: stepDone, doing: stepDoing}, default: stepTodo}
+        - expanded: {text: {value: "Setting up your lists and reminders", style: {variant: bodyMedium}}}
+
+  step4:
+    row:
+      spacing: 12
+      children:
+        - match: {value: step4State, cases: {done: stepDone, doing: stepDoing}, default: stepTodo}
+        - expanded: {text: {value: "Putting it on your phone", style: {variant: bodyMedium}}}
+
+  stepTodo:
+    container: {width: 22, height: 22, radius: 11, borderColor: lineStrong}
+
+  stepDoing:
+    sizedBox:
+      width: 22
+      height: 22
+      child:
+        padding: {all: 2, child: {progress: {circular: true}}}
+
+  stepDone:
+    container:
+      width: 22
+      height: 22
+      radius: 11
+      color: success
+      child:
+        center: {icon: {name: check, size: 13, color: bg}}
+
+  readyBar:
+    container:
+      color: fill
+      padding: {left: 24, right: 16, vertical: 14}
+      child:
+        row:
+          spacing: 10
+          children:
+            - icon: {name: confetti, size: 20, color: primary}
+            - expanded:
+                text:
+                  spans: ["Your app is ready", {value: "  in 2 minutes", style: {color: ink3, fontWeight: w500}}]
+                  style: {variant: titleSmall}
+            - outlinedButton: {text: "Get early access", onPressed: openWaitlist}
+
+  ideaChips:
+    container:
+      maxWidth: 760
+      child:
+        wrap:
+          alignment: center
+          spacing: 10
+          runSpacing: 10
+          children:
+            - choiceChip: {label: "Track my daily habits", selected: ideaIsHabits, onSelected: pickHabits}
+            - choiceChip: {label: "Plan meals for the week", selected: ideaIsMeals, onSelected: pickMeals}
+            - choiceChip: {label: "Split bills with roommates", selected: ideaIsBills, onSelected: pickBills}
+            - choiceChip: {label: "Keep my book list", selected: ideaIsBooks, onSelected: pickBooks}

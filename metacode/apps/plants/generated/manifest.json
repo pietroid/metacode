@@ -1,0 +1,14 @@
+{
+  "actions": [
+    "waterPlant",
+    "nextDay"
+  ],
+  "bindings": [
+    "plantList",
+    "plantName",
+    "plantSchedule",
+    "plantStatus",
+    "plantsText",
+    "plantTip"
+  ]
+}

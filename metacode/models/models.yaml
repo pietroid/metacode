@@ -1,0 +1,21 @@
+# Models describe the shape of the data.
+#
+# Primitives: string, boolean, number, datetime. Lists: list(type).
+# Optional fields end with `?`. A list of values declares an enum.
+#
+# `state` is reserved: it types the app state in state/ and becomes the
+# `State` class that actions and relations receive.
+
+waitlistStatus:
+  - idle
+  - invalid
+  - joined
+
+state:
+  idea: string
+  buildStep: number      # 0 idle, 1-4 the step being worked on, 5 ready
+  email: string
+  waitlistStatus: waitlistStatus
+  waitlistCount: number
+
+  exampleIndex: number   # carousel slide: 0 food, 1 music, 2 work, 3 plants (apps/)

@@ -292,9 +292,11 @@ String generateMain(
     ..writeln("import 'dart:convert';")
     ..writeln()
     ..writeln("import 'package:metacode/engine/host.dart';")
-    ..writeln()
-    ..writeln("import 'core.dart';")
-    ..writeln("import 'state.dart';");
+    ..writeln();
+  if (actions.any((fn) => fn.params.any((p) => p.name == 'core'))) {
+    out.writeln("import 'core.dart';");
+  }
+  out.writeln("import 'state.dart';");
   for (final i in imports) {
     out.writeln("import '../$i';");
   }
@@ -377,11 +379,13 @@ String _encodeDart(String type, String expr, Map<String, Model> models) {
 
 /// Generates `generated/test_app.dart`: typed wrappers that run each action
 /// and binding through the compiled program (dart_eval), exactly like the
-/// engine. Used by metacode/test/.
+/// engine. Used by the app's test/. [appPath] is the app folder relative to
+/// the repo root (`metacode`, `metacode/apps/food`), where tests run from.
 String generateTestApp(
   List<UserFunction> actions,
   List<UserFunction> bindings,
   Map<String, Model> models,
+  String appPath,
 ) {
   final out = StringBuffer(_header)
     ..writeln()
@@ -396,11 +400,18 @@ String generateTestApp(
     ..writeln("import 'core.dart';")
     ..writeln("import 'state.dart';")
     ..writeln()
-    ..write(_testAppHead)
-    ..writeln('  /// The state in metacode/state.yaml.')
+    ..write(_testAppHead.replaceAll(r'$appPath', appPath))
+    ..writeln('  /// The state in $appPath/state/ (every file, merged).')
     ..writeln('  State get initialState {')
-    ..writeln("    final doc = loadYaml(File('metacode/state.yaml').readAsStringSync());")
-    ..writeln("    return State.fromJson(jsonDecode(jsonEncode(doc['state'])) as Map);")
+    ..writeln('    final state = <String, dynamic>{};')
+    ..writeln("    final files = Directory('$appPath/state').listSync().whereType<File>()")
+    ..writeln("        .where((f) => f.path.endsWith('.yaml')).toList()")
+    ..writeln('      ..sort((a, b) => a.path.compareTo(b.path));')
+    ..writeln('    for (final f in files) {')
+    ..writeln('      final doc = loadYaml(f.readAsStringSync());')
+    ..writeln("      state.addAll(Map<String, dynamic>.from(jsonDecode(jsonEncode(doc['state'])) as Map));")
+    ..writeln('    }')
+    ..writeln('    return State.fromJson(state);')
     ..writeln('  }');
 
   String signature(UserFunction fn) => [
@@ -445,8 +456,8 @@ const _testAppHead = r'''
 /// in [navigation] and api requests are answered by [api].
 class TestApp implements MetacodeHost {
   late final MetacodeProgram _program = MetacodeProgram(
-    ByteData.sublistView(File('metacode/generated/program.evc').readAsBytesSync()),
-    jsonDecode(File('metacode/generated/manifest.json').readAsStringSync())
+    ByteData.sublistView(File('$appPath/generated/program.evc').readAsBytesSync()),
+    jsonDecode(File('$appPath/generated/manifest.json').readAsStringSync())
         as Map<String, dynamic>,
   )..host = this;
 
