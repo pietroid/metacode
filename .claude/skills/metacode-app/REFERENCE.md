@@ -661,7 +661,8 @@ typography:
   bodyLarge: {font: text, size: 16, weight: 400, height: 1.5, tracking: 0}
 ```
 
-Fonts: `Albert Sans`, `Hanken Grotesk`, `Schibsted Grotesk`, `Newsreader`, `Figtree`, `Plus Jakarta Sans`, `Cormorant Garamond`, `system`.
+Bundled fonts: `Albert Sans`, `Hanken Grotesk`, `Schibsted Grotesk`, `Newsreader`, `Figtree`, `Plus Jakarta Sans`, `Cormorant Garamond`, `system`.
+Google Fonts (downloaded at runtime): `Playfair Display`, `EB Garamond`, `Libre Baskerville`, `Lora`, `Merriweather`, `Source Sans 3`, `Inter`, `Work Sans`, `Lato`, `Nunito Sans`.
 
 | Section | Token | Used for |
 |---|---|---|

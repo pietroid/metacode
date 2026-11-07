@@ -282,7 +282,8 @@ void main() {
     ..writeln('  bodyLarge: {font: text, size: 16, weight: 400, height: 1.5, tracking: 0}')
     ..writeln('```')
     ..writeln()
-    ..writeln('Fonts: ${fontFamilies.map((f) => '`$f`').join(', ')}.')
+    ..writeln('Bundled fonts: ${fontFamilies.map((f) => '`$f`').join(', ')}.')
+    ..writeln('Google Fonts (downloaded at runtime): ${googleFontFamilies.map((f) => '`$f`').join(', ')}.')
     ..writeln()
     ..writeln('| Section | Token | Used for |')
     ..writeln('|---|---|---|');

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../style.dart';
 
@@ -258,7 +259,7 @@ abstract final class MetacodeTheme {
       brightness: brightness,
       colorScheme: scheme,
       textTheme: text,
-      fontFamily: t.textFamily,
+      fontFamily: _themeFontFamily(t.textFamily),
       extensions: [t],
       scaffoldBackgroundColor: t.bg,
       canvasColor: t.surface,
@@ -500,8 +501,13 @@ abstract final class MetacodeTheme {
     TextStyle variant(String name) {
       final v = spec[name] as Map;
       final size = (v['size'] as num).toDouble();
-      return TextStyle(
-        fontFamily: v['font'] == 'display' ? t.displayFamily : t.textFamily,
+      final family = v['font'] == 'display' ? t.displayFamily : t.textFamily;
+      final base = family == null || family == 'system'
+          ? const TextStyle()
+          : _isBundledFamily(family)
+              ? TextStyle(fontFamily: family)
+              : GoogleFonts.getFont(family);
+      return base.copyWith(
         fontSize: size,
         fontWeight: _weight(v['weight']),
         height: (v['height'] as num).toDouble(),
@@ -556,10 +562,38 @@ abstract final class MetacodeTheme {
         _ => FontWeight.w400,
       };
 
+  /// Families that are shipped as assets in packages/app_ui/fonts.
+  static const _bundledFamilies = {
+    'Albert Sans',
+    'Hanken Grotesk',
+    'Schibsted Grotesk',
+    'Newsreader',
+    'Figtree',
+    'Plus Jakarta Sans',
+    'Cormorant Garamond',
+  };
+
   /// Bundled families are declared in app_ui's pubspec, so outside the
-  /// package they are addressed as `packages/app_ui/<family>`.
-  static String? _family(Object? family) =>
-      family == null || family == 'system' ? null : 'packages/app_ui/$family';
+  /// package they are addressed as `packages/app_ui/<family>`. Google Fonts
+  /// are returned by name so the `google_fonts` package can load them.
+  static String? _family(Object? family) {
+    if (family == null || family == 'system') return null;
+    if (_bundledFamilies.contains(family)) return 'packages/app_ui/$family';
+    return family as String;
+  }
+
+  /// Whether [family] refers to a bundled asset family (resolved with the
+  /// `packages/app_ui/` prefix by [_family]).
+  static bool _isBundledFamily(String? family) =>
+      family != null && family.startsWith('packages/app_ui/');
+
+  /// Registers a Google Font loader and returns its family name, or returns
+  /// the bundled family reference. Used for [ThemeData.fontFamily].
+  static String? _themeFontFamily(String? family) {
+    if (family == null || family == 'system') return null;
+    if (_isBundledFamily(family)) return family;
+    return GoogleFonts.getFont(family).fontFamily;
+  }
 
   static Color _hex(String hex) {
     final h = hex.substring(1);

@@ -2,7 +2,16 @@
 # (`app: food`), so the entry is a plain column, not a scaffold.
 
 widgets:
+  # The card paints this app's own surface, so its style/ shows end to end.
   homePage:
+    container:
+      color: surface
+      borderColor: line
+      radius: 28
+      padding: 16
+      child: content
+
+  content:
     column:
       crossAxisAlignment: stretch
       spacing: 10
@@ -20,8 +29,8 @@ widgets:
   tip:
     container:
       color: fill
-      radius: 12
-      padding: 12
+      radius: 16
+      padding: 14
       child:
         row:
           spacing: 10

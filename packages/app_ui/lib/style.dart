@@ -62,8 +62,8 @@ const styleSizeTokens = <String, String>{
 /// Icon weights (Phosphor). `fill` versions are used for selected states.
 const iconWeights = ['thin', 'light', 'regular', 'bold'];
 
-/// Font families a style can use: seven premium Google Fonts, bundled in
-/// packages/app_ui/fonts (OFL). Newsreader and Cormorant Garamond are serifs for display text; the
+/// Bundled font families, shipped in packages/app_ui/fonts (OFL).
+/// Newsreader and Cormorant Garamond are serifs for display text; the
 /// others are grotesks for either role. `system` is the platform font.
 const fontFamilies = [
   'Albert Sans',
@@ -75,6 +75,24 @@ const fontFamilies = [
   'Cormorant Garamond',
   'system',
 ];
+
+/// Google Font families downloaded at runtime by the `google_fonts` package.
+/// These are never bundled as assets. Use them for custom, editorial looks.
+const googleFontFamilies = [
+  'Playfair Display',
+  'EB Garamond',
+  'Libre Baskerville',
+  'Lora',
+  'Merriweather',
+  'Source Sans 3',
+  'Inter',
+  'Work Sans',
+  'Lato',
+  'Nunito Sans',
+];
+
+/// Every family a style.yaml may reference.
+const allFontFamilies = [...fontFamilies, ...googleFontFamilies];
 
 /// The two font roles. Each text variant picks one.
 const fontRoles = {
@@ -237,12 +255,12 @@ List<(String, String)> validateStyle(dynamic style) {
   if (section('fonts')) {
     final fonts = style['fonts'] as Map;
     keys(fonts, fontRoles.keys, 'fonts');
-    fonts.forEach((role, family) {
-      if (fontRoles.containsKey(role) && !fontFamilies.contains(family)) {
-        error('fonts.$role',
-            'unknown font "$family"; available: ${fontFamilies.join(', ')}');
-      }
-    });
+      fonts.forEach((role, family) {
+        if (fontRoles.containsKey(role) && !allFontFamilies.contains(family)) {
+          error('fonts.$role',
+              'unknown font "$family"; available: ${allFontFamilies.join(', ')}');
+        }
+      });
   }
 
   if (section('icons')) {
