@@ -6,49 +6,14 @@
 # `state` is reserved: it types the app state in state.yaml and becomes the
 # `State` class that actions and bindings receive.
 
-page:
-  - finances
-  - goals
-  - menu
-
-entryKind:
-  - income
-  - expense
-
-fetchStatus:
+waitlistStatus:
   - idle
-  - loading
-  - loaded
-  - failed
-
-entry:
-  title: string
-  amount: number
-  kind: entryKind
-  date: datetime
-
-goal:
-  name: string
-  target: number
-  saved: number
-
-profile:
-  name: string
-  email: string
-  currency: string
-  notifications: boolean
+  - invalid
+  - joined
 
 state:
-  page: page
-  entries: list(entry)
-  goals: list(goal)
-  profile: profile
-  entryTitle: string
-  entryAmount: string
-  entryKind: entryKind
-  goalName: string
-  goalTarget: string
-  contribution: string
-  dollarRate: number
-  dollarRateStatus: fetchStatus
-  dollarRateUpdated: string
+  idea: string
+  buildStep: number      # 0 idle, 1-4 the step being worked on, 5 ready
+  email: string
+  waitlistStatus: waitlistStatus
+  waitlistCount: number

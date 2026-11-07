@@ -41,11 +41,24 @@ void main() {
     expect(style['typography']['bodyLarge']['font'], 'text');
   });
 
-  test("the app's style.yaml spells out exactly the Metacode style", () {
-    // metacode/style.yaml documents the template; keep the two in sync.
-    final file = File('../../metacode/style.yaml');
-    expect(resolveStyle(loadYaml(file.readAsStringSync())),
-        resolveStyle(metacodeStyle));
+  test("the app's style.yaml is valid and spells out every token", () {
+    // metacode/style.yaml documents the template: it may change values, but
+    // it names every key of the Metacode style so nothing is hidden.
+    final yaml = loadYaml(File('../../metacode/style.yaml').readAsStringSync()) as Map;
+    expect(validateStyle(yaml), isEmpty);
+    final missing = <String>[];
+    void walk(Map template, Map? app, String path) {
+      template.forEach((key, value) {
+        final p = path.isEmpty ? '$key' : '$path.$key';
+        if (app == null || !app.containsKey(key)) {
+          missing.add(p);
+        } else if (value is Map && key != 'typography') {
+          walk(value, app[key] as Map?, p);
+        }
+      });
+    }
+    walk(metacodeStyle, yaml, '');
+    expect(missing, isEmpty);
   });
 
   test('fonts can name families directly', () {

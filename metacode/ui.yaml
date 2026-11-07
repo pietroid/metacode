@@ -1,317 +1,543 @@
-# UI definition. Each key under `widgets` is a widget identifier that the
-# engine can render. Bindings are Dart functions in the `bindings/` package;
-# actions are Dart functions in the `actions/` package.
+# My Own App: the website. One scrolling page (hero with a live "make my
+# app" demo, a ticker, example apps, how it works, ideas, waitlist) plus a
+# waitlist bottom sheet. Page columns cap at 1120 and center on wide screens.
 
 widgets:
   homePage:
     scaffold:
       appBar:
-        title: pageTitle
+        title: logo
+        actions:
+          - padding:
+              right: 16
+              child:
+                outlinedButton: {text: "Join waitlist", onPressed: openWaitlist}
       body:
-        match:
-          value: currentPage
-          cases:
-            finances: financesPage
-            goals: goalsPage
-            menu: menuPage
-      bottomBar:
-        navigationBar:
-          destinations:
-            - {icon: wallet, label: Finances}
-            - {icon: flag, label: Goals}
-            - {icon: menu, label: Menu}
-          selected: pageIndex
-          onSelected: goToPage
-
-  # ---------- Finances ----------
-
-  financesPage:
-    column:
-      crossAxisAlignment: stretch
-      children:
-        - balanceCard
-        - entryForm
-        - padding:
-            left: 16
-            right: 16
-            top: 24
-            bottom: 4
-            child:
-              text: {value: "Transactions", style: {variant: titleMedium}}
-        - expanded:
-            listView:
-              data: entryList
-              itemBuilder: entryTile
-              empty: entriesEmpty
-
-  balanceCard:
-    padding:
-      left: 16
-      right: 16
-      top: 20
-      bottom: 20
-      child:
-        column:
-          crossAxisAlignment: start
-          spacing: 6
-          children:
-            - text: {value: "Balance", style: {variant: labelMedium, color: ink2}}
-            - text: {value: balanceText, style: {variant: displaySmall}}
-            - row:
-                spacing: 20
-                children:
-                  - row:
-                      spacing: 6
-                      children:
-                        - icon: {name: trendingUp, size: 16, color: success}
-                        - text: {value: incomeText, style: {variant: labelLarge, color: ink2}}
-                  - row:
-                      spacing: 6
-                      children:
-                        - icon: {name: payment, size: 16, color: danger}
-                        - text: {value: expenseText, style: {variant: labelLarge, color: ink2}}
-
-  entryForm:
-    padding:
-      horizontal: 16
-      top: 8
-      child:
-        card:
-          child:
-            column:
-              crossAxisAlignment: stretch
-              spacing: 8
-              children:
-                - textField: {value: entryTitleValue, label: "Description", onChanged: updateEntryTitle}
-                - textField: {value: entryAmountValue, label: "Amount", onChanged: updateEntryAmount}
-                - row:
-                    spacing: 8
-                    children:
-                      - choiceChip: {label: "Income", selected: kindIsIncome, onSelected: selectIncome}
-                      - choiceChip: {label: "Expense", selected: kindIsExpense, onSelected: selectExpense}
-                      - spacer: {}
-                      - filledButton: {text: "Add", icon: add, onPressed: addEntry}
-
-  entryTile:
-    column:
-      crossAxisAlignment: stretch
-      children:
-        - padding:
-            left: 16
-            right: 4
-            vertical: 6
-            child:
-              row:
-                spacing: 14
-                children:
-                  - if:
-                      condition: entryIsIncome
-                      then: {icon: {name: trendingUp, color: success}}
-                      else: {icon: {name: payment, color: danger}}
-                  - expanded:
-                      column:
-                        crossAxisAlignment: start
-                        spacing: 2
-                        children:
-                          - text: {value: entryTitleAt, style: {variant: titleSmall}, maxLines: 1}
-                          - text: {value: entryDateAt, style: {variant: bodySmall}}
-                  - text: {value: entryAmountAt, style: {variant: titleSmall}}
-                  - iconButton: {icon: delete, tooltip: "Delete", color: ink3, onPressed: deleteEntry}
-        - padding:
-            left: 50
-            child:
-              divider: {height: 1}
-
-  entriesEmpty:
-    center:
-      padding:
-        all: 32
-        child:
-          column:
-            spacing: 8
-            children:
-              - icon: {name: wallet, size: 32, color: ink3}
-              - text: {value: "No transactions yet", style: {variant: bodyMedium, color: ink2}}
-
-  # ---------- Goals ----------
-
-  goalsPage:
-    column:
-      - goalForm
-      - padding:
-          horizontal: 16
-          top: 24
-          bottom: 8
-          child:
-            row:
-              spacing: 12
-              crossAxisAlignment: end
-              children:
-                - expanded:
-                    padding:
-                      bottom: 12
-                      child:
-                        text: {value: "Your goals", style: {variant: titleMedium}}
-                - sizedBox:
-                    width: 140
-                    child:
-                      textField: {value: contributionValue, label: "Add per tap", onChanged: updateContribution}
-      - expanded:
-          listView:
-            data: goalList
-            itemBuilder: goalTile
-            empty: goalsEmpty
-
-  goalForm:
-    padding:
-      horizontal: 16
-      top: 16
-      child:
-        card:
-          child:
-            column:
-              crossAxisAlignment: stretch
-              spacing: 8
-              children:
-                - textField: {value: goalNameValue, label: "Goal name", onChanged: updateGoalName}
-                - row:
-                    spacing: 8
-                    children:
-                      - expanded:
-                          textField: {value: goalTargetValue, label: "Target amount", onChanged: updateGoalTarget}
-                      - filledButton: {text: "Add goal", icon: add, onPressed: addGoal}
-
-  goalTile:
-    padding:
-      horizontal: 16
-      vertical: 4
-      child:
-        card:
-          child:
-            column:
-              crossAxisAlignment: stretch
-              spacing: 8
-              children:
-                - row:
-                    spacing: 8
-                    children:
-                      - if:
-                          condition: goalReachedAt
-                          then: {icon: {name: checkCircle, color: success}}
-                          else: {icon: {name: flag, color: ink2}}
-                      - expanded:
-                          text: {value: goalNameAt, style: {variant: titleMedium}}
-                      - text: {value: goalPercentAt, style: {variant: labelLarge, color: ink2}}
-                      - iconButton: {icon: delete, tooltip: "Delete goal", color: ink3, onPressed: deleteGoal}
-                - progress: {value: goalProgressAt}
-                - row:
-                    children:
-                      - expanded:
-                          text: {value: goalAmountsAt, style: {variant: bodyMedium, color: onSurfaceVariant}}
-                      - textButton: {text: contributionLabel, icon: add, onPressed: contributeToGoal}
-
-  goalsEmpty:
-    center:
-      padding:
-        all: 32
-        child:
-          column:
-            spacing: 8
-            children:
-              - icon: {name: flag, size: 32, color: ink3}
-              - text: {value: "No goals yet", style: {variant: bodyMedium, color: ink2}}
-
-  # ---------- Menu ----------
-
-  menuPage:
-    scroll:
-      padding:
-        all: 16
-        child:
+        scroll:
           column:
             crossAxisAlignment: stretch
-            spacing: 12
             children:
-              - profileHeader
-              - card:
-                  child:
-                    column:
-                      crossAxisAlignment: stretch
-                      spacing: 8
-                      children:
-                        - text: {value: "Profile", style: {variant: titleMedium}}
-                        - textField: {value: profileName, label: "Name", onChanged: updateProfileName}
-                        - textField: {value: profileEmail, label: "Email", onChanged: updateProfileEmail}
-              - card:
-                  child:
-                    column:
-                      crossAxisAlignment: stretch
-                      spacing: 8
-                      children:
-                        - text: {value: "Preferences", style: {variant: titleMedium}}
-                        - row:
-                            children:
-                              - expanded:
-                                  text: "Currency"
-                              - sizedBox:
-                                  width: 100
-                                  child:
-                                    dropdown: {value: profileCurrency, options: currencyOptions, onChanged: updateCurrency}
-                        - toggle: {value: notificationsOn, label: "Notifications", onChanged: toggleNotifications}
-              - card:
-                  child:
-                    column:
-                      crossAxisAlignment: stretch
-                      children:
-                        - text: {value: "Summary", style: {variant: titleMedium}}
-                        - listTile: {leading: {icon: {name: list}}, title: "Transactions", trailing: entryCountText}
-                        - listTile: {leading: {icon: {name: flag}}, title: "Goals", trailing: goalCountText}
-                        - listTile: {leading: {icon: {name: wallet}}, title: "Balance", trailing: balanceText}
-              - card:
-                  child:
-                    listTile: {leading: {icon: {name: coins}}, title: "Dollar rate", subtitle: "USD to BRL, live", trailing: {icon: {name: chevronRight}}, onTap: openDollarRate}
-              - outlinedButton: {text: "Reset all data", icon: delete, onPressed: askResetData}
+              - hero
+              - ticker
+              - examples
+              - howItWorks
+              - ideas
+              - waitlistSection
+              - footer
 
-  profileHeader:
-    column:
-      spacing: 8
+  # ---------- Brand ----------
+
+  logo:
+    row:
+      spacing: 12
       children:
-        - avatar: {text: profileInitials, radius: 36}
-        - text: {value: profileName, style: {variant: titleLarge}}
-        - text: {value: profileEmail, style: {variant: bodySmall}}
+        - image: {src: "metacode/assets/logo.svg", width: 17, height: 26}
+        - text: {value: "MY OWN APP", style: {variant: labelLarge, fontWeight: w800}}
+
+  # ---------- Hero ----------
+
+  hero:
+    container:
+      maxWidth: 1120
+      padding: {horizontal: 24, top: 96, bottom: 8}
+      child:
+        column:
+          spacing: 28
+          children:
+            - heroTitle
+            - container:
+                maxWidth: 560
+                child:
+                  text:
+                    value: "My Own App uses AI to build an app made just for you, in a few minutes. No tech skills needed. If you want it different, just ask."
+                    style: {variant: bodyLarge, color: ink2}
+                    align: center
+            - sizedBox: {height: 20}
+            - tryCard
+            - ideaChips
+
+  heroTitle:
+    responsive:
+      breakpoint: 760
+      narrow:
+        text:
+          spans: ["Say what you need. Get your ", {value: "own app.", style: {color: primary}}]
+          style: {variant: displayMedium}
+          align: center
+      wide:
+        container:
+          maxWidth: 820
+          child:
+            text:
+              spans: ["Say what you need. Get your ", {value: "own app.", style: {color: primary}}]
+              style: {variant: displayLarge}
+              align: center
+
+  tryCard:
+    container:
+      maxWidth: 760
+      color: surface
+      borderColor: line
+      radius: 20
+      child:
+        column:
+          crossAxisAlignment: stretch
+          children:
+            - padding:
+                left: 24
+                right: 16
+                top: 24
+                bottom: 20
+                child:
+                  column:
+                    crossAxisAlignment: stretch
+                    spacing: 14
+                    children:
+                      - text: {value: "What would make your day easier?", style: {variant: labelMedium, color: ink3}}
+                      - textField: {value: ideaValue, hint: "Remind me to water my plants", onChanged: updateIdea, onSubmitted: makeApp}
+                      - filledButton: {text: makeButtonText, onPressed: makeApp}
+            - divider: {height: 1}
+            - padding:
+                horizontal: 24
+                vertical: 24
+                child:
+                  column:
+                    crossAxisAlignment: stretch
+                    spacing: 18
+                    children:
+                      - step1
+                      - step2
+                      - step3
+                      - step4
+            - if:
+                condition: buildReady
+                then: readyBar
+
+  step1:
+    row:
+      spacing: 12
+      children:
+        - match: {value: step1State, cases: {done: stepDone, doing: stepDoing}, default: stepTodo}
+        - expanded: {text: {value: "Understanding what you need", style: {variant: bodyMedium}}}
+  step2:
+    row:
+      spacing: 12
+      children:
+        - match: {value: step2State, cases: {done: stepDone, doing: stepDoing}, default: stepTodo}
+        - expanded: {text: {value: "Designing your screens", style: {variant: bodyMedium}}}
+  step3:
+    row:
+      spacing: 12
+      children:
+        - match: {value: step3State, cases: {done: stepDone, doing: stepDoing}, default: stepTodo}
+        - expanded: {text: {value: "Setting up your lists and reminders", style: {variant: bodyMedium}}}
+  step4:
+    row:
+      spacing: 12
+      children:
+        - match: {value: step4State, cases: {done: stepDone, doing: stepDoing}, default: stepTodo}
+        - expanded: {text: {value: "Putting it on your phone", style: {variant: bodyMedium}}}
+
+  stepTodo:
+    container: {width: 22, height: 22, radius: 11, borderColor: lineStrong}
+  stepDoing:
+    sizedBox:
+      width: 22
+      height: 22
+      child:
+        padding: {all: 2, child: {progress: {circular: true}}}
+  stepDone:
+    container:
+      width: 22
+      height: 22
+      radius: 11
+      color: success
+      child:
+        center: {icon: {name: check, size: 13, color: bg}}
+
+  readyBar:
+    container:
+      color: fill
+      padding: {left: 24, right: 16, vertical: 14}
+      child:
+        row:
+          spacing: 10
+          children:
+            - icon: {name: confetti, size: 20, color: primary}
+            - expanded:
+                text:
+                  spans: ["Your app is ready", {value: "  in 2 minutes", style: {color: ink3, fontWeight: w500}}]
+                  style: {variant: titleSmall}
+            - outlinedButton: {text: "Get early access", onPressed: openWaitlist}
+
+  ideaChips:
+    container:
+      maxWidth: 760
+      child:
+        wrap:
+          alignment: center
+          spacing: 10
+          runSpacing: 10
+          children:
+            - choiceChip: {label: "Track my daily habits", selected: ideaIsHabits, onSelected: pickHabits}
+            - choiceChip: {label: "Plan meals for the week", selected: ideaIsMeals, onSelected: pickMeals}
+            - choiceChip: {label: "Split bills with roommates", selected: ideaIsBills, onSelected: pickBills}
+            - choiceChip: {label: "Keep my book list", selected: ideaIsBooks, onSelected: pickBooks}
+
+  # ---------- Ticker ----------
+
+  ticker:
+    padding:
+      top: 112
+      child:
+        column:
+          crossAxisAlignment: stretch
+          children:
+            - divider: {height: 1}
+            - padding:
+                vertical: 20
+                child:
+                  marquee:
+                    spacing: 52
+                    children:
+                      - text: {spans: [{value: "Ana", style: {color: ink2, fontWeight: w600}}, " made a plant reminder app"], style: {variant: bodyMedium, color: ink3}}
+                      - text: {spans: [{value: "Leo", style: {color: ink2, fontWeight: w600}}, " made a weekly meal planner"], style: {variant: bodyMedium, color: ink3}}
+                      - text: {spans: [{value: "Mia", style: {color: ink2, fontWeight: w600}}, " made a running club tracker"], style: {variant: bodyMedium, color: ink3}}
+                      - text: {spans: [{value: "Raj", style: {color: ink2, fontWeight: w600}}, " made a bill splitter"], style: {variant: bodyMedium, color: ink3}}
+                      - text: {spans: [{value: "Sam", style: {color: ink2, fontWeight: w600}}, " made a reading list"], style: {variant: bodyMedium, color: ink3}}
+                      - text: {spans: [{value: "Kai", style: {color: ink2, fontWeight: w600}}, " made a gig calendar"], style: {variant: bodyMedium, color: ink3}}
+                      - text: {spans: [{value: "Lu", style: {color: ink2, fontWeight: w600}}, " made a baby sleep log"], style: {variant: bodyMedium, color: ink3}}
+            - divider: {height: 1}
+
+  # ---------- Examples ----------
+
+  examples:
+    container:
+      maxWidth: 1120
+      padding: {horizontal: 24, top: 128}
+      child:
+        column:
+          crossAxisAlignment: stretch
+          spacing: 16
+          children:
+            - text: {value: "EXAMPLES", style: {variant: labelSmall, color: accent}}
+            - text: {value: "One sentence. One app.", style: {variant: headlineLarge}}
+            - text: {value: "Each of these started with someone saying what they needed.", style: {variant: bodyMedium, color: ink2}}
+            - sizedBox: {height: 32}
+            - wrap:
+                alignment: center
+                spacing: 24
+                runSpacing: 24
+                children:
+                  - habitsPhone
+                  - plantsPhone
+                  - billsPhone
+
+  habitsPhone:
+    sizedBox:
+      width: 340
+      child:
+        container:
+          color: surface
+          borderColor: line
+          radius: 28
+          padding: {horizontal: 20, top: 22, bottom: 20}
+          child:
+            column:
+              crossAxisAlignment: stretch
+              spacing: 16
+              children:
+                - text: {spans: ["“", {value: "Help me keep my morning habits", style: {color: ink2, fontWeight: w600}}, "”"], style: {variant: bodySmall, color: ink3}}
+                - container:
+                    color: bg
+                    borderColor: line
+                    radius: 18
+                    padding: 16
+                    child:
+                      column:
+                        crossAxisAlignment: stretch
+                        children:
+                          - text: {value: "Morning habits", style: {variant: titleLarge}}
+                          - padding:
+                              vertical: 10
+                              child:
+                                row:
+                                  spacing: 5
+                                  children:
+                                    - expanded: {container: {height: 8, radius: 4, color: success}}
+                                    - expanded: {container: {height: 8, radius: 4, color: success}}
+                                    - expanded: {container: {height: 8, radius: 4, color: success}}
+                                    - expanded: {container: {height: 8, radius: 4, color: success}}
+                                    - expanded: {container: {height: 8, radius: 4, color: success}}
+                                    - expanded: {container: {height: 8, radius: 4, color: fillStrong}}
+                                    - expanded: {container: {height: 8, radius: 4, color: fillStrong}}
+                          - habitRow1
+                          - divider: {height: 1}
+                          - habitRow2
+                          - divider: {height: 1}
+                          - habitRow3
+
+  habitRow1:
+    padding: {vertical: 10, child: {row: {spacing: 10, children: [{container: {width: 30, height: 30, radius: 9, color: fill, child: {center: {icon: {name: drop, size: 16, color: ink2}}}}}, {expanded: {column: {crossAxisAlignment: start, children: [{text: {value: "Drink water", style: {variant: titleSmall}}}, {text: {value: "8 glasses", style: {variant: bodySmall, color: ink3}}}]}}}, {text: {value: "6 of 8", style: {variant: labelMedium, color: ink2}}}]}}}
+  habitRow2:
+    padding: {vertical: 10, child: {row: {spacing: 10, children: [{container: {width: 30, height: 30, radius: 9, color: fill, child: {center: {icon: {name: yoga, size: 16, color: ink2}}}}}, {expanded: {column: {crossAxisAlignment: start, children: [{text: {value: "Stretch", style: {variant: titleSmall}}}, {text: {value: "10 minutes", style: {variant: bodySmall, color: ink3}}}]}}}, {text: {value: "Done", style: {variant: labelMedium, color: ink2}}}]}}}
+  habitRow3:
+    padding: {vertical: 10, child: {row: {spacing: 10, children: [{container: {width: 30, height: 30, radius: 9, color: fill, child: {center: {icon: {name: book, size: 16, color: ink2}}}}}, {expanded: {column: {crossAxisAlignment: start, children: [{text: {value: "Read", style: {variant: titleSmall}}}, {text: {value: "20 pages", style: {variant: bodySmall, color: ink3}}}]}}}, {text: {value: "12 of 20", style: {variant: labelMedium, color: ink2}}}]}}}
+
+  plantsPhone:
+    sizedBox:
+      width: 340
+      child:
+        container:
+          color: surface
+          borderColor: line
+          radius: 28
+          padding: {horizontal: 20, top: 22, bottom: 20}
+          child:
+            column:
+              crossAxisAlignment: stretch
+              spacing: 16
+              children:
+                - text: {spans: ["“", {value: "Remind me to water my plants", style: {color: ink2, fontWeight: w600}}, "”"], style: {variant: bodySmall, color: ink3}}
+                - container:
+                    color: bg
+                    borderColor: line
+                    radius: 18
+                    padding: 16
+                    child:
+                      column:
+                        crossAxisAlignment: stretch
+                        children:
+                          - text: {value: "Plant care", style: {variant: titleLarge}}
+                          - plantRow1
+                          - divider: {height: 1}
+                          - plantRow2
+                          - divider: {height: 1}
+                          - plantRow3
+                          - divider: {height: 1}
+                          - plantRow4
+
+  plantRow1:
+    padding: {vertical: 10, child: {row: {spacing: 10, children: [{container: {width: 30, height: 30, radius: 9, color: fill, child: {center: {icon: {name: pottedPlant, size: 16, color: ink2}}}}}, {expanded: {column: {crossAxisAlignment: start, children: [{text: {value: "Monstera", style: {variant: titleSmall}}}, {text: {value: "Every 7 days", style: {variant: bodySmall, color: ink3}}}]}}}, {text: {value: "Today", style: {variant: labelMedium, color: accent}}}]}}}
+  plantRow2:
+    padding: {vertical: 10, child: {row: {spacing: 10, children: [{container: {width: 30, height: 30, radius: 9, color: fill, child: {center: {icon: {name: leaf, size: 16, color: ink2}}}}}, {expanded: {column: {crossAxisAlignment: start, children: [{text: {value: "Fiddle leaf", style: {variant: titleSmall}}}, {text: {value: "Every 10 days", style: {variant: bodySmall, color: ink3}}}]}}}, {text: {value: "In 2 days", style: {variant: labelMedium, color: ink2}}}]}}}
+  plantRow3:
+    padding: {vertical: 10, child: {row: {spacing: 10, children: [{container: {width: 30, height: 30, radius: 9, color: fill, child: {center: {icon: {name: cactus, size: 16, color: ink2}}}}}, {expanded: {column: {crossAxisAlignment: start, children: [{text: {value: "Snake plant", style: {variant: titleSmall}}}, {text: {value: "Every 14 days", style: {variant: bodySmall, color: ink3}}}]}}}, {text: {value: "In 6 days", style: {variant: labelMedium, color: ink2}}}]}}}
+  plantRow4:
+    padding: {vertical: 10, child: {row: {spacing: 10, children: [{container: {width: 30, height: 30, radius: 9, color: fill, child: {center: {icon: {name: plant, size: 16, color: ink2}}}}}, {expanded: {column: {crossAxisAlignment: start, children: [{text: {value: "Basil", style: {variant: titleSmall}}}, {text: {value: "Every 3 days", style: {variant: bodySmall, color: ink3}}}]}}}, {text: {value: "Today", style: {variant: labelMedium, color: accent}}}]}}}
+
+  billsPhone:
+    sizedBox:
+      width: 340
+      child:
+        container:
+          color: surface
+          borderColor: line
+          radius: 28
+          padding: {horizontal: 20, top: 22, bottom: 20}
+          child:
+            column:
+              crossAxisAlignment: stretch
+              spacing: 16
+              children:
+                - text: {spans: ["“", {value: "Split the bills with my roommates", style: {color: ink2, fontWeight: w600}}, "”"], style: {variant: bodySmall, color: ink3}}
+                - container:
+                    color: bg
+                    borderColor: line
+                    radius: 18
+                    padding: 16
+                    child:
+                      column:
+                        crossAxisAlignment: stretch
+                        children:
+                          - text: {value: "House bills", style: {variant: titleLarge}}
+                          - billRow1
+                          - divider: {height: 1}
+                          - billRow2
+                          - divider: {height: 1}
+                          - billRow3
+
+  billRow1:
+    padding: {vertical: 10, child: {row: {spacing: 10, children: [{container: {width: 30, height: 30, radius: 9, color: fill, child: {center: {icon: {name: home, size: 16, color: ink2}}}}}, {expanded: {column: {crossAxisAlignment: start, children: [{text: {value: "Rent", style: {variant: titleSmall}}}, {text: {value: "Split 3 ways", style: {variant: bodySmall, color: ink3}}}]}}}, {text: {value: "$400 each", style: {variant: labelMedium, color: ink2}}}]}}}
+  billRow2:
+    padding: {vertical: 10, child: {row: {spacing: 10, children: [{container: {width: 30, height: 30, radius: 9, color: fill, child: {center: {icon: {name: shoppingCart, size: 16, color: ink2}}}}}, {expanded: {column: {crossAxisAlignment: start, children: [{text: {value: "Groceries", style: {variant: titleSmall}}}, {text: {value: "Paid by Leo", style: {variant: bodySmall, color: ink3}}}]}}}, {text: {value: "You owe $32", style: {variant: labelMedium, color: accent}}}]}}}
+  billRow3:
+    padding: {vertical: 10, child: {row: {spacing: 10, children: [{container: {width: 30, height: 30, radius: 9, color: fill, child: {center: {icon: {name: lightbulb, size: 16, color: ink2}}}}}, {expanded: {column: {crossAxisAlignment: start, children: [{text: {value: "Electricity", style: {variant: titleSmall}}}, {text: {value: "Due Friday", style: {variant: bodySmall, color: ink3}}}]}}}, {text: {value: "$28 each", style: {variant: labelMedium, color: ink2}}}]}}}
+
+  # ---------- How it works ----------
+
+  howItWorks:
+    container:
+      maxWidth: 1120
+      padding: {horizontal: 24, top: 128}
+      child:
+        responsive:
+          breakpoint: 860
+          narrow:
+            column:
+              crossAxisAlignment: stretch
+              spacing: 40
+              children: [howHeading, howList]
+          wide:
+            row:
+              crossAxisAlignment: start
+              spacing: 72
+              children:
+                - expanded: {flex: 10, child: howHeading}
+                - expanded: {flex: 13, child: howList}
+
+  howHeading:
+    column:
+      crossAxisAlignment: start
+      spacing: 16
+      children:
+        - text: {value: "HOW IT WORKS", style: {variant: labelSmall, color: accent}}
+        - text: {value: "As easy as sending a message.", style: {variant: headlineLarge}}
+
+  howList:
+    column:
+      crossAxisAlignment: stretch
+      children:
+        - divider: {height: 1}
+        - howStep1
+        - divider: {height: 1}
+        - howStep2
+        - divider: {height: 1}
+        - howStep3
+        - divider: {height: 1}
+        - howStep4
+        - divider: {height: 1}
+
+  howStep1:
+    padding: {vertical: 28, child: {row: {spacing: 20, crossAxisAlignment: start, children: [{container: {width: 36, height: 36, radius: 10, borderColor: lineStrong, child: {center: {text: {value: "1", style: {variant: labelLarge, color: ink2}}}}}}, {expanded: {column: {crossAxisAlignment: start, spacing: 8, children: [{text: {value: "Tell it what you need", style: {variant: titleLarge}}}, {text: {value: "In your own words, the way you'd explain it to a friend.", style: {variant: bodyMedium, color: ink2}}}]}}}]}}}
+  howStep2:
+    padding: {vertical: 28, child: {row: {spacing: 20, crossAxisAlignment: start, children: [{container: {width: 36, height: 36, radius: 10, borderColor: lineStrong, child: {center: {text: {value: "2", style: {variant: labelLarge, color: ink2}}}}}}, {expanded: {column: {crossAxisAlignment: start, spacing: 6, children: [{text: {value: "Watch it come together", style: {variant: titleLarge}}}, {text: {value: "In a few minutes, your app is ready, with the screens and lists that fit your life.", style: {variant: bodyMedium, color: ink2}}}]}}}]}}}
+  howStep3:
+    padding: {vertical: 28, child: {row: {spacing: 20, crossAxisAlignment: start, children: [{container: {width: 36, height: 36, radius: 10, borderColor: lineStrong, child: {center: {text: {value: "3", style: {variant: labelLarge, color: ink2}}}}}}, {expanded: {column: {crossAxisAlignment: start, spacing: 6, children: [{text: {value: "Use it every day", style: {variant: titleLarge}}}, {text: {value: "It's a real app on your phone, not a demo.", style: {variant: bodyMedium, color: ink2}}}]}}}]}}}
+  howStep4:
+    padding: {vertical: 28, child: {row: {spacing: 20, crossAxisAlignment: start, children: [{container: {width: 36, height: 36, radius: 10, borderColor: lineStrong, child: {center: {text: {value: "4", style: {variant: labelLarge, color: ink2}}}}}}, {expanded: {column: {crossAxisAlignment: start, spacing: 6, children: [{text: {value: "Change it anytime", style: {variant: titleLarge}}}, {text: {value: "Want a photo for each plant, or a different look? Just ask and it updates.", style: {variant: bodyMedium, color: ink2}}}]}}}]}}}
+
+  # ---------- Ideas ----------
+
+  ideas:
+    container:
+      maxWidth: 1120
+      padding: {horizontal: 24, top: 128}
+      child:
+        column:
+          crossAxisAlignment: stretch
+          spacing: 16
+          children:
+            - text: {value: "IDEAS", style: {variant: labelSmall, color: accent}}
+            - text: {value: "Whatever you need, it can be an app.", style: {variant: headlineLarge}}
+            - sizedBox: {height: 32}
+            - wrap:
+                alignment: center
+                spacing: 16
+                runSpacing: 16
+                children: [useHome, useHealth, useWork, useHobbies]
+
+  useHome:
+    sizedBox: {width: 256, child: {container: {color: surface, borderColor: line, radius: 18, padding: 24, child: {column: {crossAxisAlignment: start, spacing: 8, children: [{container: {width: 40, height: 40, radius: 12, color: fill, child: {center: {icon: {name: home, size: 20, color: primary}}}}}, {sizedBox: {height: 22}}, {text: {value: "Home", style: {variant: titleMedium}}}, {text: {value: "Chores, bills, groceries, the plants nobody waters.", style: {variant: bodySmall, color: ink2}}}]}}}}}
+  useHealth:
+    sizedBox: {width: 256, child: {container: {color: surface, borderColor: line, radius: 18, padding: 24, child: {column: {crossAxisAlignment: start, spacing: 8, children: [{container: {width: 40, height: 40, radius: 12, color: fill, child: {center: {icon: {name: fitness, size: 20, color: primary}}}}}, {sizedBox: {height: 22}}, {text: {value: "Health", style: {variant: titleMedium}}}, {text: {value: "Habits, workouts, water, sleep. Tracked your way.", style: {variant: bodySmall, color: ink2}}}]}}}}}
+  useWork:
+    sizedBox: {width: 256, child: {container: {color: surface, borderColor: line, radius: 18, padding: 24, child: {column: {crossAxisAlignment: start, spacing: 8, children: [{container: {width: 40, height: 40, radius: 12, color: fill, child: {center: {icon: {name: work, size: 20, color: primary}}}}}, {sizedBox: {height: 22}}, {text: {value: "Work", style: {variant: titleMedium}}}, {text: {value: "Client lists, small shop orders, team check-ins.", style: {variant: bodySmall, color: ink2}}}]}}}}}
+  useHobbies:
+    sizedBox: {width: 256, child: {container: {color: surface, borderColor: line, radius: 18, padding: 24, child: {column: {crossAxisAlignment: start, spacing: 8, children: [{container: {width: 40, height: 40, radius: 12, color: fill, child: {center: {icon: {name: palette, size: 20, color: primary}}}}}, {sizedBox: {height: 22}}, {text: {value: "Hobbies", style: {variant: titleMedium}}}, {text: {value: "Reading lists, recipes, gig calendars, collections.", style: {variant: bodySmall, color: ink2}}}]}}}}}
+
+  # ---------- Waitlist ----------
+
+  waitlistSection:
+    container:
+      maxWidth: 1120
+      padding: {horizontal: 24, top: 128, bottom: 80}
+      child:
+        container:
+          color: surface
+          borderColor: line
+          radius: 24
+          padding: {horizontal: 24, vertical: 72}
+          child:
+            column:
+              spacing: 16
+              children:
+                - text: {value: "What will you make first?", style: {variant: headlineLarge}, align: center}
+                - text: {value: "We're letting people in a few at a time. Save your spot.", style: {variant: bodyMedium, color: ink2}, align: center}
+                - sizedBox: {height: 16}
+                - container:
+                    maxWidth: 460
+                    child:
+                      if:
+                        condition: waitlistJoined
+                        then:
+                          text: {value: joinedText, style: {variant: titleSmall, color: success}, align: center}
+                        else: waitlistInline
+                - text: {value: waitlistCountText, style: {variant: bodySmall, color: ink3}, align: center}
+
+  waitlistInline:
+    column:
+      crossAxisAlignment: stretch
+      spacing: 10
+      children:
+        - textField: {value: emailValue, hint: "you@example.com", onChanged: updateEmail, onSubmitted: joinWaitlist}
+        - if:
+            condition: waitlistInvalid
+            then: {text: {value: "That email doesn't look right.", style: {variant: bodySmall, color: danger}}}
+        - filledButton: {text: "Join waitlist", onPressed: joinWaitlist}
+
+  footer:
+    column:
+      crossAxisAlignment: stretch
+      children:
+        - divider: {height: 1}
+        - container:
+            maxWidth: 1120
+            padding: {horizontal: 24, top: 32, bottom: 48}
+            child:
+              row:
+                children:
+                  - row:
+                      spacing: 10
+                      children:
+                        - image: {src: "metacode/assets/logo.svg", width: 11, height: 16}
+                        - text: {value: "MY OWN APP", style: {variant: labelSmall, color: ink3}}
+                  - spacer: {}
+                  - text: {value: "© 2026 My Own App", style: {variant: bodySmall, color: ink3}}
 
   # ---------- Routes (navigation.yaml) ----------
 
-  dollarRateSheet:
+  waitlistSheet:
     padding:
       left: 24
       right: 24
       bottom: 24
       child:
-        column:
-          crossAxisAlignment: stretch
-          spacing: 12
-          children:
-            - text: {value: "Dollar rate", style: {variant: titleLarge}}
-            - text: {value: dollarRateText, style: {variant: displaySmall}}
-            - text: {value: dollarRateUpdatedText, style: {variant: bodySmall, color: ink2}}
-            - if: {condition: dollarRateLoading, then: {progress: {}}}
-            - filledButton: {text: "Refresh", icon: refresh, onPressed: fetchDollarRate}
-            - textButton: {text: "Close", onPressed: close}
+        if:
+          condition: waitlistJoined
+          then: waitlistDone
+          else: waitlistForm
 
-  confirmResetDialog:
-    padding:
-      all: 24
-      child:
-        column:
-          crossAxisAlignment: stretch
-          spacing: 12
-          children:
-            - text: {value: "Reset all data?", style: {variant: titleLarge}}
-            - text: {value: "This deletes every transaction and goal.", style: {variant: bodyMedium, color: ink2}}
-            - row:
-                mainAxisAlignment: end
-                spacing: 8
-                children:
-                  - textButton: {text: "Cancel", onPressed: close}
-                  - filledButton: {text: "Reset", icon: delete, onPressed: resetData}
+  waitlistForm:
+    column:
+      crossAxisAlignment: stretch
+      spacing: 12
+      children:
+        - text: {value: "Get early access", style: {variant: headlineSmall}}
+        - text: {value: ideaSummary, style: {variant: bodyMedium, color: ink2}}
+        - textField: {value: emailValue, label: "Email", hint: "you@example.com", onChanged: updateEmail, onSubmitted: joinWaitlist}
+        - if:
+            condition: waitlistInvalid
+            then: {text: {value: "That email doesn't look right.", style: {variant: bodySmall, color: danger}}}
+        - filledButton: {text: "Join waitlist", onPressed: joinWaitlist}
+        - textButton: {text: "Not now", onPressed: close}
+
+  waitlistDone:
+    column:
+      crossAxisAlignment: stretch
+      spacing: 12
+      children:
+        - icon: {name: checkCircle, size: 40, color: success}
+        - text: {value: "You're on the list", style: {variant: headlineSmall}, align: center}
+        - text: {value: joinedText, style: {variant: bodyMedium, color: ink2}, align: center}
+        - filledButton: {text: "Done", onPressed: close}

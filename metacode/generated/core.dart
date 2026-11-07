@@ -7,8 +7,7 @@ import 'package:metacode/engine/host.dart';
 /// Route names from navigation.yaml, for `core.navigator.push`.
 class Routes {
   static const String home = 'home';
-  static const String dollarRate = 'dollarRate';
-  static const String confirmReset = 'confirmReset';
+  static const String waitlist = 'waitlist';
 }
 
 /// What actions can reach besides the state.

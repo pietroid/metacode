@@ -5,78 +5,47 @@ import 'fixtures.dart';
 
 void main() {
   test('state.yaml loads and is usable', () {
-    expect(app.entryList(app.initialState), isA<List<Entry>>());
-    expect(app.pageTitle(app.initialState), isA<String>());
+    expect(app.waitlistCountText(app.initialState), isA<String>());
+    expect(app.waitlistJoined(app.initialState), isFalse);
   });
 
-  test('navigation bindings', () {
-    expect(app.pageIndex(sample(page: Page.goals)), 1);
-    expect(app.pageTitle(sample(page: Page.menu)), 'Menu');
-    expect(app.currentPage(sample(page: Page.goals)), 'goals');
+  test('inputs', () {
+    expect(app.ideaValue(sample(idea: 'x')), 'x');
+    expect(app.emailValue(sample(email: 'a@b.co')), 'a@b.co');
+    expect(app.ideaIsHabits(sample(idea: 'x')), isFalse);
+    expect(app.ideaIsMeals(sample(idea: 'Plan meals for the week')), isTrue);
+    expect(app.ideaIsBooks(sample(idea: 'Keep my book list')), isTrue);
   });
 
-  test('totals', () async {
-    expect(app.balanceValue(sample()), 600);
-    expect(app.balanceText(sample()), '\$600.00');
-    expect(app.incomeText(sample()), '\$1000.00');
-    expect(app.expenseText(sample()), '\$400.00');
-    expect(app.balanceText(await app.resetData(sample())), '\$0.00');
+  test('waitlistCountText groups thousands', () {
+    expect(app.waitlistCountText(sample()), '1,284 people are already on the list');
+    expect(app.waitlistCountText(sample(waitlistCount: 999)), '999 people are already on the list');
+    expect(app.waitlistCountText(sample(waitlistCount: 1234567)), '1,234,567 people are already on the list');
   });
 
-  test('entry item bindings are newest first', () {
-    final s = sample();
-    expect(app.entryTitleAt(s, 0), 'Rent');
-    expect(app.entryAmountAt(s, 0), '-\$400.00');
-    expect(app.entryAmountAt(s, 1), '+\$1000.00');
-    expect(app.entryIsIncome(s, 1), true);
-    expect(app.entryDateAt(s, 0), '2026-11-02');
+  test('status flags', () {
+    expect(app.waitlistInvalid(sample(waitlistStatus: WaitlistStatus.invalid)), isTrue);
+    expect(app.waitlistJoined(sample(waitlistStatus: WaitlistStatus.joined)), isTrue);
   });
 
-  test('kind flags', () {
-    expect(app.kindIsExpense(sample()), true);
-    expect(app.kindIsIncome(sample(entryKind: EntryKind.income)), true);
+  test('ideaSummary and joinedText', () {
+    expect(app.ideaSummary(sample()), contains('Tell us'));
+    expect(app.ideaSummary(sample(idea: ' Plant tracker ')), contains('"Plant tracker"'));
+    expect(app.joinedText(sample(email: 'a@b.co')), contains('a@b.co'));
   });
 
-  test('goal item bindings', () {
-    final s = sample();
-    expect(app.goalNameAt(s, 0), 'Trip');
-    expect(app.goalAmountsAt(s, 0), '\$50.00 of \$200.00');
-    expect(app.goalProgressAt(s, 0), 0.25);
-    expect(app.goalPercentAt(s, 0), '25%');
-    expect(app.goalReachedAt(s, 0), false);
-    expect(app.goalReachedAt(s, 1), true);
-    expect(app.contributionLabel(s), 'Add \$50.00');
-    expect(app.goalCountText(s), '1 of 2 reached');
-  });
-
-  test('profile bindings', () async {
-    final s = sample();
-    expect(app.profileInitials(s), 'AL');
-    expect(app.profileName(s), 'Ada Lovelace');
-    expect(app.profileCurrency(await app.updateCurrency(s, '€')), '€');
-    expect(app.currencyOptions(s), contains('€'));
-    expect(app.notificationsOn(s), true);
-    expect(app.entryCountText(s), '2');
-  });
-
-  test('draft values', () {
-    expect(app.entryTitleValue(sample(entryTitle: 'a')), 'a');
-    expect(app.entryAmountValue(sample(entryAmount: '1')), '1');
-    expect(app.goalNameValue(sample(goalName: 'g')), 'g');
-    expect(app.goalTargetValue(sample(goalTarget: '9')), '9');
-    expect(app.contributionValue(sample()), '50');
-  });
-
-  test('dollar rate bindings', () {
-    final s = sample();
-    expect(app.dollarRateText(s), 'Tap refresh to load');
-    s.dollarRateStatus = FetchStatus.loading;
-    expect(app.dollarRateText(s), 'Loading…');
-    expect(app.dollarRateLoading(s), true);
-    s.dollarRateStatus = FetchStatus.loaded;
-    s.dollarRate = 5.4321;
-    expect(app.dollarRateText(s), '1 USD = R\$ 5.43');
-    s.dollarRateStatus = FetchStatus.failed;
-    expect(app.dollarRateText(s), 'Could not load the rate');
+  test('build steps', () {
+    final idle = sample();
+    expect([app.step1State(idle), app.step4State(idle)], ['todo', 'todo']);
+    expect(app.makeButtonText(idle), 'Make my app');
+    final running = sample(buildStep: 3);
+    expect([app.step1State(running), app.step2State(running), app.step3State(running), app.step4State(running)],
+        ['done', 'done', 'doing', 'todo']);
+    expect(app.makeButtonText(running), 'Making…');
+    expect(app.buildReady(running), isFalse);
+    final ready = sample(buildStep: 5);
+    expect(app.step4State(ready), 'done');
+    expect(app.buildReady(ready), isTrue);
+    expect(app.makeButtonText(ready), 'Make it again');
   });
 }

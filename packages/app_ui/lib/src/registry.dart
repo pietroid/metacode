@@ -20,11 +20,13 @@ import 'widgets/if_widget.dart';
 import 'widgets/image.dart';
 import 'widgets/list_tile.dart';
 import 'widgets/list_view.dart';
+import 'widgets/marquee.dart';
 import 'widgets/match.dart';
 import 'widgets/navigation_bar.dart';
 import 'widgets/outlined_button.dart';
 import 'widgets/padding.dart';
 import 'widgets/progress.dart';
+import 'widgets/responsive.dart';
 import 'widgets/row.dart';
 import 'widgets/scaffold.dart';
 import 'widgets/scroll.dart';
@@ -55,6 +57,7 @@ const widgetBuilders = <String, UiWidgetBuilder>{
   'padding': buildPadding,
   'sizedBox': buildSizedBox,
   'container': buildContainer,
+  'responsive': buildResponsive,
   'card': buildCard,
   'scroll': buildScroll,
   'divider': buildDivider,
@@ -68,6 +71,7 @@ const widgetBuilders = <String, UiWidgetBuilder>{
   'icon': buildIcon,
   'image': buildImage,
   'avatar': buildAvatar,
+  'marquee': buildMarquee,
   'progress': buildProgress,
   'listView': buildListView,
   'gridView': buildGridView,

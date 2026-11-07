@@ -146,11 +146,11 @@ Prop kinds:
 
 ## Widgets
 
-**Layout**: `scaffold`, `appBar`, `column`, `row`, `stack`, `wrap`, `expanded`, `spacer`, `center`, `padding`, `sizedBox`, `container`, `card`, `scroll`, `divider`
+**Layout**: `scaffold`, `appBar`, `column`, `row`, `stack`, `wrap`, `expanded`, `spacer`, `center`, `padding`, `sizedBox`, `container`, `responsive`, `card`, `scroll`, `divider`
 
 **Navigation**: `match`, `navigationBar`
 
-**Content**: `text`, `icon`, `image`, `avatar`, `progress`, `listView`, `gridView`, `listTile`, `if`
+**Content**: `text`, `icon`, `image`, `avatar`, `marquee`, `progress`, `listView`, `gridView`, `listTile`, `if`
 
 **Input**: `textField`, `checkbox`, `toggle`, `slider`, `dropdown`, `choiceChip`, `iconButton`, `filledButton`, `outlinedButton`, `textButton`, `elevatedButton`, `floatingActionButton`, `tappable`
 
@@ -221,6 +221,7 @@ Shorthand: `wrap: [a, b]` (sets `children`).
 | `children` | nodes |  |
 | `spacing` | literal |  |
 | `runSpacing` | literal |  |
+| `alignment` | literal | start, center, end, spaceBetween, spaceAround, spaceEvenly |
 
 #### `expanded`
 
@@ -276,7 +277,7 @@ Fixed-size box or empty space.
 
 #### `container`
 
-A box with padding, margin, background color, size and rounded corners.
+A box with padding, margin, background color, border, size and rounded corners.
 
 | Prop | Kind | Notes |
 |---|---|---|
@@ -287,6 +288,18 @@ A box with padding, margin, background color, size and rounded corners.
 | `radius` | literal | corner radius |
 | `width` | literal |  |
 | `height` | literal |  |
+| `borderColor` | color | draws a hairline border (style `sizes.border` wide) |
+| `maxWidth` | literal | fills the width up to this cap, centered when there is more room (page columns on wide screens) |
+
+#### `responsive`
+
+Shows `wide` when the available width reaches `breakpoint`, else `narrow`. Use it to switch a row of columns to a stack on phones.
+
+| Prop | Kind | Notes |
+|---|---|---|
+| `narrow` | node |  |
+| `wide` | node |  |
+| `breakpoint` | literal | in logical pixels, default 720 |
 
 #### `card`
 
@@ -351,6 +364,7 @@ Shorthand: `text: "Hello"` (sets `value`).
 | Prop | Kind | Notes |
 |---|---|---|
 | `value` | value |  |
+| `spans` | literal | instead of `value`, runs of text with their own style: a list of strings or {value, style}; each value is a binding or literal, each style overrides `style` (e.g. {color: primary}) |
 | `style` | literal | {variant (see Text variants), fontSize, fontWeight (bold, w100..w900), color, italic} |
 | `align` | literal | left, center, right |
 | `maxLines` | literal |  |
@@ -367,7 +381,7 @@ An icon.
 
 #### `image`
 
-An image from a URL (http...) or an app asset path.
+An image (PNG, JPG, GIF, WebP or SVG) from a URL (http...) or an app file. Put app files in `metacode/assets/` and use the path: `src: metacode/assets/logo.svg`.
 
 | Prop | Kind | Notes |
 |---|---|---|
@@ -387,6 +401,17 @@ A round avatar with an image or short text (initials).
 | `image` | value |  |
 | `radius` | literal |  |
 | `color` | color |  |
+
+#### `marquee`
+
+A row of children that scrolls sideways in a loop, like a news ticker. Still (and scrollable) when the device asks for reduced motion.
+Shorthand: `marquee: [a, b]` (sets `children`).
+
+| Prop | Kind | Notes |
+|---|---|---|
+| `children` | nodes |  |
+| `spacing` | literal | gap between children, default 24 |
+| `speed` | literal | pixels per second, default 30 |
 
 #### `progress`
 
@@ -582,7 +607,7 @@ Makes any child tappable.
 
 [Phosphor](https://phosphoricons.com) icons, in the weight set by style.yaml `icons.weight`. The selected tab of a `navigationBar` shows the filled form.
 
-`add`, `remove`, `edit`, `delete`, `close`, `check`, `done`, `clear`, `search`, `settings`, `home`, `person`, `people`, `favorite`, `favoriteBorder`, `star`, `starBorder`, `share`, `menu`, `moreVert`, `moreHoriz`, `arrowBack`, `arrowForward`, `chevronLeft`, `chevronRight`, `expandMore`, `expandLess`, `refresh`, `info`, `warning`, `error`, `help`, `notifications`, `email`, `phone`, `calendar`, `schedule`, `alarm`, `location`, `map`, `camera`, `image`, `photo`, `play`, `pause`, `stop`, `music`, `shoppingCart`, `payment`, `wallet`, `list`, `grid`, `filter`, `sort`, `bookmark`, `label`, `flag`, `lock`, `visibility`, `visibilityOff`, `inbox`, `send`, `chat`, `attach`, `download`, `upload`, `cloud`, `folder`, `file`, `link`, `logout`, `login`, `lightMode`, `darkMode`, `timer`, `checkCircle`, `radioUnchecked`, `trendingUp`, `barChart`, `fitness`, `restaurant`, `local`, `work`, `school`, `pets`, `flight`, `car`, `trendingDown`, `arrowUp`, `arrowDown`, `arrowUpRight`, `arrowDownLeft`, `piggyBank`, `target`, `receipt`, `coins`, `chartLine`, `bank`, `gift`, `sparkle`, `plusCircle`, `user`
+`add`, `remove`, `edit`, `delete`, `close`, `check`, `done`, `clear`, `search`, `settings`, `home`, `person`, `people`, `favorite`, `favoriteBorder`, `star`, `starBorder`, `share`, `menu`, `moreVert`, `moreHoriz`, `arrowBack`, `arrowForward`, `chevronLeft`, `chevronRight`, `expandMore`, `expandLess`, `refresh`, `info`, `warning`, `error`, `help`, `notifications`, `email`, `phone`, `calendar`, `schedule`, `alarm`, `location`, `map`, `camera`, `image`, `photo`, `play`, `pause`, `stop`, `music`, `shoppingCart`, `payment`, `wallet`, `list`, `grid`, `filter`, `sort`, `bookmark`, `label`, `flag`, `lock`, `visibility`, `visibilityOff`, `inbox`, `send`, `chat`, `attach`, `download`, `upload`, `cloud`, `folder`, `file`, `link`, `logout`, `login`, `lightMode`, `darkMode`, `timer`, `checkCircle`, `radioUnchecked`, `trendingUp`, `barChart`, `fitness`, `restaurant`, `local`, `work`, `school`, `pets`, `flight`, `car`, `trendingDown`, `arrowUp`, `arrowDown`, `arrowUpRight`, `arrowDownLeft`, `piggyBank`, `target`, `receipt`, `coins`, `chartLine`, `bank`, `gift`, `sparkle`, `plusCircle`, `user`, `drop`, `book`, `plant`, `pottedPlant`, `cactus`, `leaf`, `lightbulb`, `palette`, `yoga`, `confetti`
 
 ## Colors
 
@@ -612,7 +637,7 @@ typography:
   bodyLarge: {font: text, size: 16, weight: 400, height: 1.5, tracking: 0}
 ```
 
-Fonts: `Albert Sans`, `Hanken Grotesk`, `Schibsted Grotesk`, `Newsreader`, `Figtree`, `system`.
+Fonts: `Albert Sans`, `Hanken Grotesk`, `Schibsted Grotesk`, `Newsreader`, `Figtree`, `Plus Jakarta Sans`, `Cormorant Garamond`, `system`.
 
 | Section | Token | Used for |
 |---|---|---|
@@ -652,7 +677,7 @@ Fonts: `Albert Sans`, `Hanken Grotesk`, `Schibsted Grotesk`, `Newsreader`, `Figt
 | `fonts` | `text` | everything read or tapped: body, titles, labels, buttons |
 | `typography.<variant>` | `font` | display or text |
 | `typography.<variant>` | `size` | font size |
-| `typography.<variant>` | `weight` | 400, 500, 600 or 700 |
+| `typography.<variant>` | `weight` | 400, 500, 600, 700 or 800 (800 only in Plus Jakarta Sans; others use 700) |
 | `typography.<variant>` | `height` | line height, as a multiple of size |
 | `typography.<variant>` | `tracking` | letter spacing, as a fraction of size (-0.02 = -2%) |
 

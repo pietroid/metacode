@@ -28,7 +28,7 @@ Never launch the app. `test/renderer_test.dart` renders ui.yaml and taps it. Ext
 | Node resolution, actions to state | `lib/engine/ui_renderer.dart` (`_EngineUi implements Ui`) |
 | State persistence | `lib/engine/state_bloc.dart` (`METACODE_STATE_PATH` dart-define, else the app documents folder) |
 | Asset loading | `lib/engine/project_config.dart` and `pubspec.yaml` assets |
-| Styling: tokens, default style, theme | `packages/app_ui/lib/style.dart` (tokens, `metacodeStyle`, `resolveStyle`, `validateStyle`), `packages/app_ui/lib/src/theme.dart` (`MetacodeTheme.build`, `MetacodeTokens`). Engine loads `metacode/style.yaml` in `project_config.dart`; `main.dart` sets theme/darkTheme/themeMode. Fonts (5 OFL families) and Phosphor icon fonts in `packages/app_ui/fonts` + its pubspec; icon maps in `src/icons.dart`. `metacode/style.yaml` must equal `metacodeStyle` (style_test). |
+| Styling: tokens, default style, theme | `packages/app_ui/lib/style.dart` (tokens, `metacodeStyle`, `resolveStyle`, `validateStyle`), `packages/app_ui/lib/src/theme.dart` (`MetacodeTheme.build`, `MetacodeTokens`). Engine loads `metacode/style.yaml` in `project_config.dart`; `main.dart` sets theme/darkTheme/themeMode. Fonts (7 OFL families) and Phosphor icon fonts in `packages/app_ui/fonts` + its pubspec; icon maps in `src/icons.dart`. `metacode/style.yaml` may change values but must name every key of `metacodeStyle` (style_test). |
 | App-author reference | `tool/reference.dart` generates `.claude/skills/metacode-app/REFERENCE.md`. Update its static text when types or signatures change. |
 
 ## Contracts to keep

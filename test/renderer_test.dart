@@ -54,24 +54,24 @@ void main() {
     }
   });
 
-  /// Answers `core.api` requests in tests (the dollar rate api).
-  var requests = <String>[];
-  final client = MockClient((request) async {
-    requests.add('${request.method} ${request.url}');
-    return http.Response(
-        '{"time_last_update_utc":"Fri, 06 Nov 2026","rates":{"BRL":5.4321}}', 200);
-  });
+  /// Answers `core.api` requests in tests (the website makes none).
+  final client = MockClient((request) async => http.Response('{}', 200));
 
   Future<StateBloc> pump(
     WidgetTester tester,
     Map<String, dynamic> state, {
-    Brightness brightness = Brightness.light,
+    Size size = const Size(390, 844),
+    Brightness brightness = Brightness.dark,
     Map<String, dynamic>? style,
   }) async {
-    tester.view.physicalSize = const Size(390 * 3, 844 * 3);
+    tester.view.physicalSize = size * 3;
     tester.view.devicePixelRatio = 3;
     addTearDown(tester.view.reset);
-    requests = [];
+    // The ticker (marquee) loops forever; with reduced motion it stands still,
+    // so pumpAndSettle can settle.
+    tester.platformDispatcher.accessibilityFeaturesTestValue =
+        const FakeAccessibilityFeatures(disableAnimations: true);
+    addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
     final config = ProjectConfig(
       projectName: 'test',
       description: '',
@@ -93,126 +93,98 @@ void main() {
     return bloc;
   }
 
-  Map<String, dynamic> state({String page = 'finances'}) => {
-        'page': page,
-        'entries': [
-          {'title': 'Salary', 'amount': 3200, 'kind': 'income', 'date': '2026-11-01'},
-          {'title': 'Rent', 'amount': 1100, 'kind': 'expense', 'date': '2026-11-02'},
-        ],
-        'goals': [
-          {'name': 'Laptop', 'target': 1500, 'saved': 400},
-        ],
-        'profile': {
-          'name': 'Ada Lovelace',
-          'email': 'ada@example.com',
-          'currency': r'$',
-          'notifications': true,
-        },
-        'entryTitle': '',
-        'entryAmount': '',
-        'entryKind': 'income',
-        'goalName': '',
-        'goalTarget': '',
-        'contribution': '10',
-        'dollarRate': 0,
-        'dollarRateStatus': 'idle',
-        'dollarRateUpdated': '',
+  Map<String, dynamic> state() => {
+        'idea': 'Remind me to water my plants',
+        'buildStep': 0,
+        'email': '',
+        'waitlistStatus': 'idle',
+        'waitlistCount': 1284,
       };
 
-  testWidgets('finances: lists entries and adds one', (tester) async {
+  testWidgets('hero: make my app walks the steps, then is ready', (tester) async {
     final bloc = await pump(tester, state());
-    expect(find.text('Finances'), findsWidgets);
-    expect(find.text('Salary'), findsOneWidget);
-    expect(find.text('Rent'), findsOneWidget);
+    expect(find.text('MY OWN APP'), findsWidgets);
+    expect(find.text('Designing your screens'), findsOneWidget);
+    expect(find.text('Your app is ready  in 2 minutes', findRichText: true), findsNothing);
 
-    await tester.enterText(find.byType(TextField).at(0), 'Coffee');
-    await tester.enterText(find.byType(TextField).at(1), '4.5');
-    await tester.tap(find.text('Expense'));
+    await tester.tap(find.text('Make my app'));
     await tester.pump();
-    await tester.tap(find.text('Add'));
-    await tester.pump();
-
-    final entries = bloc.state['entries'] as List;
-    expect(entries.length, 3);
-    expect(entries.last['title'], 'Coffee');
-    expect(entries.last['kind'], 'expense');
-    expect(bloc.state['entryTitle'], '');
+    expect(bloc.state['buildStep'], 1);
+    for (var i = 0; i < 4; i++) {
+      await tester.pump(const Duration(milliseconds: 700));
+    }
+    await tester.pumpAndSettle();
+    expect(bloc.state['buildStep'], 5);
+    expect(find.text('Your app is ready  in 2 minutes', findRichText: true), findsOneWidget);
+    expect(find.text('Make it again'), findsOneWidget);
   });
 
-  testWidgets('navigation switches pages', (tester) async {
+  testWidgets('hero: an idea chip fills the idea and builds', (tester) async {
     final bloc = await pump(tester, state());
-    await tester.tap(find.text('Goals'));
+    await tester.ensureVisible(find.text('Keep my book list'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Keep my book list'));
     await tester.pump();
-    expect(bloc.state['page'], 'goals');
-    expect(find.text('Laptop'), findsOneWidget);
+    expect(bloc.state['idea'], 'Keep my book list');
+    for (var i = 0; i < 4; i++) {
+      await tester.pump(const Duration(milliseconds: 700));
+    }
+    await tester.pumpAndSettle();
+    expect(bloc.state['buildStep'], 5);
   });
 
-  testWidgets('menu: the labeled toggle flips notifications', (tester) async {
-    final bloc = await pump(tester, state(page: 'menu'));
-    expect(find.text('Ada Lovelace'), findsWidgets);
-    await tester.tap(find.text('Notifications'));
+  testWidgets('waitlist: joins from the section at the bottom', (tester) async {
+    final bloc = await pump(tester, state());
+    final field = find.widgetWithText(TextField, 'you@example.com');
+    await tester.ensureVisible(field);
+    await tester.pumpAndSettle();
+    final join = find.widgetWithText(FilledButton, 'Join waitlist');
+    await tester.enterText(field, 'nope');
+    await tester.ensureVisible(join);
+    await tester.pumpAndSettle();
+    await tester.tap(join);
     await tester.pump();
-    expect(bloc.state['profile']['notifications'], false);
+    expect(find.text("That email doesn't look right."), findsOneWidget);
+
+    await tester.enterText(field, 'ada@example.com');
+    await tester.tap(join);
+    await tester.pump();
+    expect(bloc.state['waitlistStatus'], 'joined');
+    expect(find.text("We'll email ada@example.com when your spot opens."), findsOneWidget);
+    expect(find.text('1,285 people are already on the list'), findsOneWidget);
   });
 
-  testWidgets('dollar rate: opens a bottom sheet and loads the rate', (tester) async {
-    final bloc = await pump(tester, state(page: 'menu'));
-    await tester.ensureVisible(find.text('Dollar rate'));
+  testWidgets('waitlist: the app bar button opens a sheet', (tester) async {
+    await pump(tester, state());
+    await tester.tap(find.descendant(of: find.byType(AppBar), matching: find.text('Join waitlist')));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Dollar rate'));
-    await tester.pumpAndSettle();
-
     expect(find.byType(BottomSheet), findsOneWidget);
-    expect(requests, ['GET https://open.er-api.com/v6/latest/USD']);
-    expect(bloc.state['dollarRateStatus'], 'loaded');
-    expect(find.text(r'1 USD = R$ 5.43'), findsOneWidget);
-
-    await tester.tap(find.text('Refresh'));
-    await tester.pumpAndSettle();
-    expect(requests.length, 2);
-
-    await tester.tap(find.text('Close'));
+    expect(find.text('Get early access'), findsOneWidget);
+    await tester.tap(find.text('Not now'));
     await tester.pumpAndSettle();
     expect(find.byType(BottomSheet), findsNothing);
   });
 
-  testWidgets('reset asks in a dialog first', (tester) async {
-    final bloc = await pump(tester, state(page: 'menu'));
-    await tester.ensureVisible(find.text('Reset all data'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Reset all data'));
-    await tester.pumpAndSettle();
-    expect(find.text('Reset all data?'), findsOneWidget);
-
-    await tester.tap(find.text('Cancel'));
-    await tester.pumpAndSettle();
-    expect(find.byType(Dialog), findsNothing);
-    expect((bloc.state['entries'] as List).length, 2);
-
-    await tester.tap(find.text('Reset all data'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Reset'));
-    await tester.pumpAndSettle();
-    expect(find.byType(Dialog), findsNothing);
-    expect(bloc.state['entries'], isEmpty);
-    expect(bloc.state['goals'], isEmpty);
+  testWidgets('phone and desktop layouts render without overflow', (tester) async {
+    for (final size in [const Size(360, 780), const Size(390, 844), const Size(820, 1180), const Size(1440, 900)]) {
+      await pump(tester, {...state(), 'buildStep': 5}, size: size);
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull, reason: '$size');
+    }
   });
 
-  testWidgets('shows the empty state', (tester) async {
-    await pump(tester, {...state(), 'entries': []});
-    expect(find.text('No transactions yet'), findsOneWidget);
-  });
-
-  testWidgets('every page renders with every bundled font, dark, without overflow',
+  testWidgets('the page renders with every bundled font, light and dark, without overflow',
       (tester) async {
     for (final family in fontFamilies) {
-      for (final page in ['finances', 'goals', 'menu']) {
-        await pump(tester, state(page: page),
-            brightness: Brightness.dark,
+      for (final brightness in Brightness.values) {
+        await pump(tester, state(),
+            brightness: brightness,
             style: resolveStyle({
+              ...loadYaml(File('metacode/style.yaml').readAsStringSync()) as Map,
+              'theme': brightness.name,
               'fonts': {'display': family, 'text': family},
             }));
-        expect(tester.takeException(), isNull, reason: '$family $page');
+        expect(tester.takeException(), isNull, reason: '$family $brightness');
       }
     }
   });

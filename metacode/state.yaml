@@ -1,51 +1,6 @@
 state:
-  page: "finances"
-  entries:
-    - title: "Salary"
-      amount: 3200
-      kind: "income"
-      date: "2026-11-01T00:00:00.000"
-    - title: "Rent"
-      amount: 1100
-      kind: "expense"
-      date: "2026-11-02T00:00:00.000"
-    - title: "Groceries"
-      amount: 145.5
-      kind: "expense"
-      date: "2026-11-04T00:00:00.000"
-    - title: "pohaaa"
-      amount: 40
-      kind: "income"
-      date: "2026-11-05T22:57:38.284110"
-    - title: "ouauger"
-      amount: 123123
-      kind: "income"
-      date: "2026-11-05T23:03:45.855554"
-    - title: "afodksof"
-      amount: 223
-      kind: "income"
-      date: "2026-11-06T18:27:15.744721"
-  goals:
-    - name: "Emergency fund"
-      target: 5000
-      saved: 1800
-    - name: "New laptop"
-      target: 1500
-      saved: 530
-    - name: "great"
-      target: 40000
-      saved: 0
-  profile:
-    name: "Pietro Domingues"
-    email: "pietrodomingues@gmail.com"
-    currency: "$"
-    notifications: true
-  entryTitle: ""
-  entryAmount: ""
-  entryKind: "income"
-  goalName: ""
-  goalTarget: ""
-  contribution: "10"
-  dollarRate: 0
-  dollarRateStatus: "idle"
-  dollarRateUpdated: ""
+  idea: "Remind me to water my plants"
+  buildStep: 5
+  email: ""
+  waitlistStatus: "invalid"
+  waitlistCount: 1284

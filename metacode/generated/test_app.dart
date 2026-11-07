@@ -74,276 +74,128 @@ class TestApp implements MetacodeHost {
     return State.fromJson(jsonDecode(jsonEncode(doc['state'])) as Map);
   }
 
-  /// Runs `goToPage` and returns the state with its deltas applied.
-  Future<State> goToPage(State state, int value) =>
-      _run('goToPage', state, {'value': value});
+  /// Runs `makeApp` and returns the state with its deltas applied.
+  Future<State> makeApp(State state) =>
+      _run('makeApp', state);
+
+  /// Runs `updateIdea` and returns the state with its deltas applied.
+  Future<State> updateIdea(State state, String value) =>
+      _run('updateIdea', state, {'value': value});
+
+  /// Runs `pickHabits` and returns the state with its deltas applied.
+  Future<State> pickHabits(State state) =>
+      _run('pickHabits', state);
+
+  /// Runs `pickMeals` and returns the state with its deltas applied.
+  Future<State> pickMeals(State state) =>
+      _run('pickMeals', state);
+
+  /// Runs `pickBills` and returns the state with its deltas applied.
+  Future<State> pickBills(State state) =>
+      _run('pickBills', state);
+
+  /// Runs `pickBooks` and returns the state with its deltas applied.
+  Future<State> pickBooks(State state) =>
+      _run('pickBooks', state);
+
+  /// Runs `openWaitlist` and returns the state with its deltas applied.
+  Future<State> openWaitlist(State state) =>
+      _run('openWaitlist', state);
+
+  /// Runs `updateEmail` and returns the state with its deltas applied.
+  Future<State> updateEmail(State state, String value) =>
+      _run('updateEmail', state, {'value': value});
+
+  /// Runs `joinWaitlist` and returns the state with its deltas applied.
+  Future<State> joinWaitlist(State state) =>
+      _run('joinWaitlist', state);
 
   /// Runs `close` and returns the state with its deltas applied.
   Future<State> close(State state) =>
       _run('close', state);
 
-  /// Runs `updateEntryTitle` and returns the state with its deltas applied.
-  Future<State> updateEntryTitle(State state, String value) =>
-      _run('updateEntryTitle', state, {'value': value});
-
-  /// Runs `updateEntryAmount` and returns the state with its deltas applied.
-  Future<State> updateEntryAmount(State state, String value) =>
-      _run('updateEntryAmount', state, {'value': value});
-
-  /// Runs `selectIncome` and returns the state with its deltas applied.
-  Future<State> selectIncome(State state) =>
-      _run('selectIncome', state);
-
-  /// Runs `selectExpense` and returns the state with its deltas applied.
-  Future<State> selectExpense(State state) =>
-      _run('selectExpense', state);
-
-  /// Runs `addEntry` and returns the state with its deltas applied.
-  Future<State> addEntry(State state) =>
-      _run('addEntry', state);
-
-  /// Runs `deleteEntry` and returns the state with its deltas applied.
-  Future<State> deleteEntry(State state, int index) =>
-      _run('deleteEntry', state, {'index': index});
-
-  /// Runs `updateGoalName` and returns the state with its deltas applied.
-  Future<State> updateGoalName(State state, String value) =>
-      _run('updateGoalName', state, {'value': value});
-
-  /// Runs `updateGoalTarget` and returns the state with its deltas applied.
-  Future<State> updateGoalTarget(State state, String value) =>
-      _run('updateGoalTarget', state, {'value': value});
-
-  /// Runs `updateContribution` and returns the state with its deltas applied.
-  Future<State> updateContribution(State state, String value) =>
-      _run('updateContribution', state, {'value': value});
-
-  /// Runs `addGoal` and returns the state with its deltas applied.
-  Future<State> addGoal(State state) =>
-      _run('addGoal', state);
-
-  /// Runs `contributeToGoal` and returns the state with its deltas applied.
-  Future<State> contributeToGoal(State state, int index) =>
-      _run('contributeToGoal', state, {'index': index});
-
-  /// Runs `deleteGoal` and returns the state with its deltas applied.
-  Future<State> deleteGoal(State state, int index) =>
-      _run('deleteGoal', state, {'index': index});
-
-  /// Runs `updateProfileName` and returns the state with its deltas applied.
-  Future<State> updateProfileName(State state, String value) =>
-      _run('updateProfileName', state, {'value': value});
-
-  /// Runs `updateProfileEmail` and returns the state with its deltas applied.
-  Future<State> updateProfileEmail(State state, String value) =>
-      _run('updateProfileEmail', state, {'value': value});
-
-  /// Runs `updateCurrency` and returns the state with its deltas applied.
-  Future<State> updateCurrency(State state, String value) =>
-      _run('updateCurrency', state, {'value': value});
-
-  /// Runs `toggleNotifications` and returns the state with its deltas applied.
-  Future<State> toggleNotifications(State state, bool value) =>
-      _run('toggleNotifications', state, {'value': value});
-
-  /// Runs `askResetData` and returns the state with its deltas applied.
-  Future<State> askResetData(State state) =>
-      _run('askResetData', state);
-
-  /// Runs `resetData` and returns the state with its deltas applied.
-  Future<State> resetData(State state) =>
-      _run('resetData', state);
-
-  /// Runs `openDollarRate` and returns the state with its deltas applied.
-  Future<State> openDollarRate(State state) =>
-      _run('openDollarRate', state);
-
-  /// Runs `fetchDollarRate` and returns the state with its deltas applied.
-  Future<State> fetchDollarRate(State state) =>
-      _run('fetchDollarRate', state);
-
-  int pageIndex(State state) {
-    final result = _program.binding('pageIndex', state.toJson());
-    return (result as num).toInt();
-  }
-
-  String pageTitle(State state) {
-    final result = _program.binding('pageTitle', state.toJson());
+  String ideaValue(State state) {
+    final result = _program.binding('ideaValue', state.toJson());
     return result as String;
   }
 
-  String currentPage(State state) {
-    final result = _program.binding('currentPage', state.toJson());
-    return result as String;
-  }
-
-  num balanceValue(State state) {
-    final result = _program.binding('balanceValue', state.toJson());
-    return result as num;
-  }
-
-  String balanceText(State state) {
-    final result = _program.binding('balanceText', state.toJson());
-    return result as String;
-  }
-
-  String incomeText(State state) {
-    final result = _program.binding('incomeText', state.toJson());
-    return result as String;
-  }
-
-  String expenseText(State state) {
-    final result = _program.binding('expenseText', state.toJson());
-    return result as String;
-  }
-
-  List<Entry> entryList(State state) {
-    final result = _program.binding('entryList', state.toJson());
-    return (result as List).map((e) => Entry.fromJson(e as Map)).toList();
-  }
-
-  String entryTitleAt(State state, int index) {
-    final result = _program.binding('entryTitleAt', state.toJson(), {'index': index});
-    return result as String;
-  }
-
-  String entryDateAt(State state, int index) {
-    final result = _program.binding('entryDateAt', state.toJson(), {'index': index});
-    return result as String;
-  }
-
-  String entryAmountAt(State state, int index) {
-    final result = _program.binding('entryAmountAt', state.toJson(), {'index': index});
-    return result as String;
-  }
-
-  bool entryIsIncome(State state, int index) {
-    final result = _program.binding('entryIsIncome', state.toJson(), {'index': index});
+  bool ideaIsHabits(State state) {
+    final result = _program.binding('ideaIsHabits', state.toJson());
     return result as bool;
   }
 
-  String entryTitleValue(State state) {
-    final result = _program.binding('entryTitleValue', state.toJson());
-    return result as String;
-  }
-
-  String entryAmountValue(State state) {
-    final result = _program.binding('entryAmountValue', state.toJson());
-    return result as String;
-  }
-
-  bool kindIsIncome(State state) {
-    final result = _program.binding('kindIsIncome', state.toJson());
+  bool ideaIsMeals(State state) {
+    final result = _program.binding('ideaIsMeals', state.toJson());
     return result as bool;
   }
 
-  bool kindIsExpense(State state) {
-    final result = _program.binding('kindIsExpense', state.toJson());
+  bool ideaIsBills(State state) {
+    final result = _program.binding('ideaIsBills', state.toJson());
     return result as bool;
   }
 
-  List<Goal> goalList(State state) {
-    final result = _program.binding('goalList', state.toJson());
-    return (result as List).map((e) => Goal.fromJson(e as Map)).toList();
-  }
-
-  String goalNameAt(State state, int index) {
-    final result = _program.binding('goalNameAt', state.toJson(), {'index': index});
-    return result as String;
-  }
-
-  String goalAmountsAt(State state, int index) {
-    final result = _program.binding('goalAmountsAt', state.toJson(), {'index': index});
-    return result as String;
-  }
-
-  double goalProgressAt(State state, int index) {
-    final result = _program.binding('goalProgressAt', state.toJson(), {'index': index});
-    return (result as num).toDouble();
-  }
-
-  String goalPercentAt(State state, int index) {
-    final result = _program.binding('goalPercentAt', state.toJson(), {'index': index});
-    return result as String;
-  }
-
-  bool goalReachedAt(State state, int index) {
-    final result = _program.binding('goalReachedAt', state.toJson(), {'index': index});
+  bool ideaIsBooks(State state) {
+    final result = _program.binding('ideaIsBooks', state.toJson());
     return result as bool;
   }
 
-  String goalNameValue(State state) {
-    final result = _program.binding('goalNameValue', state.toJson());
+  String step1State(State state) {
+    final result = _program.binding('step1State', state.toJson());
     return result as String;
   }
 
-  String goalTargetValue(State state) {
-    final result = _program.binding('goalTargetValue', state.toJson());
+  String step2State(State state) {
+    final result = _program.binding('step2State', state.toJson());
     return result as String;
   }
 
-  String contributionValue(State state) {
-    final result = _program.binding('contributionValue', state.toJson());
+  String step3State(State state) {
+    final result = _program.binding('step3State', state.toJson());
     return result as String;
   }
 
-  String contributionLabel(State state) {
-    final result = _program.binding('contributionLabel', state.toJson());
+  String step4State(State state) {
+    final result = _program.binding('step4State', state.toJson());
     return result as String;
   }
 
-  String profileName(State state) {
-    final result = _program.binding('profileName', state.toJson());
-    return result as String;
-  }
-
-  String profileEmail(State state) {
-    final result = _program.binding('profileEmail', state.toJson());
-    return result as String;
-  }
-
-  String profileInitials(State state) {
-    final result = _program.binding('profileInitials', state.toJson());
-    return result as String;
-  }
-
-  String profileCurrency(State state) {
-    final result = _program.binding('profileCurrency', state.toJson());
-    return result as String;
-  }
-
-  List<String> currencyOptions(State state) {
-    final result = _program.binding('currencyOptions', state.toJson());
-    return (result as List).map((e) => e as String).toList();
-  }
-
-  bool notificationsOn(State state) {
-    final result = _program.binding('notificationsOn', state.toJson());
+  bool buildReady(State state) {
+    final result = _program.binding('buildReady', state.toJson());
     return result as bool;
   }
 
-  String entryCountText(State state) {
-    final result = _program.binding('entryCountText', state.toJson());
+  String makeButtonText(State state) {
+    final result = _program.binding('makeButtonText', state.toJson());
     return result as String;
   }
 
-  String goalCountText(State state) {
-    final result = _program.binding('goalCountText', state.toJson());
+  String emailValue(State state) {
+    final result = _program.binding('emailValue', state.toJson());
     return result as String;
   }
 
-  String dollarRateText(State state) {
-    final result = _program.binding('dollarRateText', state.toJson());
-    return result as String;
-  }
-
-  String dollarRateUpdatedText(State state) {
-    final result = _program.binding('dollarRateUpdatedText', state.toJson());
-    return result as String;
-  }
-
-  bool dollarRateLoading(State state) {
-    final result = _program.binding('dollarRateLoading', state.toJson());
+  bool waitlistJoined(State state) {
+    final result = _program.binding('waitlistJoined', state.toJson());
     return result as bool;
+  }
+
+  bool waitlistInvalid(State state) {
+    final result = _program.binding('waitlistInvalid', state.toJson());
+    return result as bool;
+  }
+
+  String waitlistCountText(State state) {
+    final result = _program.binding('waitlistCountText', state.toJson());
+    return result as String;
+  }
+
+  String ideaSummary(State state) {
+    final result = _program.binding('ideaSummary', state.toJson());
+    return result as String;
+  }
+
+  String joinedText(State state) {
+    final result = _program.binding('joinedText', state.toJson());
+    return result as String;
   }
 }

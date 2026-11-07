@@ -141,7 +141,7 @@ from: light and dark colors, the two font roles (`display` for headlines,
 Phosphor icon weight, radius, spacing and sizes. The app's file spells out every
 value of the Metacode style (`packages/app_ui/lib/style.dart`), so it shows
 exactly how the template looks; keys left out fall back to it. Bundled fonts
-(OFL): Newsreader, Albert Sans, Hanken Grotesk, Schibsted Grotesk, Figtree.
+(OFL): Newsreader, Albert Sans, Hanken Grotesk, Schibsted Grotesk, Figtree, Plus Jakarta Sans, Cormorant Garamond.
 Icons: Phosphor (MIT), bundled as fonts in `packages/app_ui/fonts/phosphor`.
 
 ```yaml

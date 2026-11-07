@@ -110,6 +110,16 @@ const phosphorNames = <String, String>{
   'sparkle': 'sparkle',
   'plusCircle': 'plusCircle',
   'user': 'userCircle',
+  'drop': 'drop',
+  'book': 'bookOpen',
+  'plant': 'plant',
+  'pottedPlant': 'pottedPlant',
+  'cactus': 'cactus',
+  'leaf': 'leaf',
+  'lightbulb': 'lightbulb',
+  'palette': 'palette',
+  'yoga': 'personSimpleTaiChi',
+  'confetti': 'confetti',
 };
 
 const _thin = <String, IconData>{
@@ -215,6 +225,16 @@ const _thin = <String, IconData>{
   'sparkle': IconData(0xe6a2, fontFamily: 'PhosphorThin', fontPackage: 'app_ui'),
   'plusCircle': IconData(0xe3d6, fontFamily: 'PhosphorThin', fontPackage: 'app_ui'),
   'user': IconData(0xe4c4, fontFamily: 'PhosphorThin', fontPackage: 'app_ui'),
+  'drop': IconData(0xe210, fontFamily: 'PhosphorThin', fontPackage: 'app_ui'),
+  'book': IconData(0xe0e6, fontFamily: 'PhosphorThin', fontPackage: 'app_ui'),
+  'plant': IconData(0xebae, fontFamily: 'PhosphorThin', fontPackage: 'app_ui'),
+  'pottedPlant': IconData(0xec22, fontFamily: 'PhosphorThin', fontPackage: 'app_ui'),
+  'cactus': IconData(0xe918, fontFamily: 'PhosphorThin', fontPackage: 'app_ui'),
+  'leaf': IconData(0xe2da, fontFamily: 'PhosphorThin', fontPackage: 'app_ui'),
+  'lightbulb': IconData(0xe2dc, fontFamily: 'PhosphorThin', fontPackage: 'app_ui'),
+  'palette': IconData(0xe6c8, fontFamily: 'PhosphorThin', fontPackage: 'app_ui'),
+  'yoga': IconData(0xed5c, fontFamily: 'PhosphorThin', fontPackage: 'app_ui'),
+  'confetti': IconData(0xe81a, fontFamily: 'PhosphorThin', fontPackage: 'app_ui'),
 };
 
 const _light = <String, IconData>{
@@ -320,6 +340,16 @@ const _light = <String, IconData>{
   'sparkle': IconData(0xe6a2, fontFamily: 'PhosphorLight', fontPackage: 'app_ui'),
   'plusCircle': IconData(0xe3d6, fontFamily: 'PhosphorLight', fontPackage: 'app_ui'),
   'user': IconData(0xe4c4, fontFamily: 'PhosphorLight', fontPackage: 'app_ui'),
+  'drop': IconData(0xe210, fontFamily: 'PhosphorLight', fontPackage: 'app_ui'),
+  'book': IconData(0xe0e6, fontFamily: 'PhosphorLight', fontPackage: 'app_ui'),
+  'plant': IconData(0xebae, fontFamily: 'PhosphorLight', fontPackage: 'app_ui'),
+  'pottedPlant': IconData(0xec22, fontFamily: 'PhosphorLight', fontPackage: 'app_ui'),
+  'cactus': IconData(0xe918, fontFamily: 'PhosphorLight', fontPackage: 'app_ui'),
+  'leaf': IconData(0xe2da, fontFamily: 'PhosphorLight', fontPackage: 'app_ui'),
+  'lightbulb': IconData(0xe2dc, fontFamily: 'PhosphorLight', fontPackage: 'app_ui'),
+  'palette': IconData(0xe6c8, fontFamily: 'PhosphorLight', fontPackage: 'app_ui'),
+  'yoga': IconData(0xed5c, fontFamily: 'PhosphorLight', fontPackage: 'app_ui'),
+  'confetti': IconData(0xe81a, fontFamily: 'PhosphorLight', fontPackage: 'app_ui'),
 };
 
 const _regular = <String, IconData>{
@@ -425,6 +455,16 @@ const _regular = <String, IconData>{
   'sparkle': IconData(0xe6a2, fontFamily: 'PhosphorRegular', fontPackage: 'app_ui'),
   'plusCircle': IconData(0xe3d6, fontFamily: 'PhosphorRegular', fontPackage: 'app_ui'),
   'user': IconData(0xe4c4, fontFamily: 'PhosphorRegular', fontPackage: 'app_ui'),
+  'drop': IconData(0xe210, fontFamily: 'PhosphorRegular', fontPackage: 'app_ui'),
+  'book': IconData(0xe0e6, fontFamily: 'PhosphorRegular', fontPackage: 'app_ui'),
+  'plant': IconData(0xebae, fontFamily: 'PhosphorRegular', fontPackage: 'app_ui'),
+  'pottedPlant': IconData(0xec22, fontFamily: 'PhosphorRegular', fontPackage: 'app_ui'),
+  'cactus': IconData(0xe918, fontFamily: 'PhosphorRegular', fontPackage: 'app_ui'),
+  'leaf': IconData(0xe2da, fontFamily: 'PhosphorRegular', fontPackage: 'app_ui'),
+  'lightbulb': IconData(0xe2dc, fontFamily: 'PhosphorRegular', fontPackage: 'app_ui'),
+  'palette': IconData(0xe6c8, fontFamily: 'PhosphorRegular', fontPackage: 'app_ui'),
+  'yoga': IconData(0xed5c, fontFamily: 'PhosphorRegular', fontPackage: 'app_ui'),
+  'confetti': IconData(0xe81a, fontFamily: 'PhosphorRegular', fontPackage: 'app_ui'),
 };
 
 const _bold = <String, IconData>{
@@ -530,6 +570,16 @@ const _bold = <String, IconData>{
   'sparkle': IconData(0xe6a2, fontFamily: 'PhosphorBold', fontPackage: 'app_ui'),
   'plusCircle': IconData(0xe3d6, fontFamily: 'PhosphorBold', fontPackage: 'app_ui'),
   'user': IconData(0xe4c4, fontFamily: 'PhosphorBold', fontPackage: 'app_ui'),
+  'drop': IconData(0xe210, fontFamily: 'PhosphorBold', fontPackage: 'app_ui'),
+  'book': IconData(0xe0e6, fontFamily: 'PhosphorBold', fontPackage: 'app_ui'),
+  'plant': IconData(0xebae, fontFamily: 'PhosphorBold', fontPackage: 'app_ui'),
+  'pottedPlant': IconData(0xec22, fontFamily: 'PhosphorBold', fontPackage: 'app_ui'),
+  'cactus': IconData(0xe918, fontFamily: 'PhosphorBold', fontPackage: 'app_ui'),
+  'leaf': IconData(0xe2da, fontFamily: 'PhosphorBold', fontPackage: 'app_ui'),
+  'lightbulb': IconData(0xe2dc, fontFamily: 'PhosphorBold', fontPackage: 'app_ui'),
+  'palette': IconData(0xe6c8, fontFamily: 'PhosphorBold', fontPackage: 'app_ui'),
+  'yoga': IconData(0xed5c, fontFamily: 'PhosphorBold', fontPackage: 'app_ui'),
+  'confetti': IconData(0xe81a, fontFamily: 'PhosphorBold', fontPackage: 'app_ui'),
 };
 
 const _fill = <String, IconData>{
@@ -635,6 +685,16 @@ const _fill = <String, IconData>{
   'sparkle': IconData(0xe6a2, fontFamily: 'PhosphorFill', fontPackage: 'app_ui'),
   'plusCircle': IconData(0xe3d6, fontFamily: 'PhosphorFill', fontPackage: 'app_ui'),
   'user': IconData(0xe4c4, fontFamily: 'PhosphorFill', fontPackage: 'app_ui'),
+  'drop': IconData(0xe210, fontFamily: 'PhosphorFill', fontPackage: 'app_ui'),
+  'book': IconData(0xe0e6, fontFamily: 'PhosphorFill', fontPackage: 'app_ui'),
+  'plant': IconData(0xebae, fontFamily: 'PhosphorFill', fontPackage: 'app_ui'),
+  'pottedPlant': IconData(0xec22, fontFamily: 'PhosphorFill', fontPackage: 'app_ui'),
+  'cactus': IconData(0xe918, fontFamily: 'PhosphorFill', fontPackage: 'app_ui'),
+  'leaf': IconData(0xe2da, fontFamily: 'PhosphorFill', fontPackage: 'app_ui'),
+  'lightbulb': IconData(0xe2dc, fontFamily: 'PhosphorFill', fontPackage: 'app_ui'),
+  'palette': IconData(0xe6c8, fontFamily: 'PhosphorFill', fontPackage: 'app_ui'),
+  'yoga': IconData(0xed5c, fontFamily: 'PhosphorFill', fontPackage: 'app_ui'),
+  'confetti': IconData(0xe81a, fontFamily: 'PhosphorFill', fontPackage: 'app_ui'),
 };
 
 /// Icon maps by weight (style.yaml `icons.weight`), plus `fill`.

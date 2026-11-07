@@ -552,6 +552,7 @@ abstract final class MetacodeTheme {
         500 || 500.0 => FontWeight.w500,
         600 || 600.0 => FontWeight.w600,
         700 || 700.0 => FontWeight.w700,
+        800 || 800.0 => FontWeight.w800,
         _ => FontWeight.w400,
       };
 

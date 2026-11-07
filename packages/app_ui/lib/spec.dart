@@ -148,8 +148,10 @@ const widgetCatalog = <String, WidgetSpec>{
       'children': PropKind.nodes,
       'spacing': PropKind.literal,
       'runSpacing': PropKind.literal,
+      'alignment': PropKind.literal,
     },
     shorthand: Shorthand.nodes,
+    notes: {'alignment': 'start, center, end, spaceBetween, spaceAround, spaceEvenly'},
   ),
   'expanded': WidgetSpec(
     _layout,
@@ -189,9 +191,24 @@ const widgetCatalog = <String, WidgetSpec>{
   }),
   'container': WidgetSpec(
     _layout,
-    'A box with padding, margin, background color, size and rounded corners.',
-    {'child': PropKind.node, ..._box},
-    notes: _boxNotes,
+    'A box with padding, margin, background color, border, size and rounded corners.',
+    {
+      'child': PropKind.node,
+      ..._box,
+      'borderColor': PropKind.color,
+      'maxWidth': PropKind.literal,
+    },
+    notes: {
+      ..._boxNotes,
+      'borderColor': 'draws a hairline border (style `sizes.border` wide)',
+      'maxWidth': 'fills the width up to this cap, centered when there is more room (page columns on wide screens)',
+    },
+  ),
+  'responsive': WidgetSpec(
+    _layout,
+    'Shows `wide` when the available width reaches `breakpoint`, else `narrow`. Use it to switch a row of columns to a stack on phones.',
+    {'narrow': PropKind.node, 'wide': PropKind.node, 'breakpoint': PropKind.literal},
+    notes: {'breakpoint': 'in logical pixels, default 720'},
   ),
   'card': WidgetSpec(
     _layout,
@@ -249,12 +266,14 @@ const widgetCatalog = <String, WidgetSpec>{
     'Text.',
     {
       'value': PropKind.bindingOrLiteral,
+      'spans': PropKind.literal,
       'style': PropKind.literal,
       'align': PropKind.literal,
       'maxLines': PropKind.literal,
     },
     shorthand: Shorthand.value,
     notes: {
+      'spans': 'instead of `value`, runs of text with their own style: a list of strings or {value, style}; each value is a binding or literal, each style overrides `style` (e.g. {color: primary})',
       'style': '{variant (see Text variants), fontSize, fontWeight '
           '(bold, w100..w900), color, italic}',
       'align': 'left, center, right',
@@ -267,7 +286,7 @@ const widgetCatalog = <String, WidgetSpec>{
   ),
   'image': WidgetSpec(
     _content,
-    'An image from a URL (http...) or an app asset path.',
+    'An image (PNG, JPG, GIF, WebP or SVG) from a URL (http...) or an app file. Put app files in `metacode/assets/` and use the path: `src: metacode/assets/logo.svg`.',
     {
       'src': PropKind.bindingOrLiteral,
       'width': PropKind.literal,
@@ -287,6 +306,13 @@ const widgetCatalog = <String, WidgetSpec>{
       'radius': PropKind.literal,
       'color': PropKind.color,
     },
+  ),
+  'marquee': WidgetSpec(
+    _content,
+    'A row of children that scrolls sideways in a loop, like a news ticker. Still (and scrollable) when the device asks for reduced motion.',
+    {'children': PropKind.nodes, 'spacing': PropKind.literal, 'speed': PropKind.literal},
+    shorthand: Shorthand.nodes,
+    notes: {'spacing': 'gap between children, default 24', 'speed': 'pixels per second, default 30'},
   ),
   'progress': WidgetSpec(
     _content,
@@ -456,7 +482,8 @@ const iconNames = [
   'restaurant', 'local', 'work', 'school', 'pets', 'flight', 'car',
   'trendingDown', 'arrowUp', 'arrowDown', 'arrowUpRight', 'arrowDownLeft',
   'piggyBank', 'target', 'receipt', 'coins', 'chartLine', 'bank', 'gift',
-  'sparkle', 'plusCircle', 'user',
+  'sparkle', 'plusCircle', 'user', 'drop', 'book', 'plant', 'pottedPlant',
+  'cactus', 'leaf', 'lightbulb', 'palette', 'yoga', 'confetti',
 ];
 
 /// Color names usable in [PropKind.color] props, besides `#RRGGBB` and

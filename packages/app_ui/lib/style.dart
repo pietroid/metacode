@@ -62,8 +62,8 @@ const styleSizeTokens = <String, String>{
 /// Icon weights (Phosphor). `fill` versions are used for selected states.
 const iconWeights = ['thin', 'light', 'regular', 'bold'];
 
-/// Font families a style can use: five premium Google Fonts, bundled in
-/// packages/app_ui/fonts (OFL). Newsreader is a serif for display text; the
+/// Font families a style can use: seven premium Google Fonts, bundled in
+/// packages/app_ui/fonts (OFL). Newsreader and Cormorant Garamond are serifs for display text; the
 /// others are grotesks for either role. `system` is the platform font.
 const fontFamilies = [
   'Albert Sans',
@@ -71,6 +71,8 @@ const fontFamilies = [
   'Schibsted Grotesk',
   'Newsreader',
   'Figtree',
+  'Plus Jakarta Sans',
+  'Cormorant Garamond',
   'system',
 ];
 
@@ -84,7 +86,7 @@ const fontRoles = {
 const typographyKeys = <String, String>{
   'font': 'display or text',
   'size': 'font size',
-  'weight': '400, 500, 600 or 700',
+  'weight': '400, 500, 600, 700 or 800 (800 only in Plus Jakarta Sans; others use 700)',
   'height': 'line height, as a multiple of size',
   'tracking': 'letter spacing, as a fraction of size (-0.02 = -2%)',
 };
@@ -289,8 +291,8 @@ List<(String, String)> validateStyle(dynamic style) {
         error('$path.font', 'expected display or text, got "$font"');
       }
       final weight = value['weight'];
-      if (weight != null && !const [400, 500, 600, 700].contains(weight)) {
-        error('$path.weight', 'expected 400, 500, 600 or 700, got "$weight"');
+      if (weight != null && !const [400, 500, 600, 700, 800].contains(weight)) {
+        error('$path.weight', 'expected 400, 500, 600, 700 or 800, got "$weight"');
       }
       for (final key in const ['size', 'height']) {
         final v = value[key];

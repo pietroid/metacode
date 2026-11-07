@@ -1,3 +1,4 @@
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -182,5 +183,73 @@ void main() {
     await tester.enterText(find.byType(TextField), 'Ana');
     await tester.testTextInput.receiveAction(TextInputAction.done);
     expect(calls.map(fmt), ['edit {value: Ana}', 'save {value: Ana}']);
+  });
+
+  testWidgets('responsive picks narrow or wide by width', (tester) async {
+    final node = {
+      'responsive': {'narrow': 'Phone', 'wide': 'Desktop', 'breakpoint': 600},
+    };
+    tester.view.physicalSize = const Size(400, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await render(tester, node);
+    expect(find.text('Phone'), findsOneWidget);
+    tester.view.physicalSize = const Size(1000, 800);
+    await render(tester, node);
+    await tester.pump();
+    expect(find.text('Desktop'), findsOneWidget);
+  });
+
+  testWidgets('marquee scrolls its children in a loop', (tester) async {
+    await render(tester, {
+      'marquee': {'children': ['Ana made a plant app', 'Leo made a meal planner'], 'speed': 100},
+    });
+    expect(find.text('Ana made a plant app'), findsWidgets);
+    final before = tester.getTopLeft(find.text('Ana made a plant app').first).dx;
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(tester.getTopLeft(find.text('Ana made a plant app').first).dx, lessThan(before));
+  });
+
+  testWidgets('marquee stands still with reduced motion', (tester) async {
+    tester.platformDispatcher.accessibilityFeaturesTestValue =
+        const FakeAccessibilityFeatures(disableAnimations: true);
+    addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
+    await render(tester, {'marquee': ['Still']});
+    await tester.pumpAndSettle();
+    expect(find.text('Still'), findsOneWidget);
+  });
+
+  testWidgets('container caps its width and draws a border', (tester) async {
+    await render(tester, {
+      'container': {'maxWidth': 300, 'borderColor': 'line', 'radius': 8, 'child': 'Capped'},
+    });
+    expect(tester.getSize(find.byType(Container)).width, 300);
+    final box = tester.widget<Container>(find.byType(Container)).decoration as BoxDecoration;
+    expect(box.border, isNotNull);
+  });
+
+  testWidgets('wrap centers its children', (tester) async {
+    await render(tester, {
+      'wrap': {'alignment': 'center', 'children': ['A']},
+    });
+    expect(tester.widget<Wrap>(find.byType(Wrap)).alignment, WrapAlignment.center);
+  });
+
+  testWidgets('text spans mix styles in one paragraph', (tester) async {
+    await render(tester, {
+      'text': {
+        'spans': ['Get your ', {'value': 'what', 'style': {'color': 'primary'}}],
+      },
+    }, bindings: {'what': 'own app.'});
+    expect(find.text('Get your own app.', findRichText: true), findsOneWidget);
+  });
+
+  testWidgets('image renders SVG files with SvgPicture', (tester) async {
+    await render(tester, {
+      'image': {'src': 'metacode/assets/logo.svg', 'width': 20, 'height': 30},
+    });
+    expect(find.byType(SvgPicture), findsOneWidget);
+    expect(tester.getSize(find.byType(SvgPicture)), const Size(20, 30));
   });
 }

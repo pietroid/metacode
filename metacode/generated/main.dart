@@ -10,13 +10,83 @@ import 'state.dart';
 import '../actions/actions.dart';
 import '../bindings/bindings.dart';
 
-Future<String> $action_goToPage(String stateJson, String paramsJson) async {
+Future<String> $action_makeApp(String stateJson, String paramsJson) async {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final emit = (StateDelta delta) {
+    hostEmit(jsonEncode(delta.toJson()));
+  };
+  await makeApp(state, emit);
+  return '';
+}
+
+Future<String> $action_updateIdea(String stateJson, String paramsJson) async {
   final state = State.fromJson(jsonDecode(stateJson) as Map);
   final params = jsonDecode(paramsJson) as Map;
   final emit = (StateDelta delta) {
     hostEmit(jsonEncode(delta.toJson()));
   };
-  await goToPage(state, emit, params['value'] as int);
+  await updateIdea(state, emit, params['value'] as String);
+  return '';
+}
+
+Future<String> $action_pickHabits(String stateJson, String paramsJson) async {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final emit = (StateDelta delta) {
+    hostEmit(jsonEncode(delta.toJson()));
+  };
+  await pickHabits(state, emit);
+  return '';
+}
+
+Future<String> $action_pickMeals(String stateJson, String paramsJson) async {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final emit = (StateDelta delta) {
+    hostEmit(jsonEncode(delta.toJson()));
+  };
+  await pickMeals(state, emit);
+  return '';
+}
+
+Future<String> $action_pickBills(String stateJson, String paramsJson) async {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final emit = (StateDelta delta) {
+    hostEmit(jsonEncode(delta.toJson()));
+  };
+  await pickBills(state, emit);
+  return '';
+}
+
+Future<String> $action_pickBooks(String stateJson, String paramsJson) async {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final emit = (StateDelta delta) {
+    hostEmit(jsonEncode(delta.toJson()));
+  };
+  await pickBooks(state, emit);
+  return '';
+}
+
+Future<String> $action_openWaitlist(String stateJson, String paramsJson) async {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  await openWaitlist(state, Core());
+  return '';
+}
+
+Future<String> $action_updateEmail(String stateJson, String paramsJson) async {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final params = jsonDecode(paramsJson) as Map;
+  final emit = (StateDelta delta) {
+    hostEmit(jsonEncode(delta.toJson()));
+  };
+  await updateEmail(state, emit, params['value'] as String);
+  return '';
+}
+
+Future<String> $action_joinWaitlist(String stateJson, String paramsJson) async {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final emit = (StateDelta delta) {
+    hostEmit(jsonEncode(delta.toJson()));
+  };
+  await joinWaitlist(state, emit);
   return '';
 }
 
@@ -26,422 +96,104 @@ Future<String> $action_close(String stateJson, String paramsJson) async {
   return '';
 }
 
-Future<String> $action_updateEntryTitle(String stateJson, String paramsJson) async {
+String $binding_ideaValue(String stateJson, String paramsJson) {
   final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final params = jsonDecode(paramsJson) as Map;
-  final emit = (StateDelta delta) {
-    hostEmit(jsonEncode(delta.toJson()));
-  };
-  await updateEntryTitle(state, emit, params['value'] as String);
-  return '';
-}
-
-Future<String> $action_updateEntryAmount(String stateJson, String paramsJson) async {
-  final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final params = jsonDecode(paramsJson) as Map;
-  final emit = (StateDelta delta) {
-    hostEmit(jsonEncode(delta.toJson()));
-  };
-  await updateEntryAmount(state, emit, params['value'] as String);
-  return '';
-}
-
-Future<String> $action_selectIncome(String stateJson, String paramsJson) async {
-  final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final emit = (StateDelta delta) {
-    hostEmit(jsonEncode(delta.toJson()));
-  };
-  await selectIncome(state, emit);
-  return '';
-}
-
-Future<String> $action_selectExpense(String stateJson, String paramsJson) async {
-  final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final emit = (StateDelta delta) {
-    hostEmit(jsonEncode(delta.toJson()));
-  };
-  await selectExpense(state, emit);
-  return '';
-}
-
-Future<String> $action_addEntry(String stateJson, String paramsJson) async {
-  final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final emit = (StateDelta delta) {
-    hostEmit(jsonEncode(delta.toJson()));
-  };
-  await addEntry(state, emit);
-  return '';
-}
-
-Future<String> $action_deleteEntry(String stateJson, String paramsJson) async {
-  final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final params = jsonDecode(paramsJson) as Map;
-  final emit = (StateDelta delta) {
-    hostEmit(jsonEncode(delta.toJson()));
-  };
-  await deleteEntry(state, emit, params['index'] as int);
-  return '';
-}
-
-Future<String> $action_updateGoalName(String stateJson, String paramsJson) async {
-  final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final params = jsonDecode(paramsJson) as Map;
-  final emit = (StateDelta delta) {
-    hostEmit(jsonEncode(delta.toJson()));
-  };
-  await updateGoalName(state, emit, params['value'] as String);
-  return '';
-}
-
-Future<String> $action_updateGoalTarget(String stateJson, String paramsJson) async {
-  final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final params = jsonDecode(paramsJson) as Map;
-  final emit = (StateDelta delta) {
-    hostEmit(jsonEncode(delta.toJson()));
-  };
-  await updateGoalTarget(state, emit, params['value'] as String);
-  return '';
-}
-
-Future<String> $action_updateContribution(String stateJson, String paramsJson) async {
-  final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final params = jsonDecode(paramsJson) as Map;
-  final emit = (StateDelta delta) {
-    hostEmit(jsonEncode(delta.toJson()));
-  };
-  await updateContribution(state, emit, params['value'] as String);
-  return '';
-}
-
-Future<String> $action_addGoal(String stateJson, String paramsJson) async {
-  final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final emit = (StateDelta delta) {
-    hostEmit(jsonEncode(delta.toJson()));
-  };
-  await addGoal(state, emit);
-  return '';
-}
-
-Future<String> $action_contributeToGoal(String stateJson, String paramsJson) async {
-  final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final params = jsonDecode(paramsJson) as Map;
-  final emit = (StateDelta delta) {
-    hostEmit(jsonEncode(delta.toJson()));
-  };
-  await contributeToGoal(state, emit, params['index'] as int);
-  return '';
-}
-
-Future<String> $action_deleteGoal(String stateJson, String paramsJson) async {
-  final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final params = jsonDecode(paramsJson) as Map;
-  final emit = (StateDelta delta) {
-    hostEmit(jsonEncode(delta.toJson()));
-  };
-  await deleteGoal(state, emit, params['index'] as int);
-  return '';
-}
-
-Future<String> $action_updateProfileName(String stateJson, String paramsJson) async {
-  final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final params = jsonDecode(paramsJson) as Map;
-  final emit = (StateDelta delta) {
-    hostEmit(jsonEncode(delta.toJson()));
-  };
-  await updateProfileName(state, emit, params['value'] as String);
-  return '';
-}
-
-Future<String> $action_updateProfileEmail(String stateJson, String paramsJson) async {
-  final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final params = jsonDecode(paramsJson) as Map;
-  final emit = (StateDelta delta) {
-    hostEmit(jsonEncode(delta.toJson()));
-  };
-  await updateProfileEmail(state, emit, params['value'] as String);
-  return '';
-}
-
-Future<String> $action_updateCurrency(String stateJson, String paramsJson) async {
-  final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final params = jsonDecode(paramsJson) as Map;
-  final emit = (StateDelta delta) {
-    hostEmit(jsonEncode(delta.toJson()));
-  };
-  await updateCurrency(state, emit, params['value'] as String);
-  return '';
-}
-
-Future<String> $action_toggleNotifications(String stateJson, String paramsJson) async {
-  final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final params = jsonDecode(paramsJson) as Map;
-  final emit = (StateDelta delta) {
-    hostEmit(jsonEncode(delta.toJson()));
-  };
-  await toggleNotifications(state, emit, params['value'] as bool);
-  return '';
-}
-
-Future<String> $action_askResetData(String stateJson, String paramsJson) async {
-  final state = State.fromJson(jsonDecode(stateJson) as Map);
-  await askResetData(state, Core());
-  return '';
-}
-
-Future<String> $action_resetData(String stateJson, String paramsJson) async {
-  final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final emit = (StateDelta delta) {
-    hostEmit(jsonEncode(delta.toJson()));
-  };
-  await resetData(state, emit, Core());
-  return '';
-}
-
-Future<String> $action_openDollarRate(String stateJson, String paramsJson) async {
-  final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final emit = (StateDelta delta) {
-    hostEmit(jsonEncode(delta.toJson()));
-  };
-  await openDollarRate(state, emit, Core());
-  return '';
-}
-
-Future<String> $action_fetchDollarRate(String stateJson, String paramsJson) async {
-  final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final emit = (StateDelta delta) {
-    hostEmit(jsonEncode(delta.toJson()));
-  };
-  await fetchDollarRate(state, emit, Core());
-  return '';
-}
-
-String $binding_pageIndex(String stateJson, String paramsJson) {
-  final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final result = pageIndex(state);
+  final result = ideaValue(state);
   return jsonEncode(result);
 }
 
-String $binding_pageTitle(String stateJson, String paramsJson) {
+String $binding_ideaIsHabits(String stateJson, String paramsJson) {
   final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final result = pageTitle(state);
+  final result = ideaIsHabits(state);
   return jsonEncode(result);
 }
 
-String $binding_currentPage(String stateJson, String paramsJson) {
+String $binding_ideaIsMeals(String stateJson, String paramsJson) {
   final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final result = currentPage(state);
+  final result = ideaIsMeals(state);
   return jsonEncode(result);
 }
 
-String $binding_balanceValue(String stateJson, String paramsJson) {
+String $binding_ideaIsBills(String stateJson, String paramsJson) {
   final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final result = balanceValue(state);
+  final result = ideaIsBills(state);
   return jsonEncode(result);
 }
 
-String $binding_balanceText(String stateJson, String paramsJson) {
+String $binding_ideaIsBooks(String stateJson, String paramsJson) {
   final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final result = balanceText(state);
+  final result = ideaIsBooks(state);
   return jsonEncode(result);
 }
 
-String $binding_incomeText(String stateJson, String paramsJson) {
+String $binding_step1State(String stateJson, String paramsJson) {
   final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final result = incomeText(state);
+  final result = step1State(state);
   return jsonEncode(result);
 }
 
-String $binding_expenseText(String stateJson, String paramsJson) {
+String $binding_step2State(String stateJson, String paramsJson) {
   final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final result = expenseText(state);
+  final result = step2State(state);
   return jsonEncode(result);
 }
 
-String $binding_entryList(String stateJson, String paramsJson) {
+String $binding_step3State(String stateJson, String paramsJson) {
   final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final result = entryList(state);
-  return jsonEncode(result.map((e) => e.toJson()).toList());
-}
-
-String $binding_entryTitleAt(String stateJson, String paramsJson) {
-  final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final params = jsonDecode(paramsJson) as Map;
-  final result = entryTitleAt(state, params['index'] as int);
+  final result = step3State(state);
   return jsonEncode(result);
 }
 
-String $binding_entryDateAt(String stateJson, String paramsJson) {
+String $binding_step4State(String stateJson, String paramsJson) {
   final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final params = jsonDecode(paramsJson) as Map;
-  final result = entryDateAt(state, params['index'] as int);
+  final result = step4State(state);
   return jsonEncode(result);
 }
 
-String $binding_entryAmountAt(String stateJson, String paramsJson) {
+String $binding_buildReady(String stateJson, String paramsJson) {
   final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final params = jsonDecode(paramsJson) as Map;
-  final result = entryAmountAt(state, params['index'] as int);
+  final result = buildReady(state);
   return jsonEncode(result);
 }
 
-String $binding_entryIsIncome(String stateJson, String paramsJson) {
+String $binding_makeButtonText(String stateJson, String paramsJson) {
   final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final params = jsonDecode(paramsJson) as Map;
-  final result = entryIsIncome(state, params['index'] as int);
+  final result = makeButtonText(state);
   return jsonEncode(result);
 }
 
-String $binding_entryTitleValue(String stateJson, String paramsJson) {
+String $binding_emailValue(String stateJson, String paramsJson) {
   final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final result = entryTitleValue(state);
+  final result = emailValue(state);
   return jsonEncode(result);
 }
 
-String $binding_entryAmountValue(String stateJson, String paramsJson) {
+String $binding_waitlistJoined(String stateJson, String paramsJson) {
   final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final result = entryAmountValue(state);
+  final result = waitlistJoined(state);
   return jsonEncode(result);
 }
 
-String $binding_kindIsIncome(String stateJson, String paramsJson) {
+String $binding_waitlistInvalid(String stateJson, String paramsJson) {
   final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final result = kindIsIncome(state);
+  final result = waitlistInvalid(state);
   return jsonEncode(result);
 }
 
-String $binding_kindIsExpense(String stateJson, String paramsJson) {
+String $binding_waitlistCountText(String stateJson, String paramsJson) {
   final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final result = kindIsExpense(state);
+  final result = waitlistCountText(state);
   return jsonEncode(result);
 }
 
-String $binding_goalList(String stateJson, String paramsJson) {
+String $binding_ideaSummary(String stateJson, String paramsJson) {
   final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final result = goalList(state);
-  return jsonEncode(result.map((e) => e.toJson()).toList());
-}
-
-String $binding_goalNameAt(String stateJson, String paramsJson) {
-  final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final params = jsonDecode(paramsJson) as Map;
-  final result = goalNameAt(state, params['index'] as int);
+  final result = ideaSummary(state);
   return jsonEncode(result);
 }
 
-String $binding_goalAmountsAt(String stateJson, String paramsJson) {
+String $binding_joinedText(String stateJson, String paramsJson) {
   final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final params = jsonDecode(paramsJson) as Map;
-  final result = goalAmountsAt(state, params['index'] as int);
-  return jsonEncode(result);
-}
-
-String $binding_goalProgressAt(String stateJson, String paramsJson) {
-  final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final params = jsonDecode(paramsJson) as Map;
-  final result = goalProgressAt(state, params['index'] as int);
-  return jsonEncode(result);
-}
-
-String $binding_goalPercentAt(String stateJson, String paramsJson) {
-  final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final params = jsonDecode(paramsJson) as Map;
-  final result = goalPercentAt(state, params['index'] as int);
-  return jsonEncode(result);
-}
-
-String $binding_goalReachedAt(String stateJson, String paramsJson) {
-  final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final params = jsonDecode(paramsJson) as Map;
-  final result = goalReachedAt(state, params['index'] as int);
-  return jsonEncode(result);
-}
-
-String $binding_goalNameValue(String stateJson, String paramsJson) {
-  final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final result = goalNameValue(state);
-  return jsonEncode(result);
-}
-
-String $binding_goalTargetValue(String stateJson, String paramsJson) {
-  final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final result = goalTargetValue(state);
-  return jsonEncode(result);
-}
-
-String $binding_contributionValue(String stateJson, String paramsJson) {
-  final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final result = contributionValue(state);
-  return jsonEncode(result);
-}
-
-String $binding_contributionLabel(String stateJson, String paramsJson) {
-  final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final result = contributionLabel(state);
-  return jsonEncode(result);
-}
-
-String $binding_profileName(String stateJson, String paramsJson) {
-  final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final result = profileName(state);
-  return jsonEncode(result);
-}
-
-String $binding_profileEmail(String stateJson, String paramsJson) {
-  final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final result = profileEmail(state);
-  return jsonEncode(result);
-}
-
-String $binding_profileInitials(String stateJson, String paramsJson) {
-  final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final result = profileInitials(state);
-  return jsonEncode(result);
-}
-
-String $binding_profileCurrency(String stateJson, String paramsJson) {
-  final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final result = profileCurrency(state);
-  return jsonEncode(result);
-}
-
-String $binding_currencyOptions(String stateJson, String paramsJson) {
-  final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final result = currencyOptions(state);
-  return jsonEncode(result);
-}
-
-String $binding_notificationsOn(String stateJson, String paramsJson) {
-  final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final result = notificationsOn(state);
-  return jsonEncode(result);
-}
-
-String $binding_entryCountText(String stateJson, String paramsJson) {
-  final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final result = entryCountText(state);
-  return jsonEncode(result);
-}
-
-String $binding_goalCountText(String stateJson, String paramsJson) {
-  final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final result = goalCountText(state);
-  return jsonEncode(result);
-}
-
-String $binding_dollarRateText(String stateJson, String paramsJson) {
-  final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final result = dollarRateText(state);
-  return jsonEncode(result);
-}
-
-String $binding_dollarRateUpdatedText(String stateJson, String paramsJson) {
-  final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final result = dollarRateUpdatedText(state);
-  return jsonEncode(result);
-}
-
-String $binding_dollarRateLoading(String stateJson, String paramsJson) {
-  final state = State.fromJson(jsonDecode(stateJson) as Map);
-  final result = dollarRateLoading(state);
+  final result = joinedText(state);
   return jsonEncode(result);
 }

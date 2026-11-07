@@ -9,6 +9,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_svg: ^2.3.2
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -67,6 +68,28 @@ flutter:
         - asset: fonts/Figtree-600.ttf
           weight: 600
         - asset: fonts/Figtree-700.ttf
+          weight: 700
+    - family: Plus Jakarta Sans
+      fonts:
+        - asset: fonts/PlusJakartaSans-400.ttf
+          weight: 400
+        - asset: fonts/PlusJakartaSans-500.ttf
+          weight: 500
+        - asset: fonts/PlusJakartaSans-600.ttf
+          weight: 600
+        - asset: fonts/PlusJakartaSans-700.ttf
+          weight: 700
+        - asset: fonts/PlusJakartaSans-800.ttf
+          weight: 800
+    - family: Cormorant Garamond
+      fonts:
+        - asset: fonts/CormorantGaramond-400.ttf
+          weight: 400
+        - asset: fonts/CormorantGaramond-500.ttf
+          weight: 500
+        - asset: fonts/CormorantGaramond-600.ttf
+          weight: 600
+        - asset: fonts/CormorantGaramond-700.ttf
           weight: 700
     # Phosphor icons (MIT), one family per weight. See lib/src/icons.dart.
     - family: PhosphorThin
