@@ -93,7 +93,11 @@ void main() {
     return bloc;
   }
 
+  // state.yaml (so new fields are always there), with a fresh hero and form.
+  final yamlState = Map<String, dynamic>.from(
+      yamlToDart(loadYaml(File('metacode/state.yaml').readAsStringSync()))['state'] as Map);
   Map<String, dynamic> state() => {
+        ...jsonDecode(jsonEncode(yamlState)) as Map<String, dynamic>,
         'idea': 'Remind me to water my plants',
         'buildStep': 0,
         'email': '',
@@ -187,5 +191,37 @@ void main() {
         expect(tester.takeException(), isNull, reason: '$family $brightness');
       }
     }
+  });
+
+  testWidgets('examples carousel: every slide renders on phone and desktop', (tester) async {
+    for (final size in [const Size(360, 780), const Size(1440, 900)]) {
+      for (var i = 0; i < 4; i++) {
+        await tester.pumpWidget(const SizedBox()); // fresh tree, so the new state is used
+        await pump(tester, {...state(), 'exampleIndex': i}, size: size);
+        await tester.pumpAndSettle();
+        expect(find.text(['Today', 'Guitar basics', 'November', 'Plant care'][i]), findsOneWidget);
+        expect(tester.takeException(), isNull, reason: 'slide $i at $size');
+      }
+    }
+  });
+
+  testWidgets('examples carousel: arrows, chips and a mini app respond', (tester) async {
+    final bloc = await pump(tester, {...state(), 'exampleIndex': 0});
+    final next = find.byTooltip('Next');
+    await tester.ensureVisible(next);
+    await tester.pumpAndSettle();
+    await tester.tap(next);
+    await tester.pumpAndSettle();
+    expect(bloc.state['exampleIndex'], 1);
+    expect(find.text('Guitar basics'), findsOneWidget);
+
+    await tester.tap(find.text('Plants'));
+    await tester.pumpAndSettle();
+    final water = find.byTooltip('Watered').first;
+    await tester.ensureVisible(water);
+    await tester.pumpAndSettle();
+    await tester.tap(water);
+    await tester.pumpAndSettle();
+    expect((bloc.state['plants'] as List).first['daysLeft'], 7);
   });
 }

@@ -114,6 +114,70 @@ class TestApp implements MetacodeHost {
   Future<State> close(State state) =>
       _run('close', state);
 
+  /// Runs `nextExample` and returns the state with its deltas applied.
+  Future<State> nextExample(State state) =>
+      _run('nextExample', state);
+
+  /// Runs `previousExample` and returns the state with its deltas applied.
+  Future<State> previousExample(State state) =>
+      _run('previousExample', state);
+
+  /// Runs `showFood` and returns the state with its deltas applied.
+  Future<State> showFood(State state) =>
+      _run('showFood', state);
+
+  /// Runs `showMusic` and returns the state with its deltas applied.
+  Future<State> showMusic(State state) =>
+      _run('showMusic', state);
+
+  /// Runs `showWork` and returns the state with its deltas applied.
+  Future<State> showWork(State state) =>
+      _run('showWork', state);
+
+  /// Runs `showPlants` and returns the state with its deltas applied.
+  Future<State> showPlants(State state) =>
+      _run('showPlants', state);
+
+  /// Runs `makeLikeThis` and returns the state with its deltas applied.
+  Future<State> makeLikeThis(State state) =>
+      _run('makeLikeThis', state);
+
+  /// Runs `addFood` and returns the state with its deltas applied.
+  Future<State> addFood(State state, int index) =>
+      _run('addFood', state, {'index': index});
+
+  /// Runs `removeFood` and returns the state with its deltas applied.
+  Future<State> removeFood(State state, int index) =>
+      _run('removeFood', state, {'index': index});
+
+  /// Runs `clearFoods` and returns the state with its deltas applied.
+  Future<State> clearFoods(State state) =>
+      _run('clearFoods', state);
+
+  /// Runs `toggleChord` and returns the state with its deltas applied.
+  Future<State> toggleChord(State state, int index, bool value) =>
+      _run('toggleChord', state, {'index': index, 'value': value});
+
+  /// Runs `logPractice` and returns the state with its deltas applied.
+  Future<State> logPractice(State state) =>
+      _run('logPractice', state);
+
+  /// Runs `toggleJobPaid` and returns the state with its deltas applied.
+  Future<State> toggleJobPaid(State state, int index, bool value) =>
+      _run('toggleJobPaid', state, {'index': index, 'value': value});
+
+  /// Runs `setTaxRate` and returns the state with its deltas applied.
+  Future<State> setTaxRate(State state, double value) =>
+      _run('setTaxRate', state, {'value': value});
+
+  /// Runs `waterPlant` and returns the state with its deltas applied.
+  Future<State> waterPlant(State state, int index) =>
+      _run('waterPlant', state, {'index': index});
+
+  /// Runs `nextDay` and returns the state with its deltas applied.
+  Future<State> nextDay(State state) =>
+      _run('nextDay', state);
+
   String ideaValue(State state) {
     final result = _program.binding('ideaValue', state.toJson());
     return result as String;
@@ -196,6 +260,221 @@ class TestApp implements MetacodeHost {
 
   String joinedText(State state) {
     final result = _program.binding('joinedText', state.toJson());
+    return result as String;
+  }
+
+  String exampleKey(State state) {
+    final result = _program.binding('exampleKey', state.toJson());
+    return result as String;
+  }
+
+  bool exampleIsFood(State state) {
+    final result = _program.binding('exampleIsFood', state.toJson());
+    return result as bool;
+  }
+
+  bool exampleIsMusic(State state) {
+    final result = _program.binding('exampleIsMusic', state.toJson());
+    return result as bool;
+  }
+
+  bool exampleIsWork(State state) {
+    final result = _program.binding('exampleIsWork', state.toJson());
+    return result as bool;
+  }
+
+  bool exampleIsPlants(State state) {
+    final result = _program.binding('exampleIsPlants', state.toJson());
+    return result as bool;
+  }
+
+  String examplePrompt(State state) {
+    final result = _program.binding('examplePrompt', state.toJson());
+    return result as String;
+  }
+
+  String exampleTag(State state) {
+    final result = _program.binding('exampleTag', state.toJson());
+    return result as String;
+  }
+
+  String exampleBlurb(State state) {
+    final result = _program.binding('exampleBlurb', state.toJson());
+    return result as String;
+  }
+
+  String exampleImage(State state) {
+    final result = _program.binding('exampleImage', state.toJson());
+    return result as String;
+  }
+
+  String examplePosition(State state) {
+    final result = _program.binding('examplePosition', state.toJson());
+    return result as String;
+  }
+
+  List<Food> foodList(State state) {
+    final result = _program.binding('foodList', state.toJson());
+    return (result as List).map((e) => Food.fromJson(e as Map)).toList();
+  }
+
+  String foodName(State state, int index) {
+    final result = _program.binding('foodName', state.toJson(), {'index': index});
+    return result as String;
+  }
+
+  String foodInfo(State state, int index) {
+    final result = _program.binding('foodInfo', state.toJson(), {'index': index});
+    return result as String;
+  }
+
+  String foodCount(State state, int index) {
+    final result = _program.binding('foodCount', state.toJson(), {'index': index});
+    return result as String;
+  }
+
+  String caloriesText(State state) {
+    final result = _program.binding('caloriesText', state.toJson());
+    return result as String;
+  }
+
+  String proteinText(State state) {
+    final result = _program.binding('proteinText', state.toJson());
+    return result as String;
+  }
+
+  double caloriesProgress(State state) {
+    final result = _program.binding('caloriesProgress', state.toJson());
+    return (result as num).toDouble();
+  }
+
+  String foodTip(State state) {
+    final result = _program.binding('foodTip', state.toJson());
+    return result as String;
+  }
+
+  List<Chord> chordList(State state) {
+    final result = _program.binding('chordList', state.toJson());
+    return (result as List).map((e) => Chord.fromJson(e as Map)).toList();
+  }
+
+  String chordName(State state, int index) {
+    final result = _program.binding('chordName', state.toJson(), {'index': index});
+    return result as String;
+  }
+
+  String chordFingers(State state, int index) {
+    final result = _program.binding('chordFingers', state.toJson(), {'index': index});
+    return result as String;
+  }
+
+  bool chordLearned(State state, int index) {
+    final result = _program.binding('chordLearned', state.toJson(), {'index': index});
+    return result as bool;
+  }
+
+  String chordsText(State state) {
+    final result = _program.binding('chordsText', state.toJson());
+    return result as String;
+  }
+
+  double chordsProgress(State state) {
+    final result = _program.binding('chordsProgress', state.toJson());
+    return (result as num).toDouble();
+  }
+
+  String musicTip(State state) {
+    final result = _program.binding('musicTip', state.toJson());
+    return result as String;
+  }
+
+  String practiceText(State state) {
+    final result = _program.binding('practiceText', state.toJson());
+    return result as String;
+  }
+
+  double practiceProgress(State state) {
+    final result = _program.binding('practiceProgress', state.toJson());
+    return (result as num).toDouble();
+  }
+
+  List<Job> jobList(State state) {
+    final result = _program.binding('jobList', state.toJson());
+    return (result as List).map((e) => Job.fromJson(e as Map)).toList();
+  }
+
+  String jobClient(State state, int index) {
+    final result = _program.binding('jobClient', state.toJson(), {'index': index});
+    return result as String;
+  }
+
+  String jobTask(State state, int index) {
+    final result = _program.binding('jobTask', state.toJson(), {'index': index});
+    return result as String;
+  }
+
+  String jobAmount(State state, int index) {
+    final result = _program.binding('jobAmount', state.toJson(), {'index': index});
+    return result as String;
+  }
+
+  bool jobPaid(State state, int index) {
+    final result = _program.binding('jobPaid', state.toJson(), {'index': index});
+    return result as bool;
+  }
+
+  String receivedText(State state) {
+    final result = _program.binding('receivedText', state.toJson());
+    return result as String;
+  }
+
+  String waitingText(State state) {
+    final result = _program.binding('waitingText', state.toJson());
+    return result as String;
+  }
+
+  double taxRateValue(State state) {
+    final result = _program.binding('taxRateValue', state.toJson());
+    return (result as num).toDouble();
+  }
+
+  String taxText(State state) {
+    final result = _program.binding('taxText', state.toJson());
+    return result as String;
+  }
+
+  String workTip(State state) {
+    final result = _program.binding('workTip', state.toJson());
+    return result as String;
+  }
+
+  List<Plant> plantList(State state) {
+    final result = _program.binding('plantList', state.toJson());
+    return (result as List).map((e) => Plant.fromJson(e as Map)).toList();
+  }
+
+  String plantName(State state, int index) {
+    final result = _program.binding('plantName', state.toJson(), {'index': index});
+    return result as String;
+  }
+
+  String plantSchedule(State state, int index) {
+    final result = _program.binding('plantSchedule', state.toJson(), {'index': index});
+    return result as String;
+  }
+
+  String plantStatus(State state, int index) {
+    final result = _program.binding('plantStatus', state.toJson(), {'index': index});
+    return result as String;
+  }
+
+  String plantsText(State state) {
+    final result = _program.binding('plantsText', state.toJson());
+    return result as String;
+  }
+
+  String plantTip(State state) {
+    final result = _program.binding('plantTip', state.toJson());
     return result as String;
   }
 }

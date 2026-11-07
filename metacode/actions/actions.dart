@@ -4,6 +4,7 @@
 
 import '../generated/core.dart';
 import '../generated/state.dart';
+import '../bindings/bindings.dart';
 
 // Make my app (the demo in the hero)
 
@@ -80,4 +81,83 @@ Future<void> joinWaitlist(State state, void Function(StateDelta) emit) async {
 /// Closes the sheet on top.
 Future<void> close(State state, Core core) async {
   await core.navigator.pop();
+}
+
+// Example apps carousel
+
+const int exampleCount = 4;
+
+Future<void> nextExample(State state, void Function(StateDelta) emit) async =>
+    emit(StateDelta(exampleIndex: (state.exampleIndex + 1) % exampleCount));
+
+Future<void> previousExample(State state, void Function(StateDelta) emit) async =>
+    emit(StateDelta(exampleIndex: (state.exampleIndex + exampleCount - 1) % exampleCount));
+
+Future<void> showFood(State state, void Function(StateDelta) emit) async =>
+    emit(StateDelta(exampleIndex: 0));
+Future<void> showMusic(State state, void Function(StateDelta) emit) async =>
+    emit(StateDelta(exampleIndex: 1));
+Future<void> showWork(State state, void Function(StateDelta) emit) async =>
+    emit(StateDelta(exampleIndex: 2));
+Future<void> showPlants(State state, void Function(StateDelta) emit) async =>
+    emit(StateDelta(exampleIndex: 3));
+
+/// Uses the current example's sentence as the idea and opens the waitlist.
+Future<void> makeLikeThis(State state, void Function(StateDelta) emit, Core core) async {
+  emit(StateDelta(idea: examplePrompt(state).replaceAll('“', '').replaceAll('”', ''), buildStep: 0));
+  core.navigator.push(Routes.waitlist);
+}
+
+// Food: log servings
+
+Future<void> addFood(State state, void Function(StateDelta) emit, int index) async {
+  state.foods[index].count += 1;
+  emit(StateDelta(foods: state.foods));
+}
+
+Future<void> removeFood(State state, void Function(StateDelta) emit, int index) async {
+  if (state.foods[index].count <= 0) return;
+  state.foods[index].count -= 1;
+  emit(StateDelta(foods: state.foods));
+}
+
+Future<void> clearFoods(State state, void Function(StateDelta) emit) async {
+  for (final f in state.foods) {
+    f.count = 0;
+  }
+  emit(StateDelta(foods: state.foods));
+}
+
+// Music: chords and practice
+
+Future<void> toggleChord(State state, void Function(StateDelta) emit, int index, bool value) async {
+  state.chords[index].learned = value;
+  emit(StateDelta(chords: state.chords));
+}
+
+Future<void> logPractice(State state, void Function(StateDelta) emit) async =>
+    emit(StateDelta(practiceMinutes: state.practiceMinutes + 5));
+
+// Work: jobs and taxes
+
+Future<void> toggleJobPaid(State state, void Function(StateDelta) emit, int index, bool value) async {
+  state.jobs[index].paid = value;
+  emit(StateDelta(jobs: state.jobs));
+}
+
+Future<void> setTaxRate(State state, void Function(StateDelta) emit, double value) async =>
+    emit(StateDelta(taxRate: value.round()));
+
+// Plants: water and pass the days
+
+Future<void> waterPlant(State state, void Function(StateDelta) emit, int index) async {
+  state.plants[index].daysLeft = state.plants[index].everyDays;
+  emit(StateDelta(plants: state.plants));
+}
+
+Future<void> nextDay(State state, void Function(StateDelta) emit) async {
+  for (final p in state.plants) {
+    if (p.daysLeft > 0) p.daysLeft -= 1;
+  }
+  emit(StateDelta(plants: state.plants));
 }

@@ -11,9 +11,42 @@ waitlistStatus:
   - invalid
   - joined
 
+# Example apps in the carousel
+
+food:
+  name: string
+  kcal: number
+  protein: number      # grams per serving
+  count: number        # servings eaten today
+
+chord:
+  name: string
+  fingers: string
+  learned: boolean
+
+job:
+  client: string
+  task: string
+  amount: number
+  paid: boolean
+
+plant:
+  name: string
+  everyDays: number
+  daysLeft: number     # 0 means water today
+
 state:
   idea: string
   buildStep: number      # 0 idle, 1-4 the step being worked on, 5 ready
   email: string
   waitlistStatus: waitlistStatus
   waitlistCount: number
+
+  exampleIndex: number   # 0 food, 1 music, 2 work, 3 plants
+  calorieGoal: number
+  foods: list(food)
+  chords: list(chord)
+  practiceMinutes: number
+  jobs: list(job)
+  taxRate: number        # percent set aside for taxes
+  plants: list(plant)

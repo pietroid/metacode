@@ -15,6 +15,178 @@ String $waitlistStatusToJson(WaitlistStatus value) {
   return 'joined';
 }
 
+class Food {
+  Food({
+    required this.name,
+    required this.kcal,
+    required this.protein,
+    required this.count,
+  });
+
+  String name;
+  num kcal;
+  num protein;
+  num count;
+
+  Food copyWith({
+    String? name,
+    num? kcal,
+    num? protein,
+    num? count,
+  }) {
+    return Food(
+      name: name ?? this.name,
+      kcal: kcal ?? this.kcal,
+      protein: protein ?? this.protein,
+      count: count ?? this.count,
+    );
+  }
+
+  static Food fromJson(Map json) {
+    return Food(
+      name: json['name'] as String,
+      kcal: json['kcal'] as num,
+      protein: json['protein'] as num,
+      count: json['count'] as num,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'kcal': kcal,
+      'protein': protein,
+      'count': count,
+    };
+  }
+}
+
+class Chord {
+  Chord({
+    required this.name,
+    required this.fingers,
+    required this.learned,
+  });
+
+  String name;
+  String fingers;
+  bool learned;
+
+  Chord copyWith({
+    String? name,
+    String? fingers,
+    bool? learned,
+  }) {
+    return Chord(
+      name: name ?? this.name,
+      fingers: fingers ?? this.fingers,
+      learned: learned ?? this.learned,
+    );
+  }
+
+  static Chord fromJson(Map json) {
+    return Chord(
+      name: json['name'] as String,
+      fingers: json['fingers'] as String,
+      learned: json['learned'] as bool,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'fingers': fingers,
+      'learned': learned,
+    };
+  }
+}
+
+class Job {
+  Job({
+    required this.client,
+    required this.task,
+    required this.amount,
+    required this.paid,
+  });
+
+  String client;
+  String task;
+  num amount;
+  bool paid;
+
+  Job copyWith({
+    String? client,
+    String? task,
+    num? amount,
+    bool? paid,
+  }) {
+    return Job(
+      client: client ?? this.client,
+      task: task ?? this.task,
+      amount: amount ?? this.amount,
+      paid: paid ?? this.paid,
+    );
+  }
+
+  static Job fromJson(Map json) {
+    return Job(
+      client: json['client'] as String,
+      task: json['task'] as String,
+      amount: json['amount'] as num,
+      paid: json['paid'] as bool,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'client': client,
+      'task': task,
+      'amount': amount,
+      'paid': paid,
+    };
+  }
+}
+
+class Plant {
+  Plant({
+    required this.name,
+    required this.everyDays,
+    required this.daysLeft,
+  });
+
+  String name;
+  num everyDays;
+  num daysLeft;
+
+  Plant copyWith({
+    String? name,
+    num? everyDays,
+    num? daysLeft,
+  }) {
+    return Plant(
+      name: name ?? this.name,
+      everyDays: everyDays ?? this.everyDays,
+      daysLeft: daysLeft ?? this.daysLeft,
+    );
+  }
+
+  static Plant fromJson(Map json) {
+    return Plant(
+      name: json['name'] as String,
+      everyDays: json['everyDays'] as num,
+      daysLeft: json['daysLeft'] as num,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'everyDays': everyDays,
+      'daysLeft': daysLeft,
+    };
+  }
+}
+
 class State {
   State({
     required this.idea,
@@ -22,6 +194,14 @@ class State {
     required this.email,
     required this.waitlistStatus,
     required this.waitlistCount,
+    required this.exampleIndex,
+    required this.calorieGoal,
+    required this.foods,
+    required this.chords,
+    required this.practiceMinutes,
+    required this.jobs,
+    required this.taxRate,
+    required this.plants,
   });
 
   String idea;
@@ -29,6 +209,14 @@ class State {
   String email;
   WaitlistStatus waitlistStatus;
   num waitlistCount;
+  num exampleIndex;
+  num calorieGoal;
+  List<Food> foods;
+  List<Chord> chords;
+  num practiceMinutes;
+  List<Job> jobs;
+  num taxRate;
+  List<Plant> plants;
 
   State copyWith({
     String? idea,
@@ -36,6 +224,14 @@ class State {
     String? email,
     WaitlistStatus? waitlistStatus,
     num? waitlistCount,
+    num? exampleIndex,
+    num? calorieGoal,
+    List<Food>? foods,
+    List<Chord>? chords,
+    num? practiceMinutes,
+    List<Job>? jobs,
+    num? taxRate,
+    List<Plant>? plants,
   }) {
     return State(
       idea: idea ?? this.idea,
@@ -43,6 +239,14 @@ class State {
       email: email ?? this.email,
       waitlistStatus: waitlistStatus ?? this.waitlistStatus,
       waitlistCount: waitlistCount ?? this.waitlistCount,
+      exampleIndex: exampleIndex ?? this.exampleIndex,
+      calorieGoal: calorieGoal ?? this.calorieGoal,
+      foods: foods ?? this.foods,
+      chords: chords ?? this.chords,
+      practiceMinutes: practiceMinutes ?? this.practiceMinutes,
+      jobs: jobs ?? this.jobs,
+      taxRate: taxRate ?? this.taxRate,
+      plants: plants ?? this.plants,
     );
   }
 
@@ -53,6 +257,14 @@ class State {
       email: json['email'] as String,
       waitlistStatus: $waitlistStatusFromJson(json['waitlistStatus'] as String),
       waitlistCount: json['waitlistCount'] as num,
+      exampleIndex: json['exampleIndex'] as num,
+      calorieGoal: json['calorieGoal'] as num,
+      foods: (json['foods'] as List).map((e) => Food.fromJson(e as Map)).toList(),
+      chords: (json['chords'] as List).map((e) => Chord.fromJson(e as Map)).toList(),
+      practiceMinutes: json['practiceMinutes'] as num,
+      jobs: (json['jobs'] as List).map((e) => Job.fromJson(e as Map)).toList(),
+      taxRate: json['taxRate'] as num,
+      plants: (json['plants'] as List).map((e) => Plant.fromJson(e as Map)).toList(),
     );
   }
 
@@ -63,6 +275,14 @@ class State {
       'email': email,
       'waitlistStatus': $waitlistStatusToJson(waitlistStatus),
       'waitlistCount': waitlistCount,
+      'exampleIndex': exampleIndex,
+      'calorieGoal': calorieGoal,
+      'foods': foods.map((e) => e.toJson()).toList(),
+      'chords': chords.map((e) => e.toJson()).toList(),
+      'practiceMinutes': practiceMinutes,
+      'jobs': jobs.map((e) => e.toJson()).toList(),
+      'taxRate': taxRate,
+      'plants': plants.map((e) => e.toJson()).toList(),
     };
   }
 }
@@ -76,6 +296,14 @@ class StateDelta {
     this.email,
     this.waitlistStatus,
     this.waitlistCount,
+    this.exampleIndex,
+    this.calorieGoal,
+    this.foods,
+    this.chords,
+    this.practiceMinutes,
+    this.jobs,
+    this.taxRate,
+    this.plants,
   });
 
   String? idea;
@@ -83,6 +311,14 @@ class StateDelta {
   String? email;
   WaitlistStatus? waitlistStatus;
   num? waitlistCount;
+  num? exampleIndex;
+  num? calorieGoal;
+  List<Food>? foods;
+  List<Chord>? chords;
+  num? practiceMinutes;
+  List<Job>? jobs;
+  num? taxRate;
+  List<Plant>? plants;
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -91,6 +327,14 @@ class StateDelta {
     if (email != null) json['email'] = email!;
     if (waitlistStatus != null) json['waitlistStatus'] = $waitlistStatusToJson(waitlistStatus!);
     if (waitlistCount != null) json['waitlistCount'] = waitlistCount!;
+    if (exampleIndex != null) json['exampleIndex'] = exampleIndex!;
+    if (calorieGoal != null) json['calorieGoal'] = calorieGoal!;
+    if (foods != null) json['foods'] = foods!.map((e) => e.toJson()).toList();
+    if (chords != null) json['chords'] = chords!.map((e) => e.toJson()).toList();
+    if (practiceMinutes != null) json['practiceMinutes'] = practiceMinutes!;
+    if (jobs != null) json['jobs'] = jobs!.map((e) => e.toJson()).toList();
+    if (taxRate != null) json['taxRate'] = taxRate!;
+    if (plants != null) json['plants'] = plants!.map((e) => e.toJson()).toList();
     return json;
   }
 }

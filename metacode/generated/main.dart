@@ -96,6 +96,156 @@ Future<String> $action_close(String stateJson, String paramsJson) async {
   return '';
 }
 
+Future<String> $action_nextExample(String stateJson, String paramsJson) async {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final emit = (StateDelta delta) {
+    hostEmit(jsonEncode(delta.toJson()));
+  };
+  await nextExample(state, emit);
+  return '';
+}
+
+Future<String> $action_previousExample(String stateJson, String paramsJson) async {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final emit = (StateDelta delta) {
+    hostEmit(jsonEncode(delta.toJson()));
+  };
+  await previousExample(state, emit);
+  return '';
+}
+
+Future<String> $action_showFood(String stateJson, String paramsJson) async {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final emit = (StateDelta delta) {
+    hostEmit(jsonEncode(delta.toJson()));
+  };
+  await showFood(state, emit);
+  return '';
+}
+
+Future<String> $action_showMusic(String stateJson, String paramsJson) async {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final emit = (StateDelta delta) {
+    hostEmit(jsonEncode(delta.toJson()));
+  };
+  await showMusic(state, emit);
+  return '';
+}
+
+Future<String> $action_showWork(String stateJson, String paramsJson) async {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final emit = (StateDelta delta) {
+    hostEmit(jsonEncode(delta.toJson()));
+  };
+  await showWork(state, emit);
+  return '';
+}
+
+Future<String> $action_showPlants(String stateJson, String paramsJson) async {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final emit = (StateDelta delta) {
+    hostEmit(jsonEncode(delta.toJson()));
+  };
+  await showPlants(state, emit);
+  return '';
+}
+
+Future<String> $action_makeLikeThis(String stateJson, String paramsJson) async {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final emit = (StateDelta delta) {
+    hostEmit(jsonEncode(delta.toJson()));
+  };
+  await makeLikeThis(state, emit, Core());
+  return '';
+}
+
+Future<String> $action_addFood(String stateJson, String paramsJson) async {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final params = jsonDecode(paramsJson) as Map;
+  final emit = (StateDelta delta) {
+    hostEmit(jsonEncode(delta.toJson()));
+  };
+  await addFood(state, emit, params['index'] as int);
+  return '';
+}
+
+Future<String> $action_removeFood(String stateJson, String paramsJson) async {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final params = jsonDecode(paramsJson) as Map;
+  final emit = (StateDelta delta) {
+    hostEmit(jsonEncode(delta.toJson()));
+  };
+  await removeFood(state, emit, params['index'] as int);
+  return '';
+}
+
+Future<String> $action_clearFoods(String stateJson, String paramsJson) async {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final emit = (StateDelta delta) {
+    hostEmit(jsonEncode(delta.toJson()));
+  };
+  await clearFoods(state, emit);
+  return '';
+}
+
+Future<String> $action_toggleChord(String stateJson, String paramsJson) async {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final params = jsonDecode(paramsJson) as Map;
+  final emit = (StateDelta delta) {
+    hostEmit(jsonEncode(delta.toJson()));
+  };
+  await toggleChord(state, emit, params['index'] as int, params['value'] as bool);
+  return '';
+}
+
+Future<String> $action_logPractice(String stateJson, String paramsJson) async {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final emit = (StateDelta delta) {
+    hostEmit(jsonEncode(delta.toJson()));
+  };
+  await logPractice(state, emit);
+  return '';
+}
+
+Future<String> $action_toggleJobPaid(String stateJson, String paramsJson) async {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final params = jsonDecode(paramsJson) as Map;
+  final emit = (StateDelta delta) {
+    hostEmit(jsonEncode(delta.toJson()));
+  };
+  await toggleJobPaid(state, emit, params['index'] as int, params['value'] as bool);
+  return '';
+}
+
+Future<String> $action_setTaxRate(String stateJson, String paramsJson) async {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final params = jsonDecode(paramsJson) as Map;
+  final emit = (StateDelta delta) {
+    hostEmit(jsonEncode(delta.toJson()));
+  };
+  await setTaxRate(state, emit, params['value'] as double);
+  return '';
+}
+
+Future<String> $action_waterPlant(String stateJson, String paramsJson) async {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final params = jsonDecode(paramsJson) as Map;
+  final emit = (StateDelta delta) {
+    hostEmit(jsonEncode(delta.toJson()));
+  };
+  await waterPlant(state, emit, params['index'] as int);
+  return '';
+}
+
+Future<String> $action_nextDay(String stateJson, String paramsJson) async {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final emit = (StateDelta delta) {
+    hostEmit(jsonEncode(delta.toJson()));
+  };
+  await nextDay(state, emit);
+  return '';
+}
+
 String $binding_ideaValue(String stateJson, String paramsJson) {
   final state = State.fromJson(jsonDecode(stateJson) as Map);
   final result = ideaValue(state);
@@ -195,5 +345,276 @@ String $binding_ideaSummary(String stateJson, String paramsJson) {
 String $binding_joinedText(String stateJson, String paramsJson) {
   final state = State.fromJson(jsonDecode(stateJson) as Map);
   final result = joinedText(state);
+  return jsonEncode(result);
+}
+
+String $binding_exampleKey(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final result = exampleKey(state);
+  return jsonEncode(result);
+}
+
+String $binding_exampleIsFood(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final result = exampleIsFood(state);
+  return jsonEncode(result);
+}
+
+String $binding_exampleIsMusic(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final result = exampleIsMusic(state);
+  return jsonEncode(result);
+}
+
+String $binding_exampleIsWork(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final result = exampleIsWork(state);
+  return jsonEncode(result);
+}
+
+String $binding_exampleIsPlants(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final result = exampleIsPlants(state);
+  return jsonEncode(result);
+}
+
+String $binding_examplePrompt(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final result = examplePrompt(state);
+  return jsonEncode(result);
+}
+
+String $binding_exampleTag(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final result = exampleTag(state);
+  return jsonEncode(result);
+}
+
+String $binding_exampleBlurb(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final result = exampleBlurb(state);
+  return jsonEncode(result);
+}
+
+String $binding_exampleImage(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final result = exampleImage(state);
+  return jsonEncode(result);
+}
+
+String $binding_examplePosition(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final result = examplePosition(state);
+  return jsonEncode(result);
+}
+
+String $binding_foodList(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final result = foodList(state);
+  return jsonEncode(result.map((e) => e.toJson()).toList());
+}
+
+String $binding_foodName(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final params = jsonDecode(paramsJson) as Map;
+  final result = foodName(state, params['index'] as int);
+  return jsonEncode(result);
+}
+
+String $binding_foodInfo(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final params = jsonDecode(paramsJson) as Map;
+  final result = foodInfo(state, params['index'] as int);
+  return jsonEncode(result);
+}
+
+String $binding_foodCount(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final params = jsonDecode(paramsJson) as Map;
+  final result = foodCount(state, params['index'] as int);
+  return jsonEncode(result);
+}
+
+String $binding_caloriesText(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final result = caloriesText(state);
+  return jsonEncode(result);
+}
+
+String $binding_proteinText(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final result = proteinText(state);
+  return jsonEncode(result);
+}
+
+String $binding_caloriesProgress(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final result = caloriesProgress(state);
+  return jsonEncode(result);
+}
+
+String $binding_foodTip(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final result = foodTip(state);
+  return jsonEncode(result);
+}
+
+String $binding_chordList(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final result = chordList(state);
+  return jsonEncode(result.map((e) => e.toJson()).toList());
+}
+
+String $binding_chordName(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final params = jsonDecode(paramsJson) as Map;
+  final result = chordName(state, params['index'] as int);
+  return jsonEncode(result);
+}
+
+String $binding_chordFingers(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final params = jsonDecode(paramsJson) as Map;
+  final result = chordFingers(state, params['index'] as int);
+  return jsonEncode(result);
+}
+
+String $binding_chordLearned(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final params = jsonDecode(paramsJson) as Map;
+  final result = chordLearned(state, params['index'] as int);
+  return jsonEncode(result);
+}
+
+String $binding_chordsText(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final result = chordsText(state);
+  return jsonEncode(result);
+}
+
+String $binding_chordsProgress(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final result = chordsProgress(state);
+  return jsonEncode(result);
+}
+
+String $binding_musicTip(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final result = musicTip(state);
+  return jsonEncode(result);
+}
+
+String $binding_practiceText(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final result = practiceText(state);
+  return jsonEncode(result);
+}
+
+String $binding_practiceProgress(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final result = practiceProgress(state);
+  return jsonEncode(result);
+}
+
+String $binding_jobList(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final result = jobList(state);
+  return jsonEncode(result.map((e) => e.toJson()).toList());
+}
+
+String $binding_jobClient(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final params = jsonDecode(paramsJson) as Map;
+  final result = jobClient(state, params['index'] as int);
+  return jsonEncode(result);
+}
+
+String $binding_jobTask(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final params = jsonDecode(paramsJson) as Map;
+  final result = jobTask(state, params['index'] as int);
+  return jsonEncode(result);
+}
+
+String $binding_jobAmount(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final params = jsonDecode(paramsJson) as Map;
+  final result = jobAmount(state, params['index'] as int);
+  return jsonEncode(result);
+}
+
+String $binding_jobPaid(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final params = jsonDecode(paramsJson) as Map;
+  final result = jobPaid(state, params['index'] as int);
+  return jsonEncode(result);
+}
+
+String $binding_receivedText(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final result = receivedText(state);
+  return jsonEncode(result);
+}
+
+String $binding_waitingText(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final result = waitingText(state);
+  return jsonEncode(result);
+}
+
+String $binding_taxRateValue(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final result = taxRateValue(state);
+  return jsonEncode(result);
+}
+
+String $binding_taxText(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final result = taxText(state);
+  return jsonEncode(result);
+}
+
+String $binding_workTip(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final result = workTip(state);
+  return jsonEncode(result);
+}
+
+String $binding_plantList(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final result = plantList(state);
+  return jsonEncode(result.map((e) => e.toJson()).toList());
+}
+
+String $binding_plantName(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final params = jsonDecode(paramsJson) as Map;
+  final result = plantName(state, params['index'] as int);
+  return jsonEncode(result);
+}
+
+String $binding_plantSchedule(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final params = jsonDecode(paramsJson) as Map;
+  final result = plantSchedule(state, params['index'] as int);
+  return jsonEncode(result);
+}
+
+String $binding_plantStatus(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final params = jsonDecode(paramsJson) as Map;
+  final result = plantStatus(state, params['index'] as int);
+  return jsonEncode(result);
+}
+
+String $binding_plantsText(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final result = plantsText(state);
+  return jsonEncode(result);
+}
+
+String $binding_plantTip(String stateJson, String paramsJson) {
+  final state = State.fromJson(jsonDecode(stateJson) as Map);
+  final result = plantTip(state);
   return jsonEncode(result);
 }

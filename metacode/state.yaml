@@ -4,3 +4,81 @@ state:
   email: ""
   waitlistStatus: "invalid"
   waitlistCount: 1284
+  exampleIndex: 3
+  calorieGoal: 1800
+  foods:
+    - name: "Oatmeal with banana"
+      kcal: 350
+      protein: 12
+      count: 4
+    - name: "Grilled chicken salad"
+      kcal: 420
+      protein: 38
+      count: 0
+    - name: "Rice and beans"
+      kcal: 480
+      protein: 16
+      count: 0
+    - name: "Two eggs"
+      kcal: 155
+      protein: 13
+      count: 0
+    - name: "Greek yogurt"
+      kcal: 150
+      protein: 15
+      count: 0
+    - name: "Apple"
+      kcal: 95
+      protein: 0
+      count: 1
+  chords:
+    - name: "Em"
+      fingers: "Two fingers on the 2nd fret of the A and D strings"
+      learned: true
+    - name: "C"
+      fingers: "Ring 3rd fret A, middle 2nd fret D, index 1st fret B"
+      learned: true
+    - name: "G"
+      fingers: "Middle 3rd fret low E, index 2nd fret A, ring 3rd fret high E"
+      learned: false
+    - name: "D"
+      fingers: "A small triangle on the G, B and high E strings"
+      learned: false
+    - name: "Am"
+      fingers: "Like Em, moved one string down, index on the 1st fret of B"
+      learned: false
+    - name: "F"
+      fingers: "Your first barre chord. Go slow, it takes a week or two"
+      learned: false
+  practiceMinutes: 5
+  jobs:
+    - client: "Lia's Bakery"
+      task: "Logo and menu board"
+      amount: 800
+      paid: true
+    - client: "Dr. Ana Costa"
+      task: "Website updates"
+      amount: 450
+      paid: true
+    - client: "Orbit Gym"
+      task: "Social posts for October"
+      amount: 300
+      paid: true
+    - client: "Café Lumen"
+      task: "Menu redesign"
+      amount: 600
+      paid: false
+  taxRate: 10
+  plants:
+    - name: "Monstera"
+      everyDays: 7
+      daysLeft: 2
+    - name: "Fiddle leaf"
+      everyDays: 10
+      daysLeft: 5
+    - name: "Snake plant"
+      everyDays: 14
+      daysLeft: 1
+    - name: "Basil"
+      everyDays: 3
+      daysLeft: 0
