@@ -27,46 +27,49 @@ widgets:
 
   financesPage:
     column:
-      - balanceCard
-      - entryForm
-      - padding:
-          horizontal: 16
-          top: 8
-          child:
-            text: {value: "Transactions", style: {variant: titleMedium}}
-      - expanded:
-          listView:
-            data: entryList
-            itemBuilder: entryTile
-            empty: entriesEmpty
+      crossAxisAlignment: stretch
+      children:
+        - balanceCard
+        - entryForm
+        - padding:
+            left: 16
+            right: 16
+            top: 24
+            bottom: 4
+            child:
+              text: {value: "Transactions", style: {variant: titleMedium}}
+        - expanded:
+            listView:
+              data: entryList
+              itemBuilder: entryTile
+              empty: entriesEmpty
 
   balanceCard:
     padding:
-      horizontal: 16
-      top: 16
+      left: 16
+      right: 16
+      top: 20
+      bottom: 20
       child:
-        card:
-          color: primaryContainer
-          child:
-            column:
-              crossAxisAlignment: stretch
-              spacing: 8
-              children:
-                - text: {value: "Balance", style: {variant: labelLarge, color: onPrimaryContainer}}
-                - text: {value: balanceText, style: {variant: headlineMedium, fontWeight: bold, color: onPrimaryContainer}}
-                - row:
-                    - expanded:
-                        row:
-                          spacing: 4
-                          children:
-                            - icon: {name: trendingUp, size: 18, color: green}
-                            - text: {value: incomeText, style: {variant: bodyMedium, color: onPrimaryContainer}}
-                    - expanded:
-                        row:
-                          spacing: 4
-                          children:
-                            - icon: {name: payment, size: 18, color: red}
-                            - text: {value: expenseText, style: {variant: bodyMedium, color: onPrimaryContainer}}
+        column:
+          crossAxisAlignment: start
+          spacing: 6
+          children:
+            - text: {value: "Balance", style: {variant: labelMedium, color: ink2}}
+            - text: {value: balanceText, style: {variant: displaySmall}}
+            - row:
+                spacing: 20
+                children:
+                  - row:
+                      spacing: 6
+                      children:
+                        - icon: {name: trendingUp, size: 16, color: success}
+                        - text: {value: incomeText, style: {variant: labelLarge, color: ink2}}
+                  - row:
+                      spacing: 6
+                      children:
+                        - icon: {name: payment, size: 16, color: danger}
+                        - text: {value: expenseText, style: {variant: labelLarge, color: ink2}}
 
   entryForm:
     padding:
@@ -90,28 +93,34 @@ widgets:
                       - filledButton: {text: "Add", icon: add, onPressed: addEntry}
 
   entryTile:
-    padding:
-      horizontal: 16
-      vertical: 4
-      child:
-        card:
-          padding: 12
-          child:
-            row:
-              spacing: 12
-              children:
-                - if:
-                    condition: entryIsIncome
-                    then: {icon: {name: trendingUp, color: green}}
-                    else: {icon: {name: payment, color: red}}
-                - expanded:
-                    column:
-                      crossAxisAlignment: start
-                      children:
-                        - text: {value: entryTitleAt, style: {variant: titleSmall}}
-                        - text: {value: entryDateAt, style: {variant: bodySmall, color: onSurfaceVariant}}
-                - text: {value: entryAmountAt, style: {variant: titleSmall, fontWeight: bold}}
-                - iconButton: {icon: delete, tooltip: "Delete", onPressed: deleteEntry}
+    column:
+      crossAxisAlignment: stretch
+      children:
+        - padding:
+            left: 16
+            right: 4
+            vertical: 6
+            child:
+              row:
+                spacing: 14
+                children:
+                  - if:
+                      condition: entryIsIncome
+                      then: {icon: {name: trendingUp, color: success}}
+                      else: {icon: {name: payment, color: danger}}
+                  - expanded:
+                      column:
+                        crossAxisAlignment: start
+                        spacing: 2
+                        children:
+                          - text: {value: entryTitleAt, style: {variant: titleSmall}, maxLines: 1}
+                          - text: {value: entryDateAt, style: {variant: bodySmall}}
+                  - text: {value: entryAmountAt, style: {variant: titleSmall}}
+                  - iconButton: {icon: delete, tooltip: "Delete", color: ink3, onPressed: deleteEntry}
+        - padding:
+            left: 50
+            child:
+              divider: {height: 1}
 
   entriesEmpty:
     center:
@@ -121,8 +130,8 @@ widgets:
           column:
             spacing: 8
             children:
-              - icon: {name: wallet, size: 48, color: grey}
-              - text: {value: "No transactions yet", style: {variant: bodyLarge, color: onSurfaceVariant}}
+              - icon: {name: wallet, size: 32, color: ink3}
+              - text: {value: "No transactions yet", style: {variant: bodyMedium, color: ink2}}
 
   # ---------- Goals ----------
 
@@ -131,13 +140,18 @@ widgets:
       - goalForm
       - padding:
           horizontal: 16
-          top: 8
+          top: 24
+          bottom: 8
           child:
             row:
               spacing: 12
+              crossAxisAlignment: end
               children:
                 - expanded:
-                    text: {value: "Your goals", style: {variant: titleMedium}}
+                    padding:
+                      bottom: 12
+                      child:
+                        text: {value: "Your goals", style: {variant: titleMedium}}
                 - sizedBox:
                     width: 140
                     child:
@@ -183,12 +197,12 @@ widgets:
                     children:
                       - if:
                           condition: goalReachedAt
-                          then: {icon: {name: checkCircle, color: green}}
-                          else: {icon: {name: flag, color: primary}}
+                          then: {icon: {name: checkCircle, color: success}}
+                          else: {icon: {name: flag, color: ink2}}
                       - expanded:
                           text: {value: goalNameAt, style: {variant: titleMedium}}
-                      - text: {value: goalPercentAt, style: {variant: labelLarge, color: primary}}
-                      - iconButton: {icon: delete, tooltip: "Delete goal", onPressed: deleteGoal}
+                      - text: {value: goalPercentAt, style: {variant: labelLarge, color: ink2}}
+                      - iconButton: {icon: delete, tooltip: "Delete goal", color: ink3, onPressed: deleteGoal}
                 - progress: {value: goalProgressAt}
                 - row:
                     children:
@@ -204,8 +218,8 @@ widgets:
           column:
             spacing: 8
             children:
-              - icon: {name: flag, size: 48, color: grey}
-              - text: {value: "No goals yet", style: {variant: bodyLarge, color: onSurfaceVariant}}
+              - icon: {name: flag, size: 32, color: ink3}
+              - text: {value: "No goals yet", style: {variant: bodyMedium, color: ink2}}
 
   # ---------- Menu ----------
 
@@ -253,12 +267,51 @@ widgets:
                         - listTile: {leading: {icon: {name: list}}, title: "Transactions", trailing: entryCountText}
                         - listTile: {leading: {icon: {name: flag}}, title: "Goals", trailing: goalCountText}
                         - listTile: {leading: {icon: {name: wallet}}, title: "Balance", trailing: balanceText}
-              - outlinedButton: {text: "Reset all data", icon: delete, onPressed: resetData}
+              - card:
+                  child:
+                    listTile: {leading: {icon: {name: coins}}, title: "Dollar rate", subtitle: "USD to BRL, live", trailing: {icon: {name: chevronRight}}, onTap: openDollarRate}
+              - outlinedButton: {text: "Reset all data", icon: delete, onPressed: askResetData}
 
   profileHeader:
     column:
       spacing: 8
       children:
-        - avatar: {text: profileInitials, radius: 40, color: primaryContainer}
+        - avatar: {text: profileInitials, radius: 36}
         - text: {value: profileName, style: {variant: titleLarge}}
-        - text: {value: profileEmail, style: {variant: bodyMedium, color: onSurfaceVariant}}
+        - text: {value: profileEmail, style: {variant: bodySmall}}
+
+  # ---------- Routes (navigation.yaml) ----------
+
+  dollarRateSheet:
+    padding:
+      left: 24
+      right: 24
+      bottom: 24
+      child:
+        column:
+          crossAxisAlignment: stretch
+          spacing: 12
+          children:
+            - text: {value: "Dollar rate", style: {variant: titleLarge}}
+            - text: {value: dollarRateText, style: {variant: displaySmall}}
+            - text: {value: dollarRateUpdatedText, style: {variant: bodySmall, color: ink2}}
+            - if: {condition: dollarRateLoading, then: {progress: {}}}
+            - filledButton: {text: "Refresh", icon: refresh, onPressed: fetchDollarRate}
+            - textButton: {text: "Close", onPressed: close}
+
+  confirmResetDialog:
+    padding:
+      all: 24
+      child:
+        column:
+          crossAxisAlignment: stretch
+          spacing: 12
+          children:
+            - text: {value: "Reset all data?", style: {variant: titleLarge}}
+            - text: {value: "This deletes every transaction and goal.", style: {variant: bodyMedium, color: ink2}}
+            - row:
+                mainAxisAlignment: end
+                spacing: 8
+                children:
+                  - textButton: {text: "Cancel", onPressed: close}
+                  - filledButton: {text: "Reset", icon: delete, onPressed: resetData}

@@ -15,12 +15,12 @@ void main() {
     expect(app.currentPage(sample(page: Page.goals)), 'goals');
   });
 
-  test('totals', () {
+  test('totals', () async {
     expect(app.balanceValue(sample()), 600);
     expect(app.balanceText(sample()), '\$600.00');
     expect(app.incomeText(sample()), '\$1000.00');
     expect(app.expenseText(sample()), '\$400.00');
-    expect(app.balanceText(app.resetData(sample())), '\$0.00');
+    expect(app.balanceText(await app.resetData(sample())), '\$0.00');
   });
 
   test('entry item bindings are newest first', () {
@@ -49,11 +49,11 @@ void main() {
     expect(app.goalCountText(s), '1 of 2 reached');
   });
 
-  test('profile bindings', () {
+  test('profile bindings', () async {
     final s = sample();
     expect(app.profileInitials(s), 'AL');
     expect(app.profileName(s), 'Ada Lovelace');
-    expect(app.profileCurrency(app.updateCurrency(s, '€')), '€');
+    expect(app.profileCurrency(await app.updateCurrency(s, '€')), '€');
     expect(app.currencyOptions(s), contains('€'));
     expect(app.notificationsOn(s), true);
     expect(app.entryCountText(s), '2');
@@ -65,5 +65,18 @@ void main() {
     expect(app.goalNameValue(sample(goalName: 'g')), 'g');
     expect(app.goalTargetValue(sample(goalTarget: '9')), '9');
     expect(app.contributionValue(sample()), '50');
+  });
+
+  test('dollar rate bindings', () {
+    final s = sample();
+    expect(app.dollarRateText(s), 'Tap refresh to load');
+    s.dollarRateStatus = FetchStatus.loading;
+    expect(app.dollarRateText(s), 'Loading…');
+    expect(app.dollarRateLoading(s), true);
+    s.dollarRateStatus = FetchStatus.loaded;
+    s.dollarRate = 5.4321;
+    expect(app.dollarRateText(s), '1 USD = R\$ 5.43');
+    s.dollarRateStatus = FetchStatus.failed;
+    expect(app.dollarRateText(s), 'Could not load the rate');
   });
 }

@@ -4,19 +4,69 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:metacode/engine/host_plugin.dart';
 import 'package:metacode/engine/program.dart';
 import 'package:yaml/yaml.dart';
 
+import 'core.dart';
 import 'state.dart';
 
-/// Runs actions and bindings through the compiled program, like the
-/// engine does, with typed inputs and outputs.
-class TestApp {
-  final MetacodeProgram _program = MetacodeProgram(
+/// Runs actions and bindings through the compiled program, like the engine
+/// does, with typed inputs and outputs. Actions run against a fake host:
+/// deltas are applied to the returned state, navigator calls are recorded
+/// in [navigation] and api requests are answered by [api].
+class TestApp implements MetacodeHost {
+  late final MetacodeProgram _program = MetacodeProgram(
     ByteData.sublistView(File('metacode/generated/program.evc').readAsBytesSync()),
     jsonDecode(File('metacode/generated/manifest.json').readAsStringSync())
         as Map<String, dynamic>,
-  );
+  )..host = this;
+
+  /// Answers `core.api` requests. Defaults to 404.
+  ApiResponse Function(String method, String url, Object? body) api =
+      (method, url, body) => ApiResponse(status: 404, body: '');
+
+  /// Every delta the last action emitted, in order (as JSON).
+  final emitted = <Map<String, dynamic>>[];
+
+  /// Navigator calls of the last action: `push <route>`, `pop`.
+  final navigation = <String>[];
+
+  /// Api requests of the last action: `GET <url>`, `POST <url>`.
+  final requests = <String>[];
+
+  Map<String, dynamic> _state = {};
+
+  Future<State> _run(String name, State state,
+      [Map<String, dynamic> params = const {}]) async {
+    emitted.clear();
+    navigation.clear();
+    requests.clear();
+    _state = jsonDecode(jsonEncode(state.toJson())) as Map<String, dynamic>;
+    await _program.action(name, _state, params);
+    return State.fromJson(_state);
+  }
+
+  @override
+  void emit(Map<String, dynamic> delta) {
+    emitted.add(delta);
+    _state = {..._state, ...delta};
+  }
+
+  @override
+  Future<Object?> call(String op, Map<String, dynamic> args) async {
+    switch (op) {
+      case 'api':
+        requests.add('${args['method']} ${args['url']}');
+        final r = api(args['method'] as String, args['url'] as String, args['body']);
+        return {'status': r.status, 'body': r.body};
+      case 'navigator.push':
+        navigation.add('push ${args['route']}');
+      case 'navigator.pop':
+        navigation.add('pop');
+    }
+    return null;
+  }
 
   /// The state in metacode/state.yaml.
   State get initialState {
@@ -24,59 +74,93 @@ class TestApp {
     return State.fromJson(jsonDecode(jsonEncode(doc['state'])) as Map);
   }
 
-  State goToPage(State state, int value) => State.fromJson(
-      _program.action('goToPage', state.toJson(), {'value': value}));
+  /// Runs `goToPage` and returns the state with its deltas applied.
+  Future<State> goToPage(State state, int value) =>
+      _run('goToPage', state, {'value': value});
 
-  State updateEntryTitle(State state, String value) => State.fromJson(
-      _program.action('updateEntryTitle', state.toJson(), {'value': value}));
+  /// Runs `close` and returns the state with its deltas applied.
+  Future<State> close(State state) =>
+      _run('close', state);
 
-  State updateEntryAmount(State state, String value) => State.fromJson(
-      _program.action('updateEntryAmount', state.toJson(), {'value': value}));
+  /// Runs `updateEntryTitle` and returns the state with its deltas applied.
+  Future<State> updateEntryTitle(State state, String value) =>
+      _run('updateEntryTitle', state, {'value': value});
 
-  State selectIncome(State state) => State.fromJson(
-      _program.action('selectIncome', state.toJson()));
+  /// Runs `updateEntryAmount` and returns the state with its deltas applied.
+  Future<State> updateEntryAmount(State state, String value) =>
+      _run('updateEntryAmount', state, {'value': value});
 
-  State selectExpense(State state) => State.fromJson(
-      _program.action('selectExpense', state.toJson()));
+  /// Runs `selectIncome` and returns the state with its deltas applied.
+  Future<State> selectIncome(State state) =>
+      _run('selectIncome', state);
 
-  State addEntry(State state) => State.fromJson(
-      _program.action('addEntry', state.toJson()));
+  /// Runs `selectExpense` and returns the state with its deltas applied.
+  Future<State> selectExpense(State state) =>
+      _run('selectExpense', state);
 
-  State deleteEntry(State state, int index) => State.fromJson(
-      _program.action('deleteEntry', state.toJson(), {'index': index}));
+  /// Runs `addEntry` and returns the state with its deltas applied.
+  Future<State> addEntry(State state) =>
+      _run('addEntry', state);
 
-  State updateGoalName(State state, String value) => State.fromJson(
-      _program.action('updateGoalName', state.toJson(), {'value': value}));
+  /// Runs `deleteEntry` and returns the state with its deltas applied.
+  Future<State> deleteEntry(State state, int index) =>
+      _run('deleteEntry', state, {'index': index});
 
-  State updateGoalTarget(State state, String value) => State.fromJson(
-      _program.action('updateGoalTarget', state.toJson(), {'value': value}));
+  /// Runs `updateGoalName` and returns the state with its deltas applied.
+  Future<State> updateGoalName(State state, String value) =>
+      _run('updateGoalName', state, {'value': value});
 
-  State updateContribution(State state, String value) => State.fromJson(
-      _program.action('updateContribution', state.toJson(), {'value': value}));
+  /// Runs `updateGoalTarget` and returns the state with its deltas applied.
+  Future<State> updateGoalTarget(State state, String value) =>
+      _run('updateGoalTarget', state, {'value': value});
 
-  State addGoal(State state) => State.fromJson(
-      _program.action('addGoal', state.toJson()));
+  /// Runs `updateContribution` and returns the state with its deltas applied.
+  Future<State> updateContribution(State state, String value) =>
+      _run('updateContribution', state, {'value': value});
 
-  State contributeToGoal(State state, int index) => State.fromJson(
-      _program.action('contributeToGoal', state.toJson(), {'index': index}));
+  /// Runs `addGoal` and returns the state with its deltas applied.
+  Future<State> addGoal(State state) =>
+      _run('addGoal', state);
 
-  State deleteGoal(State state, int index) => State.fromJson(
-      _program.action('deleteGoal', state.toJson(), {'index': index}));
+  /// Runs `contributeToGoal` and returns the state with its deltas applied.
+  Future<State> contributeToGoal(State state, int index) =>
+      _run('contributeToGoal', state, {'index': index});
 
-  State updateProfileName(State state, String value) => State.fromJson(
-      _program.action('updateProfileName', state.toJson(), {'value': value}));
+  /// Runs `deleteGoal` and returns the state with its deltas applied.
+  Future<State> deleteGoal(State state, int index) =>
+      _run('deleteGoal', state, {'index': index});
 
-  State updateProfileEmail(State state, String value) => State.fromJson(
-      _program.action('updateProfileEmail', state.toJson(), {'value': value}));
+  /// Runs `updateProfileName` and returns the state with its deltas applied.
+  Future<State> updateProfileName(State state, String value) =>
+      _run('updateProfileName', state, {'value': value});
 
-  State updateCurrency(State state, String value) => State.fromJson(
-      _program.action('updateCurrency', state.toJson(), {'value': value}));
+  /// Runs `updateProfileEmail` and returns the state with its deltas applied.
+  Future<State> updateProfileEmail(State state, String value) =>
+      _run('updateProfileEmail', state, {'value': value});
 
-  State toggleNotifications(State state, bool value) => State.fromJson(
-      _program.action('toggleNotifications', state.toJson(), {'value': value}));
+  /// Runs `updateCurrency` and returns the state with its deltas applied.
+  Future<State> updateCurrency(State state, String value) =>
+      _run('updateCurrency', state, {'value': value});
 
-  State resetData(State state) => State.fromJson(
-      _program.action('resetData', state.toJson()));
+  /// Runs `toggleNotifications` and returns the state with its deltas applied.
+  Future<State> toggleNotifications(State state, bool value) =>
+      _run('toggleNotifications', state, {'value': value});
+
+  /// Runs `askResetData` and returns the state with its deltas applied.
+  Future<State> askResetData(State state) =>
+      _run('askResetData', state);
+
+  /// Runs `resetData` and returns the state with its deltas applied.
+  Future<State> resetData(State state) =>
+      _run('resetData', state);
+
+  /// Runs `openDollarRate` and returns the state with its deltas applied.
+  Future<State> openDollarRate(State state) =>
+      _run('openDollarRate', state);
+
+  /// Runs `fetchDollarRate` and returns the state with its deltas applied.
+  Future<State> fetchDollarRate(State state) =>
+      _run('fetchDollarRate', state);
 
   int pageIndex(State state) {
     final result = _program.binding('pageIndex', state.toJson());
@@ -246,5 +330,20 @@ class TestApp {
   String goalCountText(State state) {
     final result = _program.binding('goalCountText', state.toJson());
     return result as String;
+  }
+
+  String dollarRateText(State state) {
+    final result = _program.binding('dollarRateText', state.toJson());
+    return result as String;
+  }
+
+  String dollarRateUpdatedText(State state) {
+    final result = _program.binding('dollarRateUpdatedText', state.toJson());
+    return result as String;
+  }
+
+  bool dollarRateLoading(State state) {
+    final result = _program.binding('dollarRateLoading', state.toJson());
+    return result as bool;
   }
 }

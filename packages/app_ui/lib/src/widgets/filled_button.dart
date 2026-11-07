@@ -8,5 +8,5 @@ Widget buildFilledButton(Ui ui, Map<String, dynamic> p) {
   final label = ui.node(p['text']);
   if (p['icon'] == null) return FilledButton(onPressed: onPressed, child: label);
   return FilledButton.icon(
-      onPressed: onPressed, icon: Icon(parseIcon(p['icon'])), label: label);
+      onPressed: onPressed, icon: Icon(parseIcon(p['icon'], ui.context)), label: label);
 }

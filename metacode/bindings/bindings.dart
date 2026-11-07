@@ -137,3 +137,18 @@ String goalCountText(State state) {
   final reached = state.goals.where((Goal g) => g.saved >= g.target).length;
   return '$reached of ${state.goals.length} reached';
 }
+
+// Dollar rate (filled by the fetchDollarRate action)
+
+String dollarRateText(State state) {
+  if (state.dollarRateStatus == FetchStatus.loading) return 'Loading…';
+  if (state.dollarRateStatus == FetchStatus.failed) return 'Could not load the rate';
+  if (state.dollarRateStatus == FetchStatus.idle) return 'Tap refresh to load';
+  return '1 USD = R\$ ${state.dollarRate.toStringAsFixed(2)}';
+}
+
+String dollarRateUpdatedText(State state) => state.dollarRateUpdated.isEmpty
+    ? 'Rates from open.er-api.com'
+    : 'Updated ${state.dollarRateUpdated}';
+
+bool dollarRateLoading(State state) => state.dollarRateStatus == FetchStatus.loading;

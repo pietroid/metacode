@@ -1,0 +1,78 @@
+# Design tokens for the app. Every widget is themed from these values, and
+# ui.yaml can use the color names (`color: accent`). This file spells out the
+# full Metacode style; any key left out falls back to it
+# (packages/app_ui/lib/style.dart).
+
+theme: system              # system | light | dark
+
+# Bundled: Newsreader (serif), Albert Sans, Hanken Grotesk, Schibsted
+# Grotesk, Figtree, or system.
+fonts:
+  display: Newsreader      # headlines and large titles
+  text: Hanken Grotesk     # body, titles, labels, buttons
+
+icons:
+  weight: regular          # thin | light | regular | bold (Phosphor)
+
+colors:
+  light:
+    bg: "#F5F5F3"          # page
+    surface: "#FFFFFF"     # cards, fields, nav bar, menus
+    fill: "#EDEDEA"        # chips, avatars, quiet containers
+    fillStrong: "#E2E2DE"  # tracks, pressed states
+    line: "#E6E6E2"        # hairlines
+    lineStrong: "#CFCFCA"  # control borders
+    ink: "#151514"         # text
+    ink2: "#62625D"        # secondary text
+    ink3: "#9B9B95"        # placeholders, idle icons
+    primary: "#151514"     # main action
+    onPrimary: "#FFFFFF"
+    accent: "#3049C6"      # progress, caret, highlights
+    onAccent: "#FFFFFF"
+    success: "#1E7A4C"
+    warning: "#A6600B"
+    danger: "#B93A30"
+    info: "#3B6797"
+  dark:
+    bg: "#0F0F0E"
+    surface: "#191918"
+    fill: "#232321"
+    fillStrong: "#2E2E2B"
+    line: "#272725"
+    lineStrong: "#3C3C39"
+    ink: "#EDEDEA"
+    ink2: "#A4A49E"
+    ink3: "#6E6E69"
+    primary: "#EDEDEA"
+    onPrimary: "#0F0F0E"
+    accent: "#8C9DF5"
+    onAccent: "#0F0F0E"
+    success: "#4DBA83"
+    warning: "#E2A54E"
+    danger: "#EE7D70"
+    info: "#86ABDB"
+
+radius: {xs: 4, sm: 10, md: 14, lg: 18, pill: 999}
+
+spacing: {s1: 4, s2: 8, s3: 12, s4: 16, s5: 20, s6: 24, s8: 32}
+
+sizes: {control: 48, icon: 22, border: 1}
+
+# One entry per text variant (ui.yaml `text.style.variant`).
+# font: display | text · weight: 400-700 · height: × size · tracking: × size
+typography:
+  displayLarge:   {font: display, size: 52, weight: 500, height: 1.04, tracking: -0.016}
+  displayMedium:  {font: display, size: 44, weight: 500, height: 1.06, tracking: -0.015}
+  displaySmall:   {font: display, size: 36, weight: 500, height: 1.1,  tracking: -0.013}
+  headlineLarge:  {font: display, size: 30, weight: 500, height: 1.15, tracking: -0.011}
+  headlineMedium: {font: display, size: 26, weight: 500, height: 1.2,  tracking: -0.009}
+  headlineSmall:  {font: display, size: 22, weight: 500, height: 1.25, tracking: -0.007}
+  titleLarge:     {font: display, size: 19, weight: 500, height: 1.3,  tracking: -0.005}
+  titleMedium:    {font: text,    size: 17, weight: 600, height: 1.35, tracking: -0.006}
+  titleSmall:     {font: text,    size: 15, weight: 600, height: 1.4,  tracking: -0.003}
+  bodyLarge:      {font: text,    size: 16, weight: 400, height: 1.5,  tracking: 0}
+  bodyMedium:     {font: text,    size: 15, weight: 400, height: 1.5,  tracking: 0}
+  bodySmall:      {font: text,    size: 13, weight: 400, height: 1.45, tracking: 0.004}
+  labelLarge:     {font: text,    size: 15, weight: 600, height: 1.25, tracking: -0.002}
+  labelMedium:    {font: text,    size: 13, weight: 500, height: 1.3,  tracking: 0.004}
+  labelSmall:     {font: text,    size: 12, weight: 500, height: 1.3,  tracking: 0.01}

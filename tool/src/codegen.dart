@@ -18,8 +18,136 @@ String generateState(Map<String, Model> models) {
     }
     out.writeln();
   }
+  final state = models['state'];
+  if (state is ClassModel) _writeDelta(out, state, models);
   return '${out.toString().trimRight()}\n';
 }
+
+/// `StateDelta`: the State fields an action changes. Every field is
+/// optional; only the ones set are sent, and the engine merges them over the
+/// current state (top-level fields, whole values).
+void _writeDelta(StringBuffer out, ClassModel state, Map<String, Model> models) {
+  final fields = state.fields.entries.toList();
+  out
+    ..writeln('/// The State fields an action changes. Pass it to `emit`; unset')
+    ..writeln('/// fields keep their current value.')
+    ..writeln('class StateDelta {');
+  if (fields.isEmpty) {
+    out.writeln('  StateDelta();');
+  } else {
+    out.writeln('  StateDelta({');
+    for (final f in fields) {
+      out.writeln('    this.${f.key},');
+    }
+    out.writeln('  });');
+  }
+  out.writeln();
+  for (final f in fields) {
+    out.writeln('  ${_nullable(dartType(f.value, models))} ${f.key};');
+  }
+  if (fields.isNotEmpty) out.writeln();
+  out
+    ..writeln('  Map<String, dynamic> toJson() {')
+    ..writeln('    final json = <String, dynamic>{};');
+  for (final f in fields) {
+    final type = TypeRef(f.value.name, item: f.value.item, optional: false);
+    out.writeln("    if (${f.key} != null) json['${f.key}'] = "
+        "${_toJson(type, '${f.key}!', models)};");
+  }
+  out
+    ..writeln('    return json;')
+    ..writeln('  }')
+    ..writeln('}');
+}
+
+/// Generates `generated/core.dart`: what actions receive as `core`
+/// (`core.api`, `core.navigator`) and the navigation.yaml route names. The
+/// calls go to the engine through `package:metacode/engine/host.dart`.
+String generateCore(Iterable<String> routes) {
+  final out = StringBuffer(_header)
+    ..writeln()
+    ..writeln("import 'dart:convert';")
+    ..writeln()
+    ..writeln("import 'package:metacode/engine/host.dart';")
+    ..writeln()
+    ..writeln('/// Route names from navigation.yaml, for `core.navigator.push`.')
+    ..writeln('class Routes {');
+  for (final r in routes) {
+    out.writeln("  static const String $r = '$r';");
+  }
+  out
+    ..writeln('}')
+    ..write(_coreClasses);
+  return out.toString();
+}
+
+const _coreClasses = r'''
+
+/// What actions can reach besides the state.
+class Core {
+  Core()
+      : api = Api(),
+        navigator = AppNavigator();
+
+  /// HTTP requests.
+  final Api api;
+
+  /// Opens and closes navigation.yaml routes.
+  final AppNavigator navigator;
+}
+
+/// An HTTP response. A network error has status 0 and the error as body.
+class ApiResponse {
+  ApiResponse({required this.status, required this.body});
+
+  final int status;
+  final String body;
+
+  bool get ok => status >= 200 && status < 300;
+
+  /// The body parsed as JSON.
+  dynamic get json => jsonDecode(body);
+}
+
+class Api {
+  Future<ApiResponse> get(String url, {Map<String, String>? headers}) =>
+      _request('GET', url, null, headers);
+
+  /// [body] is sent as is when it is a String, else JSON-encoded.
+  Future<ApiResponse> post(String url,
+          {Object? body, Map<String, String>? headers}) =>
+      _request('POST', url, body, headers);
+
+  Future<ApiResponse> _request(String method, String url, Object? body,
+      Map<String, String>? headers) async {
+    final result = await hostCall(
+        'api',
+        jsonEncode({
+          'method': method,
+          'url': url,
+          'body': body,
+          'headers': headers,
+        }));
+    final json = jsonDecode(result) as Map;
+    return ApiResponse(
+        status: json['status'] as int, body: json['body'] as String);
+  }
+}
+
+/// Pages, bottom sheets and dialogs are all routes (see navigation.yaml),
+/// so `pop` closes whichever is on top.
+class AppNavigator {
+  /// Opens [route] (use `Routes`). Completes when it closes.
+  Future<void> push(String route) async {
+    await hostCall('navigator.push', jsonEncode({'route': route}));
+  }
+
+  /// Closes the route on top.
+  Future<void> pop() async {
+    await hostCall('navigator.pop', '{}');
+  }
+}
+''';
 
 void _writeEnum(StringBuffer out, EnumModel model) {
   final c = model.className;
@@ -159,10 +287,13 @@ String generateMain(
   Map<String, Model> models,
 ) {
   final out = StringBuffer(_header)
-    ..writeln('// ignore_for_file: non_constant_identifier_names')
+    ..writeln('// ignore_for_file: non_constant_identifier_names, prefer_function_declarations_over_variables')
     ..writeln()
     ..writeln("import 'dart:convert';")
     ..writeln()
+    ..writeln("import 'package:metacode/engine/host.dart';")
+    ..writeln()
+    ..writeln("import 'core.dart';")
     ..writeln("import 'state.dart';");
   for (final i in imports) {
     out.writeln("import '../$i';");
@@ -172,21 +303,35 @@ String generateMain(
   String call(UserFunction fn) {
     final args = [
       'state',
-      for (final p in fn.params) "params['${p.name}'] as ${p.type}",
+      for (final p in fn.params)
+        switch (p.name) {
+          'emit' => 'emit',
+          'core' => 'Core()',
+          _ => "params['${p.name}'] as ${p.type}",
+        },
     ];
     return '${fn.name}(${args.join(', ')})';
   }
 
-  String paramsLine(UserFunction fn) => fn.params.isEmpty
-      ? ''
-      : '  final params = jsonDecode(paramsJson) as Map;\n';
+  String paramsLine(UserFunction fn) =>
+      fn.params.any((p) => contextParamTypes.containsKey(p.name))
+          ? '  final params = jsonDecode(paramsJson) as Map;\n'
+          : '';
 
   for (final fn in actions) {
     out
-      ..writeln('String \$action_${fn.name}(String stateJson, String paramsJson) {')
+      ..writeln('Future<String> \$action_${fn.name}(String stateJson, String paramsJson) async {')
       ..writeln('  final state = State.fromJson(jsonDecode(stateJson) as Map);')
-      ..write(paramsLine(fn))
-      ..writeln('  return jsonEncode(${call(fn)}.toJson());')
+      ..write(paramsLine(fn));
+    if (fn.params.any((p) => p.name == 'emit')) {
+      out
+        ..writeln('  final emit = (StateDelta delta) {')
+        ..writeln('    hostEmit(jsonEncode(delta.toJson()));')
+        ..writeln('  };');
+    }
+    out
+      ..writeln('  await ${call(fn)};')
+      ..writeln("  return '';")
       ..writeln('}')
       ..writeln();
   }
@@ -244,37 +389,41 @@ String generateTestApp(
     ..writeln("import 'dart:io';")
     ..writeln("import 'dart:typed_data';")
     ..writeln()
+    ..writeln("import 'package:metacode/engine/host_plugin.dart';")
     ..writeln("import 'package:metacode/engine/program.dart';")
     ..writeln("import 'package:yaml/yaml.dart';")
     ..writeln()
+    ..writeln("import 'core.dart';")
     ..writeln("import 'state.dart';")
     ..writeln()
-    ..writeln('/// Runs actions and bindings through the compiled program, like the')
-    ..writeln('/// engine does, with typed inputs and outputs.')
-    ..writeln('class TestApp {')
-    ..writeln('  final MetacodeProgram _program = MetacodeProgram(')
-    ..writeln("    ByteData.sublistView(File('metacode/generated/program.evc').readAsBytesSync()),")
-    ..writeln("    jsonDecode(File('metacode/generated/manifest.json').readAsStringSync())")
-    ..writeln('        as Map<String, dynamic>,')
-    ..writeln('  );')
-    ..writeln()
+    ..write(_testAppHead)
     ..writeln('  /// The state in metacode/state.yaml.')
     ..writeln('  State get initialState {')
     ..writeln("    final doc = loadYaml(File('metacode/state.yaml').readAsStringSync());")
     ..writeln("    return State.fromJson(jsonDecode(jsonEncode(doc['state'])) as Map);")
     ..writeln('  }');
 
-  String signature(UserFunction fn) =>
-      ['State state', for (final p in fn.params) '${p.type} ${p.name}'].join(', ');
+  String signature(UserFunction fn) => [
+        'State state',
+        for (final p in fn.params)
+          if (contextParamTypes.containsKey(p.name)) '${p.type} ${p.name}',
+      ].join(', ');
   String params(UserFunction fn) => fn.params.isEmpty
       ? ''
       : ', {${fn.params.map((p) => "'${p.name}': ${p.name}").join(', ')}}';
 
   for (final fn in actions) {
+    final contextOnly =
+        fn.params.where((p) => contextParamTypes.containsKey(p.name)).toList();
+    final sig = ['State state', for (final p in contextOnly) '${p.type} ${p.name}'].join(', ');
+    final args = contextOnly.isEmpty
+        ? ''
+        : ', {${contextOnly.map((p) => "'${p.name}': ${p.name}").join(', ')}}';
     out
       ..writeln()
-      ..writeln('  State ${fn.name}(${signature(fn)}) => State.fromJson(')
-      ..writeln("      _program.action('${fn.name}', state.toJson()${params(fn)}));");
+      ..writeln('  /// Runs `${fn.name}` and returns the state with its deltas applied.')
+      ..writeln('  Future<State> ${fn.name}($sig) =>')
+      ..writeln("      _run('${fn.name}', state$args);");
   }
   for (final fn in bindings) {
     final raw = "_program.binding('${fn.name}', state.toJson()${params(fn)})";
@@ -288,6 +437,66 @@ String generateTestApp(
   out.writeln('}');
   return out.toString();
 }
+
+const _testAppHead = r'''
+/// Runs actions and bindings through the compiled program, like the engine
+/// does, with typed inputs and outputs. Actions run against a fake host:
+/// deltas are applied to the returned state, navigator calls are recorded
+/// in [navigation] and api requests are answered by [api].
+class TestApp implements MetacodeHost {
+  late final MetacodeProgram _program = MetacodeProgram(
+    ByteData.sublistView(File('metacode/generated/program.evc').readAsBytesSync()),
+    jsonDecode(File('metacode/generated/manifest.json').readAsStringSync())
+        as Map<String, dynamic>,
+  )..host = this;
+
+  /// Answers `core.api` requests. Defaults to 404.
+  ApiResponse Function(String method, String url, Object? body) api =
+      (method, url, body) => ApiResponse(status: 404, body: '');
+
+  /// Every delta the last action emitted, in order (as JSON).
+  final emitted = <Map<String, dynamic>>[];
+
+  /// Navigator calls of the last action: `push <route>`, `pop`.
+  final navigation = <String>[];
+
+  /// Api requests of the last action: `GET <url>`, `POST <url>`.
+  final requests = <String>[];
+
+  Map<String, dynamic> _state = {};
+
+  Future<State> _run(String name, State state,
+      [Map<String, dynamic> params = const {}]) async {
+    emitted.clear();
+    navigation.clear();
+    requests.clear();
+    _state = jsonDecode(jsonEncode(state.toJson())) as Map<String, dynamic>;
+    await _program.action(name, _state, params);
+    return State.fromJson(_state);
+  }
+
+  @override
+  void emit(Map<String, dynamic> delta) {
+    emitted.add(delta);
+    _state = {..._state, ...delta};
+  }
+
+  @override
+  Future<Object?> call(String op, Map<String, dynamic> args) async {
+    switch (op) {
+      case 'api':
+        requests.add('${args['method']} ${args['url']}');
+        final r = api(args['method'] as String, args['url'] as String, args['body']);
+        return {'status': r.status, 'body': r.body};
+      case 'navigator.push':
+        navigation.add('push ${args['route']}');
+      case 'navigator.pop':
+        navigation.add('pop');
+    }
+    return null;
+  }
+
+''';
 
 /// Decodes a JSON value back into the Dart type a binding returned.
 String _decodeDart(String type, String expr, Map<String, Model> models) {

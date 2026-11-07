@@ -7,8 +7,9 @@ void validateUi(
   dynamic doc,
   Set<String> bindings,
   Set<String> actions,
-  Issues issues,
-) {
+  Issues issues, {
+  bool requireHomePage = true, // false when navigation.yaml names the pages
+}) {
   const file = 'ui.yaml';
   if (doc is! Map || doc['widgets'] is! Map) {
     issues.error(file, '', 'must contain a top-level "widgets:" map');
@@ -16,7 +17,7 @@ void validateUi(
   }
   final widgets = Map<String, dynamic>.from(doc['widgets'] as Map);
 
-  if (!widgets.containsKey('homePage')) {
+  if (requireHomePage && !widgets.containsKey('homePage')) {
     issues.error(file, 'widgets', 'missing "homePage", the entry widget');
   }
   for (final id in widgets.keys) {

@@ -26,8 +26,11 @@ void main() {
     }
   });
 
-  test('every icon name is mapped', () {
-    expect(icons.keys.toSet(), iconNames.toSet());
+  test('every icon name is mapped in every weight', () {
+    for (final entry in phosphorIcons.entries) {
+      expect(entry.value.keys.toSet(), iconNames.toSet(), reason: entry.key);
+    }
+    expect(phosphorIcons.keys.toSet(), {...iconWeights, 'fill'});
   });
 
   testWidgets('every color name and text variant resolves', (tester) async {

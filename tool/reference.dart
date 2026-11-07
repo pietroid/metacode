@@ -22,9 +22,10 @@ void main() {
         'packages/app_ui/lib/spec.dart and tool/src. Do not edit. -->')
     ..writeln()
     ..writeln('Contents: [Files](#files) · [Types](#types) · '
-        '[Actions and bindings](#actions-and-bindings) · [ui.yaml](#uiyaml) · '
+        '[Actions and bindings](#actions-and-bindings) · [Core: api and navigator](#core-api-and-navigator) · [ui.yaml](#uiyaml) · '
         '[Widgets](#widgets) · [Icons](#icons) · [Colors](#colors) · '
-        '[Text variants](#text-variants) · [Interpreter rules](#interpreter-rules)')
+        '[Text variants](#text-variants) · [Style](#style) · '
+        '[Interpreter rules](#interpreter-rules)')
     ..writeln()
     ..writeln('## Files')
     ..writeln()
@@ -34,10 +35,12 @@ void main() {
     ..writeln('|---|---|')
     ..writeln('| `models.yaml` | Models and enums. The reserved `state` model types state.yaml. |')
     ..writeln('| `state.yaml` | `state:` initial values, validated against the `state` model. |')
-    ..writeln('| `ui.yaml` | `widgets:` map of id -> widget. `homePage` is the entry. |')
-    ..writeln('| `actions/*.dart` | Functions that return the next state. |')
+    ..writeln('| `ui.yaml` | `widgets:` map of id -> widget. The entry is the `initial` route of navigation.yaml (else `homePage`). |')
+    ..writeln('| `navigation.yaml` | Routes (pages, bottom sheets, dialogs) actions open with `core.navigator`. Optional. |')
+    ..writeln('| `style.yaml` | Design tokens: colors (light/dark), fonts, type, radius, spacing. Optional keys; see [Style](#style). |')
+    ..writeln('| `actions/*.dart` | `Future<void>` functions that change the state with `emit(StateDelta(...))`. |')
     ..writeln('| `bindings/*.dart` | Functions that return a value for the UI. |')
-    ..writeln('| `test/*_test.dart` | Tests through `app.<function>(...)` (see `test/fixtures.dart`). |')
+    ..writeln('| `test/*_test.dart` | Tests through `app.<function>(...)` (see `test/fixtures.dart`). Actions are async: `(await app.addTask(s)).tasks`; `app.emitted`, `app.navigation`, `app.requests` record the last action and `app.api = (method, url, body) => ApiResponse(...)` fakes the api. |')
     ..writeln()
     ..writeln('## Types')
     ..writeln()
@@ -78,11 +81,20 @@ void main() {
     ..writeln('## Actions and bindings')
     ..writeln()
     ..writeln('```dart')
-    ..writeln('State actionName(State state, [int index], [<type> value])   // returns the next state')
-    ..writeln('T bindingName(State state, [int index])                      // returns a value for the UI')
+    ..writeln('Future<void> actionName(State state, [void Function(StateDelta) emit], [Core core], [int index], [<type> value])')
+    ..writeln('T bindingName(State state, [int index])   // returns a value for the UI')
     ..writeln('```')
     ..writeln()
-    ..writeln('- The first parameter is always `State`. Others are matched **by name**:');
+    ..writeln('```dart')
+    ..writeln('Future<void> addTask(State state, void Function(StateDelta) emit) async {')
+    ..writeln('  state.tasks.add(Task(title: state.draft));')
+    ..writeln("  emit(StateDelta(tasks: state.tasks, draft: ''));   // only what changes")
+    ..writeln('}')
+    ..writeln('```')
+    ..writeln()
+    ..writeln('- The first parameter is always `State`. Others are matched **by name**:')
+    ..writeln('  - `emit` (`void Function(StateDelta)`, actions only): applies a `StateDelta`. Call it as often as needed (loading, then result).')
+    ..writeln('  - `core` (`Core`, actions only): `core.api` and `core.navigator`, see below.');
   contextParamTypes.forEach((name, types) {
     final doc = name == 'index'
         ? 'position of the item inside a `listView`/`gridView` `itemBuilder`'
@@ -90,9 +102,48 @@ void main() {
     out.writeln('  - `$name` (${types.join(' | ')}): $doc');
   });
   out
-    ..writeln('- Actions get a fresh copy of the state. Change it in place and return it, or return `state.copyWith(...)`.')
+    ..writeln('- Actions never return a state. `StateDelta` (generated next to `State`) has every State field, all optional; set only the ones that change. Top-level fields are replaced whole, so for a list or model, change `state`\'s copy and emit it (`StateDelta(tasks: state.tasks)`). A delta can\'t set a field to null.')
+    ..writeln('- `state` is a fresh copy taken when the action starts; it does not see its own emits.')
     ..writeln('- Bindings return a primitive, a model, an enum, or a `List` of those (nullable allowed).')
     ..writeln('- Names must be unique across all actions and bindings. Private helpers start with `_`.')
+    ..writeln()
+    ..writeln('## Core: api and navigator')
+    ..writeln()
+    ..writeln("Import `../generated/core.dart`.")
+    ..writeln()
+    ..writeln('```dart')
+    ..writeln('Future<ApiResponse> core.api.get(String url, {Map<String, String>? headers})')
+    ..writeln('Future<ApiResponse> core.api.post(String url, {Object? body, Map<String, String>? headers})  // non-String body is sent as JSON')
+    ..writeln('ApiResponse: int status, String body, bool ok, dynamic json   // network error: status 0')
+    ..writeln()
+    ..writeln('Future<void> core.navigator.push(Routes.settings)   // completes when the route closes')
+    ..writeln('Future<void> core.navigator.pop()                   // closes the page, sheet or dialog on top')
+    ..writeln('```')
+    ..writeln()
+    ..writeln('```dart')
+    ..writeln('Future<void> loadRate(State state, void Function(StateDelta) emit, Core core) async {')
+    ..writeln('  emit(StateDelta(loading: true));')
+    ..writeln("  final r = await core.api.get('https://open.er-api.com/v6/latest/USD');")
+    ..writeln("  final rate = r.ok ? ((r.json as Map)['rates'] as Map)['BRL'] : null;")
+    ..writeln('  emit(StateDelta(loading: false, rate: rate is num ? rate : 0));')
+    ..writeln('}')
+    ..writeln('```')
+    ..writeln()
+    ..writeln('Don\'t await `push` when the action should keep going while the route is open.')
+    ..writeln()
+    ..writeln('### navigation.yaml')
+    ..writeln()
+    ..writeln('```yaml')
+    ..writeln('initial: home                        # must be a page')
+    ..writeln('routes:')
+    ..writeln('  home: homePage                     # page (shorthand); the value is a ui.yaml widget id')
+    ..writeln('  settings: {page: settingsPage}')
+    ..writeln('  rate: {bottomSheet: rateSheet}')
+    ..writeln('  confirmDelete: {dialog: confirmDeleteDialog}')
+    ..writeln('```')
+    ..writeln()
+    ..writeln('- Each route becomes a constant: `Routes.rate`. Sheets and dialogs size to their content and scroll if long; give them padding.')
+    ..writeln('- Tab-style screens inside one page stay as state + `match` (see below); routes are for things that open on top.')
     ..writeln()
     ..writeln('## ui.yaml')
     ..writeln()
@@ -171,19 +222,72 @@ void main() {
   out
     ..writeln('## Icons')
     ..writeln()
+    ..writeln('[Phosphor](https://phosphoricons.com) icons, in the weight set by '
+        'style.yaml `icons.weight`. The selected tab of a `navigationBar` shows '
+        'the filled form.')
+    ..writeln()
     ..writeln(iconNames.map((n) => '`$n`').join(', '))
     ..writeln()
     ..writeln('## Colors')
     ..writeln()
-    ..writeln('`#RRGGBB`, `#AARRGGBB`, or a name. Theme names follow the app color scheme:')
+    ..writeln('`#RRGGBB`, `#AARRGGBB`, or a name. Every name follows style.yaml and '
+        'light/dark mode, so prefer names over hex. Style tokens first '
+        '(see [Style](#style)), then Material scheme names derived from them, '
+        'then hues mapped to the style (`red` = `danger`, `green` = `success`, '
+        '`blue` = `info`, `orange` = `accent`, `amber` = `warning`, `grey` = `ink3`):')
     ..writeln()
     ..writeln(colorNames.map((n) => '`$n`').join(', '))
     ..writeln()
     ..writeln('## Text variants')
     ..writeln()
-    ..writeln('For `text.style.variant`, from the app theme:')
+    ..writeln('For `text.style.variant`. Each is defined in style.yaml `typography:`. '
+        'In the Metacode style, display/headline/titleLarge use the display '
+        'face (Newsreader); the rest use the text face. `bodySmall` is secondary '
+        'text; `label*` are for controls and short labels:')
     ..writeln()
     ..writeln(textVariants.map((n) => '`$n`').join(', '))
+    ..writeln()
+    ..writeln('## Style')
+    ..writeln()
+    ..writeln('`metacode/style.yaml` holds the design tokens every widget is themed '
+        'from. Every key is optional: what is missing falls back to the Metacode '
+        'style (classic and quiet: near-black ink, soft neutral page, white cards, '
+        'one deep blue accent). Change the look '
+        'here, not by adding colors and sizes all over ui.yaml.')
+    ..writeln()
+    ..writeln('```yaml')
+    ..writeln('theme: system            # ${themeModes.join(' | ')}')
+    ..writeln('fonts: {display: Newsreader, text: Hanken Grotesk}')
+    ..writeln('icons: {weight: regular}   # ${iconWeights.join(' | ')}')
+    ..writeln('colors:')
+    ..writeln('  light: {accent: "#3049C6"}   # any color token')
+    ..writeln('  dark: {accent: "#8C9DF5"}')
+    ..writeln('radius: {sm: 10, md: 14}')
+    ..writeln('typography:')
+    ..writeln('  bodyLarge: {font: text, size: 16, weight: 400, height: 1.5, tracking: 0}')
+    ..writeln('```')
+    ..writeln()
+    ..writeln('Fonts: ${fontFamilies.map((f) => '`$f`').join(', ')}.')
+    ..writeln()
+    ..writeln('| Section | Token | Used for |')
+    ..writeln('|---|---|---|');
+  void tokens(String section, Map<String, String> docs) =>
+      docs.forEach((k, v) => out.writeln('| `$section` | `$k` | $v |'));
+  tokens('colors.light / colors.dark', styleColorTokens);
+  tokens('radius', styleRadiusTokens);
+  tokens('spacing', styleSpacingTokens);
+  tokens('sizes', styleSizeTokens);
+  tokens('fonts', fontRoles);
+  typographyKeys.forEach((k, v) =>
+      out.writeln('| `typography.<variant>` | `$k` | $v |'));
+  out
+    ..writeln()
+    ..writeln('Using the style well:')
+    ..writeln()
+    ..writeln('- Hierarchy comes from type, not color: a `displaySmall` number over a `labelMedium` caption beats a colored box.')
+    ..writeln('- Spend color on meaning: `primary` for the main action, `success`/`danger` for outcomes, `accent` rarely.')
+    ..writeln('- Don\'t nest cards. For lists, prefer rows separated by `divider` over one card per row.')
+    ..writeln('- Gaps from the spacing scale (4, 8, 12, 16, 20, 24, 32). Related things closer, groups further apart.')
     ..writeln()
     ..writeln('## Interpreter rules')
     ..writeln()

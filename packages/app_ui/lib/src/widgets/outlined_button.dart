@@ -10,5 +10,5 @@ Widget buildOutlinedButton(Ui ui, Map<String, dynamic> p) {
     return OutlinedButton(onPressed: onPressed, child: label);
   }
   return OutlinedButton.icon(
-      onPressed: onPressed, icon: Icon(parseIcon(p['icon'])), label: label);
+      onPressed: onPressed, icon: Icon(parseIcon(p['icon'], ui.context)), label: label);
 }

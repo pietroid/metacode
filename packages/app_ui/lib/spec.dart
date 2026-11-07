@@ -6,6 +6,10 @@
 // Each entry here has a builder in lib/src/widgets/<name>.dart, registered in
 // lib/src/registry.dart. test/catalog_test.dart keeps the two in sync.
 
+import 'style.dart';
+
+export 'style.dart';
+
 enum PropKind {
   node('node', 'a widget id, a binding, an inline widget, or literal text'),
   nodes('nodes', 'a list of nodes'),
@@ -191,7 +195,7 @@ const widgetCatalog = <String, WidgetSpec>{
   ),
   'card': WidgetSpec(
     _layout,
-    'A raised surface. Tappable with `onTap`.',
+    'A surface with a hairline edge. Tappable with `onTap`.',
     {
       'child': PropKind.node,
       'padding': PropKind.literal,
@@ -199,7 +203,7 @@ const widgetCatalog = <String, WidgetSpec>{
       'onTap': PropKind.action,
     },
     shorthand: Shorthand.node,
-    notes: {'padding': 'inner padding, default 16'},
+    notes: {'padding': 'inner padding, default spacing.s4 (16)'},
   ),
   'scroll': WidgetSpec(
     _layout,
@@ -276,7 +280,7 @@ const widgetCatalog = <String, WidgetSpec>{
   ),
   'avatar': WidgetSpec(
     _content,
-    'A circle with an image or short text (initials).',
+    'A round avatar with an image or short text (initials).',
     {
       'text': PropKind.bindingOrLiteral,
       'image': PropKind.bindingOrLiteral,
@@ -357,7 +361,10 @@ const widgetCatalog = <String, WidgetSpec>{
     _input,
     'On/off switch, optionally with a label.',
     {'value': PropKind.binding, 'label': PropKind.node, 'onChanged': PropKind.action},
-    notes: {'onChanged': 'gets `value` (bool)'},
+    notes: {
+      'label': 'with a label, the whole row toggles',
+      'onChanged': 'gets `value` (bool)',
+    },
   ),
   'slider': WidgetSpec(
     _input,
@@ -413,7 +420,7 @@ const widgetCatalog = <String, WidgetSpec>{
     'child': PropKind.node,
     'onPressed': PropKind.action,
   }),
-  'floatingActionButton': WidgetSpec(_input, 'Round floating button.', {
+  'floatingActionButton': WidgetSpec(_input, 'Floating action button.', {
     'icon': PropKind.icon,
     'child': PropKind.node,
     'onPressed': PropKind.action,
@@ -431,7 +438,8 @@ const widgetCatalog = <String, WidgetSpec>{
 /// - `value`: the new value from an input (`textField`, `slider`, ...).
 const contextParams = {'index', 'value'};
 
-/// Icon names usable in [PropKind.icon] props. Mapped in src/parsers.dart.
+/// Icon names usable in [PropKind.icon] props. Phosphor icons, mapped in
+/// src/icons.dart; their weight comes from style.yaml `icons.weight`.
 const iconNames = [
   'add', 'remove', 'edit', 'delete', 'close', 'check', 'done', 'clear',
   'search', 'settings', 'home', 'person', 'people', 'favorite',
@@ -446,14 +454,23 @@ const iconNames = [
   'file', 'link', 'logout', 'login', 'lightMode', 'darkMode', 'timer',
   'checkCircle', 'radioUnchecked', 'trendingUp', 'barChart', 'fitness',
   'restaurant', 'local', 'work', 'school', 'pets', 'flight', 'car',
+  'trendingDown', 'arrowUp', 'arrowDown', 'arrowUpRight', 'arrowDownLeft',
+  'piggyBank', 'target', 'receipt', 'coins', 'chartLine', 'bank', 'gift',
+  'sparkle', 'plusCircle', 'user',
 ];
 
-/// Theme color names usable in [PropKind.color] props, besides `#RRGGBB` and
-/// `#AARRGGBB`. Theme names follow the app's color scheme (light/dark).
+/// Color names usable in [PropKind.color] props, besides `#RRGGBB` and
+/// `#AARRGGBB`. All follow the app's style (style.yaml) and light/dark mode.
 const colorNames = [
-  'primary', 'onPrimary', 'primaryContainer', 'onPrimaryContainer',
-  'secondary', 'onSecondary', 'secondaryContainer', 'onSecondaryContainer',
-  'tertiary', 'surface', 'onSurface', 'onSurfaceVariant', 'outline', 'error',
+  // Style tokens (see style.dart).
+  'bg', 'surface', 'fill', 'fillStrong', 'line', 'lineStrong', 'ink', 'ink2',
+  'ink3', 'primary', 'onPrimary', 'accent', 'onAccent', 'success', 'warning',
+  'danger', 'info',
+  // Material color scheme, derived from the tokens.
+  'primaryContainer', 'onPrimaryContainer', 'secondary', 'onSecondary',
+  'secondaryContainer', 'onSecondaryContainer', 'tertiary', 'onSurface',
+  'onSurfaceVariant', 'outline', 'error',
+  // Hues, mapped to the style's tuned colors where one exists.
   'transparent', 'white', 'black', 'grey', 'red', 'green', 'blue', 'orange',
   'amber', 'purple', 'pink', 'teal',
 ];
@@ -469,8 +486,7 @@ const textVariants = [
 /// Whether [value] is a valid [PropKind.color].
 bool isColor(dynamic value) =>
     value is String &&
-    (colorNames.contains(value) ||
-        RegExp(r'^#([0-9a-fA-F]{6}|[0-9a-fA-F]{8})$').hasMatch(value));
+    (colorNames.contains(value) || isHexColor(value));
 
 /// Turns a widget's raw YAML value into its property map, expanding the
 /// shorthand form. Returns null when the value is not valid for the widget.

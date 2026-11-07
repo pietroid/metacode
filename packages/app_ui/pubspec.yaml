@@ -9,7 +9,78 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  yaml: ^3.1.4
+
+flutter:
+  # Bundled type for app styles (style.yaml `fonts:`). Static instances of the
+  # variable Google Fonts, so fontWeight picks a real weight. OFL licensed.
+  fonts:
+    - family: Albert Sans
+      fonts:
+        - asset: fonts/AlbertSans-400.ttf
+          weight: 400
+        - asset: fonts/AlbertSans-500.ttf
+          weight: 500
+        - asset: fonts/AlbertSans-600.ttf
+          weight: 600
+        - asset: fonts/AlbertSans-700.ttf
+          weight: 700
+    - family: Hanken Grotesk
+      fonts:
+        - asset: fonts/HankenGrotesk-400.ttf
+          weight: 400
+        - asset: fonts/HankenGrotesk-500.ttf
+          weight: 500
+        - asset: fonts/HankenGrotesk-600.ttf
+          weight: 600
+        - asset: fonts/HankenGrotesk-700.ttf
+          weight: 700
+    - family: Schibsted Grotesk
+      fonts:
+        - asset: fonts/SchibstedGrotesk-400.ttf
+          weight: 400
+        - asset: fonts/SchibstedGrotesk-500.ttf
+          weight: 500
+        - asset: fonts/SchibstedGrotesk-600.ttf
+          weight: 600
+        - asset: fonts/SchibstedGrotesk-700.ttf
+          weight: 700
+    - family: Newsreader
+      fonts:
+        - asset: fonts/Newsreader-400.ttf
+          weight: 400
+        - asset: fonts/Newsreader-500.ttf
+          weight: 500
+        - asset: fonts/Newsreader-600.ttf
+          weight: 600
+        - asset: fonts/Newsreader-700.ttf
+          weight: 700
+    - family: Figtree
+      fonts:
+        - asset: fonts/Figtree-400.ttf
+          weight: 400
+        - asset: fonts/Figtree-500.ttf
+          weight: 500
+        - asset: fonts/Figtree-600.ttf
+          weight: 600
+        - asset: fonts/Figtree-700.ttf
+          weight: 700
+    # Phosphor icons (MIT), one family per weight. See lib/src/icons.dart.
+    - family: PhosphorThin
+      fonts:
+        - asset: fonts/phosphor/Phosphor-Thin.ttf
+    - family: PhosphorLight
+      fonts:
+        - asset: fonts/phosphor/Phosphor-Light.ttf
+    - family: PhosphorRegular
+      fonts:
+        - asset: fonts/phosphor/Phosphor-Regular.ttf
+    - family: PhosphorBold
+      fonts:
+        - asset: fonts/phosphor/Phosphor-Bold.ttf
+    - family: PhosphorFill
+      fonts:
+        - asset: fonts/phosphor/Phosphor-Fill.ttf

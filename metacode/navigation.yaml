@@ -1,0 +1,16 @@
+# Routes the app can open. Actions open them with
+# core.navigator.push(Routes.<name>) and close the top one with
+# core.navigator.pop().
+#
+# Each route shows a ui.yaml widget:
+#   name: widgetId                     a page (shorthand)
+#   name: {page: widgetId}
+#   name: {bottomSheet: widgetId}      modal sheet from the bottom
+#   name: {dialog: widgetId}           centered dialog
+
+initial: home
+
+routes:
+  home: homePage
+  dollarRate: {bottomSheet: dollarRateSheet}
+  confirmReset: {dialog: confirmResetDialog}

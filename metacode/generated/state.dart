@@ -27,6 +27,22 @@ String $entryKindToJson(EntryKind value) {
   return 'expense';
 }
 
+enum FetchStatus { idle, loading, loaded, failed }
+
+FetchStatus $fetchStatusFromJson(String value) {
+  if (value == 'idle') return FetchStatus.idle;
+  if (value == 'loading') return FetchStatus.loading;
+  if (value == 'loaded') return FetchStatus.loaded;
+  return FetchStatus.failed;
+}
+
+String $fetchStatusToJson(FetchStatus value) {
+  if (value == FetchStatus.idle) return 'idle';
+  if (value == FetchStatus.loading) return 'loading';
+  if (value == FetchStatus.loaded) return 'loaded';
+  return 'failed';
+}
+
 class Entry {
   Entry({
     required this.title,
@@ -171,6 +187,9 @@ class State {
     required this.goalName,
     required this.goalTarget,
     required this.contribution,
+    required this.dollarRate,
+    required this.dollarRateStatus,
+    required this.dollarRateUpdated,
   });
 
   Page page;
@@ -183,6 +202,9 @@ class State {
   String goalName;
   String goalTarget;
   String contribution;
+  num dollarRate;
+  FetchStatus dollarRateStatus;
+  String dollarRateUpdated;
 
   State copyWith({
     Page? page,
@@ -195,6 +217,9 @@ class State {
     String? goalName,
     String? goalTarget,
     String? contribution,
+    num? dollarRate,
+    FetchStatus? dollarRateStatus,
+    String? dollarRateUpdated,
   }) {
     return State(
       page: page ?? this.page,
@@ -207,6 +232,9 @@ class State {
       goalName: goalName ?? this.goalName,
       goalTarget: goalTarget ?? this.goalTarget,
       contribution: contribution ?? this.contribution,
+      dollarRate: dollarRate ?? this.dollarRate,
+      dollarRateStatus: dollarRateStatus ?? this.dollarRateStatus,
+      dollarRateUpdated: dollarRateUpdated ?? this.dollarRateUpdated,
     );
   }
 
@@ -222,6 +250,9 @@ class State {
       goalName: json['goalName'] as String,
       goalTarget: json['goalTarget'] as String,
       contribution: json['contribution'] as String,
+      dollarRate: json['dollarRate'] as num,
+      dollarRateStatus: $fetchStatusFromJson(json['dollarRateStatus'] as String),
+      dollarRateUpdated: json['dollarRateUpdated'] as String,
     );
   }
 
@@ -237,6 +268,61 @@ class State {
       'goalName': goalName,
       'goalTarget': goalTarget,
       'contribution': contribution,
+      'dollarRate': dollarRate,
+      'dollarRateStatus': $fetchStatusToJson(dollarRateStatus),
+      'dollarRateUpdated': dollarRateUpdated,
     };
+  }
+}
+
+/// The State fields an action changes. Pass it to `emit`; unset
+/// fields keep their current value.
+class StateDelta {
+  StateDelta({
+    this.page,
+    this.entries,
+    this.goals,
+    this.profile,
+    this.entryTitle,
+    this.entryAmount,
+    this.entryKind,
+    this.goalName,
+    this.goalTarget,
+    this.contribution,
+    this.dollarRate,
+    this.dollarRateStatus,
+    this.dollarRateUpdated,
+  });
+
+  Page? page;
+  List<Entry>? entries;
+  List<Goal>? goals;
+  Profile? profile;
+  String? entryTitle;
+  String? entryAmount;
+  EntryKind? entryKind;
+  String? goalName;
+  String? goalTarget;
+  String? contribution;
+  num? dollarRate;
+  FetchStatus? dollarRateStatus;
+  String? dollarRateUpdated;
+
+  Map<String, dynamic> toJson() {
+    final json = <String, dynamic>{};
+    if (page != null) json['page'] = $pageToJson(page!);
+    if (entries != null) json['entries'] = entries!.map((e) => e.toJson()).toList();
+    if (goals != null) json['goals'] = goals!.map((e) => e.toJson()).toList();
+    if (profile != null) json['profile'] = profile!.toJson();
+    if (entryTitle != null) json['entryTitle'] = entryTitle!;
+    if (entryAmount != null) json['entryAmount'] = entryAmount!;
+    if (entryKind != null) json['entryKind'] = $entryKindToJson(entryKind!);
+    if (goalName != null) json['goalName'] = goalName!;
+    if (goalTarget != null) json['goalTarget'] = goalTarget!;
+    if (contribution != null) json['contribution'] = contribution!;
+    if (dollarRate != null) json['dollarRate'] = dollarRate!;
+    if (dollarRateStatus != null) json['dollarRateStatus'] = $fetchStatusToJson(dollarRateStatus!);
+    if (dollarRateUpdated != null) json['dollarRateUpdated'] = dollarRateUpdated!;
+    return json;
   }
 }

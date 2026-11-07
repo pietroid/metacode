@@ -15,6 +15,12 @@ entryKind:
   - income
   - expense
 
+fetchStatus:
+  - idle
+  - loading
+  - loaded
+  - failed
+
 entry:
   title: string
   amount: number
@@ -43,3 +49,6 @@ state:
   goalName: string
   goalTarget: string
   contribution: string
+  dollarRate: number
+  dollarRateStatus: fetchStatus
+  dollarRateUpdated: string

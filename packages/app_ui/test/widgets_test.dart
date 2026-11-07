@@ -149,7 +149,7 @@ void main() {
     await tester.tap(find.text('Cancel'));
     await tester.tap(find.text('Row'));
     expect(calls.map((c) => c.$1), ['save', 'cancel', 'open']);
-    expect(find.byIcon(Icons.check), findsOneWidget);
+    expect(find.byIcon(phosphorIcons['regular']!['check']!), findsOneWidget);
   });
 
   testWidgets('content and layout widgets render', (tester) async {

@@ -31,4 +31,7 @@ State sample({
       goalName: goalName,
       goalTarget: goalTarget,
       contribution: contribution,
+      dollarRate: 0,
+      dollarRateStatus: FetchStatus.idle,
+      dollarRateUpdated: '',
     );

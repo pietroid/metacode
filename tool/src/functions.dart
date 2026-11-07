@@ -29,11 +29,20 @@ const contextParamTypes = {
   'value': {'String', 'bool', 'num', 'int', 'double'},
 };
 
+/// Params only actions take, with their Dart type: `emit` applies a
+/// StateDelta to the state, `core` reaches the api and the navigator.
+const actionParamTypes = {
+  'emit': 'void Function(StateDelta)',
+  'core': 'Core',
+};
+
 /// Reads every `.dart` file in [dir] and returns its public functions.
 ///
 /// Every function must take the `State` as its first parameter; further
-/// parameters are context params (see [contextParams]). Actions must return
-/// `State`; bindings must return something the engine can hand to the UI.
+/// parameters are matched by name: context params (see [contextParams]) and,
+/// for actions, `emit` and `core` (see [actionParamTypes]). Actions return
+/// `Future<void>` and change the state only through `emit`; bindings return
+/// something the engine can hand to the UI.
 List<UserFunction> readFunctions(
   Directory dir,
   String kind, // 'actions' or 'bindings'
@@ -108,10 +117,29 @@ UserFunction? _readFunction(
       continue;
     }
 
+    final actionType = actionParamTypes[paramName];
+    if (actionType != null) {
+      if (kind != 'actions') {
+        fail('"$paramName" is only available to actions');
+        return null;
+      }
+      // `void Function(StateDelta delta)` is fine too.
+      final normalized = type.replaceAll(RegExp(r'\s+\w+\)$'), ')');
+      if (normalized != actionType) {
+        fail('"$paramName" must be $actionType, got $type');
+        return null;
+      }
+      params.add(Param(paramName, actionType));
+      continue;
+    }
+
     final allowed = contextParamTypes[paramName];
     if (allowed == null) {
-      fail('unknown parameter "$paramName"; available: '
-          '${contextParams.join(', ')}');
+      final available = [
+        ...contextParams,
+        if (kind == 'actions') ...actionParamTypes.keys,
+      ];
+      fail('unknown parameter "$paramName"; available: ${available.join(', ')}');
       return null;
     }
     if (!allowed.contains(type)) {
@@ -123,8 +151,9 @@ UserFunction? _readFunction(
 
   final returnType = decl.returnType?.toSource() ?? 'dynamic';
   if (kind == 'actions') {
-    if (returnType != 'State') {
-      fail('actions must return the next State, got "$returnType"');
+    if (returnType != 'Future<void>') {
+      fail('actions return Future<void> and change the state with '
+          'emit(StateDelta(...)), got "$returnType"');
       return null;
     }
   } else if (!isEncodable(returnType, models)) {

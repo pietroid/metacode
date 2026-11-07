@@ -6,26 +6,30 @@ A Flutter engine that runs an app described in YAML plus small Dart functions.
 
 | Path | What |
 |---|---|
-| `metacode/` | **The app.** `models.yaml`, `state.yaml`, `ui.yaml`, `actions/`, `bindings/`, `test/` |
+| `metacode/` | **The app.** `models.yaml`, `state.yaml`, `ui.yaml`, `navigation.yaml` (routes), `style.yaml` (design tokens), `actions/`, `bindings/`, `test/` |
 | `metacode/generated/` | Output of the tool. Never edit. |
 | `tool/metacode.dart` | CLI: validate + generate. `tool/reference.dart`: writes REFERENCE.md. `tool/src/`: `models.dart` (models/state), `functions.dart` (action/binding signatures, via analyzer), `ui.dart` (ui.yaml), `codegen.dart` (generated files) |
-| `packages/app_ui/` | **UI catalog.** `lib/spec.dart` (pure-Dart contract the tool validates against), `lib/src/widgets/*.dart` (one builder each), `lib/src/registry.dart`, `lib/src/parsers.dart` |
-| `lib/engine/` | Runtime: `program.dart` (loads bytecode, calls actions/bindings), `ui_renderer.dart` (resolves nodes, implements `Ui`), `state_bloc.dart` (state + persistence), `project_config.dart` (asset loading) |
+| `packages/app_ui/` | **UI catalog.** `lib/spec.dart` (pure-Dart contract the tool validates against), `lib/style.dart` (style.yaml tokens + the default Metacode style, pure Dart), `lib/src/theme.dart` (tokens -> ThemeData + `MetacodeTokens`), `lib/src/widgets/*.dart` (one builder each), `lib/src/registry.dart`, `lib/src/parsers.dart`, `fonts/` (bundled type) |
+| `lib/engine/` | Runtime: `app.dart` (MetacodeApp), `program.dart` (loads bytecode, calls actions/bindings), `host.dart` + `host_plugin.dart` (bridge from interpreted code to the engine), `core_host.dart` (emit, http, Navigator), `navigation.dart` (navigation.yaml, pure Dart), `ui_renderer.dart` (resolves nodes, implements `Ui`), `state_bloc.dart` (state + persistence), `project_config.dart` (asset loading) |
 | `test/` | Engine tests (renders ui.yaml and taps) |
 
 ## Flow
 
 ```
-models.yaml ─┐
-state.yaml ──┼─ tool/metacode.dart ─> generated/state.dart     (typed State, models, enums)
-actions/ ────┤   (validate all)       generated/main.dart      (JSON bridge, engine-facing)
-bindings/ ───┤                        generated/program.evc    (dart_eval bytecode, bundled)
-ui.yaml ─────┘                        generated/test_app.dart  (typed test harness)
+models.yaml ──────┐
+state.yaml ───────┼─ tool/metacode.dart ─> generated/state.dart     (typed State, StateDelta, models, enums)
+actions/ ─────────┤   (validate all)       generated/core.dart      (Core: api + navigator, Routes)
+bindings/ ────────┤                        generated/main.dart      (JSON bridge, engine-facing)
+ui.yaml ──────────┤                        generated/program.evc    (dart_eval bytecode, bundled)
+navigation.yaml ──┤                        generated/test_app.dart  (typed test harness, fake host)
+style.yaml ───────┘   (navigation/style: validated; the engine loads them as assets)
 
-Engine: state (Map) ─> binding ─> app_ui widget ─> tap ─> action(state) ─> next state ─> state.yaml
+Engine: state (Map) ─> binding ─> app_ui widget ─> tap ─> action(state, emit, core)
+        ─> emit(StateDelta) ─> merged into state ─> state.yaml
+        core.api / core.navigator ─> hostCall ─> CoreHost (http, Navigator: pages, sheets, dialogs)
 ```
 
-- Actions: `State name(State state, [int index], [T value])`, return the next State.
+- Actions: `Future<void> name(State state, [void Function(StateDelta) emit], [Core core], [int index], [T value])`; params after State match by name. State changes only via `emit`.
 - Bindings: `T name(State state, [int index])`, return a primitive, model, enum or List of those.
 - User code runs in dart_eval. The tool bundles all user files into one library before compiling.
 

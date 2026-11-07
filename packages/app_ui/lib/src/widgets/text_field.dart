@@ -50,18 +50,29 @@ class _TextFieldState extends State<_TextField> {
   }
 
   @override
-  Widget build(BuildContext context) => TextField(
-        controller: controller,
-        onChanged: widget.onChanged,
-        onSubmitted: widget.onSubmitted,
-        minLines: widget.multiline ? 3 : 1,
-        maxLines: widget.multiline ? null : 1,
-        decoration: InputDecoration(
-          hintText: widget.hint,
-          labelText: widget.label,
-          border: const OutlineInputBorder(),
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        ),
-      );
+  Widget build(BuildContext context) {
+    final field = TextField(
+      controller: controller,
+      onChanged: widget.onChanged,
+      onSubmitted: widget.onSubmitted,
+      minLines: widget.multiline ? 3 : 1,
+      maxLines: widget.multiline ? null : 1,
+      decoration: InputDecoration(hintText: widget.hint),
+    );
+    if (widget.label == null) return field;
+    // The label sits above the field, set small in the mono face: steadier
+    // than a floating label, and it never collides with the value.
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      spacing: 6,
+      children: [
+        Text(widget.label!,
+            style: theme.textTheme.labelMedium!
+                .copyWith(color: theme.colorScheme.onSurfaceVariant)),
+        field,
+      ],
+    );
+  }
 }

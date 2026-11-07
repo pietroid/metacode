@@ -21,12 +21,14 @@ It validates everything, regenerates, type-checks and runs `metacode/test`. Repe
 |---|---|
 | `models.yaml` | Types. `string`, `boolean`, `number`, `datetime`, `list(x)`, `x?`, enums as a list. The reserved `state:` model types state.yaml. |
 | `state.yaml` | `state:` values. They must match the `state` model. Add a value here for every new state field. |
-| `ui.yaml` | `widgets:` map of id to widget. `homePage` is the entry point. |
-| `actions/*.dart` | `State name(State state, [int index], [String/bool value])` returns the next state. |
+| `ui.yaml` | `widgets:` map of id to widget. The entry is navigation.yaml's `initial` route. |
+| `navigation.yaml` | Routes: `name: widgetId` (page), `{bottomSheet: id}`, `{dialog: id}`. Opened with `core.navigator.push(Routes.name)`. |
+| `style.yaml` | Design tokens: colors (light/dark), fonts, icon weight, type scale, radius, spacing. Spells out the full template; restyle here, not in ui.yaml. |
+| `actions/*.dart` | `Future<void> name(State state, [void Function(StateDelta) emit], [Core core], [int index], [String/bool value]) async`. Change state only with `emit(StateDelta(field: ...))`. |
 | `bindings/*.dart` | `T name(State state, [int index])` returns a value for the UI. |
-| `test/actions_test.dart`, `test/bindings_test.dart` | Tests via `app.<fn>(...)`, from `test/fixtures.dart`. Add one per new action or binding. |
+| `test/actions_test.dart`, `test/bindings_test.dart` | Tests via `app.<fn>(...)`, from `test/fixtures.dart`. Actions are async: `(await app.addTask(s)).tasks`. `app.emitted`/`app.navigation`/`app.requests` record the last action; `app.api = (method, url, body) => ApiResponse(...)` fakes HTTP. Add one per new action or binding. |
 
-Import `../generated/state.dart` for `State`, the model classes (`Task`...), enums and `copyWith`.
+Import `../generated/state.dart` for `State`, `StateDelta`, the model classes (`Task`...), enums and `copyWith`, and `../generated/core.dart` for `Core` (`core.api.get/post`, `core.navigator.push/pop`), `ApiResponse` and `Routes`.
 
 ## Reference
 
@@ -46,8 +48,11 @@ noteTile:
   card: {onTap: openNote, child: {text: {value: noteTitle, style: {variant: titleMedium}}}}
 ```
 
-- Multiple screens: keep the current page in state (an enum), show it with `match`, change it with actions.
+- Tabs inside one screen: keep the current page in state (an enum), show it with `match`, change it with actions.
+- Things that open on top (detail page, bottom sheet, dialog): a route in navigation.yaml, opened by an action with `core.navigator.push(Routes.x)`, closed with `core.navigator.pop()`.
+- Network: `final r = await core.api.get(url); if (r.ok) ... r.json`. Emit a loading status first, then the result or a failure. Status 0 means a network error.
 - `index` reaches bindings and actions inside `listView`/`gridView` items. Inputs pass `value`.
+- Look: widgets are already styled. Use token color names (`ink2`, `success`, `danger`, `accent`) instead of hex, `bodySmall` for metadata, and type size (not boldness or color) for hierarchy. Don't nest cards; list rows separated by `divider` read better than a card per row. See Style in REFERENCE.md.
 
 ## dart_eval rules (the tool reports violations)
 
@@ -61,9 +66,9 @@ If the catalog lacks something, use the `metacode-add-widget` skill. Don't fake 
 
 1. `models.yaml`: `task: {..., priority: number}`.
 2. `state.yaml`: add `priority: 0` to each task.
-3. `actions/actions.dart`: `State bumpPriority(State state, int index) {...}`.
+3. `actions/actions.dart`: `Future<void> bumpPriority(State state, void Function(StateDelta) emit, int index) async { state.tasks[index].priority += 1; emit(StateDelta(tasks: state.tasks)); }`.
 4. `ui.yaml`: `trailing: {iconButton: {icon: add, onPressed: bumpPriority}}`.
-5. `test/actions_test.dart`: `expect(app.bumpPriority(sample(), 0).tasks[0].priority, 1);`.
+5. `test/actions_test.dart`: `expect((await app.bumpPriority(sample(), 0)).tasks[0].priority, 1);`.
 6. `tool/check.sh`.
 
 ## Report cost (always, at the end)

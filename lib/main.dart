@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'engine/app.dart';
 import 'engine/project_config.dart';
 import 'engine/state_bloc.dart';
-import 'engine/ui_renderer.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,33 +18,4 @@ Future<void> main() async {
       child: MetacodeApp(config: config),
     ),
   );
-}
-
-class MetacodeApp extends StatelessWidget {
-  final ProjectConfig config;
-
-  const MetacodeApp({super.key, required this.config});
-
-  @override
-  Widget build(BuildContext context) {
-    final renderer = UiRenderer(ui: config.ui, program: config.program);
-
-    return MaterialApp(
-      title: config.projectName,
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
-        useMaterial3: true,
-      ),
-      home: BlocBuilder<StateBloc, Map<String, dynamic>>(
-        builder: (context, state) {
-          return renderer.build(
-            context,
-            'homePage',
-            state,
-          );
-        },
-      ),
-    );
-  }
 }

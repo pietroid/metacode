@@ -37,6 +37,7 @@ dependencies:
   dart_eval: ^0.8.5
   path_provider: ^2.1.5
   collection: ^1.19.1
+  http: ^1.6.0
   app_ui:
     path: packages/app_ui
 
@@ -67,6 +68,8 @@ flutter:
     - metacode/project.yaml
     - metacode/state.yaml
     - metacode/ui.yaml
+    - metacode/style.yaml
+    - metacode/navigation.yaml
     - metacode/generated/program.evc
     - metacode/generated/manifest.json
 

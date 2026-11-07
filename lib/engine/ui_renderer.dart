@@ -87,9 +87,20 @@ class _EngineUi implements Ui {
   bool _isAction(dynamic name) =>
       name is String && _program.actions.contains(name);
 
-  void _run(String name, Map<String, dynamic> extra) {
+  /// Runs an action on the latest state. It changes the state through
+  /// `emit` (see CoreHost), so nothing is applied here.
+  Future<void> _run(String name, Map<String, dynamic> extra) async {
     final bloc = context.read<StateBloc>();
-    bloc.setState(_program.action(name, bloc.state, {...params, ...extra}));
+    try {
+      await _program.action(name, bloc.state, {...params, ...extra});
+    } catch (e, stack) {
+      FlutterError.reportError(FlutterErrorDetails(
+        exception: e,
+        stack: stack,
+        library: 'metacode',
+        context: ErrorDescription('while running action "$name"'),
+      ));
+    }
   }
 
   Widget _error(String message) =>

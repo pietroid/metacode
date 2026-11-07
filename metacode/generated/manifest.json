@@ -1,6 +1,7 @@
 {
   "actions": [
     "goToPage",
+    "close",
     "updateEntryTitle",
     "updateEntryAmount",
     "selectIncome",
@@ -17,7 +18,10 @@
     "updateProfileEmail",
     "updateCurrency",
     "toggleNotifications",
-    "resetData"
+    "askResetData",
+    "resetData",
+    "openDollarRate",
+    "fetchDollarRate"
   ],
   "bindings": [
     "pageIndex",
@@ -53,6 +57,9 @@
     "currencyOptions",
     "notificationsOn",
     "entryCountText",
-    "goalCountText"
+    "goalCountText",
+    "dollarRateText",
+    "dollarRateUpdatedText",
+    "dollarRateLoading"
   ]
 }

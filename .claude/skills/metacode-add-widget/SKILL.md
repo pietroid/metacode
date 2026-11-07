@@ -44,16 +44,18 @@ Optional `shorthand`:
 ```dart
 import 'package:flutter/material.dart';
 
+import '../parsers.dart';
+import '../theme.dart';
 import '../ui.dart';
 
 Widget buildRating(Ui ui, Map<String, dynamic> p) {
   final value = (ui.binding(p['value']) as num?)?.toInt() ?? 0;
   final onChanged = ui.actionWithValue<int>(p['onChanged']);
-  final color = parseColor(p['color'], ui.context) ?? Colors.amber;
+  final color = parseColor(p['color'], ui.context) ?? MetacodeTokens.of(ui.context).accent;
   return Row(mainAxisSize: MainAxisSize.min, children: [
     for (var i = 1; i <= 5; i++)
       IconButton(
-        icon: Icon(i <= value ? Icons.star : Icons.star_border, color: color),
+        icon: Icon(i <= value ? parseSelectedIcon('star') : parseIcon('starBorder', ui.context), color: color),
         onPressed: onChanged == null ? null : () => onChanged(i),
       ),
   ]);
@@ -70,9 +72,11 @@ Widget buildRating(Ui ui, Map<String, dynamic> p) {
 Literal parsers are in `src/parsers.dart`:
 - `parseColor(v, ui.context)`
 - `parseTextStyle(v, ui.context)`
-- `parseIcon`
+- `parseIcon(name, ui.context)` (Phosphor, in the style's weight), `parseSelectedIcon(name)` (filled)
 - `parseEdgeInsets` (a number or a map)
 - `parseAlignment`, `parseBoxFit`, `parseDouble`
+
+Style: never hard-code colors, radii or fonts. Read tokens with `MetacodeTokens.of(ui.context)` (`src/theme.dart`): `t.ink`, `t.color('danger')`, `t.corners('sm')`, `t.spacing['s4']`, `t.displayFamily`, `t.raised` (card shadow). Never use Material `Icons.*`: icons are Phosphor (`src/icons.dart`); a new icon name goes in `iconNames` (spec.dart) and every weight map in `src/icons.dart` (code points from the Phosphor font). Prefer Material widgets whose look comes from the component themes in `MetacodeTheme.build`; if a new Material widget needs a component theme, add it there. Defaults to fallback colors (`?? Colors.amber`) should be tokens too.
 
 New icon, color or text variant names go both in `spec.dart` (`iconNames`, `colorNames`, `textVariants`) and in parsers.dart's maps. If an input passes a value of a new type, add the type to `contextParamTypes` in `tool/src/functions.dart`.
 

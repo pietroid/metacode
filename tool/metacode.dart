@@ -4,14 +4,19 @@
 //   dart run tool/metacode.dart check    validate only
 //
 // Steps: models.yaml -> state.yaml (against the `state` model) -> actions and
-// bindings (signatures) -> ui.yaml -> generated/state.dart, generated/main.dart
-// -> compiled generated/program.evc + generated/manifest.json, and
+// bindings (signatures) -> ui.yaml -> navigation.yaml (optional, routes) ->
+// style.yaml (optional, design tokens) -> generated/state.dart (+ StateDelta),
+// generated/core.dart (Core, Routes), generated/main.dart -> compiled
+// generated/program.evc + generated/manifest.json, and
 // generated/test_app.dart (typed test harness for metacode/test/).
 
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:app_ui/style.dart';
 import 'package:dart_eval/dart_eval.dart';
+import 'package:metacode/engine/host_plugin.dart';
+import 'package:metacode/engine/navigation.dart';
 import 'package:yaml/yaml.dart';
 
 import 'src/codegen.dart';
@@ -58,15 +63,38 @@ void main(List<String> args) {
     seen[fn.name] = fn.file;
   }
 
+  final ui = readYaml('ui.yaml');
+  final hasNavigation = File('$projectDir/navigation.yaml').existsSync();
   validateUi(
-    readYaml('ui.yaml'),
+    ui,
     bindings.map((f) => f.name).toSet(),
     actions.map((f) => f.name).toSet(),
     issues,
+    requireHomePage: !hasNavigation,
   );
 
+  var navigation = Navigation.fallback;
+  if (hasNavigation) {
+    final parsed = Navigation.parse(readYaml('navigation.yaml'),
+        (path, message) => issues.error('navigation.yaml', path, message));
+    final widgets = ui is Map && ui['widgets'] is Map ? ui['widgets'] as Map : {};
+    for (final route in parsed?.routes.values ?? const <RouteSpec>[]) {
+      if (!widgets.containsKey(route.widget)) {
+        issues.error('navigation.yaml', 'routes.${route.name}',
+            '"${route.widget}" is not a widget in ui.yaml');
+      }
+    }
+    navigation = parsed ?? navigation;
+  }
+
+  if (File('$projectDir/style.yaml').existsSync()) {
+    for (final (path, message) in validateStyle(readYaml('style.yaml'))) {
+      issues.error('style.yaml', path, message);
+    }
+  }
+
   if (!issues.hasErrors && !checkOnly) {
-    _generate(root, models, actions, bindings, issues);
+    _generate(root, models, actions, bindings, navigation, issues);
   }
 
   for (final w in issues.warnings) {
@@ -90,6 +118,7 @@ void _generate(
   Map<String, Model> models,
   List<UserFunction> actions,
   List<UserFunction> bindings,
+  Navigation navigation,
   Issues issues,
 ) {
   final userFiles = {
@@ -99,6 +128,7 @@ void _generate(
 
   final generated = {
     'generated/state.dart': generateState(models),
+    'generated/core.dart': generateCore(navigation.routes.keys),
     'generated/main.dart': generateMain(actions, bindings, userFiles, models),
     'generated/test_app.dart': generateTestApp(actions, bindings, models),
   };
@@ -111,6 +141,7 @@ void _generate(
   // separate for editing and are merged here for execution.
   final bundle = _bundle([
     generated['generated/state.dart']!,
+    generated['generated/core.dart']!,
     for (final f in _allDartFiles(root, ['actions', 'bindings']))
       File('${root.path}/$f').readAsStringSync(),
     generated['generated/main.dart']!,
@@ -118,7 +149,7 @@ void _generate(
   // (test_app.dart runs on the host, not in the interpreter.)
 
   try {
-    final program = Compiler().compile({
+    final program = (Compiler()..addPlugin(const HostPlugin())).compile({
       'metacode': {'main.dart': bundle},
     });
     File('${outDir.path}/program.evc').writeAsBytesSync(program.write());
@@ -137,7 +168,8 @@ void _generate(
 }
 
 /// Merges Dart sources into one library: relative imports are dropped (all
-/// code ends up in the same file) and `dart:` imports are kept once.
+/// code ends up in the same file); `dart:` imports and the engine host
+/// bridge (see lib/engine/host.dart) are kept once.
 String _bundle(List<String> sources) {
   final imports = <String>{"import 'dart:convert';"};
   final bodies = <String>[];
@@ -146,7 +178,10 @@ String _bundle(List<String> sources) {
     for (final line in source.split('\n')) {
       final trimmed = line.trim();
       if (trimmed.startsWith('import ')) {
-        if (trimmed.contains("'dart:")) imports.add(trimmed);
+        if (trimmed.contains("'dart:") ||
+            trimmed.contains("'${HostPlugin.library}'")) {
+          imports.add(trimmed);
+        }
         continue;
       }
       body.add(line);

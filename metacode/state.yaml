@@ -1,37 +1,51 @@
 state:
-  page: goals
+  page: "finances"
   entries:
-    - title: Salary
+    - title: "Salary"
       amount: 3200
-      kind: income
+      kind: "income"
       date: "2026-11-01T00:00:00.000"
-    - title: Rent
+    - title: "Rent"
       amount: 1100
-      kind: expense
+      kind: "expense"
       date: "2026-11-02T00:00:00.000"
-    - title: Groceries
+    - title: "Groceries"
       amount: 145.5
-      kind: expense
+      kind: "expense"
       date: "2026-11-04T00:00:00.000"
-    - title: pohaaa
+    - title: "pohaaa"
       amount: 40
-      kind: income
+      kind: "income"
       date: "2026-11-05T22:57:38.284110"
+    - title: "ouauger"
+      amount: 123123
+      kind: "income"
+      date: "2026-11-05T23:03:45.855554"
+    - title: "afodksof"
+      amount: 223
+      kind: "income"
+      date: "2026-11-06T18:27:15.744721"
   goals:
-    - name: Emergency fund
+    - name: "Emergency fund"
       target: 5000
       saved: 1800
-    - name: New laptop
+    - name: "New laptop"
       target: 1500
-      saved: 400
+      saved: 530
+    - name: "great"
+      target: 40000
+      saved: 0
   profile:
-    name: Pietro
-    email: pietrodomingues@gmail.com
-    currency: $
+    name: "Pietro Domingues"
+    email: "pietrodomingues@gmail.com"
+    currency: "$"
     notifications: true
   entryTitle: ""
   entryAmount: ""
-  entryKind: income
+  entryKind: "income"
   goalName: ""
   goalTarget: ""
-  contribution: ""
+  contribution: "10"
+  dollarRate: 0
+  dollarRateStatus: "idle"
+  dollarRateUpdated: ""

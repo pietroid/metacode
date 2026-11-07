@@ -8,5 +8,5 @@ Widget buildTextButton(Ui ui, Map<String, dynamic> p) {
   final label = ui.node(p['text']);
   if (p['icon'] == null) return TextButton(onPressed: onPressed, child: label);
   return TextButton.icon(
-      onPressed: onPressed, icon: Icon(parseIcon(p['icon'])), label: label);
+      onPressed: onPressed, icon: Icon(parseIcon(p['icon'], ui.context)), label: label);
 }

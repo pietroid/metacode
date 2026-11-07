@@ -4,32 +4,41 @@ import 'dart:typed_data';
 import 'package:dart_eval/dart_eval_bridge.dart';
 import 'package:dart_eval/stdlib/core.dart';
 
+import 'host_plugin.dart';
+
 /// The project's actions and bindings, precompiled by `tool/metacode.dart`
 /// into dart_eval bytecode and loaded once at startup.
 ///
 /// The engine talks JSON to the generated bridge (`generated/main.dart`),
-/// which hands typed objects to the user's functions.
+/// which hands typed objects to the user's functions. Actions reach back
+/// through [host]: `emit` deltas and `Core` calls (api, navigator).
 class MetacodeProgram {
-  final Runtime _runtime;
+  late final Runtime _runtime;
   final Set<String> actions;
   final Set<String> bindings;
+
+  /// Receives what actions emit and ask for. Set by the app (or a test)
+  /// before running actions.
+  MetacodeHost host = const _NoHost();
 
   static const _library = 'package:metacode/main.dart';
 
   MetacodeProgram(ByteData bytecode, Map<String, dynamic> manifest)
-      : _runtime = Runtime(bytecode),
-        actions = Set<String>.from(manifest['actions'] as List),
-        bindings = Set<String>.from(manifest['bindings'] as List);
+      : actions = Set<String>.from(manifest['actions'] as List),
+        bindings = Set<String>.from(manifest['bindings'] as List) {
+    _runtime = Runtime(bytecode)..addPlugin(HostPlugin(() => host));
+  }
 
-  /// Runs an action and returns the next state.
-  Map<String, dynamic> action(
+  /// Runs an action. It changes the state only through `emit` (see [host]),
+  /// possibly several times, and completes when the action returns.
+  Future<void> action(
     String name,
     Map<String, dynamic> state, [
     Map<String, dynamic> params = const {},
-  ]) {
-    return Map<String, dynamic>.from(
-      jsonDecode(_call('\$action_$name', state, params)) as Map,
-    );
+  ]) async {
+    var result = _execute('\$action_$name', state, params);
+    if (result is $Value) result = result.$value;
+    await (result as Future);
   }
 
   /// Evaluates a binding. [context] carries e.g. the list `index`.
@@ -38,14 +47,25 @@ class MetacodeProgram {
     Map<String, dynamic> state, [
     Map<String, dynamic> context = const {},
   ]) {
-    return jsonDecode(_call('\$binding_$name', state, context));
+    final result = _execute('\$binding_$name', state, context);
+    return jsonDecode((result is $Value ? result.$reified : result) as String);
   }
 
-  String _call(String function, Map<String, dynamic> state, Map params) {
-    final result = _runtime.executeLib(_library, function, [
-      $String(jsonEncode(state)),
-      $String(jsonEncode(params)),
-    ]);
-    return (result is $Value ? result.$reified : result) as String;
-  }
+  dynamic _execute(String function, Map<String, dynamic> state, Map params) =>
+      _runtime.executeLib(_library, function, [
+        $String(jsonEncode(state)),
+        $String(jsonEncode(params)),
+      ]);
+}
+
+class _NoHost implements MetacodeHost {
+  const _NoHost();
+
+  @override
+  void emit(Map<String, dynamic> delta) =>
+      throw StateError('MetacodeProgram.host is not set');
+
+  @override
+  Future<Object?> call(String op, Map<String, dynamic> args) =>
+      throw StateError('MetacodeProgram.host is not set');
 }

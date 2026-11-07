@@ -1,14 +1,25 @@
 import 'package:flutter/material.dart';
 
+import 'icons.dart';
+import 'theme.dart';
+
 /// Parsers for literal property values shared by widget builders.
 /// Allowed names are listed in spec.dart (iconNames, colorNames,
 /// textVariants); test/catalog_test.dart keeps both sides in sync.
 
 double? parseDouble(dynamic value) => (value as num?)?.toDouble();
 
+/// Every color name ui.yaml can use, resolved for the current theme.
+///
+/// Style tokens (bg, ink, accent, success...) come straight from style.yaml.
+/// Material scheme names are derived from the same tokens. Hue names (red,
+/// green...) map to the style's tuned colors where one exists, so a quick
+/// `color: red` still sits in the palette.
 Map<String, Color> themeColors(BuildContext context) {
   final c = Theme.of(context).colorScheme;
+  final t = MetacodeTokens.of(context);
   return {
+    ...t.colors,
     'primary': c.primary,
     'onPrimary': c.onPrimary,
     'primaryContainer': c.primaryContainer,
@@ -18,7 +29,7 @@ Map<String, Color> themeColors(BuildContext context) {
     'secondaryContainer': c.secondaryContainer,
     'onSecondaryContainer': c.onSecondaryContainer,
     'tertiary': c.tertiary,
-    'surface': c.surface,
+    'surface': t.surface,
     'onSurface': c.onSurface,
     'onSurfaceVariant': c.onSurfaceVariant,
     'outline': c.outline,
@@ -26,15 +37,15 @@ Map<String, Color> themeColors(BuildContext context) {
     'transparent': Colors.transparent,
     'white': Colors.white,
     'black': Colors.black,
-    'grey': Colors.grey,
-    'red': Colors.red,
-    'green': Colors.green,
-    'blue': Colors.blue,
-    'orange': Colors.orange,
-    'amber': Colors.amber,
-    'purple': Colors.purple,
-    'pink': Colors.pink,
-    'teal': Colors.teal,
+    'grey': t.ink3,
+    'red': t.color('danger'),
+    'green': t.color('success'),
+    'blue': t.color('info'),
+    'orange': t.accent,
+    'amber': t.color('warning'),
+    'purple': Colors.purple.shade400,
+    'pink': Colors.pink.shade400,
+    'teal': Colors.teal.shade500,
   };
 }
 
@@ -101,97 +112,14 @@ TextAlign? parseTextAlign(dynamic value) => const {
       'right': TextAlign.right,
     }[value];
 
-const icons = <String, IconData>{
-  'add': Icons.add,
-  'remove': Icons.remove,
-  'edit': Icons.edit,
-  'delete': Icons.delete,
-  'close': Icons.close,
-  'check': Icons.check,
-  'done': Icons.done,
-  'clear': Icons.clear,
-  'search': Icons.search,
-  'settings': Icons.settings,
-  'home': Icons.home,
-  'person': Icons.person,
-  'people': Icons.people,
-  'favorite': Icons.favorite,
-  'favoriteBorder': Icons.favorite_border,
-  'star': Icons.star,
-  'starBorder': Icons.star_border,
-  'share': Icons.share,
-  'menu': Icons.menu,
-  'moreVert': Icons.more_vert,
-  'moreHoriz': Icons.more_horiz,
-  'arrowBack': Icons.arrow_back,
-  'arrowForward': Icons.arrow_forward,
-  'chevronLeft': Icons.chevron_left,
-  'chevronRight': Icons.chevron_right,
-  'expandMore': Icons.expand_more,
-  'expandLess': Icons.expand_less,
-  'refresh': Icons.refresh,
-  'info': Icons.info_outline,
-  'warning': Icons.warning_amber,
-  'error': Icons.error_outline,
-  'help': Icons.help_outline,
-  'notifications': Icons.notifications,
-  'email': Icons.email,
-  'phone': Icons.phone,
-  'calendar': Icons.calendar_today,
-  'schedule': Icons.schedule,
-  'alarm': Icons.alarm,
-  'location': Icons.location_on,
-  'map': Icons.map,
-  'camera': Icons.camera_alt,
-  'image': Icons.image,
-  'photo': Icons.photo,
-  'play': Icons.play_arrow,
-  'pause': Icons.pause,
-  'stop': Icons.stop,
-  'music': Icons.music_note,
-  'shoppingCart': Icons.shopping_cart,
-  'payment': Icons.payment,
-  'wallet': Icons.account_balance_wallet,
-  'list': Icons.list,
-  'grid': Icons.grid_view,
-  'filter': Icons.filter_list,
-  'sort': Icons.sort,
-  'bookmark': Icons.bookmark,
-  'label': Icons.label,
-  'flag': Icons.flag,
-  'lock': Icons.lock,
-  'visibility': Icons.visibility,
-  'visibilityOff': Icons.visibility_off,
-  'inbox': Icons.inbox,
-  'send': Icons.send,
-  'chat': Icons.chat,
-  'attach': Icons.attach_file,
-  'download': Icons.download,
-  'upload': Icons.upload,
-  'cloud': Icons.cloud,
-  'folder': Icons.folder,
-  'file': Icons.insert_drive_file,
-  'link': Icons.link,
-  'logout': Icons.logout,
-  'login': Icons.login,
-  'lightMode': Icons.light_mode,
-  'darkMode': Icons.dark_mode,
-  'timer': Icons.timer,
-  'checkCircle': Icons.check_circle,
-  'radioUnchecked': Icons.radio_button_unchecked,
-  'trendingUp': Icons.trending_up,
-  'barChart': Icons.bar_chart,
-  'fitness': Icons.fitness_center,
-  'restaurant': Icons.restaurant,
-  'local': Icons.local_offer,
-  'work': Icons.work,
-  'school': Icons.school,
-  'pets': Icons.pets,
-  'flight': Icons.flight,
-  'car': Icons.directions_car,
-};
+/// The icon for a ui.yaml icon name, in the style's icon weight.
+IconData parseIcon(dynamic name, BuildContext context) =>
+    phosphorIcons[MetacodeTokens.of(context).iconWeight]![name] ??
+    fallbackIcon;
 
-IconData parseIcon(dynamic name) => icons[name] ?? Icons.help_outline;
+/// The filled form of an icon, for selected states (e.g. the current tab).
+IconData parseSelectedIcon(dynamic name) =>
+    phosphorIcons['fill']![name] ?? fallbackIcon;
 
 MainAxisAlignment parseMainAxisAlignment(dynamic value) => const {
       'start': MainAxisAlignment.start,

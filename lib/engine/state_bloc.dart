@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -93,15 +94,13 @@ class StateBloc extends Cubit<Map<String, dynamic>> {
     return '$prefix${_escapeYaml(value)}';
   }
 
+  /// Strings are always written as JSON strings (valid YAML), so a string
+  /// that looks like a number, a bool or a date ("10", "true") reads back as
+  /// a string.
   String _escapeYaml(dynamic value) {
     if (value == null) return 'null';
     if (value is bool) return value ? 'true' : 'false';
     if (value is num) return value.toString();
-    final str = value.toString();
-    if (str.contains(':') || str.contains('#') || str.contains('"') ||
-        str.contains('\n') || str.isEmpty) {
-      return '"${str.replaceAll('"', '\\"')}"';
-    }
-    return str;
+    return jsonEncode(value.toString());
   }
 }
