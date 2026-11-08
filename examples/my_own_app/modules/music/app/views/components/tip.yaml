@@ -1,5 +1,4 @@
-# Guitar practice. Embedded in the landing page's examples carousel
-# (`module: music`).
+# Tip: a sparkle callout with the contextual tip.
 Tip:
   container:
     color: fill

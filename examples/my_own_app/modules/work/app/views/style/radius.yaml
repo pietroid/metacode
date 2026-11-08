@@ -1,5 +1,6 @@
-# Freelance work's own look: a sharp ledger. Schibsted Grotesk, ink blue,
-# square corners, bold icons. Keys left out are inherited.
+# radius: corner radius tokens.
+# Look: a sharp ledger. Schibsted Grotesk, ink blue, square corners, bold
+# icons. Keys left out are inherited.
 radius:
   xs: 2
   sm: 4

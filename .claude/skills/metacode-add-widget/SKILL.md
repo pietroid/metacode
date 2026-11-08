@@ -94,4 +94,4 @@ Add a `testWidgets` with `render(tester, {'rating': {...}}, bindings: {...}, act
 tool/check_engine.sh
 ```
 
-This also regenerates `.claude/skills/metacode-app/REFERENCE.md`, so app authors see the new widget. `catalog_test.dart` fails if spec, registry, icons or colors disagree. To use the widget in the app, continue with the `metacode-app` skill.
+This also regenerates `.claude/skills/metacode-app/REFERENCE.md` (widget table) and `reference/widgets/<name>.md`, so app authors see the new widget. `catalog_test.dart` fails if spec, registry, icons or colors disagree. To use the widget in the app, continue with the `metacode-app` skill.

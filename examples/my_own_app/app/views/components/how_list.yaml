@@ -1,4 +1,4 @@
-# Ticker, how it works and ideas.
+# HowList: the four numbered steps (HowStep1-4) between dividers.
 HowList:
   column:
     crossAxisAlignment: stretch

@@ -1,4 +1,4 @@
-// waitingText returns the total amount still waiting to be paid.
+// waitingText: The total amount still waiting to be paid.
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../.generated/state.dart';

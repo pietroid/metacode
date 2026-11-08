@@ -5,7 +5,7 @@ import '../style.dart';
 
 /// The resolved design tokens of an app, for one brightness.
 ///
-/// Built from style.yaml (see style.dart) by [MetacodeTheme.build] and stored
+/// Built from app/views/style/ (see style.dart) by [MetacodeTheme.build] and stored
 /// on the [ThemeData] as an extension, so widget builders read the same
 /// tokens the component themes were built from: `MetacodeTokens.of(context)`.
 @immutable
@@ -123,7 +123,7 @@ class MetacodeTokens extends ThemeExtension<MetacodeTokens> {
 
 /// Builds Flutter themes from a resolved style (see [resolveStyle]).
 abstract final class MetacodeTheme {
-  /// `theme:` in style.yaml as a [ThemeMode].
+  /// `theme:` in app/views/style/ as a [ThemeMode].
   static ThemeMode mode(Map<String, dynamic> style) =>
       switch (style['theme']) {
         'light' => ThemeMode.light,

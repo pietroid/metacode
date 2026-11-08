@@ -1,4 +1,4 @@
-# The reserved `state` model types the app's dynamic state.
+# state: the app's state (the reserved model); initial values in app.yaml.
 #
 # Primitives: string, boolean, number, datetime. Lists: list(type).
 # Optional fields end with `?`. A list of values declares an enum.

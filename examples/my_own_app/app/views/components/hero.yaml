@@ -1,4 +1,5 @@
-# Hero: title, the live "make my app" demo and the idea chips.
+# Hero: the top section: HeroTitle, subtitle, TryCard (the live demo) and
+# IdeaChips.
 Hero:
   container:
     maxWidth: 1120

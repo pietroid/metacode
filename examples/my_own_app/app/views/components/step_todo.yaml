@@ -1,4 +1,4 @@
-# Hero: title, the live "make my app" demo and the idea chips.
+# StepTodo: build step indicator, not started: an empty circle.
 StepTodo:
   container:
     width: 22

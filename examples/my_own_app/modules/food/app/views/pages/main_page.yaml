@@ -1,4 +1,5 @@
-# The food tracker's main page, embedded in the landing page carousel.
+# MainPage: the food tracker page, framed in a surface container. Embedded in
+# the carousel's phone, so it is a plain column (Content), not a scaffold.
 MainPage:
   container:
     color: surface

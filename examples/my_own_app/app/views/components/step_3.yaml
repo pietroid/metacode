@@ -1,4 +1,5 @@
-# Hero: title, the live "make my app" demo and the idea chips.
+# Step3: demo build step 3, "Setting up your lists and reminders", with its
+# done/doing/todo indicator.
 Step3:
   row:
     spacing: 12

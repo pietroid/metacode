@@ -1,5 +1,4 @@
-# Plant watering. Embedded in the landing page's examples carousel
-# (`module: plants`).
+# PlantRow: one list row, a plant: name, schedule, status and a water button.
 PlantRow:
   padding:
     vertical: 2

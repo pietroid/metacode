@@ -1,4 +1,4 @@
-// receivedText returns the total amount received from paid jobs.
+// receivedText: The total amount received from paid jobs.
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../.generated/state.dart';

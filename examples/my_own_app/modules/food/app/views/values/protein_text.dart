@@ -1,4 +1,4 @@
-// proteinText returns the formatted protein count eaten today.
+// proteinText: The formatted protein count eaten today.
 import '../../../.generated/labels.dart';
 import '../../../.generated/state.dart';
 

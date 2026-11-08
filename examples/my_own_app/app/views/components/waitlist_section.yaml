@@ -1,5 +1,5 @@
-# Waitlist: the section near the bottom and the bottom sheet route
-# (view/navigation.yaml).
+# WaitlistSection: the closing section: "What will you make?" and
+# WaitlistInline (or the joined message).
 WaitlistSection:
   container:
     maxWidth: 1120

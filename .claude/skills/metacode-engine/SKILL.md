@@ -31,7 +31,8 @@ Never launch the app. `test/renderer_test.dart` renders `examples/my_own_app/.ge
 | State persistence | `lib/engine/state_bloc.dart` (root: `METACODE_STATE_PATH` dart-define, else `<docs>/<name>/.state/state.yaml`; modules: `<docs>/<name>/modules/<module>/.state/state.yaml`. Saved values merge over the initial state) |
 | Asset loading | `lib/engine/project_config.dart` (`ProjectConfig.fromBundle`); pubspec lists only `bundle.json` and `examples/my_own_app/app/views/style/images/` |
 | Styling: tokens, default style, theme | `packages/app_ui/lib/style.dart` (tokens, `metacodeStyle`, `resolveStyle`, `validateStyle`), `packages/app_ui/lib/src/theme.dart` (`MetacodeTheme.build`, `MetacodeTokens`). The tool puts each app's merged `style/` in the bundle; `main.dart` sets theme/darkTheme/themeMode. Fonts (7 OFL families) and Phosphor icon fonts in `packages/app_ui/fonts` + its pubspec; icon maps in `src/icons.dart`. `examples/my_own_app/style/*.yaml` may change values but must name every key of `metacodeStyle` (style_test). |
-| App-author reference | `tool/reference.dart` generates `.claude/skills/metacode-app/REFERENCE.md`. Update its static text when types or signatures change. |
+| App index (`.generated/INDEX.md`) | `tool/src/index.dart`, fed by `WidgetRefs` (`tool/src/ui.dart`), `UserFunction` touches + `headerComment` (`tool/src/functions.dart`), `AppProject.docs` (`tool/src/project.dart`) |
+| App-author reference | `tool/reference.dart` generates `.claude/skills/metacode-app/REFERENCE.md`, `reference/widgets/*.md` and `reference/style.md`. Update its static text when types or signatures change. |
 
 ## Contracts to keep
 

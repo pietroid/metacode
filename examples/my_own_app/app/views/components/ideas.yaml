@@ -1,4 +1,5 @@
-# Ticker, how it works and ideas.
+# Ideas: the ideas section: headline and four use-case cards (UseHome,
+# UseHealth, UseWork, UseHobbies).
 Ideas:
   container:
     maxWidth: 1120

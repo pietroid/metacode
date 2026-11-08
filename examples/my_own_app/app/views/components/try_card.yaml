@@ -1,4 +1,5 @@
-# Hero: title, the live "make my app" demo and the idea chips.
+# TryCard: the live demo card: idea field, make button, the four build steps
+# (Step1-4) and ReadyBar.
 TryCard:
   container:
     maxWidth: 760

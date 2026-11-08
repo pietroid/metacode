@@ -1,4 +1,5 @@
-# The plant watering reminder's main page, embedded in the landing page carousel.
+# MainPage: the plant watering page, framed in a surface container. Embedded in
+# the carousel's phone, so it is a plain column (Content), not a scaffold.
 MainPage:
   container:
     color: surface

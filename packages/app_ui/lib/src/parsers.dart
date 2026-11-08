@@ -9,9 +9,9 @@ import 'theme.dart';
 
 double? parseDouble(dynamic value) => (value as num?)?.toDouble();
 
-/// Every color name ui.yaml can use, resolved for the current theme.
+/// Every color name app/views/ can use, resolved for the current theme.
 ///
-/// Style tokens (bg, ink, accent, success...) come straight from style.yaml.
+/// Style tokens (bg, ink, accent, success...) come straight from app/views/style/.
 /// Material scheme names are derived from the same tokens. Hue names (red,
 /// green...) map to the style's tuned colors where one exists, so a quick
 /// `color: red` still sits in the palette.
@@ -112,7 +112,7 @@ TextAlign? parseTextAlign(dynamic value) => const {
       'right': TextAlign.right,
     }[value];
 
-/// The icon for a ui.yaml icon name, in the style's icon weight.
+/// The icon for a app/views/ icon name, in the style's icon weight.
 IconData parseIcon(dynamic name, BuildContext context) =>
     phosphorIcons[MetacodeTokens.of(context).iconWeight]![name] ??
     fallbackIcon;

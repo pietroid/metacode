@@ -1,4 +1,5 @@
-# Hero: title, the live "make my app" demo and the idea chips.
+# Step1: demo build step 1, "Understanding what you need", with its
+# done/doing/todo indicator.
 Step1:
   row:
     spacing: 12

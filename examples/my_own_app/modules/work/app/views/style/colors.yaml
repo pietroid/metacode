@@ -1,5 +1,6 @@
-# Freelance work's own look: a sharp ledger. Schibsted Grotesk, ink blue,
-# square corners, bold icons. Keys left out are inherited.
+# colors: the palette, light and dark. Widgets use these names (`color: accent`).
+# Look: a sharp ledger. Schibsted Grotesk, ink blue, square corners, bold
+# icons. Keys left out are inherited.
 colors:
   light:
     surface: '#F7F9FC'

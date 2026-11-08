@@ -1,4 +1,4 @@
-# The freelance tracker state: jobs and the tax rate.
+# state: the freelance tracker state: jobs and the tax rate.
 state:
   jobs: list(job)
   taxRate: number

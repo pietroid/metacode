@@ -1,4 +1,4 @@
-# Hero: title, the live "make my app" demo and the idea chips.
+# StepDoing: build step indicator, in progress: a small spinner.
 StepDoing:
   sizedBox:
     width: 22

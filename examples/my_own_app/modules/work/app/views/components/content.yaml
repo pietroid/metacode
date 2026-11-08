@@ -1,5 +1,4 @@
-# Freelance jobs and taxes. Embedded in the landing page's examples carousel
-# (`module: work`).
+# Content: the freelance jobs and taxes screen: header, summary, Tip and the list.
 Content:
   column:
     crossAxisAlignment: stretch

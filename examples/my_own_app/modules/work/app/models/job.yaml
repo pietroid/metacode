@@ -1,4 +1,4 @@
-# A freelance job, with client, task, amount and payment status.
+# job: a freelance job, with client, task, amount and payment status.
 job:
   client: string
   task: string

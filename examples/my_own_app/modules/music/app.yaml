@@ -1,3 +1,5 @@
+# music: the guitar practice example, embedded in the landing page carousel
+# (`module: music`). `state:` holds the initial state; types in app/models/state.yaml.
 name: music
 description: Teach me guitar, ten minutes a day. One chord at a time, with a practice
   log.

@@ -1,4 +1,4 @@
-// step1State returns the visual state of the first build-step indicator.
+// step1State: The visual state of the first build-step indicator.
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../.generated/state.dart';

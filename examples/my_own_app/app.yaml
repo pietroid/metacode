@@ -1,3 +1,5 @@
+# metacode: the root app, the my-own.app landing page. `state:` holds the initial
+# state; its types are in app/models/state.yaml.
 name: metacode
 description: My Own App website, an AI-driven app where you build and use your own
   customized app in minutes.

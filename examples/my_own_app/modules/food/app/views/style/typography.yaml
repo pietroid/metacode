@@ -1,6 +1,6 @@
-# Food tracker: a sophisticated, editorial look. Playfair Display headlines
-# over Source Sans 3 body text, with warm earthy tones and fully rounded,
-# organic controls. Fonts are loaded from Google Fonts at runtime.
+# typography: the text variants (size, weight, family, spacing).
+# Look: editorial. Playfair Display over Source Sans 3, warm earthy tones,
+# fully rounded controls. Keys left out are inherited.
 typography:
   titleLarge:
     font: display

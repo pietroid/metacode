@@ -1,3 +1,6 @@
+// Loads one app folder (and, recursively, its modules) into an [AppProject]:
+// reads every file, validates it, and keeps what codegen and the index need.
+
 import 'dart:io';
 
 import 'package:app_ui/style.dart';
@@ -15,19 +18,19 @@ import 'ui.dart';
 /// ```
 /// app.yaml                  name, description, version, state (initial values)
 /// app/
-///   actions/*.dart          one action per file, its test beside it (x_test.dart)
+///   actions/*.dart          one action per file; its tests in a main() below it
 ///   models/*.yaml           one model or enum per file (state.yaml: the state)
-///   models/samples.dart     sample states for tests
+///   models/sample.dart      test fixtures: `app` (TestApp) and sample(...)
 ///   views/
 ///     navigation.yaml       routes (optional; without it the app is MainPage)
 ///     pages/*.yaml          what routes open: MainPage, sheets, dialogs
 ///     components/*.yaml     one widget per file
 ///     style/*.yaml          design tokens (optional; modules inherit the theme)
 ///     style/images/         image assets
-///     values/*.dart         one value (computed from state) per file + its test
+///     values/*.dart         one value (computed from state) per file + tests
 ///     labels/<language>.yaml  the app's text, pure strings (en.yaml)
 /// modules/<name>/           modules (same layout)
-/// .generated/               output, never edited
+/// .generated/               output, never edited (INDEX.md: the app's map)
 /// .state/                   runtime state, never committed
 /// ```
 ///
@@ -53,6 +56,17 @@ class AppProject {
   Map<String, Model> models = {};
   Map<String, dynamic> state = {};
   Map<String, dynamic> widgets = {};
+
+  /// Widget id -> its file (`app/views/components/hero.yaml`).
+  Map<String, String> widgetFiles = {};
+
+  /// Widget id -> what it references (for the index).
+  Map<String, WidgetRefs> widgetRefs = {};
+
+  /// File (relative to the app) -> its header comment, for every model,
+  /// page, component and the app.yaml (actions and values keep theirs in
+  /// [UserFunction.doc]).
+  Map<String, String> docs = {};
   Navigation navigation = Navigation.fallback;
   Map<String, dynamic>? navigationDoc;
   Map<String, dynamic>? styleDoc;
@@ -169,16 +183,37 @@ AppProject loadApp(Directory dir, String path, Issues root,
       issues.error(components.fileOf[id]!, id, 'also defined in $other');
     }
   }
+  app.widgetFiles = {...components.fileOf, ...pages.fileOf};
   app.widgets = validateWidgets(
     {...components.widgets, ...pages.widgets},
-    {...components.fileOf, ...pages.fileOf},
+    app.widgetFiles,
     app.bindings.map((f) => f.name).toSet(),
     app.defaultLabels.keys.toSet(),
     app.actions.map((f) => f.name).toSet(),
     app.modules.keys.toSet(),
     issues,
     requireMainPage: navigationDoc == null,
+    refs: app.widgetRefs,
   );
+  for (final file in {
+    'app.yaml',
+    ...app.widgetFiles.values,
+    for (final f in _yamlFiles(Directory('${dir.path}/app/models')))
+      f.path.substring(dir.path.length + 1),
+  }) {
+    final f = File('${dir.path}/$file');
+    if (!f.existsSync()) continue;
+    final source = f.readAsStringSync();
+    // The header starts with the file's key (`Hero:`, `state:`); app.yaml's
+    // with the app's folder name.
+    final key = file == 'app.yaml'
+        ? name
+        : RegExp(r'^([A-Za-z]\w*):', multiLine: true)
+                .firstMatch(source)
+                ?.group(1) ??
+            '';
+    app.docs[file] = headerComment(source, key);
+  }
 
   if (navigationDoc != null) {
     const file = 'app/views/navigation.yaml';
@@ -315,7 +350,7 @@ class _FolderReader {
 
   _FolderReader(this.dir, this.issues);
 
-  /// Every `.yaml` in [folder], by file (`presentation/screens/home.yaml`),
+  /// Every `.yaml` in [folder], by file (`app/views/pages/main_page.yaml`),
   /// as plain Dart. When [recursive] is true, sub-folders are scanned too.
   Map<String, dynamic> files(String folder,
       {bool required = true, bool recursive = false}) {
@@ -380,6 +415,11 @@ class _FolderReader {
     return out;
   }
 }
+
+List<File> _yamlFiles(Directory d) => d.existsSync()
+    ? (d.listSync().whereType<File>().where((f) => f.path.endsWith('.yaml')).toList()
+      ..sort((a, b) => a.path.compareTo(b.path)))
+    : [];
 
 dynamic _readYaml(File file, String label, Issues issues) {
   if (!file.existsSync()) return null;

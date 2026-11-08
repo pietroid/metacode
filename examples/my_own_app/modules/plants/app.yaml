@@ -1,3 +1,5 @@
+# plants: the plant watering example, embedded in the landing page carousel
+# (`module: plants`). `state:` holds the initial state; types in app/models/state.yaml.
 name: plants
 description: Remind me to water my plants. Every plant on its own schedule.
 state:

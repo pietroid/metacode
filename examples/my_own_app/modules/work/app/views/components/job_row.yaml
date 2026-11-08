@@ -1,5 +1,4 @@
-# Freelance jobs and taxes. Embedded in the landing page's examples carousel
-# (`module: work`).
+# JobRow: one list row, a job: paid checkbox, client, task and amount.
 JobRow:
   padding:
     vertical: 2

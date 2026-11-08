@@ -1,12 +1,27 @@
+// Validates app/views/ (pages and components) against the widget catalog
+// (packages/app_ui/lib/spec.dart) and the app's names, and records what each
+// widget references for the index (tool/src/index.dart).
+
 import 'package:app_ui/spec.dart';
 
 import 'issues.dart';
+
+/// What one page or component references, by name. Filled while validating;
+/// the index (`.generated/INDEX.md`) prints it and its reverse ("used by").
+class WidgetRefs {
+  final widgets = <String>{}; // pages/components it embeds
+  final values = <String>{};
+  final actions = <String>{};
+  final labels = <String>{};
+  final modules = <String>{};
+}
 
 /// Validates app/views/ widgets (pages and components) against the widget catalog,
 /// the values, the labels, the actions and the modules. [widgets] maps each widget id to its
 /// definition; [fileOf] maps each id back to the file that declared it.
 ///
-/// Returns every widget by id (empty on errors in the file shapes).
+/// Returns every widget by id (empty on errors in the file shapes). When
+/// [refs] is given, it is filled with what each widget references.
 Map<String, dynamic> validateWidgets(
   Map<String, dynamic> widgets,
   Map<String, String> fileOf,
@@ -16,6 +31,7 @@ Map<String, dynamic> validateWidgets(
   Set<String> modules,
   Issues issues, {
   bool requireMainPage = true, // false when app/views/navigation.yaml names the pages
+  Map<String, WidgetRefs>? refs,
 }) {
   if (requireMainPage && !widgets.containsKey('MainPage')) {
     issues.error('app/views/pages/main_page.yaml', '',
@@ -29,8 +45,10 @@ Map<String, dynamic> validateWidgets(
   }
 
   for (final entry in widgets.entries) {
+    final found = WidgetRefs();
+    refs?[entry.key] = found;
     _UiValidator(fileOf[entry.key]!, widgets, bindings, labels, actions, modules,
-            issues)
+            issues, found)
         .node(entry.value, entry.key);
   }
   return widgets;
@@ -44,9 +62,10 @@ class _UiValidator {
   final Set<String> actions;
   final Set<String> modules;
   final Issues issues;
+  final WidgetRefs refs;
 
   _UiValidator(this.file, this.widgets, this.bindings, this.labels,
-      this.actions, this.modules, this.issues);
+      this.actions, this.modules, this.issues, this.refs);
 
   /// Props that show text: a value, a label or (discouraged) literal text.
   static const _textProps = {'hint', 'label', 'tooltip'};
@@ -61,7 +80,11 @@ class _UiValidator {
         return error(path, '"$value" is not a page or component in app/views/ '
             '(text belongs in app/views/labels/)');
       }
-      if (!widgets.containsKey(value)) text(value, path);
+      if (widgets.containsKey(value)) {
+        refs.widgets.add(value);
+      } else {
+        text(value, path);
+      }
       return;
     }
     if (value is num || value is bool) return;
@@ -110,16 +133,19 @@ class _UiValidator {
         if (value is! List) return error(path, 'expected a list of widgets');
         nodes(value, path);
       case PropKind.action:
+        if (actions.contains(value)) refs.actions.add(value);
         if (!actions.contains(value)) {
           error(path, '"$value" is not an action; '
               'available: ${actions.isEmpty ? '(none)' : actions.join(', ')}');
         }
       case PropKind.binding:
+        if (bindings.contains(value)) refs.values.add(value);
         if (!bindings.contains(value)) {
           error(path, '"$value" is not a value (app/views/values/); '
               'available: ${bindings.isEmpty ? '(none)' : bindings.join(', ')}');
         }
       case PropKind.module:
+        if (modules.contains(value)) refs.modules.add(value);
         if (!modules.contains(value)) {
           error(path, '"$value" is not a module (a folder in modules/); '
               'available: ${modules.isEmpty ? '(none)' : modules.join(', ')}');
@@ -142,13 +168,29 @@ class _UiValidator {
         }
       case PropKind.bindingOrLiteral:
       case PropKind.literal:
-        break;
+        _recordNames(value);
+    }
+  }
+
+  /// Records the values and labels a literal names: a bare string, or the
+  /// strings and `value:` entries of a list (text `spans`). Other map keys
+  /// (`style:` and so on) are skipped: they hold variants, not names.
+  void _recordNames(dynamic value) {
+    if (value is String) {
+      if (bindings.contains(value)) refs.values.add(value);
+      if (labels.contains(value)) refs.labels.add(value);
+    } else if (value is List) {
+      value.forEach(_recordNames);
+    } else if (value is Map) {
+      _recordNames(value['value']);
     }
   }
 
   /// A string shown as text: a value, a label, or literal text (which
   /// belongs in app/views/labels/).
   void text(String value, String path) {
+    if (bindings.contains(value)) refs.values.add(value);
+    if (labels.contains(value)) refs.labels.add(value);
     if (bindings.contains(value) || labels.contains(value)) return;
     if (camelCase.hasMatch(value)) {
       issues.warn(file, path, '"$value" is not a value or label; '

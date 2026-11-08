@@ -1,4 +1,4 @@
-// foodTip returns a contextual tip based on calories and protein so far.
+// foodTip: A contextual tip based on calories and protein so far.
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../.generated/labels.dart';

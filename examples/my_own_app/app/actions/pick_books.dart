@@ -1,4 +1,4 @@
-// pickBooks fills the idea field with the book-list prompt and runs the demo.
+// pickBooks: Fills the idea field with the book-list prompt and runs the demo.
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../.generated/state.dart';

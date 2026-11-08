@@ -1,5 +1,4 @@
-# Guitar practice. Embedded in the landing page's examples carousel
-# (`module: music`).
+# Content: the guitar practice screen: header, summary, Tip and the list.
 Content:
   column:
     crossAxisAlignment: stretch

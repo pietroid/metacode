@@ -1,4 +1,4 @@
-// previousExample moves the examples carousel to the previous slide.
+// previousExample: Moves the examples carousel to the previous slide.
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../.generated/state.dart';

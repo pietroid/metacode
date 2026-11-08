@@ -1,4 +1,4 @@
-// musicTip suggests the next chord or a milestone based on learned chords.
+// musicTip: Suggests the next chord or a milestone based on learned chords.
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../.generated/labels.dart';

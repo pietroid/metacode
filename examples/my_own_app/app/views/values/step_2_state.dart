@@ -1,4 +1,4 @@
-// step2State returns the visual state of the second build-step indicator.
+// step2State: The visual state of the second build-step indicator.
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../.generated/state.dart';

@@ -1,4 +1,5 @@
-# Hero: title, the live "make my app" demo and the idea chips.
+# HeroTitle: the headline "Say what you need. Get your own app.", sized by
+# screen width.
 HeroTitle:
   responsive:
     breakpoint: 760

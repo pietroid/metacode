@@ -1,4 +1,4 @@
-# A food item in the tracker, with its calories and protein per serving.
+# food: a food item in the tracker, with its calories and protein per serving.
 food:
   name: string
   kcal: number

@@ -1,4 +1,4 @@
-# Hero: title, the live "make my app" demo and the idea chips.
+# StepDone: build step indicator, done: a green check.
 StepDone:
   container:
     width: 22

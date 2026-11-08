@@ -1,4 +1,4 @@
-// step3State returns the visual state of the third build-step indicator.
+// step3State: The visual state of the third build-step indicator.
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../.generated/state.dart';

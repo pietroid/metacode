@@ -1,5 +1,5 @@
-# Waitlist: the section near the bottom and the bottom sheet route
-# (view/navigation.yaml).
+# WaitlistForm: the waitlist sheet's form: idea summary, email field, error
+# and join button.
 WaitlistForm:
   column:
     crossAxisAlignment: stretch

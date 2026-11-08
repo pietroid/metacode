@@ -1,10 +1,4 @@
-# My Own App: the website. One scrolling page (hero with a live "make my
-# app" demo, a ticker, example apps, how it works, ideas, waitlist) plus a
-# waitlist bottom sheet. Page columns cap at 1120 and center on wide screens.
-#
-# ui/ is split by section; all files share one widget namespace:
-# hero.yaml, examples.yaml, sections.yaml (ticker, how it works, ideas),
-# waitlist.yaml (section + the bottom sheet route).
+# Logo: the app bar logo: the mark and "My Own App".
 Logo:
   row:
     spacing: 12

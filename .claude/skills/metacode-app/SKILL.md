@@ -15,6 +15,16 @@ tool/check.sh
 
 It validates every app, regenerates, type-checks and runs every app's tests (the `main()` in each action and value file). Repeat until it prints `OK`. Do not launch the app, and do not touch `lib/`, `tool/` or `packages/`. If the change needs a new widget, use the `metacode-add-widget` skill. If it needs engine work, use `metacode-engine`.
 
+## Find what to change: read the index first
+
+Before opening any app file, read the index of the app the change is about: `examples/my_own_app/.generated/INDEX.md` (root) or `examples/my_own_app/modules/<name>/.generated/INDEX.md`. If it is missing, run `dart run tool/metacode.dart` first. It lists the state (with who writes and reads each field), models, routes, and every page, component, action and value with its one-line purpose, what it uses and what uses it. From it:
+
+- Pick the exact files to edit. Names map to files (`Hero` -> `app/views/components/hero.yaml`, `joinWaitlist` -> `app/actions/join_waitlist.dart`). Open only those. Don't `ls`, `grep` or browse the app.
+- Find what a change ripples into: a state field's `w:`/`r:` lists, and each item's `used by`.
+- Widgets: the table in REFERENCE.md (Widgets) gives each widget's purpose and props in one line. Open `reference/widgets/<name>.md` only when you need prop kinds or notes; `reference/style.md` only for style tokens, icon, color or text variant names.
+
+Every app file starts with a header comment: the first line is `name: what it is` (`# Hero: the top section...`, `// joinWaitlist: Validates...`). The index is built from these. Keep them true when you change a file, and write one for each new file.
+
 ## Files
 
 An app is a folder; `examples/my_own_app/` is the root app. **Modules** live in `modules/<name>/` with the same layout (recursive) and are shown with the `module: <name>` widget. Each app has its own state, actions and values, and can't see its parent's (or vice versa). Work inside the one app the change is about: a change to the food example only touches `modules/food/`.
@@ -48,7 +58,7 @@ Import the generated files relative to your file (`../../.generated/` from `app/
 
 ## Reference
 
-**[REFERENCE.md](REFERENCE.md)** is the single spec: types, signatures, every widget with its props, icons, colors and text variants. It is generated from the catalog, so it is always current. Look things up there instead of reading `packages/`.
+**[REFERENCE.md](REFERENCE.md)** is the spec: files, types, signatures, views and a one-line table of every widget. Details are split out so you read only what you need: [reference/widgets/](reference/widgets/)`<name>.md` (one widget's props) and [reference/style.md](reference/style.md) (style tokens, icons, colors, text variants). All generated from the catalog, so always current. Never read `lib/`, `tool/` or `packages/`: the app needs only these files and the index.
 
 Most common patterns:
 

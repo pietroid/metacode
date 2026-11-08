@@ -1,5 +1,4 @@
-# Freelance jobs and taxes. Embedded in the landing page's examples carousel
-# (`module: work`).
+# Tip: a sparkle callout with the contextual tip.
 Tip:
   container:
     color: fill

@@ -1,4 +1,5 @@
-# Freelance work's own look: a sharp ledger. Schibsted Grotesk, ink blue,
-# square corners, bold icons. Keys left out are inherited.
+# icons: the Phosphor icon weight.
+# Look: a sharp ledger. Schibsted Grotesk, ink blue, square corners, bold
+# icons. Keys left out are inherited.
 icons:
   weight: bold

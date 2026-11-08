@@ -1,5 +1,6 @@
-# Guitar practice's own look: a night at the stage. Cormorant Garamond
-# headlines, a warm violet, thin icons. Keys left out are inherited.
+# colors: the palette, light and dark. Widgets use these names (`color: accent`).
+# Look: a night at the stage. Cormorant Garamond, a warm violet, thin
+# icons. Keys left out are inherited.
 colors:
   light:
     surface: '#FBF8FF'

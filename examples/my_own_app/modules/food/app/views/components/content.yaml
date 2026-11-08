@@ -1,5 +1,4 @@
-# Food tracker. Embedded in the landing page's examples carousel
-# (`module: food`), so the entry is a plain column, not a scaffold.
+# Content: the food tracker screen: header, summary, Tip and the list.
 Content:
   column:
     crossAxisAlignment: stretch

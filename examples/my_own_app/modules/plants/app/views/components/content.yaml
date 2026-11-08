@@ -1,5 +1,4 @@
-# Plant watering. Embedded in the landing page's examples carousel
-# (`module: plants`).
+# Content: the plant watering screen: header, summary, Tip and the list.
 Content:
   column:
     crossAxisAlignment: stretch

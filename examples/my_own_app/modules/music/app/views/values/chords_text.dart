@@ -1,4 +1,4 @@
-// chordsText returns the formatted count of learned chords.
+// chordsText: The formatted count of learned chords.
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../.generated/labels.dart';

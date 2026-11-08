@@ -1,4 +1,4 @@
-// makeApp runs the live "build your app" demo on the hero card.
+// makeApp: Runs the live "build your app" demo on the hero card.
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../.generated/state.dart';

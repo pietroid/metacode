@@ -16,7 +16,7 @@ enum RouteType { page, bottomSheet, dialog }
 class RouteSpec {
   final String name;
   final RouteType type;
-  final String widget; // presentation/ widget id
+  final String widget; // page id (app/views/pages/)
 
   const RouteSpec(this.name, this.type, this.widget);
 }

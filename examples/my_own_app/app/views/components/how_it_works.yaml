@@ -1,4 +1,5 @@
-# Ticker, how it works and ideas.
+# HowItWorks: the "How it works" section: HowHeading beside HowList (stacked
+# under 860 wide).
 HowItWorks:
   container:
     maxWidth: 1120

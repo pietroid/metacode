@@ -1,9 +1,6 @@
-# Design tokens for the app. Every widget is themed from these values, and
-# ui.yaml can use the color names (`color: accent`). This file names every token
-# of the Metacode style (packages/app_ui/lib/style.dart); any key left out
-# falls back to it.
-#
-# Look: My Own App. Calm near-black, one orange, Plus Jakarta Sans.
+# fonts: the display and text families (Google Fonts or bundled).
+# Look: My Own App. Calm near-black, one orange, Plus Jakarta Sans. The root
+# names every token of the Metacode style (packages/app_ui/lib/style.dart).
 fonts:
   display: Plus Jakarta Sans
   text: Plus Jakarta Sans

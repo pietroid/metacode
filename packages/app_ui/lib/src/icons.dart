@@ -1,4 +1,4 @@
-// ui.yaml icon names -> Phosphor icons (https://phosphoricons.com, MIT).
+// app/views/ icon names -> Phosphor icons (https://phosphoricons.com, MIT).
 // The icon fonts are bundled in fonts/phosphor (one family per weight).
 // To add an icon: add its name to `phosphorNames` and to every weight map
 // below, with the code point from the Phosphor font, and to `iconNames` in
@@ -6,7 +6,7 @@
 
 import 'package:flutter/widgets.dart';
 
-/// Icon names ui.yaml can use -> Phosphor icon names.
+/// Icon names app/views/ can use -> Phosphor icon names.
 const phosphorNames = <String, String>{
   'add': 'plus',
   'remove': 'minus',
@@ -697,7 +697,7 @@ const _fill = <String, IconData>{
   'confetti': IconData(0xe81a, fontFamily: 'PhosphorFill', fontPackage: 'app_ui'),
 };
 
-/// Icon maps by weight (style.yaml `icons.weight`), plus `fill`.
+/// Icon maps by weight (app/views/style/ `icons.weight`), plus `fill`.
 const phosphorIcons = <String, Map<String, IconData>>{
   'thin': _thin,
   'light': _light,

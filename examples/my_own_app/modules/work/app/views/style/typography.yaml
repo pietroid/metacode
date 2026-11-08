@@ -1,5 +1,6 @@
-# Freelance work's own look: a sharp ledger. Schibsted Grotesk, ink blue,
-# square corners, bold icons. Keys left out are inherited.
+# typography: the text variants (size, weight, family, spacing).
+# Look: a sharp ledger. Schibsted Grotesk, ink blue, square corners, bold
+# icons. Keys left out are inherited.
 typography:
   titleLarge:
     font: display

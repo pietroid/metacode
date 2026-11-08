@@ -1,11 +1,11 @@
-// The style contract: the design tokens `examples/my_own_app/style.yaml` can set, and
+// The style contract: the design tokens an app's `app/views/style/` can set, and
 // the Metacode style every missing token falls back to. Pure Dart (no
-// Flutter) so `tool/metacode.dart` validates style.yaml against exactly what
+// Flutter) so `tool/metacode.dart` validates app/views/style/ against exactly what
 // `src/theme.dart` reads, and `tool/reference.dart` documents it.
 //
 // Tokens, not widgets: colors, type, icons, radius, spacing and sizes. Every
 // catalog widget is themed from these, so an app restyles without touching
-// ui.yaml.
+// app/views/.
 
 /// Color tokens. Each app has a light and a dark set.
 ///
@@ -91,7 +91,7 @@ const googleFontFamilies = [
   'Nunito Sans',
 ];
 
-/// Every family a style.yaml may reference.
+/// Every family an app/views/style/ may reference.
 const allFontFamilies = [...fontFamilies, ...googleFontFamilies];
 
 /// The two font roles. Each text variant picks one.
@@ -115,7 +115,7 @@ const themeModes = ['system', 'light', 'dark'];
 /// The Metacode style: classic and quiet. Near-black ink on a soft neutral
 /// page, white cards lifted by a whisper of shadow, one deep blue for
 /// progress and highlights, Newsreader headlines over Hanken Grotesk text,
-/// and Phosphor icons. examples/my_own_app/style.yaml spells out the same values.
+/// and Phosphor icons. The root app's app/views/style/ spells out the same values.
 const metacodeStyle = <String, dynamic>{
   'theme': 'system',
   'fonts': {'display': 'Newsreader', 'text': 'Hanken Grotesk'},
@@ -184,12 +184,12 @@ const metacodeStyle = <String, dynamic>{
   },
 };
 
-/// The text variants `typography:` can set (same names as ui.yaml's
-/// `text.style.variant`).
+/// The text variants `typography:` can set (the names `text.style.variant`
+/// takes).
 List<String> get typographyVariants =>
     (metacodeStyle['typography'] as Map).keys.cast<String>().toList();
 
-/// [style] (a parsed style.yaml, or null) merged over [metacodeStyle].
+/// [style] (a parsed app/views/style/, or null) merged over [metacodeStyle].
 /// Unknown keys are dropped; numbers become doubles.
 Map<String, dynamic> resolveStyle(dynamic style) =>
     _merge(metacodeStyle, style is Map ? style : const {});
@@ -206,7 +206,7 @@ Map<String, dynamic> _merge(Map base, Map over) => {
         },
     };
 
-/// Problems in a parsed style.yaml, as (path, message). Empty when valid.
+/// Problems in a parsed app/views/style/, as (path, message). Empty when valid.
 List<(String, String)> validateStyle(dynamic style) {
   final issues = <(String, String)>[];
   void error(String path, String message) => issues.add((path, message));

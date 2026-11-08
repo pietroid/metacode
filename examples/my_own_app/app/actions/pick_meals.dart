@@ -1,4 +1,4 @@
-// pickMeals fills the idea field with the meal-planner prompt and runs the demo.
+// pickMeals: Fills the idea field with the meal-planner prompt and runs the demo.
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../.generated/state.dart';

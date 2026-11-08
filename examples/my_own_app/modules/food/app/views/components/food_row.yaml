@@ -1,5 +1,4 @@
-# Food tracker. Embedded in the landing page's examples carousel
-# (`module: food`), so the entry is a plain column, not a scaffold.
+# FoodRow: one list row, a food in the list: name, info and -/+ servings.
 FoodRow:
   padding:
     vertical: 2

@@ -1,4 +1,4 @@
-# The food tracker's state: daily calorie goal and the list of foods.
+# state: the food tracker's state: daily calorie goal and the list of foods.
 state:
   calorieGoal: number
   foods: list(food)

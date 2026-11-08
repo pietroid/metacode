@@ -1,4 +1,4 @@
-// jobAmount formats a single job's amount with thousand separators.
+// jobAmount: Formats a single job's amount with thousand separators.
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../.generated/state.dart';

@@ -1,5 +1,6 @@
-# The root page of the My Own App website: a scrolling landing page made of
-# reusable components defined in view/components/.
+# MainPage: the landing page. An app bar (Logo, join button) over one
+# scrolling column of sections: Hero, Ticker, Examples, HowItWorks, Ideas,
+# WaitlistSection, Footer. Sections cap at 1120 wide and center.
 MainPage:
   scaffold:
     appBar:

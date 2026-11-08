@@ -1,8 +1,7 @@
-# The route that opens when the app starts.
-initial: home
-# Routes the app can open. Actions open them with
-# core.navigator.push(Routes.<name>) and close the top one with
+# navigation: the app's routes. `initial` opens at start; actions open the
+# others with core.navigator.push(Routes.<name>) and close the top one with
 # core.navigator.pop().
+initial: home
 routes:
   home: MainPage
   waitlist: {bottomSheet: WaitlistSheet}

@@ -1,4 +1,4 @@
-// nextExample advances the examples carousel to the next slide.
+// nextExample: Advances the examples carousel to the next slide.
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../.generated/state.dart';

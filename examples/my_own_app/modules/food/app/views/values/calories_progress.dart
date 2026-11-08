@@ -1,4 +1,4 @@
-// caloriesProgress returns the share of the daily calorie goal already eaten.
+// caloriesProgress: The share of the daily calorie goal already eaten.
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../.generated/state.dart';

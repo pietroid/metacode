@@ -1,5 +1,4 @@
-# Guitar practice. Embedded in the landing page's examples carousel
-# (`module: music`).
+# ChordRow: one list row, a chord: name, finger hint and a learned checkbox.
 ChordRow:
   padding:
     vertical: 4

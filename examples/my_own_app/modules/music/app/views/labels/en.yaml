@@ -1,5 +1,5 @@
-# The app's text in English. Pure strings: values in
-# view/values/ join them with the state (they take `Labels labels`).
+# en: all of the app's text in English, key: text. Pure strings; values in
+# app/views/values/ join them with the state (they take `Labels labels`).
 en:
   guitarBasics: Guitar basics
   addFiveMinutes: '+5 min'

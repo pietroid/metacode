@@ -1,4 +1,5 @@
-# Hero: title, the live "make my app" demo and the idea chips.
+# IdeaChips: preset idea chips under the demo; tapping one fills the idea
+# and runs the demo.
 IdeaChips:
   container:
     maxWidth: 760

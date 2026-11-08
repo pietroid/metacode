@@ -1,5 +1,6 @@
-# Plant care's own look: a greenhouse journal. Newsreader serif titles,
-# sage and terracotta, light icons. Keys left out are inherited.
+# colors: the palette, light and dark. Widgets use these names (`color: accent`).
+# Look: a greenhouse journal. Newsreader titles, sage and terracotta, light
+# icons. Keys left out are inherited.
 colors:
   light:
     surface: '#FBF7EF'

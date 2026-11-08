@@ -1,3 +1,5 @@
+# food: the food tracker example, embedded in the landing page carousel
+# (`module: food`). `state:` holds the initial state; types in app/models/state.yaml.
 name: food
 description: Help me eat better without counting everything. Tap what you ate; it
   adds up the calories and suggests what to eat next.

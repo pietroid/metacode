@@ -1,7 +1,12 @@
+// Reads actions (app/actions/) and values (app/views/values/): checks their
+// signatures with the analyzer (syntax only, no type resolution) and records
+// what each one touches (state fields, labels, routes) for the index.
+
 import 'dart:io';
 
 import 'package:analyzer/dart/analysis/utilities.dart';
 import 'package:analyzer/dart/ast/ast.dart';
+import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:app_ui/spec.dart';
 
 import 'issues.dart';
@@ -13,14 +18,104 @@ class Param {
   const Param(this.name, this.type);
 }
 
-/// A public top-level function from actions/ or app/views/values/.
+/// A public top-level function from app/actions/ or app/views/values/.
 class UserFunction {
   final String name;
   final String file; // relative to its app folder
   final String returnType;
   final List<Param> params; // context params, after the State param
 
-  const UserFunction(this.name, this.file, this.returnType, this.params);
+  /// The file's header comment, without the leading `name:` (see
+  /// [headerComment]). Shown in the index.
+  String doc = '';
+
+  /// What the file's code (the function and its private helpers, not the
+  /// tests) touches, found syntactically: `state.x` reads, `StateDelta(x:)`
+  /// writes, `labels.x`, `Routes.x`, and whether it calls `core.api`.
+  final Set<String> reads = {};
+  final Set<String> writes = {};
+  final Set<String> labels = {};
+  final Set<String> routes = {};
+  bool usesApi = false;
+
+  UserFunction(this.name, this.file, this.returnType, this.params);
+}
+
+/// The leading comment block of a file (`//` or `#` lines), as one line of
+/// text, without a leading `name:` and up to the first empty comment line.
+/// Every app file starts with one: `// joinWaitlist: Validates the email...`.
+String headerComment(String source, String name) {
+  final lines = <String>[];
+  for (final line in source.split('\n')) {
+    final m = RegExp(r'^\s*(//+|#)\s?(.*)$').firstMatch(line);
+    if (m == null) break;
+    final text = m.group(2)!.trim();
+    if (text.isEmpty) {
+      if (lines.isEmpty) continue;
+      break;
+    }
+    lines.add(text);
+  }
+  final doc = lines.join(' ');
+  final prefix = '$name:';
+  return doc.startsWith(prefix) ? doc.substring(prefix.length).trim() : doc;
+}
+
+/// Collects [UserFunction.reads], `writes`, `labels`, `routes`, `usesApi`.
+class _Touches extends RecursiveAstVisitor<void> {
+  final UserFunction fn;
+  _Touches(this.fn);
+
+  @override
+  void visitPrefixedIdentifier(PrefixedIdentifier node) {
+    _record(node.prefix.name, node.identifier.name);
+    super.visitPrefixedIdentifier(node);
+  }
+
+  @override
+  void visitPropertyAccess(PropertyAccess node) {
+    final target = node.target;
+    if (target is SimpleIdentifier) {
+      _record(target.name, node.propertyName.name);
+    }
+    super.visitPropertyAccess(node);
+  }
+
+  void _record(String target, String member) {
+    switch (target) {
+      case 'state':
+        fn.reads.add(member);
+      case 'labels':
+        fn.labels.add(member);
+      case 'Routes':
+        fn.routes.add(member);
+      case 'core' when member == 'api':
+        fn.usesApi = true;
+    }
+  }
+
+  @override
+  void visitMethodInvocation(MethodInvocation node) {
+    // `StateDelta(...)` parses as a call when types aren't resolved.
+    if (node.target == null && node.methodName.name == 'StateDelta') {
+      _writes(node.argumentList);
+    }
+    super.visitMethodInvocation(node);
+  }
+
+  @override
+  void visitInstanceCreationExpression(InstanceCreationExpression node) {
+    if (node.constructorName.type.name.lexeme == 'StateDelta') {
+      _writes(node.argumentList);
+    }
+    super.visitInstanceCreationExpression(node);
+  }
+
+  void _writes(ArgumentList args) {
+    for (final a in args.arguments.whereType<NamedExpression>()) {
+      fn.writes.add(a.name.label.name);
+    }
+  }
 }
 
 /// Allowed Dart types for each context param.
@@ -72,8 +167,9 @@ List<UserFunction> readFunctions(
     final name = file.uri.pathSegments.last;
     if (name.startsWith('_')) continue;
     final rel = file.path.substring(appDir.path.length + 1);
+    final source = file.readAsStringSync();
     final result = parseString(
-      content: file.readAsStringSync(),
+      content: source,
       path: file.path,
       throwIfDiagnostics: false,
     );
@@ -89,7 +185,14 @@ List<UserFunction> readFunctions(
       if (name == testsFunction) continue;
 
       final fn = _readFunction(decl, name, rel, kind, models, issues);
-      if (fn != null) functions.add(fn);
+      if (fn == null) continue;
+      fn.doc = headerComment(source, name);
+      final touches = _Touches(fn);
+      for (final d in result.unit.declarations) {
+        if (d is FunctionDeclaration && d.name.lexeme == testsFunction) continue;
+        d.accept(touches);
+      }
+      functions.add(fn);
     }
   }
   return functions;

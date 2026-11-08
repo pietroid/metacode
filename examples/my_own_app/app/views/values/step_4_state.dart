@@ -1,4 +1,4 @@
-// step4State returns the visual state of the fourth build-step indicator.
+// step4State: The visual state of the fourth build-step indicator.
 import '../../../.generated/state.dart';
 
 String _step4StateStepState(State state, int step) {

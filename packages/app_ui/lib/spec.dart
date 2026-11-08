@@ -1,6 +1,6 @@
-// The UI catalog contract: every widget ui.yaml can use and what each
+// The UI catalog contract: every widget app/views/ can use and what each
 // property means. Pure Dart (no Flutter) so `tool/metacode.dart` validates
-// ui.yaml against exactly what the renderer implements, and
+// app/views/ against exactly what the renderer implements, and
 // `tool/reference.dart` documents it.
 //
 // Each entry here has a builder in lib/src/widgets/<name>.dart, registered in
@@ -478,7 +478,7 @@ const widgetCatalog = <String, WidgetSpec>{
 const contextParams = {'index', 'value'};
 
 /// Icon names usable in [PropKind.icon] props. Phosphor icons, mapped in
-/// src/icons.dart; their weight comes from style.yaml `icons.weight`.
+/// src/icons.dart; their weight comes from app/views/style/ `icons.weight`.
 const iconNames = [
   'add', 'remove', 'edit', 'delete', 'close', 'check', 'done', 'clear',
   'search', 'settings', 'home', 'person', 'people', 'favorite',
@@ -500,7 +500,7 @@ const iconNames = [
 ];
 
 /// Color names usable in [PropKind.color] props, besides `#RRGGBB` and
-/// `#AARRGGBB`. All follow the app's style (style.yaml) and light/dark mode.
+/// `#AARRGGBB`. All follow the app's style (app/views/style/) and light/dark mode.
 const colorNames = [
   // Style tokens (see style.dart).
   'bg', 'surface', 'fill', 'fillStrong', 'line', 'lineStrong', 'ink', 'ink2',

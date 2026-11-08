@@ -1,4 +1,4 @@
-// chordsProgress returns the share of chords already learned.
+// chordsProgress: The share of chords already learned.
 import '../../../.generated/state.dart';
 
 double _chordsProgressCapAtOne(num p) {

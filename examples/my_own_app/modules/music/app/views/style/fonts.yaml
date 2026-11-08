@@ -1,5 +1,6 @@
-# Guitar practice's own look: a night at the stage. Cormorant Garamond
-# headlines, a warm violet, thin icons. Keys left out are inherited.
+# fonts: the display and text families (Google Fonts or bundled).
+# Look: a night at the stage. Cormorant Garamond, a warm violet, thin
+# icons. Keys left out are inherited.
 fonts:
   display: Cormorant Garamond
   text: Hanken Grotesk

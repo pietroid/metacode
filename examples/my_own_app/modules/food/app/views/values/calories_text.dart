@@ -1,4 +1,4 @@
-// caloriesText returns the formatted calorie count versus the daily goal.
+// caloriesText: The formatted calorie count versus the daily goal.
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../.generated/state.dart';

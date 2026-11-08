@@ -1,4 +1,4 @@
-# Ticker, how it works and ideas.
+# Ticker: a scrolling marquee of people and the apps they made.
 Ticker:
   padding:
     top: 112

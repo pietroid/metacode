@@ -1,5 +1,5 @@
-# Waitlist: the section near the bottom and the bottom sheet route
-# (view/navigation.yaml).
+# WaitlistDone: the waitlist confirmation: "You're on the list" and a Done
+# button that closes the sheet.
 WaitlistDone:
   column:
     crossAxisAlignment: stretch

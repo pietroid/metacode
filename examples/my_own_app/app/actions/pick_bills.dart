@@ -1,4 +1,4 @@
-// pickBills fills the idea field with the bill-splitter prompt and runs the demo.
+// pickBills: Fills the idea field with the bill-splitter prompt and runs the demo.
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../.generated/state.dart';

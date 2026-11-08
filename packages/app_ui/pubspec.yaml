@@ -1,5 +1,5 @@
 name: app_ui
-description: The Metacode UI catalog. Every widget ui.yaml can use lives here.
+description: The Metacode UI catalog. Every widget app/views/ can use lives here.
 publish_to: 'none'
 version: 0.1.0
 
@@ -17,7 +17,7 @@ dev_dependencies:
   yaml: ^3.1.4
 
 flutter:
-  # Bundled type for app styles (style.yaml `fonts:`). Static instances of the
+  # Bundled type for app styles (app/views/style/ `fonts:`). Static instances of the
   # variable Google Fonts, so fontWeight picks a real weight. OFL licensed.
   fonts:
     - family: Albert Sans

@@ -1,4 +1,4 @@
-// workTip highlights the largest unpaid invoice, or celebrates if all are paid.
+// workTip: Highlights the largest unpaid invoice, or celebrates if all are paid.
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../.generated/labels.dart';

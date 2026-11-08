@@ -1,4 +1,4 @@
-// pickHabits fills the idea field with the habit-tracker prompt and runs the demo.
+// pickHabits: Fills the idea field with the habit-tracker prompt and runs the demo.
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../.generated/state.dart';

@@ -1,4 +1,4 @@
-// taxText calculates the tax reserve from the received amount and tax rate.
+// taxText: Calculates the tax reserve from the received amount and tax rate.
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../.generated/labels.dart';

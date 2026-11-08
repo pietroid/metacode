@@ -1,4 +1,4 @@
-// practiceProgress returns the share of the 10-minute daily practice goal done.
+// practiceProgress: The share of the 10-minute daily practice goal done.
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../.generated/state.dart';

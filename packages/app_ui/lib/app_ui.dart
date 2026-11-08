@@ -1,7 +1,7 @@
-/// The Metacode UI catalog: widget builders for everything ui.yaml can use.
+/// The Metacode UI catalog: widget builders for everything app/views/ can use.
 ///
 /// - spec.dart: the contract (props, kinds, shorthands). Pure Dart.
-/// - style.dart: the style.yaml tokens and the Metacode style. Pure Dart.
+/// - style.dart: the app/views/style/ tokens and the Metacode style. Pure Dart.
 /// - src/theme.dart: tokens -> ThemeData, used by every builder.
 /// - src/widgets/: one builder per widget.
 /// - src/registry.dart: name -> builder.

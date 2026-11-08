@@ -1,5 +1,5 @@
-# Examples: a carousel of four working mini apps. Each slide embeds a
-# sub-app from apps/ (food, music, work, plants) with `app:`.
+# CarouselNav: previous/next arrows and one chip per example (food, music,
+# work, plants) that steer the examples carousel.
 CarouselNav:
   row:
     spacing: 8

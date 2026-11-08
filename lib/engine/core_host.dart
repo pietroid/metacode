@@ -19,7 +19,7 @@ class CoreHost implements MetacodeHost {
   final GlobalKey<NavigatorState> navigatorKey;
   final http.Client client;
 
-  /// Renders a presentation/ widget id (kept up to date with the state).
+  /// Renders a page (app/views/pages/), kept up to date with the state.
   final Widget Function(String widget) render;
 
   CoreHost({

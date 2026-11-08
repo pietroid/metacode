@@ -1,5 +1,4 @@
-# Waitlist: the section near the bottom and the bottom sheet route
-# (view/navigation.yaml).
+# WaitlistInline: the inline email field and join button in WaitlistSection.
 WaitlistInline:
   column:
     crossAxisAlignment: stretch

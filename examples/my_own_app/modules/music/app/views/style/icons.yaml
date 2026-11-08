@@ -1,4 +1,5 @@
-# Guitar practice's own look: a night at the stage. Cormorant Garamond
-# headlines, a warm violet, thin icons. Keys left out are inherited.
+# icons: the Phosphor icon weight.
+# Look: a night at the stage. Cormorant Garamond, a warm violet, thin
+# icons. Keys left out are inherited.
 icons:
   weight: thin

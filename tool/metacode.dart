@@ -6,7 +6,8 @@
 // An app is a folder (see tool/src/project.dart): app.yaml (name, description
 // and initial state), app/actions/, app/models/, app/views/ (navigation.yaml,
 // pages/, components/, style/ + style/images/, values/, labels/<language>.yaml),
-// tests beside the code they test (*_test.dart, app/models/samples.dart),
+// tests in a main() in each action and value file (fixtures in
+// app/models/sample.dart),
 // modules in modules/<name>/ (recursive), .generated/ output and .state/
 // runtime state.
 //
@@ -16,7 +17,8 @@
 // (optional). Then, per app: .generated/state.dart (+ StateDelta),
 // .generated/core.dart (Core, Routes), .generated/labels.dart,
 // .generated/main.dart, compiled .generated/program.evc + manifest.json, and
-// .generated/test_app.dart (typed test harness). The root also gets
+// .generated/test_app.dart (typed test harness) and .generated/INDEX.md (the
+// app's map: what each file is, uses and is used by). The root also gets
 // .generated/bundle.json: the whole app tree, which the engine loads as its
 // only asset (besides images).
 
@@ -28,6 +30,7 @@ import 'package:metacode/engine/host_plugin.dart';
 
 import 'src/codegen.dart';
 import 'src/functions.dart';
+import 'src/index.dart';
 import 'src/issues.dart';
 import 'src/project.dart';
 
@@ -89,6 +92,8 @@ Map<String, dynamic>? _generate(AppProject app, Issues issues) {
         generateMain(app.actions, app.bindings, userFiles, app.models),
     '.generated/test_app.dart':
         generateTestApp(app.actions, app.bindings, app.models, app.path),
+    // The app's map for agents and people; not part of the bundle.
+    '.generated/INDEX.md': generateIndex(app),
   };
 
   final outDir = Directory('$dir/.generated')..createSync();
