@@ -1,6 +1,5 @@
 import 'package:app_ui/app_ui.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
 
 import 'core_host.dart';
@@ -46,11 +45,9 @@ class AppRuntime {
     );
   }
 
-  /// A ui/ widget of this app that rebuilds with its state.
-  Widget render(String id) => BlocBuilder<StateBloc, Map<String, dynamic>>(
-        bloc: bloc,
-        builder: (context, state) => renderer.build(context, id, state),
-      );
+  /// A ui/ widget of this app. Each page and component inside it rebuilds
+  /// only when the values it reads change.
+  Widget render(String id) => renderer.build(id);
 
   /// The initial route's widget.
   Widget get home => render(config.navigation.initialRoute.widget);

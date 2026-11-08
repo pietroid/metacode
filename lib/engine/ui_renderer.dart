@@ -1,5 +1,6 @@
 import 'package:app_ui/app_ui.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'program.dart';
 import 'state_bloc.dart';
@@ -48,27 +49,82 @@ class UiRenderer {
   static String _paramsKey(Map<String, dynamic> params) =>
       [for (final e in params.entries) '${e.key}=${e.value}'].join('&');
 
-  Widget build(BuildContext context, String id, Map<String, dynamic> state) =>
-      _EngineUi(this, context, state, const {}).node(id);
+  /// The page or component [id], under a `BlocProvider` of [bloc]
+  /// (each app's widgets select from their own app's state).
+  Widget build(String id) => BlocProvider<StateBloc>.value(
+        value: bloc,
+        child: _Scope(this, widgets[id] ?? id, const {}),
+      );
+}
+
+/// The values one scope read while building, with their params.
+class _Reads {
+  /// Whether the scope is building: reads are recorded and child nodes
+  /// are built inline. After that (a `ListView` item, a `LayoutBuilder`),
+  /// child nodes become scopes of their own.
+  bool open = true;
+  final reads = <String, (String, Map<String, dynamic>)>{};
+}
+
+/// One page or component (or a lazily built node such as a list item).
+///
+/// Builds its node, recording the values it reads, then `context.select`s
+/// exactly those values: it rebuilds only when one of their results
+/// changes, not on every state change. Nested pages and components are
+/// scopes of their own, so they are not part of this one's selection.
+class _Scope extends StatelessWidget {
+  final UiRenderer renderer;
+  final dynamic node;
+  final Map<String, dynamic> params;
+
+  const _Scope(this.renderer, this.node, this.params);
+
+  @override
+  Widget build(BuildContext context) {
+    final reads = _Reads();
+    final child = _EngineUi(renderer, context, params, reads).node(node);
+    reads.open = false;
+    if (reads.reads.isNotEmpty) {
+      final selected = reads.reads.values.toList();
+      context.select<StateBloc, List<dynamic>>((bloc) => [
+            for (final (name, params) in selected)
+              renderer.value(name, bloc.state, params),
+          ]);
+    }
+    return child;
+  }
 }
 
 class _EngineUi implements Ui {
   final UiRenderer renderer;
   @override
   final BuildContext context;
-  final Map<String, dynamic> state;
   final Map<String, dynamic> params;
+  final _Reads _reads;
 
-  _EngineUi(this.renderer, this.context, this.state, this.params);
+  _EngineUi(this.renderer, this.context, this.params, this._reads);
 
   MetacodeProgram get _program => renderer.program;
+
+  /// A value on the latest state, recorded for the scope's selection.
+  dynamic _value(String name) {
+    if (_reads.open) {
+      _reads.reads.putIfAbsent(
+          params.isEmpty ? name : '$name ${UiRenderer._paramsKey(params)}',
+          () => (name, params));
+    }
+    return renderer.value(name, renderer.bloc.state, params);
+  }
 
   @override
   Widget node(dynamic node) {
     if (node == null) return const SizedBox.shrink();
+    // Built after the scope (list items, layout builders): its own scope.
+    if (!_reads.open) return _Scope(renderer, node, params);
     if (node is String) {
       final widget = renderer.widgets[node];
-      if (widget != null) return this.node(widget);
+      // Pages and components select their own values.
+      if (widget != null) return _Scope(renderer, widget, params);
       return Text((resolve(node) ?? '').toString());
     }
     if (node is Map && node.length == 1) {
@@ -95,14 +151,14 @@ class _EngineUi implements Ui {
 
   @override
   dynamic binding(dynamic name) => name is String && _program.bindings.contains(name)
-      ? renderer.value(name, state, params)
+      ? _value(name)
       : null;
 
   @override
   dynamic resolve(dynamic value) {
     if (value is! String) return value;
     if (_program.bindings.contains(value)) {
-      return renderer.value(value, state, params);
+      return _value(value);
     }
     return renderer.labels[value] ?? value;
   }
@@ -120,7 +176,7 @@ class _EngineUi implements Ui {
 
   @override
   Ui withParams(Map<String, dynamic> extra) =>
-      _EngineUi(renderer, context, state, {...params, ...extra});
+      _EngineUi(renderer, context, {...params, ...extra}, _reads);
 
   bool _isAction(dynamic name) =>
       name is String && _program.actions.contains(name);

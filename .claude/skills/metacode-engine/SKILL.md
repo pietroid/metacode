@@ -26,7 +26,7 @@ Never launch the app. `test/renderer_test.dart` renders `examples/my_own_app/.ge
 | Generated code | `tool/src/codegen.dart`: `generateState` (+ `StateDelta`), `generateCore`, `generateMain` (engine bridge, async `$action_x`/`$binding_x`), `generateTestApp`, `_encodeDart`/`_decodeDart` |
 | Compile/bundle, manifest, `bundle.json` | `tool/metacode.dart` (`_generate` per app, children first; `_bundle`) |
 | Calling user code at runtime | `lib/engine/program.dart` (one dart_eval `Runtime`, JSON in/out) |
-| Node resolution (values, then labels), actions to state, value cache | `lib/engine/ui_renderer.dart` (`_EngineUi implements Ui`; `UiRenderer.value` caches per state identity, so never mutate a state map in place) |
+| Node resolution (values, then labels), actions to state, value cache, rebuilds | `lib/engine/ui_renderer.dart` (`_EngineUi implements Ui`; `UiRenderer.value` caches per state identity, so never mutate a state map in place; `_Scope` = one page/component/lazy node: records the values it reads while building, then `context.select`s them, so it rebuilds only when those results change) |
 | Modules at runtime | `lib/engine/app_runtime.dart` (`AppRuntime.embed`: own `StateBloc` via `StateBloc.child`, own program and `CoreHost`, shared navigator; theme from its style/ if any) |
 | State persistence | `lib/engine/state_bloc.dart` (root: `METACODE_STATE_PATH` dart-define, else `<docs>/<name>/.state/state.yaml`; modules: `<docs>/<name>/modules/<module>/.state/state.yaml`. Saved values merge over the initial state) |
 | Asset loading | `lib/engine/project_config.dart` (`ProjectConfig.fromBundle`); pubspec lists only `bundle.json` and `examples/my_own_app/app/views/style/images/` |
