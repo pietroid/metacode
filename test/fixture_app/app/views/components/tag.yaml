@@ -1,0 +1,3 @@
+# Tag: a Badge in the primary color, passing its own `.label` and `.tap` on.
+Tag:
+  Badge: {color: primary, text: .label, tap: .tap}

@@ -549,3 +549,27 @@ Map<String, dynamic>? normalizeProps(WidgetSpec spec, dynamic value) {
   if (spec.shorthand == Shorthand.nodes && value is! List) return null;
   return {prop: value};
 }
+
+/// A component parameter reference: `.screen` (a dot, then a thisCase name).
+/// Parameters are not declared: a component's are the ones its widget uses,
+/// and every one is required where the component is called:
+/// `PhoneFrame: {screen: '#F4FAF5', child: {module: food}}`.
+final paramRef = RegExp(r'^\.([a-z][a-zA-Z0-9]*)$');
+
+/// The parameter [value] references (`screen` for `.screen`), else null.
+String? paramName(dynamic value) =>
+    value is String ? paramRef.firstMatch(value)?.group(1) : null;
+
+/// [node] with every parameter reference replaced by its argument in [args]
+/// (as written by the caller). References without an argument are kept.
+dynamic substituteParams(dynamic node, Map args) {
+  final name = paramName(node);
+  if (name != null) return args.containsKey(name) ? args[name] : node;
+  if (node is Map) {
+    return {
+      for (final e in node.entries) e.key: substituteParams(e.value, args),
+    };
+  }
+  if (node is List) return [for (final n in node) substituteParams(n, args)];
+  return node;
+}

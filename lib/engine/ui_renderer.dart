@@ -170,6 +170,15 @@ class _EngineUi implements Ui {
     }
     if (node is Map && node.length == 1) {
       final type = node.keys.first.toString();
+      // A component called with arguments: its `.name`s replaced by them
+      // (already resolved here: this node's own were replaced when its
+      // scope was made).
+      final component = renderer.widgets[type];
+      if (component != null) {
+        final args = node[type];
+        return _Scope(renderer,
+            args is Map ? substituteParams(component, args) : component, params);
+      }
       final spec = widgetCatalog[type];
       if (spec == null) return _error('Unknown widget "$type"');
       final props = normalizeProps(spec, node[type]);

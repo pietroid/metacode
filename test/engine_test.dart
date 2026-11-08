@@ -84,6 +84,50 @@ void main() {
     expect(bloc.state['count'], 1);
   });
 
+  testWidgets('components take parameters, passed on through components',
+      (tester) async {
+    final bloc = await pump(tester);
+    // MainPage -> Tag {label: tagged, tap: increment} -> Badge {text: .label,
+    // tap: .tap, color: primary}.
+    await tap(tester, find.text('Tagged'));
+    expect(bloc.state['count'], 1);
+  });
+
+  group('component parameters are checked', () {
+    List<String> errors(Map<String, String> changes) => build(
+            ProjectFiles.fromSnapshot({...fixtureFiles(), ...changes}),
+            path: fixtureDir)
+        .issues
+        .errors;
+    const main = 'app/views/pages/main_page.yaml';
+    String mainWith(String from, String to) {
+      final source = fixtureFiles()[main]!;
+      expect(source, contains(from));
+      return source.replaceFirst(from, to);
+    }
+
+    test('a missing argument', () {
+      expect(errors({main: mainWith('tap: increment}', '}')}),
+          [contains('missing tap:')]);
+    });
+    test('an unknown argument', () {
+      expect(errors({main: mainWith('tap: increment}', 'tap: increment, x: 1}')}),
+          [contains('Tag has no .x')]);
+    });
+    test('an argument of the wrong kind', () {
+      expect(errors({main: mainWith('tap: increment}', 'tap: tagged}')}),
+          [contains('"tagged" is not an action')]);
+    });
+    test('a component called without its arguments', () {
+      expect(errors({main: mainWith('Tag: {label: tagged, tap: increment}', 'Tag')}),
+          [contains('Tag needs arguments')]);
+    });
+    test('a page with parameters', () {
+      expect(errors({main: mainWith('text: countText', 'text: .count')}),
+          [contains('a page has no parameters (.count)')]);
+    });
+  });
+
   testWidgets('a module has its own state', (tester) async {
     final bloc = await pump(tester);
     // Both embeds run the same module, so they show the same state.

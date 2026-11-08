@@ -1,5 +1,5 @@
-# PhoneStatusBar: the top of ExamplePhone's screen: the clock, the island,
-# the signal bars and the battery.
+# PhoneStatusBar: the top of PhoneFrame's screen: the clock, the island,
+# the signal bars and the battery, in `.ink`.
 PhoneStatusBar:
   sizedBox:
     height: 50
@@ -22,15 +22,16 @@ PhoneStatusBar:
                     value: '9:41'
                     style:
                       variant: labelLarge
+                      color: .ink
                 - spacer: {}
                 - row:
                     crossAxisAlignment: end
                     spacing: 1.5
                     children:
-                    - container: {width: 3, height: 4, radius: 1, color: ink}
-                    - container: {width: 3, height: 6, radius: 1, color: ink}
-                    - container: {width: 3, height: 8, radius: 1, color: ink}
-                    - container: {width: 3, height: 10, radius: 1, color: ink}
+                    - container: {width: 3, height: 4, radius: 1, color: .ink}
+                    - container: {width: 3, height: 6, radius: 1, color: .ink}
+                    - container: {width: 3, height: 8, radius: 1, color: .ink}
+                    - container: {width: 3, height: 10, radius: 1, color: .ink}
                 - sizedBox:
                     width: 6
                 - container:
@@ -38,8 +39,8 @@ PhoneStatusBar:
                     height: 11
                     radius: 3
                     padding: 1.5
-                    color: fillStrong
+                    borderColor: .ink
                     child:
                       row:
                         children:
-                        - container: {width: 15, radius: 2, color: ink}
+                        - container: {width: 15, radius: 2, color: .ink}

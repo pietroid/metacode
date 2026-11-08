@@ -1,0 +1,30 @@
+# PhoneFrame: a phone around `.child`: a dark bezel (no border) around a
+# rounded screen in `.screen` with PhoneStatusBar and a home indicator in
+# `.ink`, `.height` tall and 340 wide at most, centered. The colors are the
+# shown app's own (a module's bg and ink), so the screen matches its theme.
+PhoneFrame:
+  container:
+    maxWidth: 340
+    height: .height
+    color: '#161616'
+    radius: 54
+    padding: 10
+    child:
+      container:
+        color: .screen
+        radius: 44
+        child:
+          column:
+            crossAxisAlignment: stretch
+            children:
+            - PhoneStatusBar: {ink: .ink}
+            - expanded: .child
+            - sizedBox:
+                height: 28
+                child:
+                  center:
+                    container:
+                      width: 120
+                      height: 5
+                      radius: 3
+                      color: .ink

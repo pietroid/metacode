@@ -1,8 +1,8 @@
 # MusicLivePage: the `musicLive` route, the music example on its own page to try
 # it: an app bar (a small icon tile and its name, compact like the landing
 # page's Logo, and a home button back to the landing page) over a
-# phone frame (dark bezel, PhoneStatusBar, the live `module: music`, home
-# indicator), centered; it scrolls when the screen is shorter than the phone.
+# PhoneFrame in music's own colors around the live `module: music`, centered;
+# it scrolls when the screen is shorter than the phone.
 MusicLivePage:
   scaffold:
     appBar:
@@ -43,31 +43,11 @@ MusicLivePage:
             horizontal: 16
             vertical: 24
             child:
-              container:
-                maxWidth: 340
+              PhoneFrame:
                 height: 720
-                color: '#161616'
-                radius: 54
-                padding: 10
+                screen: '#0F0F0E'
+                ink: '#F3EEFF'
                 child:
-                  container:
-                    color: surface
-                    radius: 44
-                    child:
-                      column:
-                        crossAxisAlignment: stretch
-                        children:
-                        - PhoneStatusBar
-                        - expanded:
-                            module:
-                              name: music
-                              contained: true
-                        - sizedBox:
-                            height: 28
-                            child:
-                              center:
-                                container:
-                                  width: 120
-                                  height: 5
-                                  radius: 3
-                                  color: ink
+                  module:
+                    name: music
+                    contained: true

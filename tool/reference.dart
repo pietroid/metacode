@@ -224,6 +224,7 @@ void main() {
     ..writeln('- A widget is a map with **one key**, its type: `text: {...}`.')
     ..writeln('- A string node is: a page or component (`ThisCase`), else a value (its result is shown as text), else a label, else literal text. Put text in app/views/labels/; the tool warns about literal text.')
     ..writeln('- Labels and values are referenced the same way, by key: `text: joinTitle`.')
+    ..writeln('- Components take parameters: `.name` anywhere in a component (`color: .screen`, `child: .child`) is filled by the caller, which writes the component like a widget: `PhoneFrame: {screen: \'#F4FAF5\', child: {module: food}}`. Parameters are not declared; they are the `.name`s the component uses, their kind is the prop they fill, and all are required. Arguments are anything that prop takes (a value, a label, an action, a widget), resolved where the component is called; `text: .label` passes the caller\'s own parameter on. Pages have no parameters. INDEX.md lists each component\'s.')
     ..writeln('- `module: food` embeds the module `modules/food/` (its initial page). Use it anywhere a widget goes, e.g. as a `match` case. Module folder names are valid identifiers; use thisCase for new ones.')
     ..writeln('- Some widgets have a shorthand (shown below): `column: [a, b]`, `expanded: child`, `text: "Hi"`.')
     ..writeln('- Widgets with no required props are written with an empty map: `divider: {}`.')

@@ -98,11 +98,18 @@ class AppRuntime extends ChangeNotifier {
           ? _themed(context, _renderer.build(id))
           : _renderer.build(id));
 
-  /// [child] in this app's theme, if it has its own style/.
+  /// [child] in this app's theme, if it has its own style/. Its `theme:`
+  /// (light or dark) wins; `system` follows the embedding app's brightness.
   Widget _themed(BuildContext context, Widget child) => !config.hasOwnStyle
       ? child
       : Theme(
-          data: MetacodeTheme.build(config.style, Theme.of(context).brightness),
+          data: MetacodeTheme.build(
+              config.style,
+              switch (MetacodeTheme.mode(config.style)) {
+                ThemeMode.light => Brightness.light,
+                ThemeMode.dark => Brightness.dark,
+                ThemeMode.system => Theme.of(context).brightness,
+              }),
           child: child,
         );
 
@@ -190,7 +197,13 @@ class _ContainedModuleState extends State<_ContainedModule> {
               child: Navigator(
                 key: _navigator,
                 onGenerateInitialRoutes: (_, _) => [
-                  MaterialPageRoute<void>(builder: (_) => widget.home),
+                  // A screen of its own: painted with its theme's bg, not
+                  // the embedding app's.
+                  MaterialPageRoute<void>(
+                      builder: (context) => ColoredBox(
+                            color: Theme.of(context).scaffoldBackgroundColor,
+                            child: widget.home,
+                          )),
                 ],
               ),
             ),

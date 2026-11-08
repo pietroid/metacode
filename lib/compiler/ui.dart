@@ -14,6 +14,10 @@ class WidgetRefs {
   final actions = <String>{};
   final labels = <String>{};
   final modules = <String>{};
+
+  /// Its parameters (`.screen`), inferred from where it uses them, with the
+  /// kinds of the props they fill. All are required where it is called.
+  final params = <String, Set<PropKind>>{};
 }
 
 /// Validates app/views/ widgets (pages and components) against the widget catalog,
@@ -44,12 +48,38 @@ Map<String, dynamic> validateWidgets(
     }
   }
 
+  // Parameters are inferred from where they are used; one passed on to
+  // another component (`PhoneStatusBar: {color: .ink}`) takes that one's
+  // kinds, so this repeats until nothing new is found. Issues are kept only
+  // from the last pass.
+  final params = {for (final id in widgets.keys) id: <String, Set<PropKind>>{}};
+  String snapshot() => [
+        for (final MapEntry(key: id, value: p) in params.entries)
+          for (final MapEntry(key: name, value: kinds) in p.entries)
+            '$id.$name:${kinds.map((k) => k.name).join(',')}',
+      ].join(' ');
+  for (var i = 0; i <= widgets.length; i++) {
+    final before = snapshot();
+    for (final entry in widgets.entries) {
+      _UiValidator(fileOf[entry.key]!, widgets, bindings, labels, actions,
+              modules, Issues(), WidgetRefs(), params, entry.key)
+          .node(entry.value, entry.key);
+    }
+    if (snapshot() == before) break;
+  }
+
   for (final entry in widgets.entries) {
-    final found = WidgetRefs();
+    final found = WidgetRefs()..params.addAll(params[entry.key]!);
     refs?[entry.key] = found;
     _UiValidator(fileOf[entry.key]!, widgets, bindings, labels, actions, modules,
-            issues, found)
+            issues, found, params, entry.key)
         .node(entry.value, entry.key);
+    final own = params[entry.key]!;
+    if (own.isNotEmpty && fileOf[entry.key]!.startsWith('app/views/pages/')) {
+      issues.error(fileOf[entry.key]!, entry.key,
+          'a page has no parameters (${own.keys.map((p) => '.$p').join(', ')}); '
+          'move them to a component');
+    }
   }
   return widgets;
 }
@@ -64,8 +94,61 @@ class _UiValidator {
   final Issues issues;
   final WidgetRefs refs;
 
+  /// Every widget's parameters by name, with the kinds they fill.
+  final Map<String, Map<String, Set<PropKind>>> params;
+
+  /// The widget being validated.
+  final String self;
+
   _UiValidator(this.file, this.widgets, this.bindings, this.labels,
-      this.actions, this.modules, this.issues, this.refs);
+      this.actions, this.modules, this.issues, this.refs, this.params,
+      this.self);
+
+  /// Records [value] as a parameter of [self] filling a [kind] prop, if it
+  /// is one (`.screen`).
+  bool _param(dynamic value, PropKind kind) {
+    final name = paramName(value);
+    if (name == null) return false;
+    // An inline prop's widget is not kept with the kind: checked as a literal.
+    params[self]!
+        .putIfAbsent(name, () => {})
+        .add(kind == PropKind.inline ? PropKind.literal : kind);
+    return true;
+  }
+
+  /// Records the parameters anywhere inside a literal (`style: {color: .ink}`).
+  void _literalParams(dynamic value) {
+    if (_param(value, PropKind.literal)) return;
+    if (value is Map) value.values.forEach(_literalParams);
+    if (value is List) value.forEach(_literalParams);
+  }
+
+  /// A component called with arguments: `PhoneFrame: {screen: surface}`.
+  void call(String id, dynamic args, String path) {
+    refs.widgets.add(id);
+    final declared = params[id]!;
+    if (args is! Map) {
+      return error(path, 'expected a map of arguments: '
+          '${declared.keys.map((p) => '$p: ...').join(', ')}');
+    }
+    for (final entry in args.entries) {
+      final name = entry.key.toString();
+      final kinds = declared[name];
+      if (kinds == null) {
+        error('$path.$name', '$id has no .$name; its parameters: '
+            '${declared.isEmpty ? '(none)' : declared.keys.map((p) => '.$p').join(', ')}');
+        continue;
+      }
+      for (final kind in kinds) {
+        property(kind, entry.value, '$path.$name', null);
+      }
+    }
+    final missing = declared.keys.where((p) => !args.containsKey(p));
+    if (missing.isNotEmpty) {
+      error(path, 'missing ${missing.map((p) => '$p:').join(', ')} '
+          '($id uses ${missing.map((p) => '.$p').join(', ')})');
+    }
+  }
 
   /// Props that show text: a value, a label or (discouraged) literal text.
   static const _textProps = {'hint', 'label', 'tooltip'};
@@ -75,6 +158,7 @@ class _UiValidator {
 
   void node(dynamic value, String path) {
     if (value == null) return;
+    if (_param(value, PropKind.node)) return;
     if (value is String) {
       if (pascalCase.hasMatch(value) && !widgets.containsKey(value)) {
         return error(path, '"$value" is not a page or component in app/views/ '
@@ -82,6 +166,11 @@ class _UiValidator {
       }
       if (widgets.containsKey(value)) {
         refs.widgets.add(value);
+        final declared = params[value]!;
+        if (declared.isNotEmpty) {
+          error(path, '$value needs arguments: '
+              '$value: {${declared.keys.map((p) => '$p: ...').join(', ')}}');
+        }
       } else {
         text(value, path);
       }
@@ -95,6 +184,7 @@ class _UiValidator {
     }
 
     final type = value.keys.first.toString();
+    if (widgets.containsKey(type)) return call(type, value[type], '$path.$type');
     final spec = widgetCatalog[type];
     if (spec == null) {
       return error('$path.$type',
@@ -126,6 +216,7 @@ class _UiValidator {
   }
 
   void property(PropKind kind, dynamic value, String path, String? inline) {
+    if (_param(value, kind)) return;
     switch (kind) {
       case PropKind.node:
         node(value, path);
@@ -168,6 +259,7 @@ class _UiValidator {
         }
       case PropKind.bindingOrLiteral:
       case PropKind.literal:
+        _literalParams(value);
         _recordNames(value);
     }
   }
@@ -191,6 +283,7 @@ class _UiValidator {
   /// A string shown as text: a value, a label, or literal text (which
   /// belongs in app/views/labels/).
   void text(String value, String path) {
+    if (paramName(value) != null) return;
     if (bindings.contains(value)) refs.values.add(value);
     if (labels.contains(value)) refs.labels.add(value);
     if (bindings.contains(value) || labels.contains(value)) return;

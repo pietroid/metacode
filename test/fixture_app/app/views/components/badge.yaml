@@ -1,0 +1,7 @@
+# Badge: a component with parameters: its color, text and action come from
+# the caller (`.color`, `.text`, `.tap`).
+Badge:
+  container:
+    color: .color
+    child:
+      textButton: {text: .text, onPressed: .tap}

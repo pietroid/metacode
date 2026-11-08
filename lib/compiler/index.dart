@@ -123,6 +123,11 @@ String generateIndex(AppProject app) {
       final doc = app.docs[app.widgetFiles[id]] ?? '';
       line('- **$id**${doc.isEmpty ? '' : ': $doc'}');
       final parts = [
+        if (r != null && r.params.isNotEmpty)
+          'params: ${[
+            for (final e in r.params.entries)
+              '.${e.key} (${e.value.map((k) => k.label).join('/')})',
+          ].join(', ')}',
         if (r != null && r.widgets.isNotEmpty) 'widgets: ${list(r.widgets)}',
         if (r != null && r.modules.isNotEmpty) 'modules: ${list(r.modules)}',
         if (r != null && r.values.isNotEmpty) 'values: ${list(r.values)}',

@@ -1,25 +1,27 @@
 # colors: the palette, light and dark. Widgets use these names (`color: accent`).
-# Look: editorial. Playfair Display over Source Sans 3, warm earthy tones,
-# fully rounded controls. Keys left out are inherited.
+# Look: fresh green in light (food, calories, money), warm earthy in dark.
+# Playfair Display over Source Sans 3, fully rounded controls. Keys left out are inherited.
 colors:
   light:
-    bg: '#F8F5F0'
-    surface: '#FFFDF9'
-    fill: '#F0EBE3'
-    fillStrong: '#E6DED3'
-    line: '#E8E0D5'
-    lineStrong: '#D4C8B8'
-    ink: '#2A2118'
-    ink2: '#6B5E4F'
-    ink3: '#A89B8C'
-    primary: '#5A4A3A'
-    onPrimary: '#FFFDF9'
-    accent: '#B85C38'
-    onAccent: '#FFFDF9'
-    success: '#4A6C5A'
-    warning: '#C78D36'
-    danger: '#A94442'
-    info: '#4A6B8A'
+    # Fresh green: produce for food, green for money, a tangerine accent
+    # for calories and highlights.
+    bg: '#F4FAF5'
+    surface: '#FFFFFF'
+    fill: '#E8F3EA'
+    fillStrong: '#D5EAD9'
+    line: '#DDEBDF'
+    lineStrong: '#BFD8C4'
+    ink: '#0F2416'
+    ink2: '#4B6352'
+    ink3: '#8AA090'
+    primary: '#15803D'
+    onPrimary: '#FFFFFF'
+    accent: '#C2410C'
+    onAccent: '#FFFFFF'
+    success: '#16A34A'
+    warning: '#B45309'
+    danger: '#DC2626'
+    info: '#0E7490'
   dark:
     bg: '#1A1612'
     surface: '#242019'

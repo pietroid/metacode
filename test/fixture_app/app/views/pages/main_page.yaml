@@ -1,4 +1,5 @@
-# MainPage: the count, a button per action, and the counter module twice:
+# MainPage: the count, a Tag (a component with parameters), a button per
+# action, and the counter module twice:
 # contained in a 300x300 box, then over the whole app.
 MainPage:
   scaffold:
@@ -10,6 +11,7 @@ MainPage:
       column:
         children:
         - text: countText
+        - Tag: {label: tagged, tap: increment}
         - wrap:
           - filledButton: {text: add, onPressed: increment}
           - outlinedButton: {text: details, onPressed: openDetails}
