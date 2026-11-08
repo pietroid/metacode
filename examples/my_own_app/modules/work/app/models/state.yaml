@@ -1,4 +1,8 @@
-# state: the freelance tracker state: jobs and the tax rate.
+# state: the workday: inbox messages, follow-ups, tasks, this week's events
+# and the day selected in the week strip (0 = Monday).
 state:
-  jobs: list(job)
-  taxRate: number
+  messages: list(message)
+  followUps: list(followUp)
+  tasks: list(task)
+  events: list(event)
+  selectedDay: number

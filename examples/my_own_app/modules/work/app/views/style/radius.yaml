@@ -1,8 +1,8 @@
 # radius: corner radius tokens.
-# Look: a sharp ledger. Schibsted Grotesk, ink blue, square corners, bold
-# icons. Keys left out are inherited.
+# Look: quiet and businesslike. Inter, graphite ink on a neutral page, one
+# muted slate accent, small radii, regular icons. Keys left out are inherited.
 radius:
-  xs: 2
-  sm: 4
-  md: 6
-  lg: 8
+  xs: 3
+  sm: 6
+  md: 8
+  lg: 10

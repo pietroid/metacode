@@ -1,5 +1,5 @@
 # ExampleScreen: what ExamplePhone shows: the current example's photo on the
-# 20px screen margin (none for food: Forkcast shows as on its own page), over its live module (`module: food|music|work|plants`,
+# 20px screen margin (music and plants only: food and work show as on their own page), over its live module (`module: food|music|work|plants`,
 # picked by exampleKey), contained: it scrolls on its own and its routes open
 # inside the phone.
 ExampleScreen:
@@ -7,10 +7,8 @@ ExampleScreen:
     crossAxisAlignment: stretch
     children:
     - if:
-        condition: exampleIsFood
+        condition: exampleHasPhoto
         then:
-          sizedBox: {height: 0}
-        else:
           padding:
             horizontal: 20
             top: 4

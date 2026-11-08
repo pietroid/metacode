@@ -1,6 +1,6 @@
 # fonts: the display and text families (Google Fonts or bundled).
-# Look: a sharp ledger. Schibsted Grotesk, ink blue, square corners, bold
-# icons. Keys left out are inherited.
+# Look: quiet and businesslike. Inter, graphite ink on a neutral page, one
+# muted slate accent, small radii, regular icons. Keys left out are inherited.
 fonts:
-  display: Schibsted Grotesk
-  text: Schibsted Grotesk
+  display: Inter
+  text: Inter

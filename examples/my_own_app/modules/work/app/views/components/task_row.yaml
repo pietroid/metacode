@@ -1,0 +1,31 @@
+# TaskRow: one to-do under a RowDivider: a done checkbox, the title, its
+# project, and an Urgent tag while it is open and urgent.
+TaskRow:
+  column:
+    crossAxisAlignment: stretch
+    children:
+    - RowDivider
+    - padding:
+        vertical: 4
+        child:
+          row:
+            spacing: 8
+            children:
+            - checkbox: {value: taskDone, onChanged: toggleTask}
+            - expanded:
+                column:
+                  crossAxisAlignment: start
+                  children:
+                  - if:
+                      condition: taskDone
+                      then: {text: {value: taskTitle, maxLines: 1, style: {variant: titleSmall, color: ink3}}}
+                      else: {text: {value: taskTitle, maxLines: 1, style: {variant: titleSmall}}}
+                  - text: {value: taskProject, maxLines: 1, style: {variant: bodySmall, color: ink3}}
+            - if:
+                condition: taskShowUrgent
+                then:
+                  container:
+                    color: fill
+                    radius: 4
+                    padding: {horizontal: 6, vertical: 2}
+                    child: {text: {value: urgent, style: {variant: labelSmall, color: ink2}}}

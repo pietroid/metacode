@@ -1,0 +1,7 @@
+# event: a calendar entry this week: the day (0 = Monday), start time, title,
+# and whether it is important.
+event:
+  day: number
+  time: string
+  title: string
+  important: boolean

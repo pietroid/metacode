@@ -1,0 +1,29 @@
+# NextUpCard: the focal card of Today, graphite: "Next up", the most pressing
+# item (nextUpText), a slate tag with why (nextUpMeta) and an arrow; tapping
+# opens its section (openNextUp).
+NextUpCard:
+  tappable:
+    onTap: openNextUp
+    child:
+      container:
+        color: primary
+        radius: 14
+        padding: 16
+        child:
+          column:
+            crossAxisAlignment: stretch
+            spacing: 10
+            children:
+            - row:
+                children:
+                - text: {value: nextUp, style: {variant: labelSmall, color: ink3}}
+                - spacer: {}
+                - icon: {name: arrowUpRight, size: 16, color: onPrimary}
+            - text: {value: nextUpText, maxLines: 2, style: {variant: titleMedium, color: onPrimary}}
+            - row:
+                children:
+                - container:
+                    color: accent
+                    radius: 4
+                    padding: {horizontal: 8, vertical: 3}
+                    child: {text: {value: nextUpMeta, style: {variant: labelSmall, color: onAccent}}}

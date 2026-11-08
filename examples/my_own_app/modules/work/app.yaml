@@ -1,24 +1,30 @@
-# work: the freelance jobs and taxes example, embedded in the landing page carousel
+# work: the workday priorities example, embedded in the landing page carousel
 # (`module: work`). `state:` holds the initial state; types in app/models/state.yaml.
 name: work
-description: Help me keep track of my freelance jobs. Who paid, who still owes you,
-  and how much to put aside for taxes.
+description: A page to prioritize my work. Inbox, pending follow-ups, to-dos
+  and the week's calendar, with what matters first.
 state:
-  jobs:
-  - client: Lia's Bakery
-    task: Logo and menu board
-    amount: 800
-    paid: true
-  - client: Dr. Ana Costa
-    task: Website updates
-    amount: 450
-    paid: true
-  - client: Orbit Gym
-    task: Social posts for October
-    amount: 300
-    paid: true
-  - client: Café Lumen
-    task: Menu redesign
-    amount: 600
-    paid: false
-  taxRate: 10
+  messages:
+  - {sender: Marta Silva, subject: 'Q4 budget, final numbers attached', time: '8:42', unread: true}
+  - {sender: David Chen, subject: 'Re: Vendor contract renewal', time: '8:15', unread: true}
+  - {sender: Priya Nair, subject: "Agenda for Thursday's board prep", time: Yesterday, unread: false}
+  - {sender: Legal, subject: 'NDA signed by Northwind', time: Yesterday, unread: false}
+  followUps:
+  - {person: Tom Becker, topic: 'Signed SOW for the pilot', dueIn: -2, done: false}
+  - {person: Marta Silva, topic: 'Headcount plan approval', dueIn: 0, done: false}
+  - {person: Northwind, topic: 'Security questionnaire', dueIn: 3, done: false}
+  tasks:
+  - {title: 'Review Q4 budget', project: Finance, urgent: true, done: false}
+  - {title: 'Draft board update', project: Leadership, urgent: true, done: false}
+  - {title: 'Approve expense reports', project: Operations, urgent: false, done: false}
+  - {title: 'Prepare 1:1 notes for Ana', project: Team, urgent: false, done: true}
+  events:
+  - {day: 0, time: '9:30', title: 'Team standup', important: false}
+  - {day: 0, time: '11:00', title: 'Budget review with Finance', important: true}
+  - {day: 0, time: '15:00', title: '1:1 with Ana', important: false}
+  - {day: 1, time: '10:00', title: 'Vendor call', important: false}
+  - {day: 2, time: '14:00', title: 'Quarterly planning', important: true}
+  - {day: 3, time: '9:00', title: 'Board prep', important: true}
+  - {day: 3, time: '16:30', title: 'Hiring sync', important: false}
+  - {day: 4, time: '12:00', title: 'Team lunch', important: false}
+  selectedDay: 0

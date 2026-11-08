@@ -1,55 +1,51 @@
-# Content: the freelance jobs and taxes screen: header, summary, Tip and the list.
+# Content: Today, the hub: the date and greeting, NextUpCard, three StatTiles,
+# the sections in a Panel (SectionLink: Inbox, Follow-ups, To-do, This week)
+# and today's schedule in a Panel (EventRow).
 Content:
   column:
     crossAxisAlignment: stretch
-    spacing: 10
     children:
-    - text:
-        value: november
-        style:
-          variant: titleLarge
     - row:
-        spacing: 12
         children:
         - expanded:
             column:
               crossAxisAlignment: start
+              spacing: 2
               children:
-              - text:
-                  value: received
-                  style:
-                    variant: bodySmall
-                    color: ink3
-              - text:
-                  value: receivedText
-                  style:
-                    variant: headlineSmall
-                    color: success
-        - expanded:
-            column:
-              crossAxisAlignment: start
-              children:
-              - text:
-                  value: waiting
-                  style:
-                    variant: bodySmall
-                    color: ink3
-              - text:
-                  value: waitingText
-                  style:
-                    variant: headlineSmall
-    - Tip
-    - text:
-        value: taxText
-        style:
-          variant: bodySmall
-          color: ink2
-    - slider:
-        value: taxRateValue
-        min: 0
-        max: 30
-        divisions: 30
-        onChanged: setTaxRate
-    - listView:
-        data: jobList
-        itemBuilder: JobRow
+              - text: {value: todayDate, style: {variant: labelMedium, color: ink3}}
+              - text: {value: greeting, style: {variant: headlineSmall}}
+        - container:
+            width: 40
+            height: 40
+            radius: 20
+            borderColor: lineStrong
+            child: {center: {icon: {name: notifications, size: 18, color: ink2}}}
+    - sizedBox: {height: 20}
+    - NextUpCard
+    - sizedBox: {height: 12}
+    - row:
+        spacing: 8
+        children:
+        - expanded: {StatTile: {value: unreadNumber, label: unreadStat}}
+        - expanded: {StatTile: {value: overdueNumber, label: overdueStat}}
+        - expanded: {StatTile: {value: openTaskNumber, label: openStat}}
+    - PanelTitle: {text: workspace}
+    - Panel:
+        child:
+          column:
+            crossAxisAlignment: stretch
+            children:
+            - SectionLink: {icon: inbox, title: inbox, preview: inboxPreview, count: inboxCount, onTap: openInbox}
+            - LinkDivider
+            - SectionLink: {icon: send, title: followUps, preview: followUpPreview, count: followUpCount, onTap: openFollowUps}
+            - LinkDivider
+            - SectionLink: {icon: checkCircle, title: toDo, preview: taskPreview, count: taskCount, onTap: openToDo}
+            - LinkDivider
+            - SectionLink: {icon: calendar, title: thisWeek, preview: calendarPreview, count: calendarCount, onTap: openCalendar}
+    - PanelTitle: {text: todaySchedule}
+    - Panel:
+        child:
+          listView:
+            data: todayEvents
+            itemBuilder: {EventRow: {time: todayEventTime, title: todayEventTitle, important: todayEventImportant}}
+            empty: {padding: {vertical: 14, child: {text: {value: noEvents, style: {variant: bodySmall, color: ink3}}}}}

@@ -1,0 +1,19 @@
+# WeekStrip: the calendar: seven DayCells in a Panel (tap one to pick it),
+# then the selected day's events (EventRow) in another.
+WeekStrip:
+  column:
+    crossAxisAlignment: stretch
+    spacing: 12
+    children:
+    - container:
+        color: surface
+        radius: 12
+        padding: 8
+        child:
+          gridView: {data: weekDays, itemBuilder: DayCell, columns: 7, spacing: 4, aspectRatio: 0.7}
+    - Panel:
+        child:
+          listView:
+            data: dayEvents
+            itemBuilder: {EventRow: {time: eventTime, title: eventTitle, important: eventImportant}}
+            empty: {padding: {vertical: 14, child: {text: {value: noEvents, style: {variant: bodySmall, color: ink3}}}}}

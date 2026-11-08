@@ -1,0 +1,9 @@
+# navigation: the workday's routes. `home` (MainPage) is Today, a hub linking
+# to each section; the sections open on top and go back with goBack.
+initial: home
+routes:
+  home: MainPage
+  inbox: InboxPage
+  followUps: FollowUpsPage
+  toDo: ToDoPage
+  calendar: CalendarPage

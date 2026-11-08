@@ -1,0 +1,6 @@
+# message: an inbox message: who sent it, the subject, when, and whether it is unread.
+message:
+  sender: string
+  subject: string
+  time: string
+  unread: boolean

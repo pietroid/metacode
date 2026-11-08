@@ -1,0 +1,5 @@
+# weekend: the calendar with Saturday picked: no events (the empty text).
+weekend:
+  state:
+    selectedDay: 5
+  route: calendar

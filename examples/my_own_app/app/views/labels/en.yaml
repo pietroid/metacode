@@ -33,11 +33,11 @@ en:
   wereLettingPeopleIn: We're letting people in a few at a time. Save your spot.
   blurbFood: Tap what you ate. It adds up the calories and suggests what to eat next to stay on track.
   blurbMusic: One chord at a time. Log your practice and see which songs you can already play.
-  blurbWork: Who paid, who still owes you, and how much to put aside for taxes. No spreadsheet.
+  blurbWork: Inbox, follow-ups, to-dos and the week ahead, ranked so the next thing to do is always on top.
   blurbPlants: Every plant on its own schedule. Tap the drop when you water it, and skip ahead a day to see what comes next.
   promptFood: Help me eat better without counting everything
   promptMusic: Teach me guitar, ten minutes a day
-  promptWork: Help me keep track of my freelance jobs
+  promptWork: Help me prioritize my work day
   promptPlants: Remind me to water my plants
   ideaSummaryEmpty: Tell us what you need and we'll have your app ready when you get in.
   yourFirstApp: 'Your first app:'
@@ -111,5 +111,5 @@ en:
   backHome: Back home
   foodLive: Food tracker
   musicLive: Guitar practice
-  workLive: Freelance jobs
+  workLive: Work priorities
   plantsLive: Plant watering

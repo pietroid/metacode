@@ -1,0 +1,6 @@
+# task: a to-do: title, the project it belongs to, whether it is urgent and done.
+task:
+  title: string
+  project: string
+  urgent: boolean
+  done: boolean

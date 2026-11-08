@@ -1,0 +1,27 @@
+# SectionLink: one row of Today's sections, opening one: `.icon` in a quiet
+# tile, `.title` over a `.preview` line, `.count` and a chevron; tapping runs `.onTap`.
+SectionLink:
+  tappable:
+    onTap: .onTap
+    child:
+      padding:
+        vertical: 12
+        child:
+          row:
+            spacing: 12
+            children:
+            - container:
+                width: 36
+                height: 36
+                radius: 8
+                color: fill
+                child: {center: {icon: {name: .icon, size: 18, color: ink}}}
+            - expanded:
+                column:
+                  crossAxisAlignment: start
+                  spacing: 1
+                  children:
+                  - text: {value: .title, maxLines: 1, style: {variant: titleSmall, fontWeight: w600}}
+                  - text: {value: .preview, maxLines: 1, style: {variant: bodySmall, color: ink2}}
+            - text: {value: .count, style: {variant: bodySmall, color: ink3}}
+            - icon: {name: chevronRight, size: 16, color: ink3}

@@ -1,5 +1,5 @@
 # icons: the Phosphor icon weight.
-# Look: a sharp ledger. Schibsted Grotesk, ink blue, square corners, bold
-# icons. Keys left out are inherited.
+# Look: quiet and businesslike. Inter, graphite ink on a neutral page, one
+# muted slate accent, small radii, regular icons. Keys left out are inherited.
 icons:
-  weight: bold
+  weight: regular

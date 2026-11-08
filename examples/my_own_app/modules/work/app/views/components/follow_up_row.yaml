@@ -1,0 +1,27 @@
+# FollowUpRow: one follow-up under a RowDivider: a done checkbox, the person,
+# the topic and when it is due (in danger when overdue).
+FollowUpRow:
+  column:
+    crossAxisAlignment: stretch
+    children:
+    - RowDivider
+    - padding:
+        vertical: 4
+        child:
+          row:
+            spacing: 8
+            children:
+            - checkbox: {value: followUpDone, onChanged: toggleFollowUp}
+            - expanded:
+                column:
+                  crossAxisAlignment: start
+                  children:
+                  - if:
+                      condition: followUpDone
+                      then: {text: {value: followUpPerson, maxLines: 1, style: {variant: titleSmall, color: ink3}}}
+                      else: {text: {value: followUpPerson, maxLines: 1, style: {variant: titleSmall}}}
+                  - text: {value: followUpTopic, maxLines: 1, style: {variant: bodySmall, color: ink2}}
+            - if:
+                condition: followUpOverdue
+                then: {text: {value: followUpDue, style: {variant: bodySmall, color: danger}}}
+                else: {text: {value: followUpDue, style: {variant: bodySmall, color: ink3}}}

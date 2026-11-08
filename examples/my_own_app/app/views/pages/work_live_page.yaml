@@ -45,8 +45,8 @@ WorkLivePage:
             child:
               PhoneFrame:
                 height: 720
-                screen: '#0F0F0E'
-                ink: '#EDF2FA'
+                screen: '#EDF1F6'
+                ink: '#18181B'
                 child:
                   module:
                     name: work

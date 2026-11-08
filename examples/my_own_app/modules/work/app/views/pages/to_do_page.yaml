@@ -1,0 +1,16 @@
+# ToDoPage: the `toDo` route, the to-do list: ScreenHeader over a Panel with every to-do (TaskRow), scrolling on a 16px margin.
+ToDoPage:
+  scaffold:
+    body:
+      scroll:
+        padding:
+          horizontal: 16
+          top: 4
+          bottom: 20
+          child:
+            column:
+              crossAxisAlignment: stretch
+              children:
+              - ScreenHeader: {title: toDo, count: taskCount}
+              - Panel:
+                  child: {listView: {data: taskList, itemBuilder: TaskRow, empty: {padding: {vertical: 12, child: {text: {value: allDone, style: {variant: bodySmall, color: ink3}}}}}}}

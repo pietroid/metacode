@@ -1,11 +1,41 @@
 # pt_br: all of the app's text in Brazilian Portuguese, the same keys as
-# en.yaml (a missing key shows the English text).
+# en.yaml (a missing key shows the English text). Tone: Brazilian corporate
+# speech, with the English terms offices use (inbox, follow-up, to-do, deadline).
 pt_br:
-  november: Novembro
-  received: Recebido
-  waiting: Aguardando
-  setAside: Separar
-  forTaxes: 'para impostos:'
-  everyonePaid: Todo mundo pagou. Belo mês.
-  stillOwesYou: ainda te deve
-  draftReminder: Quer que eu escreva um lembrete simpático?
+  todayDate: Segunda-feira, 9 de novembro
+  greeting: Bom dia
+  nextUp: Prioridade agora
+  workspace: Briefing do dia
+  todaySchedule: Agenda de hoje
+  inbox: Inbox
+  followUps: Follow-ups
+  toDo: To-dos
+  thisWeek: Agenda da semana
+  unread: não lidos
+  open: em aberto
+  urgent: Urgente
+  unreadStat: Não lidos
+  overdueStat: Em atraso
+  openStat: To-dos abertos
+  eventsToday: hoje
+  noEvents: Agenda livre.
+  inboxZero: Inbox zerada.
+  nothingPending: Nenhum follow-up pendente.
+  allDone: Tudo entregue.
+  dueToday: Deadline hoje
+  dueTomorrow: Deadline amanhã
+  dueIn: Deadline em
+  daysShort: d
+  overdue: em atraso
+  chaseUp: Fazer follow-up com
+  finish: Entregar
+  allClear: Sem urgências. Bom momento para focar no estratégico.
+  focusTime: Bloco de foco
+  back: Voltar
+  mon: Seg
+  tue: Ter
+  wed: Qua
+  thu: Qui
+  fri: Sex
+  sat: Sáb
+  sun: Dom

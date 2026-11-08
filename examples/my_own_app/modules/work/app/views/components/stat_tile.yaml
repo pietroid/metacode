@@ -1,0 +1,13 @@
+# StatTile: a number (`.value`) over its caption (`.label`) on a white tile.
+StatTile:
+  container:
+    color: surface
+    radius: 12
+    padding: {horizontal: 12, vertical: 12}
+    child:
+      column:
+        crossAxisAlignment: start
+        spacing: 2
+        children:
+        - text: {value: .value, maxLines: 1, style: {variant: headlineSmall}}
+        - text: {value: .label, maxLines: 1, style: {variant: bodySmall, color: ink3}}

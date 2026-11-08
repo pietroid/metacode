@@ -1,0 +1,8 @@
+# allClear: Today with the inbox, follow-ups and to-dos all empty and no
+# events: every preview's empty text and the all-clear NextUp.
+allClear:
+  state:
+    messages: []
+    followUps: []
+    tasks: []
+    events: []

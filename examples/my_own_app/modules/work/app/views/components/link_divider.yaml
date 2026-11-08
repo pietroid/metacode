@@ -1,0 +1,5 @@
+# LinkDivider: the hairline between SectionLinks, indented past their icon tile.
+LinkDivider:
+  padding:
+    left: 48
+    child: {divider: {}}

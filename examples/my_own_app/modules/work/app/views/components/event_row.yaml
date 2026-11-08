@@ -1,0 +1,21 @@
+# EventRow: one event: start time (`.time`), a bar (accent when `.important`,
+# a hairline otherwise), the title (`.title`) and a flag when important.
+EventRow:
+  padding:
+    vertical: 10
+    child:
+      row:
+        spacing: 12
+        children:
+        - sizedBox:
+            width: 44
+            child: {text: {value: .time, style: {variant: labelMedium, color: ink2}}}
+        - if:
+            condition: .important
+            then: {container: {width: 3, height: 28, radius: 2, color: accent}}
+            else: {container: {width: 3, height: 28, radius: 2, color: line}}
+        - expanded:
+            text: {value: .title, maxLines: 1, style: {variant: bodyMedium}}
+        - if:
+            condition: .important
+            then: {icon: {name: flag, size: 14, color: accent}}

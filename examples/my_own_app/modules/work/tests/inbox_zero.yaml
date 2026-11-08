@@ -1,0 +1,5 @@
+# inboxZero: the inbox page with no messages (the empty text).
+inboxZero:
+  state:
+    messages: []
+  route: inbox

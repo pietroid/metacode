@@ -1,0 +1,7 @@
+# followUp: something waiting on someone else: the person, the topic, days
+# until it is due (negative when overdue) and whether it is closed.
+followUp:
+  person: string
+  topic: string
+  dueIn: number
+  done: boolean

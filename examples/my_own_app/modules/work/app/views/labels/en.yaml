@@ -1,11 +1,40 @@
 # en: all of the app's text in English, key: text. Pure strings; values in
 # app/views/values/ join them with the state (they take `Labels labels`).
 en:
-  november: November
-  received: Received
-  waiting: Waiting
-  setAside: Set aside
-  forTaxes: 'for taxes:'
-  everyonePaid: Everyone paid. Nice month.
-  stillOwesYou: still owes you
-  draftReminder: Want me to draft a friendly reminder?
+  todayDate: Monday, November 9
+  nextUp: Next up
+  inbox: Inbox
+  followUps: Follow-ups
+  toDo: To-do
+  thisWeek: This week
+  unread: unread
+  open: open
+  urgent: Urgent
+  noEvents: Nothing scheduled.
+  inboxZero: Inbox zero.
+  nothingPending: Nothing pending.
+  allDone: All done.
+  dueToday: Due today
+  dueTomorrow: Due tomorrow
+  dueIn: Due in
+  daysShort: d
+  overdue: overdue
+  chaseUp: Chase
+  finish: Finish
+  allClear: Nothing urgent. A good time for deep work.
+  mon: Mon
+  tue: Tue
+  wed: Wed
+  thu: Thu
+  fri: Fri
+  sat: Sat
+  sun: Sun
+  eventsToday: today
+  back: Back
+  greeting: Good morning
+  unreadStat: Unread
+  overdueStat: Overdue
+  openStat: Open tasks
+  workspace: Your day
+  todaySchedule: Today's schedule
+  focusTime: Focus time

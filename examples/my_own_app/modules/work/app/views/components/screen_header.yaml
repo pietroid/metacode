@@ -1,0 +1,15 @@
+# ScreenHeader: the top of a section page: a back button (goBack), the
+# `.title` and a quiet `.count` on the right.
+ScreenHeader:
+  padding:
+    bottom: 8
+    child:
+      row:
+        spacing: 4
+        children:
+        - iconButton: {icon: arrowBack, tooltip: back, onPressed: goBack}
+        - expanded:
+            text: {value: .title, maxLines: 1, style: {variant: titleLarge}}
+        - padding:
+            right: 8
+            child: {text: {value: .count, style: {variant: bodySmall, color: ink3}}}

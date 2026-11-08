@@ -1,0 +1,39 @@
+# DayCell: one day of the week strip: weekday, date and a dot when it has an
+# important event; filled when selected. Tapping it selects the day.
+DayCell:
+  tappable:
+    onTap: selectDay
+    child:
+      if:
+        condition: daySelected
+        then:
+          container:
+            color: primary
+            radius: 6
+            child:
+              center:
+                column:
+                  mainAxisAlignment: center
+                  spacing: 2
+                  children:
+                  - text: {value: dayName, maxLines: 1, style: {variant: labelSmall, color: onPrimary}}
+                  - text: {value: dayNumber, style: {variant: titleSmall, fontWeight: w600, color: onPrimary}}
+                  - if:
+                      condition: dayHasImportant
+                      then: {container: {width: 4, height: 4, radius: 2, color: onPrimary}}
+                      else: {sizedBox: {height: 4}}
+        else:
+          container:
+            radius: 6
+            child:
+              center:
+                column:
+                  mainAxisAlignment: center
+                  spacing: 2
+                  children:
+                  - text: {value: dayName, maxLines: 1, style: {variant: labelSmall, color: ink3}}
+                  - text: {value: dayNumber, style: {variant: titleSmall}}
+                  - if:
+                      condition: dayHasImportant
+                      then: {container: {width: 4, height: 4, radius: 2, color: accent}}
+                      else: {sizedBox: {height: 4}}

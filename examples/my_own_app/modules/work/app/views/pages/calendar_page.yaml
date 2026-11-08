@@ -1,0 +1,15 @@
+# CalendarPage: the `calendar` route, the calendar: ScreenHeader over the WeekStrip, scrolling on a 16px margin.
+CalendarPage:
+  scaffold:
+    body:
+      scroll:
+        padding:
+          horizontal: 16
+          top: 4
+          bottom: 20
+          child:
+            column:
+              crossAxisAlignment: stretch
+              children:
+              - ScreenHeader: {title: thisWeek, count: selectedDayTitle}
+              - WeekStrip

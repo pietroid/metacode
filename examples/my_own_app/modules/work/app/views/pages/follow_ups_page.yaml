@@ -1,0 +1,16 @@
+# FollowUpsPage: the `followUps` route, the follow-ups: ScreenHeader over a Panel with every follow-up (FollowUpRow), scrolling on a 16px margin.
+FollowUpsPage:
+  scaffold:
+    body:
+      scroll:
+        padding:
+          horizontal: 16
+          top: 4
+          bottom: 20
+          child:
+            column:
+              crossAxisAlignment: stretch
+              children:
+              - ScreenHeader: {title: followUps, count: followUpCount}
+              - Panel:
+                  child: {listView: {data: followUpList, itemBuilder: FollowUpRow, empty: {padding: {vertical: 12, child: {text: {value: nothingPending, style: {variant: bodySmall, color: ink3}}}}}}}

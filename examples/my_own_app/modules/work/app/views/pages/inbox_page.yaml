@@ -1,0 +1,16 @@
+# InboxPage: the `inbox` route, the inbox: ScreenHeader over a Panel with every message (MessageRow), scrolling on a 16px margin.
+InboxPage:
+  scaffold:
+    body:
+      scroll:
+        padding:
+          horizontal: 16
+          top: 4
+          bottom: 20
+          child:
+            column:
+              crossAxisAlignment: stretch
+              children:
+              - ScreenHeader: {title: inbox, count: inboxCount}
+              - Panel:
+                  child: {listView: {data: messageList, itemBuilder: MessageRow, empty: {padding: {vertical: 12, child: {text: {value: inboxZero, style: {variant: bodySmall, color: ink3}}}}}}}

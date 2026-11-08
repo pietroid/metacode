@@ -33,11 +33,11 @@ pt_br:
   wereLettingPeopleIn: Estamos liberando a entrada aos poucos. Garanta seu lugar.
   blurbFood: Toque no que você comeu. Ele soma as calorias e sugere o que comer depois para manter o ritmo.
   blurbMusic: Um acorde de cada vez. Registre seu treino e veja quais músicas você já consegue tocar.
-  blurbWork: Quem pagou, quem ainda te deve e quanto separar para os impostos. Sem planilha.
+  blurbWork: Inbox, follow-ups, to-dos e a agenda da semana, priorizados para o próximo passo estar sempre no topo.
   blurbPlants: Cada planta no seu ritmo. Toque na gota quando regar, e avance um dia para ver o que vem depois.
   promptFood: Me ajude a comer melhor sem contar tudo
   promptMusic: Me ensine violão, dez minutos por dia
-  promptWork: Me ajude a acompanhar meus trabalhos de freelancer
+  promptWork: Me ajude a priorizar meu dia de trabalho
   promptPlants: Me lembre de regar minhas plantas
   ideaSummaryEmpty: Diga do que precisa e seu app estará pronto quando você entrar.
   yourFirstApp: 'Seu primeiro app:'
@@ -111,5 +111,5 @@ pt_br:
   backHome: Voltar ao início
   foodLive: Diário alimentar
   musicLive: Prática de violão
-  workLive: Trabalhos freelance
+  workLive: Prioridades do dia
   plantsLive: Rega das plantas

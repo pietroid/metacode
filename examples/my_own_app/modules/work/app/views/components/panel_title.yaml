@@ -1,0 +1,7 @@
+# PanelTitle: the small grey caption above a Panel (`.text`).
+PanelTitle:
+  padding:
+    top: 24
+    bottom: 8
+    left: 4
+    child: {text: {value: .text, style: {variant: labelMedium, color: ink3}}}
