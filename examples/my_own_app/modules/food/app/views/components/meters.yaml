@@ -1,0 +1,14 @@
+# Meters: the budget and calorie bars, filled by what is checked on the
+# shopping list.
+Meters:
+  container:
+    borderColor: line
+    radius: 20
+    padding: 14
+    child:
+      column:
+        crossAxisAlignment: stretch
+        spacing: 14
+        children:
+        - MeterRow: {icon: wallet, label: budget, text: budgetSpent, progress: budgetSpentProgress}
+        - MeterRow: {icon: restaurant, label: calories, text: kcalStocked, progress: kcalStockedProgress}

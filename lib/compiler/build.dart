@@ -12,7 +12,9 @@
 // .generated/test_app.dart (typed test harness) and .generated/INDEX.md (the
 // app's map). The root also gets .generated/bundle.json (the whole app tree,
 // which the engine runs), .generated/files.json (the project's text files:
-// the web's default project) and .generated/all_test.dart.
+// the web's default project), .generated/all_test.dart and
+// .generated/layout_states.json (every app's tests/ states, for
+// tool/layout_test.dart).
 
 import 'dart:convert';
 import 'dart:typed_data';
@@ -68,10 +70,22 @@ BuildResult build(ProjectFiles files,
       outputs['.generated/bundle.json'] = bundle;
       outputs['.generated/files.json'] = jsonEncode(files.toSnapshot());
       outputs['.generated/all_test.dart'] = _allTests(files, path);
+      outputs['.generated/layout_states.json'] =
+          '${const JsonEncoder.withIndent('  ').convert(layoutStates(root))}\n';
     }
   }
   return BuildResult(issues, root, bundle, outputs);
 }
+
+/// Every app's tests/ states, by the layout check's app label (`root`,
+/// `modules/food`, `modules/a/modules/b`): label -> name -> {state, route?}.
+Map<String, dynamic> layoutStates(AppProject root) => {
+      for (final app in root.tree)
+        if (app.testStates.isNotEmpty)
+          (app.prefix.isEmpty
+              ? 'root'
+              : app.prefix.substring(0, app.prefix.length - 1)): app.testStates,
+    };
 
 /// One test entrypoint for the whole tree, so `flutter test` compiles and
 /// starts once instead of once per file. It imports every user .dart file

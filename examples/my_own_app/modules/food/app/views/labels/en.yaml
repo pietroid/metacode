@@ -1,17 +1,66 @@
-# en: all of the app's text in English, key: text. Pure strings; values in
+# en: all of Forkcast's text in English, key: text. Pure strings; values in
 # app/views/values/ join them with the state (they take `Labels labels`).
+# currencySymbol/currencyRate/decimalSep/thousandsSep format money (prices
+# are stored in USD).
 en:
-  today: Today
-  clear: Clear
-  removeOne: Remove one
-  addOne: Add one
-  tipStart: Start with breakfast. Oatmeal or eggs keep you full until lunch.
-  tipOverBefore: You're
-  tipOverAfter: 'kcal over today. No stress: a walk after dinner and a lighter lunch tomorrow even it out.'
-  tipAlmost: Almost there. Greek yogurt or an apple fits what is left.
-  tipLowProtein: kcal left, and you are low on protein. A grilled chicken salad would cover both.
-  tipBalanced: Good balance so far.
-  tipKcalLeftDay: kcal left for the rest of the day.
+  brand: Forkcast
+  currencySymbol: $
+  currencyRate: '1'
+  decimalSep: .
+  thousandsSep: ','
+  step1: Step 1 of 3
+  step2: Step 2 of 3
+  step3: Step 3 of 3
+  budgetTitle: What's your monthly food budget?
+  budgetHint: Every plan and shopping list stays inside it.
+  budgetMin: $100
+  budgetMax: $800
+  aDay: a day
+  perMonth: /mo
+  next: Continue
+  back: Back
+  prefsTitle: Anything off the menu?
+  prefsHint: Pick any that apply, or none at all.
+  goalTitle: What's the goal?
+  goalHint: You can switch programs later.
+  buildMyProgram: Build my program
+  pickAGoal: Pick a goal to continue
+  building: Cooking up your program
+  buildRead: Read your answers
+  buildMatches: 'Programs that fit you:'
+  buildBudget: Fitted to
+  yourProgram: Your program
+  kcalDay: kcal / day
+  protein: protein
+  carbs: carbs
+  noRestrictions: Eats everything
+  about: About
+  fitsBudget: fits your budget
+  overBudget: over budget, we'll favor cheaper swaps
+  alsoFits: Also fits you
+  planNext: Plan the next
+  days: days
+  fewerDaysTip: Fewer days
+  moreDaysTip: More days
+  suggestCta: Suggest recipes
+  shoppingList: Shopping list
+  inCart: in the cart
+  of: of
+  restart: Start over
+  budget: Budget
+  calories: Calories stocked
   kcal: kcal
-  gProtein: g protein
-  gProteinToday: g protein today
+  pickRecipes: Pick your recipes
+  picked: picked
+  ofYourDay: of your daily kcal
+  min: min
+  skip: Skip
+  add: Add
+  close: Close
+  yourPicks: Your picks
+  makeListCta: Make my shopping list
+  nothingPicked: Nothing picked this round.
+  shuffle: Suggest again
+  total: Total
+  backToPlan: Back to my plan
+  emptyList: No items yet

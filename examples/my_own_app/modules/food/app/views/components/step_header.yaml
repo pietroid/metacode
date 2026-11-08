@@ -1,0 +1,27 @@
+# StepHeader: the top of an onboarding step: BrandBar with the step count,
+# a progress bar at `.progress`, then `.title` and `.hint`.
+StepHeader:
+  column:
+    crossAxisAlignment: stretch
+    spacing: 10
+    children:
+    - BrandBar:
+        trailing:
+          text:
+            value: .step
+            style:
+              variant: labelSmall
+              color: ink3
+    - progress:
+        value: .progress
+    - sizedBox:
+        height: 6
+    - text:
+        value: .title
+        style:
+          variant: titleLarge
+    - text:
+        value: .hint
+        style:
+          variant: bodySmall
+          color: ink2

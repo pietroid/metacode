@@ -1,0 +1,12 @@
+# PrefCard: one grid card of PrefsStep: tap to toggle; selected cards get
+# the green fill and edge.
+PrefCard:
+  tappable:
+    onTap: togglePref
+    child:
+      if:
+        condition: prefSelected
+        then:
+          container: {color: fillStrong, borderColor: primary, radius: 20, padding: 12, child: PrefCardBody}
+        else:
+          container: {color: surface, borderColor: line, radius: 20, padding: 12, child: PrefCardBody}

@@ -1,0 +1,11 @@
+# BuildRow: one finished processing line of Building.
+BuildRow:
+  padding:
+    vertical: 5
+    child:
+      row:
+        spacing: 10
+        children:
+        - icon: {name: checkCircle, size: 18, color: success}
+        - expanded:
+            text: {value: buildLine, style: {variant: bodyMedium}}

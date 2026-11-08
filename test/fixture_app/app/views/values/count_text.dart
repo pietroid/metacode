@@ -1,6 +1,7 @@
-// countText: The count, labeled.
+// countText: The count, labeled (through the shared withLabel).
 import '../../../.generated/labels.dart';
 import '../../../.generated/state.dart';
+import 'shared/with_label.dart';
 
 String countText(State state, Labels labels) =>
-    [labels.count, state.count.toString()].join(' ');
+    withLabel(labels.count, state.count);

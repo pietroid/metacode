@@ -1,0 +1,13 @@
+# ShopRow: one ingredient to buy: a checkbox (in the cart), name, quantity and price.
+ShopRow:
+  row:
+    spacing: 4
+    children:
+    - checkbox: {value: itemChecked, onChanged: toggleItem}
+    - expanded:
+        column:
+          crossAxisAlignment: start
+          children:
+          - text: {value: itemName, maxLines: 1, style: {variant: labelLarge}}
+          - text: {value: itemQty, style: {variant: bodySmall, color: ink3}}
+    - text: {value: itemPrice, style: {variant: labelMedium}}

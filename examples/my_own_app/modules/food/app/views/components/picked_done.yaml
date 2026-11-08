@@ -1,0 +1,23 @@
+# PickedDone: the end of the swipe: the accepted recipes and Make my
+# shopping list, or Suggest again when nothing was accepted.
+PickedDone:
+  if:
+    condition: hasPicked
+    then:
+      column:
+        crossAxisAlignment: stretch
+        spacing: 12
+        children:
+        - text: {value: yourPicks, style: {variant: titleLarge}}
+        - listView:
+            data: pickedList
+            itemBuilder: PickedRow
+        - filledButton: {text: makeListCta, icon: shoppingCart, onPressed: makeList}
+    else:
+      column:
+        crossAxisAlignment: stretch
+        spacing: 12
+        children:
+        - sizedBox: {height: 24}
+        - text: {value: nothingPicked, align: center, style: {variant: titleSmall, color: ink2}}
+        - outlinedButton: {text: shuffle, icon: refresh, onPressed: suggestRecipes}

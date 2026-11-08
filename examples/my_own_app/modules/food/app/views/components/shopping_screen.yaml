@@ -1,0 +1,20 @@
+# ShoppingScreen: the shopping list: Meters (filling as items are checked),
+# the total, a ShopRow per ingredient, and back to the plan.
+ShoppingScreen:
+  column:
+    crossAxisAlignment: stretch
+    spacing: 14
+    children:
+    - row:
+        spacing: 4
+        children:
+        - iconButton: {icon: arrowBack, tooltip: backToPlan, onPressed: showPlan}
+        - expanded:
+            text: {value: shoppingList, style: {variant: titleLarge}}
+    - Meters
+    - text: {value: shopTotal, style: {variant: labelMedium, color: ink2}}
+    - listView:
+        data: shopList
+        itemBuilder: ShopRow
+        empty: emptyList
+    - filledButton: {text: backToPlan, onPressed: showPlan}

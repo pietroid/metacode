@@ -155,9 +155,10 @@ void _checkResolves(TypeRef type, Map<String, Model> models, Issues issues,
   }
 }
 
-/// Validates the merged `state` map (state/) against the reserved `state` model.
-void validateState(dynamic doc, Map<String, Model> models, Issues issues) {
-  const file = 'state/';
+/// Validates the `state` map (app.yaml's `state:`, or a test state in
+/// tests/ over it: [file]) against the reserved `state` model.
+void validateState(dynamic doc, Map<String, Model> models, Issues issues,
+    {String file = 'app.yaml'}) {
   final stateModel = models[stateModelName];
   if (stateModel is! ClassModel) return;
 
@@ -166,12 +167,16 @@ void validateState(dynamic doc, Map<String, Model> models, Issues issues) {
     return;
   }
   _validateValue(doc['state'], const TypeRef(stateModelName), models, issues,
-      'state');
+      'state', file);
 }
 
+/// A YAML key that can't be a field name, with no value: the tail of an
+/// unquoted flow-map value cut at a comma (`{blurb: Fewer carbs, steady
+/// energy}` reads `steady energy` as a key).
+final _splitFlowKey = RegExp(r'[^A-Za-z0-9_]');
+
 void _validateValue(dynamic value, TypeRef type, Map<String, Model> models,
-    Issues issues, String path) {
-  const file = 'state/';
+    Issues issues, String path, String file) {
   void fail(String message) => issues.error(file, path, message);
 
   if (value == null) {
@@ -182,7 +187,7 @@ void _validateValue(dynamic value, TypeRef type, Map<String, Model> models,
   if (type.isList) {
     if (value is! List) return fail('expected a list ($type)');
     for (var i = 0; i < value.length; i++) {
-      _validateValue(value[i], type.item!, models, issues, '$path[$i]');
+      _validateValue(value[i], type.item!, models, issues, '$path[$i]', file);
     }
     return;
   }
@@ -207,13 +212,19 @@ void _validateValue(dynamic value, TypeRef type, Map<String, Model> models,
       } else if (model is ClassModel) {
         if (value is! Map) return fail('expected a ${model.name} (map)');
         for (final key in value.keys) {
-          if (!model.fields.containsKey(key.toString())) {
+          if (model.fields.containsKey(key.toString())) continue;
+          if (value[key] == null && _splitFlowKey.hasMatch(key.toString())) {
+            issues.error(file, path,
+                '"$key" is not a field of ${model.name}: an unquoted comma in '
+                'a {key: value} map ends the value there; quote the text '
+                '(name: "Fish, rice")');
+          } else {
             issues.error(file, '$path.$key', 'not a field of ${model.name}');
           }
         }
         for (final field in model.fields.entries) {
           _validateValue(value[field.key], field.value, models, issues,
-              '$path.${field.key}');
+              '$path.${field.key}', file);
         }
       }
   }

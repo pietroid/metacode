@@ -1,0 +1,20 @@
+# SwipeScreen: the recipe picker: a header with the pick count and a close
+# button, then RecipeCard one at a time, or PickedDone when over.
+SwipeScreen:
+  column:
+    crossAxisAlignment: stretch
+    spacing: 12
+    children:
+    - row:
+        children:
+        - expanded:
+            column:
+              crossAxisAlignment: start
+              children:
+              - text: {value: pickRecipes, style: {variant: titleSmall}}
+              - text: {value: pickCounter, style: {variant: bodySmall, color: ink3}}
+        - iconButton: {icon: close, tooltip: close, onPressed: showPlan}
+    - if:
+        condition: deckDone
+        then: PickedDone
+        else: RecipeCard

@@ -18,6 +18,7 @@ import 'ui.dart';
 /// app.yaml                  name, description, version, state (initial values)
 /// app/
 ///   actions/*.dart          one action per file; its tests in a main() below it
+///   actions/shared/*.dart   helpers any code can call, one function per file
 ///   models/*.yaml           one model or enum per file (state.yaml: the state)
 ///   models/sample.dart      test fixtures: `app` (TestApp) and sample(...)
 ///   views/
@@ -27,7 +28,9 @@ import 'ui.dart';
 ///     style/*.yaml          design tokens (optional; modules inherit the theme)
 ///     style/images/         image assets
 ///     values/*.dart         one value (computed from state) per file + tests
+///     values/shared/*.dart  helpers any code can call, one function per file
 ///     labels/<language>.yaml  the app's text, pure strings (en.yaml)
+/// tests/*.yaml              selected states the layout check renders (+ route)
 /// modules/<name>/           modules (same layout)
 /// .generated/               output, never edited (INDEX.md: the app's map)
 /// .state/                   runtime state, never committed
@@ -77,6 +80,14 @@ class AppProject {
 
   /// Values (`app/views/values/`); the engine and spec still call them bindings.
   List<UserFunction> bindings = [];
+
+  /// Helpers in app/actions/shared/ and app/views/values/shared/.
+  List<UserFunction> shared = [];
+
+  /// `tests/<name>.yaml`: a selected state (fields over the initial state)
+  /// and optionally a route, which the layout check renders at every size:
+  /// name -> {state: {...}, route: name?}.
+  Map<String, Map<String, dynamic>> testStates = {};
 
   /// `app/views/labels/`: language -> key -> text. The first language is
   /// [defaultLanguage].
@@ -160,9 +171,13 @@ AppProject loadApp(ProjectFiles files, String path, Issues root,
   app.actions = readFunctions(app.files, app.dir, 'app/actions', 'actions', app.models, issues);
   app.bindings =
       readFunctions(app.files, app.dir, 'app/views/values', 'values', app.models, issues);
+  app.shared = [
+    for (final folder in ['app/actions', 'app/views/values'])
+      ...readShared(app.files, app.dir, folder, issues),
+  ];
 
   final seen = <String, String>{};
-  for (final fn in [...app.actions, ...app.bindings]) {
+  for (final fn in [...app.actions, ...app.bindings, ...app.shared]) {
     final other = seen[fn.name];
     if (other != null) {
       issues.error(fn.file, fn.name, 'also defined in $other; names must be unique');
@@ -245,6 +260,8 @@ AppProject loadApp(ProjectFiles files, String path, Issues root,
     }
   }
 
+  _readTestStates(app, reader, issues);
+
   final styleFiles = reader.files('app/views/style', required: false);
   if (styleFiles.isNotEmpty) {
     final style = reader.merged('app/views/style', required: false, recursive: true);
@@ -255,6 +272,44 @@ AppProject loadApp(ProjectFiles files, String path, Issues root,
   }
 
   return app;
+}
+
+/// Reads `tests/<name>.yaml`: `name: {state: {stage: plan, ...}, route: x}`.
+/// Only selected states worth a look (a screen the initial state never
+/// shows), not every combination. Each is checked against the state model,
+/// over the initial state, and its route against navigation.
+void _readTestStates(AppProject app, _FolderReader reader, Issues issues) {
+  final docs = _readSingleParents(reader, 'tests', issues, camelCase);
+  for (final MapEntry(key: name, value: doc) in docs.entries) {
+    final file = 'tests/${snakeCase(name)}.yaml';
+    if (doc is! Map || doc['state'] is! Map ||
+        doc.keys.any((k) => k != 'state' && k != 'route')) {
+      issues.error(file, name, 'must be a map with "state:" (the fields that '
+          'differ from the initial state) and optionally "route:"');
+      continue;
+    }
+    final state = Map<String, dynamic>.from(doc['state'] as Map);
+    // Over the initial state, so the fields it leaves out count as set;
+    // only problems with its own fields are reported (app.yaml's are
+    // reported there).
+    final found = Issues();
+    validateState({'state': {...app.state, ...state}}, app.models, found,
+        file: file);
+    for (final e in found.errors) {
+      if (state.keys.any((k) =>
+          RegExp('> state\\.$k(\$|[.\\[:])').hasMatch(e) ||
+          e.contains('"$k" is not a field'))) {
+        issues.errors.add(issues.prefix + e);
+      }
+    }
+    final route = doc['route'];
+    if (route != null && !app.navigation.routes.containsKey(route)) {
+      issues.error(file, '$name.route', '"$route" is not a route in '
+          'app/views/navigation.yaml');
+    }
+    app.testStates[name] = {'state': state, 'route': ?route};
+    app.docs[file] = headerComment(app.files.read(app.at(file)) ?? '', name);
+  }
 }
 
 /// A labels file name: a language (`en`, `pt`), optionally with a region

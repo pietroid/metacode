@@ -1,0 +1,47 @@
+# BudgetStep: onboarding step 1: the monthly budget, big in the local
+# currency with a per-day hint, set with a slider ($100 to $800).
+BudgetStep:
+  column:
+    crossAxisAlignment: stretch
+    spacing: 16
+    children:
+    - StepHeader: {progress: 0.33, step: step1, title: budgetTitle, hint: budgetHint}
+    - container:
+        color: fill
+        radius: 24
+        padding: {vertical: 22, horizontal: 16}
+        child:
+          column:
+            spacing: 2
+            children:
+            - text:
+                value: budgetText
+                style:
+                  variant: displaySmall
+                  color: primary
+            - text:
+                value: budgetPerDay
+                style:
+                  variant: bodySmall
+                  color: ink2
+    - column:
+        crossAxisAlignment: stretch
+        children:
+        - slider:
+            value: budgetValue
+            min: 100
+            max: 800
+            divisions: 14
+            onChanged: setBudget
+        - padding:
+            horizontal: 8
+            child:
+              row:
+                children:
+                - text: {value: budgetMin, style: {variant: labelSmall, color: ink3}}
+                - spacer: {}
+                - text: {value: budgetMax, style: {variant: labelSmall, color: ink3}}
+    - filledButton:
+        text: next
+        icon: arrowForward
+        onPressed: nextStep

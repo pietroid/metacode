@@ -1,0 +1,10 @@
+# recipe: a synthetic recipe: the prefs it satisfies (`tags`), the goals it
+# suits, prep time and its ingredients (its kcal and cost are their sum).
+recipe:
+  name: string
+  namePt: string
+  image: string
+  tags: list(string)
+  goals: list(goal)
+  minutes: number
+  ingredients: list(ingredient)

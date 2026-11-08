@@ -1,0 +1,9 @@
+# NavButtons: an onboarding step's footer: Back, and `.next` (a button) filling the rest.
+NavButtons:
+  row:
+    spacing: 8
+    children:
+    - textButton:
+        text: back
+        onPressed: backStep
+    - expanded: .next

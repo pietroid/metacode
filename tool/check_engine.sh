@@ -18,6 +18,8 @@ flutter test --reporter failures-only \
   test \
   examples/my_own_app/.generated/all_test.dart \
   tool/layout_test.dart
+flutter test --reporter failures-only tool/layout_test.dart \
+  --dart-define=METACODE_APP=test/fixture_app
 (cd packages/app_ui && flutter test --reporter failures-only)
 
 echo "== web (Chrome)"

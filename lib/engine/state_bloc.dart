@@ -91,34 +91,42 @@ class StateBloc extends Cubit<Map<String, dynamic>> {
     await store!.write(app, 'state:\n${_toYaml(data)}');
   }
 
+  /// [value] as block YAML at [indent], nested lists and maps at any depth
+  /// (a list of models whose fields are lists, like a recipe's tags).
+  /// Empty lists and maps are written inline (`[]`, `{}`), never as a bare
+  /// `key:`, which would read back as null.
   String _toYaml(dynamic value, {int indent = 1}) {
     final prefix = '  ' * indent;
+    bool isBlock(dynamic v) =>
+        (v is Map && v.isNotEmpty) || (v is List && v.isNotEmpty);
     if (value is Map) {
       return value.entries.map((e) {
         final v = e.value;
-        if (v is Map || v is List) {
+        if (isBlock(v)) {
           return '$prefix${e.key}:\n${_toYaml(v, indent: indent + 1)}';
         }
-        return '$prefix${e.key}: ${_escapeYaml(v)}';
+        return '$prefix${e.key}: ${_scalarYaml(v)}';
       }).join('\n');
     }
     if (value is List) {
       return value.map((item) {
-        if (item is Map) {
-          final entries = item.entries.toList();
-          if (entries.isEmpty) return '$prefix- {}';
-          final first = entries.first;
-          final rest = entries.sublist(1);
-          var out = '$prefix- ${first.key}: ${_escapeYaml(first.value)}';
-          for (final e in rest) {
-            out += '\n$prefix  ${e.key}: ${_escapeYaml(e.value)}';
-          }
-          return out;
+        if (isBlock(item)) {
+          // The item's own block one level deeper, its first line after
+          // the dash: `- name: x` then `  tags:` aligned under `name`.
+          final block = _toYaml(item, indent: indent + 1);
+          return '$prefix- ${block.substring(prefix.length + 2)}';
         }
-        return '$prefix- ${_escapeYaml(item)}';
+        return '$prefix- ${_scalarYaml(item)}';
       }).join('\n');
     }
-    return '$prefix${_escapeYaml(value)}';
+    return '$prefix${_scalarYaml(value)}';
+  }
+
+  /// A value written on one line: an empty list or map, or a scalar.
+  String _scalarYaml(dynamic value) {
+    if (value is List) return '[]';
+    if (value is Map) return '{}';
+    return _escapeYaml(value);
   }
 
   /// Strings are always written as JSON strings (valid YAML), so a string

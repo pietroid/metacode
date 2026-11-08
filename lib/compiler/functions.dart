@@ -1,6 +1,8 @@
 // Reads actions (app/actions/) and values (app/views/values/): checks their
 // signatures with the analyzer (syntax only, no type resolution) and records
-// what each one touches (state fields, labels, routes) for the index.
+// what each one touches (state fields, labels, routes, shared functions) for
+// the index. Also reads the shared helpers in each folder's shared/ (one
+// public function per file, any signature).
 
 import 'package:analyzer/dart/analysis/utilities.dart';
 import 'package:analyzer/dart/ast/ast.dart';
@@ -17,7 +19,8 @@ class Param {
   const Param(this.name, this.type);
 }
 
-/// A public top-level function from app/actions/ or app/views/values/.
+/// A public top-level function from app/actions/, app/views/values/ or
+/// their shared/ folders.
 class UserFunction {
   final String name;
   final String file; // relative to its app folder
@@ -36,6 +39,10 @@ class UserFunction {
   final Set<String> labels = {};
   final Set<String> routes = {};
   bool usesApi = false;
+
+  /// Top-level functions it calls by name (`groupDigits(n)`): how the index
+  /// finds what uses each shared function.
+  final Set<String> calls = {};
 
   UserFunction(this.name, this.file, this.returnType, this.params);
 }
@@ -98,6 +105,8 @@ class _Touches extends RecursiveAstVisitor<void> {
     // `StateDelta(...)` parses as a call when types aren't resolved.
     if (node.target == null && node.methodName.name == 'StateDelta') {
       _writes(node.argumentList);
+    } else if (node.target == null) {
+      fn.calls.add(node.methodName.name);
     }
     super.visitMethodInvocation(node);
   }
@@ -161,6 +170,7 @@ List<UserFunction> readFunctions(
     if (!isUserCode(path)) continue;
     if (path.split('/').last.startsWith('_')) continue;
     final rel = path.substring(skip);
+    if (rel.startsWith('$folder/$sharedFolder/')) continue;
     final source = files.read(path)!;
     final result = parseString(
       content: source,
@@ -283,6 +293,72 @@ UserFunction? _readFunction(
   }
 
   return UserFunction(name, file, returnType, params);
+}
+
+/// The sub-folder of app/actions/ and app/views/values/ holding helpers
+/// both can call: one public function per file, named after it, any
+/// signature. They are bundled with the app's code (see build.dart).
+const sharedFolder = 'shared';
+
+/// Reads `$appDir/$folder/shared/*.dart`: each file holds exactly one public
+/// function, named after the file (`group_digits.dart` -> `groupDigits`),
+/// plus private helpers and its tests in `main()`. [UserFunction.params]
+/// holds all its parameters (it is called from code, not by the engine).
+List<UserFunction> readShared(
+    ProjectFiles files, String appDir, String folder, Issues issues) {
+  final out = <UserFunction>[];
+  final skip = appDir.isEmpty ? 0 : appDir.length + 1;
+  final dir = '$folder/$sharedFolder';
+  for (final path in files.list(appDir.isEmpty ? dir : '$appDir/$dir')) {
+    if (!isUserCode(path)) continue;
+    final rel = path.substring(skip);
+    final source = files.read(path)!;
+    final result =
+        parseString(content: source, path: '/$path', throwIfDiagnostics: false);
+    for (final d in result.errors) {
+      final line = result.lineInfo.getLocation(d.offset).lineNumber;
+      issues.error(rel, 'line $line', d.message);
+    }
+    final public = [
+      for (final d in result.unit.declarations)
+        if (d is FunctionDeclaration &&
+            !d.name.lexeme.startsWith('_') &&
+            d.name.lexeme != testsFunction &&
+            !d.isGetter &&
+            !d.isSetter)
+          d,
+    ];
+    if (public.length != 1) {
+      issues.error(rel, '', 'a shared file holds exactly one public function '
+          '(found ${public.length}); name the others with a leading _');
+      continue;
+    }
+    final decl = public.single;
+    final name = decl.name.lexeme;
+    final fn = UserFunction(
+      name,
+      rel,
+      decl.returnType?.toSource() ?? 'dynamic',
+      [
+        for (final p in decl.functionExpression.parameters?.parameters ??
+            const <FormalParameter>[])
+          Param(p.name?.lexeme ?? '', switch (p) {
+            SimpleFormalParameter(:final type) => type?.toSource() ?? 'dynamic',
+            DefaultFormalParameter(:final parameter)
+                when parameter is SimpleFormalParameter =>
+              parameter.type?.toSource() ?? 'dynamic',
+            _ => 'dynamic',
+          }),
+      ],
+    )..doc = headerComment(source, name);
+    final touches = _Touches(fn);
+    for (final d in result.unit.declarations) {
+      if (d is FunctionDeclaration && d.name.lexeme == testsFunction) continue;
+      d.accept(touches);
+    }
+    out.add(fn);
+  }
+  return out;
 }
 
 /// Whether [path] is user code the engine runs.

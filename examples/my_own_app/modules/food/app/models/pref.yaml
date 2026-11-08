@@ -1,0 +1,10 @@
+# pref: a food preference or restriction card. `base` ones (vegan,
+# vegetarian, pescatarian) also filter the programs; every selected one
+# filters the recipes (a recipe's tags must include it).
+pref:
+  key: string
+  name: string
+  namePt: string
+  image: string
+  base: boolean
+  selected: boolean

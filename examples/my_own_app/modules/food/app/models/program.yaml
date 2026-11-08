@@ -1,0 +1,13 @@
+# program: one cell of the program matrix (goal x diet base): daily targets
+# and an estimated monthly cost in USD. `tags` are the base prefs it honors.
+program:
+  name: string
+  namePt: string
+  tagline: string
+  taglinePt: string
+  goal: goal
+  tags: list(string)
+  kcal: number
+  protein: number
+  carbs: number
+  monthlyCost: number

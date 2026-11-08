@@ -1,0 +1,3 @@
+# stage: which screen Forkcast shows: the three onboarding steps, the fake
+# processing, the plan summary, the recipe swipe and the shopping list.
+stage: [budget, prefs, goal, building, plan, swipe, shopping]

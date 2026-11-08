@@ -13,7 +13,7 @@ description: Change the Metacode app (models, state, view, actions, values, labe
 tool/check.sh
 ```
 
-It validates every app, regenerates, type-checks and runs every app's tests (the `main()` in each action and value file), then the layout check: every page and route of every app, from the initial state, at phone, tablet and desktop sizes; an overflow fails it with the app, route and size. Repeat until it prints `OK`. Do not launch the app, and do not touch `lib/`, `tool/` or `packages/`. Build new UI as components out of the catalog's widgets (see Components first, below); reach for the `metacode-add-widget` skill only when no composition can do it. If it needs engine work, use `metacode-engine`.
+It validates every app, regenerates, type-checks and runs every app's tests (the `main()` in each action and value file), then the layout check: every page and route of every app, from the initial state, plus each app's selected states in `tests/`, at phone, tablet and desktop sizes; an overflow fails it with the app, route or test state, and size. Repeat until it prints `OK`. Do not launch the app, and do not touch `lib/`, `tool/` or `packages/`. Build new UI as components out of the catalog's widgets (see Components first, below); reach for the `metacode-add-widget` skill only when no composition can do it. If it needs engine work, use `metacode-engine`.
 
 ## Find what to change: read the index first
 
@@ -32,15 +32,17 @@ An app is a folder; `examples/my_own_app/` is the root app. **Modules** live in 
 | Path (inside an app) | Holds |
 |---|---|
 | `app.yaml` | `name`, `description`, `state:` initial values. |
-| `app/actions/*.dart` | `Future<void> name(State state, [void Function(StateDelta) emit], [Core core], [Labels labels], [int index], [String/bool value]) async`. Change state only with `emit(StateDelta(field: ...))`. One public action per file; private helpers must have unique names across files. |
+| `app/actions/*.dart` | `Future<void> name(State state, [void Function(StateDelta) emit], [Core core], [Labels labels], [int index], [String/bool value]) async`. Change state only with `emit(StateDelta(field: ...))`. One public action per file. |
 | `app/models/*.yaml` | Types, one parent per file. `string`, `boolean`, `number`, `datetime`, `list(x)`, `x?`, enums as a list. The reserved `state` model lives in `app/models/state.yaml`. |
 | `app/views/navigation.yaml` | `initial: name` and `routes: {name: PageId}` (page), `{bottomSheet: PageId}`, `{dialog: PageId}`. Opened with `core.navigator.push(Routes.name)`. Optional; without it the app is `MainPage`. |
 | `app/views/pages/*.yaml` | What routes open: `MainPage:`, sheets, dialogs. |
 | `app/views/components/*.yaml` | One widget per file (`Hero:`, `TaskList:`, ...). |
 | `app/views/style/*.yaml` | Design tokens, one group per file: `theme`, `fonts`, `icons`, `colors`, `radius`, `spacing`, `sizes`, `typography`. The root spells out the full template; restyle here, not in pages/components. Modules omit it and inherit the theme. |
 | `app/views/style/images/` | Image assets for the app. |
-| `app/views/values/*.dart` | `T name(State state, [Labels labels], [int index])` computes a value for the UI. One public value per file; private helpers must have unique names across files. |
+| `app/views/values/*.dart` | `T name(State state, [Labels labels], [int index])` computes a value for the UI. One public value per file. |
 | `app/views/labels/<language>.yaml` | All the app's text: `en:` then `key: text`, one file per language (`en.yaml`, `pt_br.yaml`) with the same keys; add a key to every language. Pure strings, no placeholders: text that depends on state is a value joining labels (`'$n ${labels.peopleOnTheList}'`). The device's language shows by default; `core.locale.set('pt_br')` picks one for the whole app, `labels.locale` reads it (the root's LanguagePicker). |
+| `app/actions/shared/*.dart`, `app/views/values/shared/*.dart` | Helpers two or more files need (formatting, a filter): one public function per file, named after it (`group_digits.dart` holds `groupDigits`), any signature, with its header comment. Import it relative to your file (`import 'shared/group_digits.dart';`; from actions to a values helper `import '../views/values/shared/x.dart';`). Never copy a helper between files; INDEX.md lists each shared one and who calls it. |
+| `tests/*.yaml` | Selected states for the layout check, one per screen the initial state never shows: `planScreen: {state: {stage: plan, program: 8}, route: details}` (`state:` holds only the fields that differ from app.yaml; `route:` optional). Add one when you build a screen behind a stage, a tab or data; a handful per app, not every combination. |
 | Tests | In the same file as the action or value, below it: `void main() { test('...', () async { ... }); }` with `import 'package:flutter_test/flutter_test.dart';` and the sample (`import '../models/sample.dart';` from `app/actions/`, `import '../../models/sample.dart';` from `app/views/values/`). The tool ignores `main()` and leaves it out of the compiled program; keep test helpers inside it. |
 | `app/models/sample.dart` | Sample states: `final app = TestApp();` (runs actions and values through the compiled program) and `State sample(...)`. |
 | `modules/<name>/` | Modules. |
@@ -52,7 +54,7 @@ Import the generated files relative to your file (`../../.generated/` from `app/
 
 ### New module
 
-1. `modules/<name>/` with `app.yaml` (include `state:`), `app/models/state.yaml` and other models, `app/actions/*.dart`, `app/views/pages/main_page.yaml`, `app/views/components/*.yaml`, `app/views/values/*.dart`, `app/views/labels/en.yaml`, `app/models/sample.dart` (`final app = TestApp();` from `../../.generated/test_app.dart`), and tests in a `main()` in each action and value file. Copy `modules/plants/` as a template.
+1. `modules/<name>/` with `app.yaml` (include `state:`), `app/models/state.yaml` and other models, `app/actions/*.dart`, `app/views/pages/main_page.yaml`, `app/views/components/*.yaml`, `app/views/values/*.dart`, `app/views/labels/en.yaml`, `app/models/sample.dart` (`final app = TestApp();` from `../../.generated/test_app.dart`), tests in a `main()` in each action and value file, and `tests/*.yaml` for screens the initial state doesn't show. Copy `modules/plants/` as a template.
 2. Show it from a parent component: `module: <name>`. Its routes open over the whole app; to keep them inside a frame (a phone mockup showing it as a separate app), use `module: {name: <name>, contained: true}` in a bounded box (`expanded`, not `scroll`), and let its main page scroll itself.
 3. `tool/check.sh` (no pubspec change needed).
 
@@ -97,11 +99,15 @@ en:
 - `index` reaches values and actions inside `listView`/`gridView` items. Inputs pass `value`.
 - Look: widgets are already styled. Use token color names (`ink2`, `success`, `danger`, `accent`) instead of hex, `bodySmall` for metadata, and type size (not boldness or color) for hierarchy. Don't nest cards; list rows separated by `divider` read better than a card per row. See Style in REFERENCE.md.
 
-## dart_eval rules (the tool reports violations)
+## dart_eval limits (the tool reports violations)
 
+User code runs in an interpreter. The full list, with what to write instead, is **dart_eval limitations** in REFERENCE.md; read it before writing non-trivial Dart. The ones that bite most:
+
+- No `continue`; no nested `?:` (it returns null): use `if`s.
+- Read properties of a list from a variable: `final xs = f(); xs.length`, not `f().length` or `<int>[].isEmpty`.
+- No switch expressions, extensions, typedefs, `Enum.values` / `.name`.
 - Type closure params: `where((Task t) => t.done)`.
-- Don't interpolate ints from `DateTime` getters. Use `toIso8601String()`.
-- `dart:` imports only. Private helpers need unique names across files.
+- `dart:` imports and the app's own files only. Every name, private helpers included, is unique across the app's files: share a helper through `shared/`, don't copy it.
 
 ## Components first
 

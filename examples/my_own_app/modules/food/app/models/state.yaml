@@ -1,4 +1,19 @@
-# state: the food tracker's state: daily calorie goal and the list of foods.
+# state: Forkcast's state: the onboarding answers (budget, prefs, goal), the
+# program matrix and the picked program, the recipe deck being swiped, and
+# the shopping list built from the accepted recipes.
 state:
-  calorieGoal: number
-  foods: list(food)
+  stage: stage
+  budget: number
+  prefs: list(pref)
+  goal: goal
+  goalOptions: list(goalOption)
+  programs: list(program)
+  program: number
+  matches: list(number)
+  buildStep: number
+  days: number
+  recipes: list(recipe)
+  deck: list(number)
+  deckPos: number
+  picked: list(number)
+  shopping: list(item)

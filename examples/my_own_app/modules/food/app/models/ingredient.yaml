@@ -1,0 +1,7 @@
+# ingredient: one ingredient of a recipe: quantity, price in USD and kcal.
+ingredient:
+  name: string
+  namePt: string
+  qty: string
+  price: number
+  kcal: number

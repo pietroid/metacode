@@ -156,6 +156,45 @@ void main() {
       await again.initialize();
       expect(again.state['taps'], 5);
     });
+
+    test('reads back nested lists and maps, empty ones included', () async {
+      final files = await _projectInMemory();
+      final config = (await LiveProject(files, path: projectDir).compile())!;
+      final store = FilesStateStore(files);
+      final bloc = StateBloc(config: config, store: store);
+      await bloc.initialize();
+      // A list of models whose fields are lists and models (a recipe with
+      // tags and ingredients), and empty lists and maps at every level.
+      final nested = {
+        'items': [
+          {
+            'name': 'Salmon, lemon',
+            'tags': ['a', 'b'],
+            'none': <Object>[],
+            'sub': {
+              'x': [1, 2],
+              'empty': <String, Object>{},
+            },
+            'parts': [
+              {'qty': '10', 'ok': true},
+            ],
+          },
+          <String, Object>{},
+        ],
+        'grid': [
+          [1, 2],
+          <Object>[],
+        ],
+        'empty': <Object>[],
+        'emptyMap': <String, Object>{},
+      };
+      await bloc.setState({...bloc.state, ...nested});
+      final again = StateBloc(config: config, store: store);
+      await again.initialize();
+      for (final key in nested.keys) {
+        expect(again.state[key], nested[key], reason: key);
+      }
+    });
   });
 }
 

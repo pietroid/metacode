@@ -11,6 +11,7 @@ examples/my_own_app/      the root app (an app is a folder; apps nest)
   app/
     actions/*.dart          async functions that emit StateDeltas (and use Core),
                             each with its tests in a main() below it
+    actions/shared/*.dart   helpers any action or value calls, one function per file
     models/*.yaml           data shapes, one parent per file (models and enums)
     models/sample.dart      sample states for tests
     views/
@@ -20,7 +21,9 @@ examples/my_own_app/      the root app (an app is a folder; apps nest)
       style/*.yaml          design tokens, one group per file
       style/images/         image assets
       values/*.dart         State -> value for the UI, tests in main() below it
+      values/shared/*.dart  helpers any action or value calls, one function per file
       labels/en.yaml        the app's text, pure strings, one file per language (pt_br.yaml)
+  tests/*.yaml              selected states the layout check renders at every size
   modules/<name>/           modules, same layout (food, music, work, plants)
   .generated/             produced by the tool, do not edit
   .state/                 runtime state, do not commit
@@ -141,15 +144,16 @@ String tasksLeftText(State state, Labels labels) =>
 
 ### Interpreter limits (dart_eval)
 
-Code runs in the dart_eval interpreter, which supports most of Dart, but:
+Code runs in the dart_eval interpreter, which supports most of Dart, but not
+`continue`, nested `?:`, switch expressions, extensions, typedefs or
+`Enum.values`, and reading a property of a list that isn't in a variable
+(`f().length`) fails at runtime. Closure parameters need types, and only
+`dart:` imports and the project's own files are available. The full list, with
+what to write instead, is "dart_eval limitations" in
+`.claude/skills/metacode-app/REFERENCE.md`.
 
-- Write closure parameter types: `where((Task t) => t.done)`, not `(t) => ...`.
-- Avoid interpolating ints that come from `DateTime` getters (`'${d.month}'`);
-  use `toIso8601String()` or `.toString()`.
-- Only `dart:` imports and the project's own files are available.
-
-The tool compiles the code, so these problems show up at generation time, not
-at runtime.
+The tool compiles the code, so these show up in `tool/check.sh` (at generation,
+or in the failing test), not in the running app.
 
 ## Navigation
 

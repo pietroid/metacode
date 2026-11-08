@@ -2,7 +2,7 @@
 // (or a person) reads first, so it opens only the files a change needs.
 //
 // It lists the state, models, routes, every page and component, action and
-// value, each with its header comment (the first comment of its file), what
+// value, shared helper and test state, each with its header comment (the first comment of its file), what
 // it uses and what uses it. Everything comes from data the tool already
 // validated: WidgetRefs (lib/compiler/ui.dart) and UserFunction touches
 // (lib/compiler/functions.dart). Names map to files by convention, so the index
@@ -40,8 +40,12 @@ String generateIndex(AppProject app) {
     use(route.widget, 'route ${route.name}');
   }
   final functions = [...app.actions, ...app.bindings];
-  for (final fn in functions) {
+  final sharedNames = {for (final fn in app.shared) fn.name};
+  for (final fn in [...functions, ...app.shared]) {
     allUsedLabels.addAll(fn.labels);
+    for (final c in fn.calls) {
+      if (sharedNames.contains(c) && c != fn.name) use(c, fn.name);
+    }
   }
 
   line('# ${app.label}: index');
@@ -142,16 +146,20 @@ String generateIndex(AppProject app) {
   widgets('Pages', pages);
   widgets('Components', components);
 
-  void fns(String title, List<UserFunction> list_, bool isAction) {
+  void fns(String title, List<UserFunction> list_, bool isAction,
+      {bool shared = false}) {
     if (list_.isEmpty) return;
     line();
     line('## $title');
     line();
     for (final fn in [...list_]..sort((a, b) => a.name.compareTo(b.name))) {
-      final params = fn.params.map((p) => p.name).join(', ');
+      final params = shared
+          ? fn.params.map((p) => '${p.type} ${p.name}').join(', ')
+          : fn.params.map((p) => p.name).join(', ');
       final sig = isAction
           ? '${fn.name}($params)'
           : '${fn.name}($params) → ${fn.returnType}';
+      final calls = fn.calls.where(sharedNames.contains).where((c) => c != fn.name);
       line('- **$sig**${fn.doc.isEmpty ? '' : ': ${fn.doc}'}');
       final parts = [
         if (fn.reads.isNotEmpty) 'reads: ${list(fn.reads)}',
@@ -159,6 +167,8 @@ String generateIndex(AppProject app) {
         if (fn.routes.isNotEmpty) 'routes: ${list(fn.routes)}',
         if (fn.usesApi) 'api',
         if (fn.labels.isNotEmpty) 'labels: ${list(fn.labels)}',
+        if (calls.isNotEmpty) 'shared: ${list(calls)}',
+        if (shared) 'in ${fn.file}',
         if (usedBy[fn.name] != null) 'used by: ${list(usedBy[fn.name]!)}',
       ];
       if (parts.isNotEmpty) line('  ${parts.join(' · ')}');
@@ -167,6 +177,22 @@ String generateIndex(AppProject app) {
 
   fns('Actions', app.actions, true);
   fns('Values', app.bindings, false);
+  fns('Shared', app.shared, false, shared: true);
+
+  if (app.testStates.isNotEmpty) {
+    line();
+    line('## Test states');
+    line();
+    line('tests/: selected states the layout check renders at every size.');
+    line();
+    for (final MapEntry(key: name, value: t) in app.testStates.entries) {
+      final doc = app.docs['tests/${snakeCase(name)}.yaml'] ?? '';
+      final fields = (t['state'] as Map).keys.join(', ');
+      final route = t['route'] == null ? '' : ' · route ${t['route']}';
+      line('- **$name**${doc.isEmpty ? '' : ': $doc'}  ');
+      line('  sets: $fields$route');
+    }
+  }
 
   if (app.modules.isNotEmpty) {
     line();
@@ -186,7 +212,7 @@ String generateIndex(AppProject app) {
   final unused = [
     for (final id in components)
       if (usedBy[id] == null) id,
-    for (final fn in functions)
+    for (final fn in [...functions, ...app.shared])
       if (usedBy[fn.name] == null) fn.name,
     for (final key in app.defaultLabels.keys)
       if (!allUsedLabels.contains(key)) key,

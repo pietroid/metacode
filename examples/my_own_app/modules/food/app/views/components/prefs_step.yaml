@@ -1,0 +1,19 @@
+# PrefsStep: onboarding step 2: food prefs and restrictions as a two-column
+# grid of illustrated PrefCards, any number selected.
+PrefsStep:
+  column:
+    crossAxisAlignment: stretch
+    spacing: 16
+    children:
+    - StepHeader: {progress: 0.66, step: step2, title: prefsTitle, hint: prefsHint}
+    - gridView:
+        data: prefList
+        itemBuilder: PrefCard
+        columns: 2
+        spacing: 10
+        aspectRatio: 1.15
+    - NavButtons:
+        next:
+          filledButton:
+            text: next
+            onPressed: nextStep

@@ -1,17 +1,65 @@
-# pt_br: all of the app's text in Brazilian Portuguese, the same keys as
-# en.yaml (a missing key shows the English text).
+# pt_br: all of Forkcast's text in Brazilian Portuguese, the same keys as
+# en.yaml (a missing key shows the English text). Money shows in R$ at a
+# fixed synthetic rate.
 pt_br:
-  today: Hoje
-  clear: Limpar
-  removeOne: Remover um
-  addOne: Adicionar um
-  tipStart: Comece pelo café da manhã. Aveia ou ovos te deixam satisfeito até o almoço.
-  tipOverBefore: Você passou
-  tipOverAfter: 'kcal hoje. Sem estresse: uma caminhada depois do jantar e um almoço mais leve amanhã equilibram.'
-  tipAlmost: Quase lá. Um iogurte grego ou uma maçã cabem no que falta.
-  tipLowProtein: kcal restantes, e está faltando proteína. Uma salada com frango grelhado resolve os dois.
-  tipBalanced: Bom equilíbrio até agora.
-  tipKcalLeftDay: kcal restantes para o resto do dia.
+  brand: Forkcast
+  currencySymbol: R$
+  currencyRate: '5'
+  decimalSep: ','
+  thousandsSep: .
+  step1: Passo 1 de 3
+  step2: Passo 2 de 3
+  step3: Passo 3 de 3
+  budgetTitle: Quanto você gasta com comida por mês?
+  budgetHint: Todo plano e lista de compras cabem nele.
+  budgetMin: R$ 500
+  budgetMax: R$ 4.000
+  aDay: por dia
+  perMonth: /mês
+  next: Continuar
+  back: Voltar
+  prefsTitle: Algo fora do cardápio?
+  prefsHint: Escolha o que se aplica, ou nada.
+  goalTitle: Qual é o objetivo?
+  goalHint: Dá para trocar de programa depois.
+  buildMyProgram: Montar meu programa
+  pickAGoal: Escolha um objetivo para continuar
+  building: Preparando seu programa
+  buildRead: Respostas lidas
+  buildMatches: 'Programas que combinam:'
+  buildBudget: Ajustado a
+  yourProgram: Seu programa
+  kcalDay: kcal / dia
+  protein: proteína
+  carbs: carbos
+  noRestrictions: Come de tudo
+  about: Cerca de
+  fitsBudget: cabe no orçamento
+  overBudget: acima do orçamento, vamos priorizar trocas mais baratas
+  alsoFits: Também combinam com você
+  planNext: Planejar os próximos
+  days: dias
+  fewerDaysTip: Menos dias
+  moreDaysTip: Mais dias
+  suggestCta: Sugerir receitas
+  shoppingList: Lista de compras
+  inCart: no carrinho
+  of: de
+  restart: Recomeçar
+  budget: Orçamento
+  calories: Calorias compradas
   kcal: kcal
-  gProtein: g de proteína
-  gProteinToday: g de proteína hoje
+  pickRecipes: Escolha suas receitas
+  picked: escolhidas
+  ofYourDay: das suas kcal do dia
+  min: min
+  skip: Pular
+  add: Quero
+  close: Fechar
+  yourPicks: Suas escolhas
+  makeListCta: Montar minha lista de compras
+  nothingPicked: Nada escolhido desta vez.
+  shuffle: Sugerir de novo
+  total: Total
+  backToPlan: Voltar ao plano
+  emptyList: Nenhum item ainda

@@ -1,0 +1,10 @@
+# yourPicks: the end of the swipe: the accepted recipes and Make my shopping list.
+yourPicks:
+  state:
+    stage: swipe
+    goal: weightLoss
+    program: 8
+    days: 2
+    deck: [3, 12]
+    deckPos: 2
+    picked: [3, 12]

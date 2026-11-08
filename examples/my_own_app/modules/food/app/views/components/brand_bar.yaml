@@ -1,0 +1,16 @@
+# BrandBar: the Forkcast logo and name in a row, with `.trailing` at the end.
+BrandBar:
+  row:
+    spacing: 8
+    children:
+    - image:
+        src: examples/my_own_app/app/views/style/images/forkcast_logo.svg
+        width: 26
+        height: 26
+    - expanded:
+        text:
+          value: brand
+          style:
+            variant: labelLarge
+            fontWeight: w700
+    - .trailing

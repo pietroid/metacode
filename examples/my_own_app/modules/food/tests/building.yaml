@@ -1,0 +1,6 @@
+# building: the fake processing with all three lines shown.
+building:
+  state:
+    stage: building
+    buildStep: 3
+    matches: [8, 9, 10, 11]

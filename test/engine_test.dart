@@ -128,6 +128,59 @@ void main() {
     });
   });
 
+  group('shared helpers, test states and state hints', () {
+    BuildResult buildWith(Map<String, String> changes) => build(
+        ProjectFiles.fromSnapshot({...fixtureFiles(), ...changes}),
+        path: fixtureDir);
+
+    test('a shared helper is bundled, not a value, and indexed', () {
+      final result = buildWith({});
+      expect(result.issues.errors, isEmpty);
+      final manifest = (jsonDecode(result.bundle!) as Map)['manifest'] as Map;
+      expect(manifest['bindings'], isNot(contains('withLabel')));
+      final index = result.outputs['.generated/INDEX.md'] as String;
+      expect(index, contains('## Shared'));
+      expect(index, contains('**withLabel(String label, num n) → String**'));
+      expect(index, contains('used by: countText'));
+    });
+    test('a shared file holds one public function, named after it', () {
+      expect(
+          buildWith({
+            'app/views/values/shared/with_label.dart':
+                'String withLabel(String l) => l;\nString other() => "";\n',
+          }).issues.errors,
+          [contains('exactly one public function (found 2)')]);
+      expect(
+          buildWith({
+            'app/actions/shared/wrong_name.dart': 'String rightName() => "";\n',
+          }).issues.errors,
+          [contains('named after its function: right_name.dart')]);
+    });
+    test('test states reach the layout check, checked against the model', () {
+      final result = buildWith({});
+      final states = jsonDecode(
+          result.outputs['.generated/layout_states.json'] as String) as Map;
+      expect(states['root']['bigCount'],
+          {'state': {'count': 1234567890}, 'route': 'details'});
+      expect(
+          buildWith({
+            'tests/big_count.yaml':
+                'bigCount:\n  state: {count: lots}\n  route: nowhere\n',
+          }).issues.errors,
+          [
+            allOf(contains('tests/big_count.yaml'), contains('expected a number')),
+            contains('"nowhere" is not a route'),
+          ]);
+    });
+    test('an unquoted comma in a flow map gets a hint', () {
+      expect(
+          buildWith({'app.yaml': 'name: fixture\nstate: {count: 1, a b}\n'})
+              .issues
+              .errors,
+          [contains('an unquoted comma')]);
+    });
+  });
+
   testWidgets('a module has its own state', (tester) async {
     final bloc = await pump(tester);
     // Both embeds run the same module, so they show the same state.

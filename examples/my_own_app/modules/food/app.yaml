@@ -1,32 +1,307 @@
-# food: the food tracker example, embedded in the landing page carousel
-# (`module: food`). `state:` holds the initial state; types in app/models/state.yaml.
+# food: Forkcast, a pocket meal planner embedded in the landing page carousel
+# (`module: food`). Onboarding asks for a monthly budget, food prefs and a
+# goal, matches a program from the matrix (goal x diet), suggests recipes to
+# accept or refuse, then builds a shopping list that fills the budget and
+# kcal bars. All data below is synthetic; prices are in USD (shown as R$ at
+# a fixed rate in Portuguese).
 name: food
-description: Help me eat better without counting everything. Tap what you ate; it
-  adds up the calories and suggests what to eat next.
+description: Forkcast plans what you eat and what you spend. Tell it your budget,
+  diet and goal; it builds a program, suggests recipes and a shopping list.
 state:
-  calorieGoal: 1800
-  foods:
-  - name: Oatmeal with banana
-    kcal: 350
-    protein: 12
-    count: 4
-  - name: Grilled chicken salad
-    kcal: 420
-    protein: 38
-    count: 0
-  - name: Rice and beans
-    kcal: 480
-    protein: 16
-    count: 0
-  - name: Two eggs
-    kcal: 155
-    protein: 13
-    count: 0
-  - name: Greek yogurt
-    kcal: 150
-    protein: 15
-    count: 0
-  - name: Apple
-    kcal: 95
-    protein: 0
-    count: 1
+  stage: budget
+  budget: 300
+  goal: none
+  program: -1
+  matches: []
+  buildStep: 0
+  days: 5
+  deck: []
+  deckPos: 0
+  picked: []
+  shopping: []
+  prefs:
+  - {key: vegan, name: Vegan, namePt: Vegano, image: vegan, base: true, selected: false}
+  - {key: vegetarian, name: Vegetarian, namePt: Vegetariano, image: vegetarian, base: true, selected: false}
+  - {key: pescatarian, name: Pescatarian, namePt: Pescetariano, image: pescatarian, base: true, selected: false}
+  - {key: glutenFree, name: Gluten-free, namePt: Sem glúten, image: gluten_free, base: false, selected: false}
+  - {key: lactoseFree, name: Lactose-free, namePt: Sem lactose, image: lactose_free, base: false, selected: false}
+  - {key: nutFree, name: Nut-free, namePt: Sem castanhas, image: nut_free, base: false, selected: false}
+  goalOptions:
+  - {goal: lowCarb, name: "Low carb", namePt: "Low carb", blurb: "Fewer carbs, steady energy all day", blurbPt: "Menos carboidrato, energia estável o dia todo", image: low_carb}
+  - {goal: hypertrophy, name: "Hypertrophy", namePt: "Hipertrofia", blurb: "More protein and fuel to build muscle", blurbPt: "Mais proteína e energia para ganhar massa", image: hypertrophy}
+  - {goal: weightLoss, name: "Weight loss", namePt: "Emagrecimento", blurb: "A gentle deficit you can keep", blurbPt: "Um déficit leve e sustentável", image: weight_loss}
+  programs:
+  - {name: "Steady Plate", namePt: "Prato Firme", tagline: "Protein-forward plates with carbs kept low.", taglinePt: "Pratos ricos em proteína, com pouco carboidrato.", goal: lowCarb, tags: [], kcal: 1900, protein: 130, carbs: 90, monthlyCost: 340}
+  - {name: "Coastal Low-Carb", namePt: "Low-carb Litorâneo", tagline: "Fish and greens, light on grains.", taglinePt: "Peixes e verduras, poucos grãos.", goal: lowCarb, tags: [pescatarian], kcal: 1850, protein: 120, carbs: 85, monthlyCost: 380}
+  - {name: "Garden Low-Carb", namePt: "Low-carb da Horta", tagline: "Eggs, cheese and vegetables do the work.", taglinePt: "Ovos, queijos e legumes fazem o trabalho.", goal: lowCarb, tags: [vegetarian, pescatarian], kcal: 1800, protein: 100, carbs: 95, monthlyCost: 280}
+  - {name: "Green Low-Carb", namePt: "Low-carb Verde", tagline: "Tofu, seeds and veggies, nothing animal.", taglinePt: "Tofu, sementes e legumes, nada de origem animal.", goal: lowCarb, tags: [vegan, vegetarian, pescatarian], kcal: 1750, protein: 95, carbs: 100, monthlyCost: 260}
+  - {name: "Build Mode", namePt: "Modo Construção", tagline: "High protein, generous carbs around training.", taglinePt: "Muita proteína e carboidrato perto do treino.", goal: hypertrophy, tags: [], kcal: 2800, protein: 180, carbs: 320, monthlyCost: 420}
+  - {name: "Ocean Builder", namePt: "Construtor do Mar", tagline: "Fish and rice to fuel every session.", taglinePt: "Peixe e arroz para cada treino.", goal: hypertrophy, tags: [pescatarian], kcal: 2700, protein: 170, carbs: 310, monthlyCost: 460}
+  - {name: "Veggie Power", namePt: "Força Vegetariana", tagline: "Eggs, dairy and legumes for steady gains.", taglinePt: "Ovos, laticínios e leguminosas para ganhos constantes.", goal: hypertrophy, tags: [vegetarian, pescatarian], kcal: 2650, protein: 150, carbs: 330, monthlyCost: 320}
+  - {name: "Plant Power", namePt: "Força das Plantas", tagline: "Tofu, tempeh and beans stacked on grains.", taglinePt: "Tofu, tempeh e feijões com bastante grão.", goal: hypertrophy, tags: [vegan, vegetarian, pescatarian], kcal: 2600, protein: 140, carbs: 340, monthlyCost: 300}
+  - {name: "Lighter Days", namePt: "Dias Mais Leves", tagline: "A gentle deficit with lean, filling plates.", taglinePt: "Um déficit leve com pratos magros que saciam.", goal: weightLoss, tags: [], kcal: 1600, protein: 120, carbs: 150, monthlyCost: 280}
+  - {name: "Sea Breeze Cut", namePt: "Brisa do Mar", tagline: "Lean fish and big salads, nothing fancy.", taglinePt: "Peixe magro e saladas generosas, sem frescura.", goal: weightLoss, tags: [pescatarian], kcal: 1550, protein: 115, carbs: 140, monthlyCost: 320}
+  - {name: "Garden Cut", namePt: "Corte da Horta", tagline: "Veg-heavy meals that keep you full.", taglinePt: "Refeições cheias de legumes que saciam.", goal: weightLoss, tags: [vegetarian, pescatarian], kcal: 1500, protein: 95, carbs: 160, monthlyCost: 240}
+  - {name: "Green Cut", namePt: "Corte Verde", tagline: "Plant meals, high fiber, low effort.", taglinePt: "Comida de plantas, muita fibra, pouco esforço.", goal: weightLoss, tags: [vegan, vegetarian, pescatarian], kcal: 1450, protein: 85, carbs: 170, monthlyCost: 220}
+  recipes:
+  - name: Tofu & Broccoli Stir-fry
+    namePt: Tofu com brócolis na wok
+    image: skillet
+    tags: [vegan, vegetarian, pescatarian, glutenFree, lactoseFree, nutFree]
+    goals: [lowCarb, weightLoss]
+    minutes: 20
+    ingredients:
+    - {name: Firm tofu, namePt: Tofu firme, qty: 400 g, price: 3.2, kcal: 360}
+    - {name: Broccoli, namePt: Brócolis, qty: '1', price: 1.8, kcal: 60}
+    - {name: Tamari, namePt: Tamari, qty: 150 ml, price: 2.5, kcal: 20}
+    - {name: Garlic & ginger, namePt: Alho e gengibre, qty: 50 g, price: 1, kcal: 15}
+    - {name: Sesame oil, namePt: Óleo de gergelim, qty: 100 ml, price: 2, kcal: 120}
+  - name: Chickpea Power Bowl
+    namePt: Bowl de grão-de-bico
+    image: bowl
+    tags: [vegan, vegetarian, pescatarian, glutenFree, lactoseFree, nutFree]
+    goals: [hypertrophy, weightLoss]
+    minutes: 25
+    ingredients:
+    - {name: Chickpeas, namePt: Grão-de-bico, qty: 500 g, price: 1.8, kcal: 420}
+    - {name: Brown rice, namePt: Arroz integral, qty: 500 g, price: 1.5, kcal: 340}
+    - {name: Spinach, namePt: Espinafre, qty: 200 g, price: 2, kcal: 25}
+    - {name: Tahini, namePt: Tahine, qty: 150 g, price: 3, kcal: 180}
+    - {name: Lemon, namePt: Limão-siciliano, qty: '2', price: 0.5, kcal: 10}
+  - name: Red Lentil Soup
+    namePt: Sopa de lentilha vermelha
+    image: soup
+    tags: [vegan, vegetarian, pescatarian, glutenFree, lactoseFree, nutFree]
+    goals: [weightLoss, hypertrophy, lowCarb]
+    minutes: 30
+    ingredients:
+    - {name: Red lentils, namePt: Lentilha vermelha, qty: 500 g, price: 2, kcal: 340}
+    - {name: Carrots, namePt: Cenouras, qty: '3', price: 1, kcal: 50}
+    - {name: Celery, namePt: Salsão, qty: '1', price: 1.2, kcal: 15}
+    - {name: Crushed tomatoes, namePt: Tomate pelado, qty: 400 g, price: 1, kcal: 60}
+    - {name: Cumin, namePt: Cominho, qty: 30 g, price: 1.5, kcal: 5}
+  - name: Zucchini Noodles with Walnut Pesto
+    namePt: Espaguete de abobrinha ao pesto de nozes
+    image: salad
+    tags: [vegan, vegetarian, pescatarian, glutenFree, lactoseFree]
+    goals: [lowCarb, weightLoss]
+    minutes: 15
+    ingredients:
+    - {name: Zucchini, namePt: Abobrinha, qty: '3', price: 2.4, kcal: 60}
+    - {name: Basil, namePt: Manjericão, qty: '1', price: 2, kcal: 5}
+    - {name: Walnuts, namePt: Nozes, qty: 50 g, price: 3.5, kcal: 330}
+    - {name: Cherry tomatoes, namePt: Tomate-cereja, qty: 250 g, price: 2.5, kcal: 50}
+    - {name: Olive oil, namePt: Azeite, qty: 100 ml, price: 1, kcal: 120}
+  - name: Peanut Tempeh Wrap
+    namePt: Wrap de tempeh com amendoim
+    image: wrap
+    tags: [vegan, vegetarian, pescatarian, lactoseFree]
+    goals: [hypertrophy]
+    minutes: 15
+    ingredients:
+    - {name: Tempeh, namePt: Tempeh, qty: 250 g, price: 3.5, kcal: 380}
+    - {name: Whole-wheat tortillas, namePt: Tortilhas integrais, qty: '4', price: 2, kcal: 280}
+    - {name: Peanut butter, namePt: Pasta de amendoim, qty: 200 g, price: 2.5, kcal: 190}
+    - {name: Red cabbage, namePt: Repolho roxo, qty: '1', price: 1.2, kcal: 30}
+    - {name: Carrots, namePt: Cenouras, qty: '3', price: 1, kcal: 50}
+  - name: Cauliflower & Black Bean Tacos
+    namePt: Tacos de couve-flor e feijão-preto
+    image: wrap
+    tags: [vegan, vegetarian, pescatarian, glutenFree, lactoseFree, nutFree]
+    goals: [hypertrophy]
+    minutes: 30
+    ingredients:
+    - {name: Cauliflower, namePt: Couve-flor, qty: '1', price: 2.5, kcal: 75}
+    - {name: Black beans, namePt: Feijão-preto, qty: 400 g, price: 1, kcal: 340}
+    - {name: Corn tortillas, namePt: Tortilhas de milho, qty: '8', price: 1.8, kcal: 220}
+    - {name: Avocado, namePt: Abacate, qty: '1', price: 1.5, kcal: 240}
+    - {name: Lime, namePt: Limão, qty: '2', price: 0.4, kcal: 10}
+  - name: Mushroom Cauli-Rice
+    namePt: Arroz de couve-flor com cogumelos
+    image: bowl
+    tags: [vegan, vegetarian, pescatarian, glutenFree, lactoseFree, nutFree]
+    goals: [lowCarb, weightLoss]
+    minutes: 20
+    ingredients:
+    - {name: Cauliflower rice, namePt: Arroz de couve-flor, qty: 400 g, price: 2.5, kcal: 60}
+    - {name: Mushrooms, namePt: Cogumelos, qty: 300 g, price: 2.8, kcal: 45}
+    - {name: Edamame, namePt: Edamame, qty: 200 g, price: 2.2, kcal: 240}
+    - {name: Scallions, namePt: Cebolinha, qty: '1', price: 0.8, kcal: 10}
+    - {name: Tamari, namePt: Tamari, qty: 150 ml, price: 2.5, kcal: 20}
+  - name: Tofu Scramble Plate
+    namePt: Mexido de tofu
+    image: skillet
+    tags: [vegan, vegetarian, pescatarian, glutenFree, lactoseFree, nutFree]
+    goals: [lowCarb, hypertrophy]
+    minutes: 15
+    ingredients:
+    - {name: Firm tofu, namePt: Tofu firme, qty: 400 g, price: 3.2, kcal: 360}
+    - {name: Bell pepper, namePt: Pimentão, qty: '1', price: 1.2, kcal: 30}
+    - {name: Spinach, namePt: Espinafre, qty: 200 g, price: 2, kcal: 25}
+    - {name: Avocado, namePt: Abacate, qty: '1', price: 1.5, kcal: 240}
+    - {name: Nutritional yeast, namePt: Levedura nutricional, qty: 100 g, price: 3, kcal: 60}
+  - name: Quinoa & Feta Salad
+    namePt: Salada de quinoa e feta
+    image: salad
+    tags: [vegetarian, pescatarian, glutenFree, nutFree]
+    goals: [hypertrophy, weightLoss]
+    minutes: 20
+    ingredients:
+    - {name: Quinoa, namePt: Quinoa, qty: 250 g, price: 3, kcal: 370}
+    - {name: Feta, namePt: Queijo feta, qty: 150 g, price: 3, kcal: 260}
+    - {name: Cucumber, namePt: Pepino, qty: '1', price: 0.8, kcal: 15}
+    - {name: Cherry tomatoes, namePt: Tomate-cereja, qty: 250 g, price: 2.5, kcal: 50}
+    - {name: Olives, namePt: Azeitonas, qty: 100 g, price: 2, kcal: 80}
+  - name: Spinach & Ricotta Frittata
+    namePt: Fritada de espinafre e ricota
+    image: plate
+    tags: [vegetarian, pescatarian, glutenFree, nutFree]
+    goals: [lowCarb, hypertrophy]
+    minutes: 25
+    ingredients:
+    - {name: Eggs, namePt: Ovos, qty: '6', price: 2.4, kcal: 430}
+    - {name: Ricotta, namePt: Ricota, qty: 250 g, price: 2.8, kcal: 170}
+    - {name: Spinach, namePt: Espinafre, qty: 200 g, price: 2, kcal: 25}
+    - {name: Onion, namePt: Cebola, qty: '1', price: 0.5, kcal: 40}
+    - {name: Parmesan, namePt: Parmesão, qty: 50 g, price: 2, kcal: 110}
+  - name: Shakshuka
+    namePt: Shakshuka
+    image: skillet
+    tags: [vegetarian, pescatarian, glutenFree, lactoseFree, nutFree]
+    goals: [lowCarb, weightLoss]
+    minutes: 25
+    ingredients:
+    - {name: Eggs, namePt: Ovos, qty: '6', price: 2.4, kcal: 290}
+    - {name: Crushed tomatoes, namePt: Tomate pelado, qty: 400 g, price: 1, kcal: 80}
+    - {name: Bell pepper, namePt: Pimentão, qty: '1', price: 1.2, kcal: 30}
+    - {name: Onion, namePt: Cebola, qty: '1', price: 0.5, kcal: 40}
+    - {name: Paprika, namePt: Páprica, qty: 30 g, price: 1.5, kcal: 5}
+  - name: Paneer Tikka with Rice
+    namePt: Paneer tikka com arroz
+    image: bowl
+    tags: [vegetarian, pescatarian, glutenFree, nutFree]
+    goals: [hypertrophy]
+    minutes: 35
+    ingredients:
+    - {name: Paneer, namePt: Paneer, qty: 250 g, price: 4, kcal: 600}
+    - {name: Basmati rice, namePt: Arroz basmati, qty: 500 g, price: 1.8, kcal: 350}
+    - {name: Plain yogurt, namePt: Iogurte natural, qty: 170 g, price: 1.5, kcal: 120}
+    - {name: Tikka spice, namePt: Tempero tikka, qty: 30 g, price: 2, kcal: 10}
+    - {name: Peas, namePt: Ervilhas, qty: 200 g, price: 1.2, kcal: 80}
+  - name: Salmon, Asparagus & Lemon
+    namePt: Salmão com aspargos e limão
+    image: plate
+    tags: [pescatarian, glutenFree, lactoseFree, nutFree]
+    goals: [lowCarb, weightLoss]
+    minutes: 20
+    ingredients:
+    - {name: Salmon fillets, namePt: Filés de salmão, qty: 300 g, price: 8, kcal: 470}
+    - {name: Asparagus, namePt: Aspargos, qty: 250 g, price: 3, kcal: 40}
+    - {name: Lemon, namePt: Limão-siciliano, qty: '2', price: 0.5, kcal: 10}
+    - {name: Olive oil, namePt: Azeite, qty: 100 ml, price: 1, kcal: 120}
+    - {name: Dill, namePt: Endro, qty: '1', price: 1.5, kcal: 0}
+  - name: Tuna Poke Bowl
+    namePt: Poke de atum
+    image: bowl
+    tags: [pescatarian, glutenFree, lactoseFree, nutFree]
+    goals: [hypertrophy]
+    minutes: 20
+    ingredients:
+    - {name: Tuna steak, namePt: Posta de atum, qty: 250 g, price: 7, kcal: 260}
+    - {name: Sushi rice, namePt: Arroz japonês, qty: 500 g, price: 2, kcal: 360}
+    - {name: Edamame, namePt: Edamame, qty: 200 g, price: 2.2, kcal: 240}
+    - {name: Cucumber, namePt: Pepino, qty: '1', price: 0.8, kcal: 15}
+    - {name: Avocado, namePt: Abacate, qty: '1', price: 1.5, kcal: 240}
+  - name: Garlic Shrimp Zoodles
+    namePt: Abobrinha com camarão ao alho
+    image: salad
+    tags: [pescatarian, glutenFree, lactoseFree, nutFree]
+    goals: [lowCarb, weightLoss]
+    minutes: 15
+    ingredients:
+    - {name: Shrimp, namePt: Camarão, qty: 300 g, price: 6.5, kcal: 240}
+    - {name: Zucchini, namePt: Abobrinha, qty: '3', price: 2.4, kcal: 60}
+    - {name: Garlic & ginger, namePt: Alho e gengibre, qty: 50 g, price: 1, kcal: 15}
+    - {name: Chili flakes, namePt: Pimenta calabresa, qty: 20 g, price: 1, kcal: 0}
+    - {name: Olive oil, namePt: Azeite, qty: 100 ml, price: 1, kcal: 120}
+  - name: Crispy Cod Tacos
+    namePt: Tacos de bacalhau fresco
+    image: wrap
+    tags: [pescatarian, glutenFree, lactoseFree, nutFree]
+    goals: [weightLoss, hypertrophy]
+    minutes: 25
+    ingredients:
+    - {name: Cod fillets, namePt: Filés de bacalhau fresco, qty: 300 g, price: 6, kcal: 300}
+    - {name: Corn tortillas, namePt: Tortilhas de milho, qty: '8', price: 1.8, kcal: 220}
+    - {name: Red cabbage, namePt: Repolho roxo, qty: '1', price: 1.2, kcal: 30}
+    - {name: Lime, namePt: Limão, qty: '2', price: 0.4, kcal: 10}
+    - {name: Fresh salsa, namePt: Molho de tomate fresco, qty: 200 g, price: 2, kcal: 30}
+  - name: Chicken, Sweet Potato & Kale
+    namePt: Frango, batata-doce e couve
+    image: plate
+    tags: [glutenFree, lactoseFree, nutFree]
+    goals: [hypertrophy]
+    minutes: 35
+    ingredients:
+    - {name: Chicken breast, namePt: Peito de frango, qty: 500 g, price: 4.5, kcal: 500}
+    - {name: Sweet potatoes, namePt: Batata-doce, qty: '3', price: 1.8, kcal: 340}
+    - {name: Kale, namePt: Couve, qty: '1', price: 2, kcal: 35}
+    - {name: Olive oil, namePt: Azeite, qty: 100 ml, price: 1, kcal: 120}
+  - name: Steak & Broccoli Plate
+    namePt: Bife com brócolis
+    image: plate
+    tags: [glutenFree, lactoseFree, nutFree]
+    goals: [lowCarb, hypertrophy]
+    minutes: 20
+    ingredients:
+    - {name: Sirloin steak, namePt: Contrafilé, qty: 300 g, price: 9, kcal: 540}
+    - {name: Broccoli, namePt: Brócolis, qty: '1', price: 1.8, kcal: 60}
+    - {name: Garlic & ginger, namePt: Alho e gengibre, qty: 50 g, price: 1, kcal: 15}
+    - {name: Olive oil, namePt: Azeite, qty: 100 ml, price: 1, kcal: 120}
+  - name: Turkey Lettuce Wraps
+    namePt: Wraps de alface com peru
+    image: wrap
+    tags: [glutenFree, lactoseFree, nutFree]
+    goals: [lowCarb, weightLoss]
+    minutes: 20
+    ingredients:
+    - {name: Ground turkey, namePt: Peru moído, qty: 500 g, price: 5, kcal: 480}
+    - {name: Butter lettuce, namePt: Alface-manteiga, qty: '1', price: 2, kcal: 15}
+    - {name: Water chestnuts, namePt: Castanha-d'água, qty: 200 g, price: 1.8, kcal: 60}
+    - {name: Tamari, namePt: Tamari, qty: 150 ml, price: 2.5, kcal: 20}
+  - name: Chicken Burrito Bowl
+    namePt: Burrito bowl de frango
+    image: bowl
+    tags: [glutenFree, lactoseFree, nutFree]
+    goals: [hypertrophy]
+    minutes: 30
+    ingredients:
+    - {name: Chicken thighs, namePt: Sobrecoxa de frango, qty: 500 g, price: 4, kcal: 620}
+    - {name: Brown rice, namePt: Arroz integral, qty: 500 g, price: 1.5, kcal: 340}
+    - {name: Black beans, namePt: Feijão-preto, qty: 400 g, price: 1, kcal: 340}
+    - {name: Sweet corn, namePt: Milho, qty: 200 g, price: 1, kcal: 130}
+    - {name: Fresh salsa, namePt: Molho de tomate fresco, qty: 200 g, price: 2, kcal: 30}
+  - name: Lemon Herb Chicken Salad
+    namePt: Salada de frango com ervas e limão
+    image: salad
+    tags: [glutenFree, nutFree]
+    goals: [weightLoss, lowCarb]
+    minutes: 20
+    ingredients:
+    - {name: Chicken breast, namePt: Peito de frango, qty: 500 g, price: 4.5, kcal: 500}
+    - {name: Mixed greens, namePt: Mix de folhas, qty: 200 g, price: 2.5, kcal: 25}
+    - {name: Plain yogurt, namePt: Iogurte natural, qty: 170 g, price: 1.5, kcal: 120}
+    - {name: Cucumber, namePt: Pepino, qty: '1', price: 0.8, kcal: 15}
+    - {name: Lemon, namePt: Limão-siciliano, qty: '2', price: 0.5, kcal: 10}
+  - name: Chicken & Veggie Soup
+    namePt: Sopa de frango com legumes
+    image: soup
+    tags: [glutenFree, lactoseFree, nutFree]
+    goals: [weightLoss, lowCarb]
+    minutes: 40
+    ingredients:
+    - {name: Chicken breast, namePt: Peito de frango, qty: 500 g, price: 4.5, kcal: 500}
+    - {name: Carrots, namePt: Cenouras, qty: '3', price: 1, kcal: 50}
+    - {name: Celery, namePt: Salsão, qty: '1', price: 1.2, kcal: 15}
+    - {name: Onion, namePt: Cebola, qty: '1', price: 0.5, kcal: 40}
+    - {name: Kale, namePt: Couve, qty: '1', price: 2, kcal: 35}

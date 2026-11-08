@@ -1,0 +1,12 @@
+# MetaPill: a small fact tile: `.icon` over `.text`; three share a row.
+MetaPill:
+  container:
+    color: fill
+    radius: 14
+    padding: {horizontal: 4, vertical: 8}
+    child:
+      column:
+        spacing: 4
+        children:
+        - icon: {name: .icon, size: 16, color: ink2}
+        - text: {value: .text, maxLines: 1, align: center, style: {variant: labelSmall}}

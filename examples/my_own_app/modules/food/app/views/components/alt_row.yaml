@@ -1,0 +1,18 @@
+# AltRow: another program that fits, tap to switch to it.
+AltRow:
+  tappable:
+    onTap: chooseAlt
+    child:
+      padding:
+        vertical: 8
+        child:
+          row:
+            spacing: 10
+            children:
+            - expanded:
+                column:
+                  crossAxisAlignment: start
+                  children:
+                  - text: {value: altName, style: {variant: labelLarge}}
+                  - text: {value: altInfo, style: {variant: bodySmall, color: ink3}}
+            - icon: {name: arrowForward, size: 16, color: ink3}

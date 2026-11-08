@@ -1,0 +1,23 @@
+# Building: the fake processing after onboarding: the logo, a progress bar and
+# BuildRows appearing one by one.
+Building:
+  column:
+    crossAxisAlignment: stretch
+    spacing: 18
+    children:
+    - sizedBox: {height: 36}
+    - center:
+        image:
+          src: examples/my_own_app/app/views/style/images/forkcast_logo.svg
+          width: 72
+          height: 72
+    - text:
+        value: building
+        align: center
+        style:
+          variant: titleLarge
+    - progress:
+        value: buildProgress
+    - listView:
+        data: buildLines
+        itemBuilder: BuildRow

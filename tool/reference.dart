@@ -28,7 +28,7 @@ void main() {
     ..writeln()
     ..writeln('Contents: [Files](#files) · [Types](#types) · '
         '[Actions and values](#actions-and-values) · [Core: api, navigator and locale](#core-api-navigator-and-locale) · [app/views/](#view) · '
-        '[Widgets](#widgets) · [Interpreter rules](#interpreter-rules). '
+        '[Widgets](#widgets) · [dart_eval limitations](#dart_eval-limitations). '
         'Each widget\'s props: `reference/widgets/<name>.md`. Style tokens, '
         'icons, colors and text variants: `reference/style.md`.')
     ..writeln()
@@ -40,6 +40,7 @@ void main() {
     ..writeln('app.yaml                         name, description, version, state: initial values')
     ..writeln('app/')
     ..writeln('  actions/*.dart                 actions, one per file, its tests in main() below it')
+    ..writeln('  actions/shared/*.dart          helpers any action or value can call, one function per file')
     ..writeln('  models/*.yaml                  models and enums, one per file (state.yaml: the state)')
     ..writeln('  models/sample.dart             sample states for tests: sample()')
     ..writeln('  views/')
@@ -49,7 +50,9 @@ void main() {
     ..writeln('    style/*.yaml                 design tokens (optional)')
     ..writeln('    style/images/                image assets')
     ..writeln('    values/*.dart                values computed from state, one per file, its tests in main() below it')
+    ..writeln('    values/shared/*.dart         helpers any action or value can call, one function per file')
     ..writeln('    labels/<language>.yaml       the app text, pure strings (en.yaml, pt_br.yaml)')
+    ..writeln('tests/*.yaml                     selected states the layout check renders (a screen the initial state never shows)')
     ..writeln('modules/<name>/                  modules (same layout)')
     ..writeln('.state/                          runtime state (never commit)')
     ..writeln('```')
@@ -67,8 +70,10 @@ void main() {
     ..writeln('| `app/views/style/` | Design tokens, one group per file: `theme`, `fonts`, `icons`, `colors`, `radius`, `spacing`, `sizes`, `typography`. Optional; a module without it inherits the theme. See `reference/style.md`. |')
     ..writeln('| `app/views/style/images/` | Image assets. |')
     ..writeln('| `app/views/values/*.dart` | Functions that compute a value for the UI from the state. One public value per file. |')
+    ..writeln('| `app/actions/shared/*.dart`, `app/views/values/shared/*.dart` | Shared helpers (money formatting, a filter both an action and a value need): one public function per file, named after it (`group_digits.dart` holds `groupDigits`), any signature, a header comment like every file. Import it relative to your file (`import \'shared/group_digits.dart\';` from app/actions/, `import \'../../actions/shared/x.dart\';` across). INDEX.md lists each one and who calls it. Its `main()` tests run as plain Dart, not in the interpreter, so also test an action or value that calls it. |')
     ..writeln('| `app/views/labels/<language>.yaml` | The app text: `en:` then `key: text`, one file per language (`en.yaml`, `pt.yaml`, `pt_br.yaml`), the same keys in each (a missing one shows the default language, `en`). Pure strings; values join them with state. |')
     ..writeln('| Tests | In the same file as the action or value they test, in a `void main() { test(...); }` below it. The tool ignores `main()` and leaves it out of the compiled program. |')
+    ..writeln('| `tests/<name>.yaml` | A state worth a layout check that the initial state never shows: `name:` then `state:` (only the fields that differ from app.yaml\'s `state:`) and optionally `route:`. `tool/check.sh` renders it at phone, tablet and desktop sizes and fails on overflow. Add a few, one per screen that needs it (`plan_screen.yaml`: `planScreen: {state: {stage: plan, program: 8}}`), not every combination. |')
     ..writeln('| `app/models/sample.dart` | Sample states: `final app = TestApp();` (runs actions and values through the compiled program) and `State sample(...)`. |')
     ..writeln('| `modules/<name>/` | A module. Embed it with `module: <name>`: it runs with its own state, actions and values (it can\'t see the parent\'s, and vice versa). |')
     ..writeln('| `.state/` | Runtime persisted state, written by the engine. Never commit. |')
@@ -383,14 +388,27 @@ void main() {
   File('$refDir/style.md').writeAsStringSync(style.toString());
 
   main
-    ..writeln('## Interpreter rules')
+    ..writeln('## dart_eval limitations')
     ..writeln()
-    ..writeln('Actions and values run in dart_eval. `tool/check.sh` reports violations.')
+    ..writeln('Actions, values and shared helpers run in dart_eval, an interpreter that covers most of Dart but not all of it. `tool/check.sh` catches these: a compile error names the construct; a runtime one fails the test of the function that hit it (`type ... is not a subtype of \$Instance`, `Null is not a subtype of String`). Write plain Dart and avoid:')
     ..writeln()
-    ..writeln('- Type closure parameters: `tasks.where((Task t) => t.done)`, not `(t) => ...`.')
-    ..writeln('- Don\'t interpolate ints from `DateTime` getters (`\'\${d.month}\'`). Use `toIso8601String()`.')
-    ..writeln('- Only `dart:` imports and the app\'s own files (a module can\'t import its parent\'s).')
-    ..writeln('- An app\'s files are bundled together, so private helper names must be unique across its files.');
+    ..writeln('| Avoid | Write instead |')
+    ..writeln('|---|---|')
+    ..writeln('| `continue` (compile error) | an `if` around the rest of the loop body, or `var ok = ...; if (ok) ...` |')
+    ..writeln('| nested `?:` (`a ? x : b ? y : z`, even in parentheses): yields null | `if (a) return x; if (b) return y; return z;` |')
+    ..writeln('| a `?:` mixing a literal and a getter, passed straight as an argument (`D(p: l.isEmpty ? -1 : l.first)`) | a typed local first: `final num p = l.length == 0 ? -1 : l[0];` |')
+    ..writeln('| a property on a list that is not in a variable: `f().length`, `f().isNotEmpty`, `<int>[].isEmpty`, `[...a, b].length`, `l.reversed` | put it in a local first (`final xs = f(); xs.length`); method calls (`f().where(...)`, `.join()`, `.contains()`) are fine |')
+    ..writeln('| `switch` expressions (`switch (x) { 1 => ... }`) | a `switch` statement or `if`s |')
+    ..writeln('| extension methods, typedefs, callable classes | a top-level function (a shared helper) |')
+    ..writeln('| `MyEnum.values`, `e.name` on an enum | compare values (`goal == Goal.lowCarb`); keep names in labels or data |')
+    ..writeln("| `'ab' * 2` | a loop |")
+    ..writeln('| untyped closure parameters (`(t) => t.done`) | typed: `tasks.where((Task t) => t.done)` |')
+    ..writeln("| interpolating ints from `DateTime` getters (`'\${d.month}'`) | `toIso8601String()` |")
+    ..writeln('| imports other than `dart:` and the app\'s own files (a module can\'t import its parent\'s) | |')
+    ..writeln()
+    ..writeln('Known to work: `for`/`for in`/`while`/`do`, `break`, `switch` statements, `try`/`catch`, records, `sort` with a typed comparator, `where`/`map`/`firstWhere`/`fold`/`join`/`removeWhere`, collection `if`/`for`, `Set`, `Map` entries, `??`/`??=`, cascades, `~/`, `abs`/`clamp`/`round`, `toStringAsFixed`, `int.parse`/`double.parse`, `padLeft`/`split`/`trim`/`replaceAll`, `Future.delayed`, classes with getters and `static const`.')
+    ..writeln()
+    ..writeln('An app\'s files are bundled into one library, so every name, private helpers included, must be unique across its files; put a helper two files need in `shared/` instead of copying it.');
 
   File(output).writeAsStringSync(main.toString());
   stdout.writeln('Wrote $output, $refDir/');

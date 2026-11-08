@@ -1,0 +1,21 @@
+# MeterRow: a labeled bar: `.icon` and `.label`, `.text` at the end, and a
+# progress bar at `.progress`.
+MeterRow:
+  column:
+    crossAxisAlignment: stretch
+    spacing: 6
+    children:
+    - row:
+        spacing: 6
+        children:
+        - icon: {name: .icon, size: 16, color: ink2}
+        - expanded:
+            flex: 4
+            child:
+              text: {value: .label, maxLines: 1, style: {variant: labelMedium}}
+        - expanded:
+            flex: 5
+            child:
+              text: {value: .text, maxLines: 1, align: right, style: {variant: bodySmall, color: ink2}}
+    - progress:
+        value: .progress

@@ -1,0 +1,17 @@
+# ShoppingEntry: the plan's link to the shopping list, with how much is in the cart.
+ShoppingEntry:
+  card:
+    onTap: showShopping
+    padding: 14
+    child:
+      row:
+        spacing: 12
+        children:
+        - icon: {name: shoppingCart, size: 22, color: primary}
+        - expanded:
+            column:
+              crossAxisAlignment: start
+              children:
+              - text: {value: shoppingList, style: {variant: titleSmall}}
+              - text: {value: shoppingStatus, style: {variant: bodySmall, color: ink2}}
+        - icon: {name: chevronRight, size: 18, color: ink3}

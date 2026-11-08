@@ -1,0 +1,8 @@
+# recipeCard: the swipe on its longest recipe name (Zucchini Noodles with
+# Walnut Pesto), with its three fact tiles and Skip / Add.
+recipeCard:
+  state:
+    stage: swipe
+    goal: weightLoss
+    program: 8
+    deck: [3, 12, 0]

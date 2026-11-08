@@ -1,0 +1,17 @@
+# GoalCardBody: a GoalCard's content.
+GoalCardBody:
+  row:
+    spacing: 12
+    children:
+    - image: {src: goalImage, width: 44, height: 44}
+    - expanded:
+        column:
+          crossAxisAlignment: start
+          spacing: 2
+          children:
+          - text: {value: goalName, style: {variant: titleSmall}}
+          - text: {value: goalBlurb, style: {variant: bodySmall, color: ink2}}
+    - if:
+        condition: goalSelected
+        then: {icon: {name: checkCircle, size: 22, color: primary}}
+        else: {icon: {name: radioUnchecked, size: 22, color: ink3}}

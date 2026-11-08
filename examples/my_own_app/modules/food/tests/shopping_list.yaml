@@ -1,0 +1,11 @@
+# shoppingList: the list with a merged line (×2), a long name and one item
+# in the cart, so both bars are partly filled.
+shoppingList:
+  state:
+    stage: shopping
+    goal: weightLoss
+    program: 8
+    shopping:
+    - {name: Salmon fillets, namePt: Filés de salmão, qty: 300 g, price: 8, kcal: 470, count: 1, checked: true}
+    - {name: Olive oil, namePt: Azeite, qty: 100 ml, price: 2, kcal: 240, count: 2, checked: false}
+    - {name: Nutritional yeast, namePt: Levedura nutricional, qty: 100 g, price: 3, kcal: 60, count: 1, checked: false}

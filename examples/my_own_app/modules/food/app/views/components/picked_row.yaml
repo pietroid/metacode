@@ -1,0 +1,15 @@
+# PickedRow: an accepted recipe: illustration, name, kcal and cost.
+PickedRow:
+  padding:
+    vertical: 6
+    child:
+      row:
+        spacing: 12
+        children:
+        - image: {src: pickedImage, width: 56, height: 40, fit: cover, radius: 10}
+        - expanded:
+            column:
+              crossAxisAlignment: start
+              children:
+              - text: {value: pickedName, maxLines: 1, style: {variant: labelLarge}}
+              - text: {value: pickedInfo, style: {variant: bodySmall, color: ink3}}

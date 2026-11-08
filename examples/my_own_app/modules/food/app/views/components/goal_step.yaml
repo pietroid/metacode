@@ -1,0 +1,33 @@
+# GoalStep: onboarding step 3: the program goal (one of GoalCard), then
+# Build my program once one is picked.
+GoalStep:
+  column:
+    crossAxisAlignment: stretch
+    spacing: 16
+    children:
+    - StepHeader: {progress: 1, step: step3, title: goalTitle, hint: goalHint}
+    - listView:
+        data: goalList
+        itemBuilder: GoalCard
+    - NavButtons:
+        next:
+          if:
+            condition: hasGoal
+            then:
+              filledButton:
+                text: buildMyProgram
+                icon: sparkle
+                onPressed: buildProgram
+            else:
+              container:
+                height: 48
+                radius: 999
+                color: fill
+                child:
+                  center:
+                    text:
+                      value: pickAGoal
+                      maxLines: 1
+                      style:
+                        variant: labelMedium
+                        color: ink3

@@ -1,0 +1,9 @@
+# goalOption: a program goal card in onboarding: its goal, name, one-line
+# blurb (English and Portuguese) and illustration.
+goalOption:
+  goal: goal
+  name: string
+  namePt: string
+  blurb: string
+  blurbPt: string
+  image: string

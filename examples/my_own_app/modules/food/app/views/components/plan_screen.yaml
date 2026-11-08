@@ -1,0 +1,77 @@
+# PlanScreen: the home after onboarding: the program summary (name,
+# tagline, daily targets, diet and budget fit), Meters, the shopping list
+# entry, the days stepper with Suggest recipes, and the other programs that fit.
+PlanScreen:
+  column:
+    crossAxisAlignment: stretch
+    spacing: 16
+    children:
+    - BrandBar:
+        trailing:
+          textButton:
+            text: restart
+            onPressed: startOver
+    - column:
+        crossAxisAlignment: start
+        spacing: 4
+        children:
+        - text: {value: yourProgram, style: {variant: labelMedium, color: primary}}
+        - text: {value: programName, style: {variant: headlineSmall}}
+        - text: {value: programTagline, style: {variant: bodySmall, color: ink2}}
+    - row:
+        spacing: 8
+        children:
+        - expanded: {StatTile: {value: programKcal, label: kcalDay}}
+        - expanded: {StatTile: {value: programProtein, label: protein}}
+        - expanded: {StatTile: {value: programCarbs, label: carbs}}
+    - column:
+        crossAxisAlignment: stretch
+        spacing: 8
+        children:
+        - row:
+            spacing: 8
+            crossAxisAlignment: start
+            children:
+            - icon: {name: leaf, size: 16, color: primary}
+            - expanded:
+                text: {value: programTags, style: {variant: bodySmall}}
+        - row:
+            spacing: 8
+            crossAxisAlignment: start
+            children:
+            - if:
+                condition: programFits
+                then: {icon: {name: checkCircle, size: 16, color: success}}
+                else: {icon: {name: warning, size: 16, color: warning}}
+            - expanded:
+                text: {value: programCost, style: {variant: bodySmall}}
+    - Meters
+    - if:
+        condition: hasShopping
+        then: ShoppingEntry
+    - divider: {}
+    - row:
+        children:
+        - expanded:
+            text: {value: planNext, style: {variant: labelLarge}}
+        - iconButton: {icon: remove, tooltip: fewerDaysTip, onPressed: fewerDays}
+        - text: {value: daysText, style: {variant: labelLarge}}
+        - iconButton: {icon: add, tooltip: moreDaysTip, onPressed: moreDays}
+    - filledButton:
+        text: suggestCta
+        icon: sparkle
+        onPressed: suggestRecipes
+    - if:
+        condition: hasAlts
+        then:
+          column:
+            crossAxisAlignment: stretch
+            spacing: 4
+            children:
+            - padding:
+                top: 8
+                child:
+                  text: {value: alsoFits, style: {variant: labelMedium, color: ink3}}
+            - listView:
+                data: altPrograms
+                itemBuilder: AltRow

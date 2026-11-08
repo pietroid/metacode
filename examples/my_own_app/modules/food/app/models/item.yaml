@@ -1,0 +1,10 @@
+# item: a shopping list line: an ingredient merged across the accepted
+# recipes (`count` times), checked once it is in the cart.
+item:
+  name: string
+  namePt: string
+  qty: string
+  price: number
+  kcal: number
+  count: number
+  checked: boolean

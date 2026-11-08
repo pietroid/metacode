@@ -1,0 +1,12 @@
+# StatTile: a number over its caption, in a quiet tile (`.value`, `.label`).
+StatTile:
+  container:
+    color: fill
+    radius: 16
+    padding: {vertical: 12, horizontal: 6}
+    child:
+      column:
+        spacing: 2
+        children:
+        - text: {value: .value, maxLines: 1, align: center, style: {variant: titleMedium}}
+        - text: {value: .label, maxLines: 1, align: center, style: {variant: labelSmall, color: ink3}}

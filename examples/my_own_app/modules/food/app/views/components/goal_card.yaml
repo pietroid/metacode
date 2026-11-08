@@ -1,0 +1,15 @@
+# GoalCard: one goal of GoalStep: illustration, name and blurb, a radio
+# mark; tap to pick it.
+GoalCard:
+  padding:
+    bottom: 10
+    child:
+      tappable:
+        onTap: pickGoal
+        child:
+          if:
+            condition: goalSelected
+            then:
+              container: {color: fillStrong, borderColor: primary, radius: 20, padding: 12, child: GoalCardBody}
+            else:
+              container: {color: surface, borderColor: line, radius: 20, padding: 12, child: GoalCardBody}

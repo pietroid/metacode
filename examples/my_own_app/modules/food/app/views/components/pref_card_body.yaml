@@ -1,0 +1,19 @@
+# PrefCardBody: a PrefCard's content: illustration, a check when selected,
+# and the name.
+PrefCardBody:
+  column:
+    crossAxisAlignment: start
+    mainAxisAlignment: spaceBetween
+    children:
+    - row:
+        children:
+        - image: {src: prefImage, width: 40, height: 40}
+        - spacer: {}
+        - if:
+            condition: prefSelected
+            then: {icon: {name: checkCircle, size: 20, color: primary}}
+    - text:
+        value: prefName
+        maxLines: 2
+        style:
+          variant: labelLarge

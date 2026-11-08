@@ -1,10 +1,20 @@
-# MainPage: the food tracker page (Content), the module's whole screen: it
-# scrolls on the phone's 20px screen margin. Embedded `contained`, so its
-# routes open inside the phone.
+# MainPage: Forkcast's only page: it scrolls on the phone's 20px screen
+# margin and shows the screen for the current stage (onboarding steps,
+# Building, PlanScreen, SwipeScreen, ShoppingScreen). Embedded `contained`.
 MainPage:
   scroll:
     padding:
       horizontal: 20
       top: 4
-      bottom: 20
-      child: Content
+      bottom: 24
+      child:
+        match:
+          value: screen
+          cases:
+            budget: BudgetStep
+            prefs: PrefsStep
+            goal: GoalStep
+            building: Building
+            plan: PlanScreen
+            swipe: SwipeScreen
+            shopping: ShoppingScreen
