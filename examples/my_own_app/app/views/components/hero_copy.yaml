@@ -1,6 +1,7 @@
 # HeroCopy: the text side of the hero, left-aligned: HeroTitle, the
 # subtitle, the get early access button, then CarouselNav and PromptCard (the
-# sentence the example in the phone started from).
+# sentence the example in the phone started from), then LiveLinks (each
+# example on its own page).
 HeroCopy:
   column:
     crossAxisAlignment: start
@@ -32,3 +33,6 @@ HeroCopy:
     - sizedBox:
         height: 16
     - PromptCard
+    - sizedBox:
+        height: 24
+    - LiveLinks

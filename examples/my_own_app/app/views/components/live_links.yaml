@@ -1,0 +1,20 @@
+# LiveLinks: "Try each one live" and one button per example (food, music,
+# work, plants) that opens it on its own page, in a phone frame.
+LiveLinks:
+  column:
+    crossAxisAlignment: start
+    spacing: 12
+    children:
+    - text:
+        value: tryEachLive
+        style:
+          variant: labelSmall
+          color: ink3
+    - wrap:
+        spacing: 8
+        runSpacing: 8
+        children:
+        - outlinedButton: {text: food, icon: arrowUpRight, onPressed: openFoodLive}
+        - outlinedButton: {text: music, icon: arrowUpRight, onPressed: openMusicLive}
+        - outlinedButton: {text: work, icon: arrowUpRight, onPressed: openWorkLive}
+        - outlinedButton: {text: plants, icon: arrowUpRight, onPressed: openPlantsLive}
