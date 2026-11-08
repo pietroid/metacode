@@ -42,7 +42,7 @@ Engine: state (Map) ─> value / label ─> app_ui widget ─> tap ─> action(s
 
 ## Commands (never launch the app to verify)
 
-- `tool/check.sh`: app loop (generate, analyze `examples/my_own_app/`, the tests in each action and value file's `main()`). About 15s.
+- `tool/check.sh`: app loop (generate, then one `flutter test` of `.generated/all_test.dart`, which imports every user file, so it type-checks them all, and runs the tests in each action and value file's `main()`). No separate analyze step. About 10s.
 - `tool/check_engine.sh`: everything (generate, analyze all, all tests).
 - `dart run tool/metacode.dart watch`: regenerates on every save (~200ms warm). The running app reloads `bundle.json` on **hot reload** (`_LiveApp` in `lib/main.dart` -> `MetacodeApp` with a new config -> `AppRuntime.reload`, state kept), so no hot restart is needed. It is the VS Code pre-launch task.
 

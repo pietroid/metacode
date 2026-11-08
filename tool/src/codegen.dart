@@ -424,6 +424,7 @@ String generateTestApp(
     ..writeln("import 'dart:io';")
     ..writeln("import 'dart:typed_data';")
     ..writeln()
+    ..writeln("import 'package:fake_async/fake_async.dart';")
     ..writeln("import 'package:metacode/engine/host_plugin.dart';")
     ..writeln("import 'package:metacode/engine/program.dart';")
     ..writeln("import 'package:yaml/yaml.dart';")
@@ -511,7 +512,31 @@ const _testAppHead = r'''
     navigation.clear();
     requests.clear();
     _state = jsonDecode(jsonEncode(state.toJson())) as Map<String, dynamic>;
-    await _program.action(name, _state, params);
+    // Fake time: delays inside actions (animations, demo steps) resolve
+    // instantly, so tests do not wait in real time.
+    var done = false;
+    Object? error;
+    StackTrace? trace;
+    FakeAsync().run((time) {
+      _program.action(name, _state, params).then(
+          (_) => done = true,
+          onError: (Object e, StackTrace s) {
+            error = e;
+            trace = s;
+            done = true;
+          });
+      while (!done) {
+        time.flushMicrotasks();
+        if (done) break;
+        if (time.pendingTimers.isEmpty) {
+          throw StateError('$name never completed (awaits something outside fake time)');
+        }
+        time.elapse(time.pendingTimers
+            .map((t) => t.duration)
+            .reduce((a, b) => a < b ? a : b));
+      }
+    });
+    if (error != null) Error.throwWithStackTrace(error!, trace!);
     return State.fromJson(_state);
   }
 

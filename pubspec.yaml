@@ -42,6 +42,7 @@ dependencies:
     path: packages/app_ui
 
 dev_dependencies:
+  fake_async: any
   flutter_test:
     sdk: flutter
 
