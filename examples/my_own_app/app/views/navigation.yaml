@@ -6,6 +6,5 @@ routes:
   home: MainPage
   waitlist: {dialog: WaitlistDialog}
   foodLive: FoodLivePage
-  musicLive: MusicLivePage
   workLive: WorkLivePage
-  plantsLive: PlantsLivePage
+  travelLive: TravelLivePage

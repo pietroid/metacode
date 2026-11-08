@@ -1,0 +1,6 @@
+# egyptLastDay: the Egypt trip on its last day (one plan, next arrow at the end).
+egyptLastDay:
+  state:
+    tripIndex: 1
+    dayIndex: 14
+  route: trip

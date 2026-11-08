@@ -1,0 +1,35 @@
+# CostBar: the costs, always at the bottom of the trip page: this day (or its
+# transport or attractions when filtered), the partial cost through the
+# selected day, and the whole trip in a sea-teal tile. A fixed height: a
+# scaffold's bottom bar is not bounded, and a column would fill the screen.
+CostBar:
+  container:
+    color: surface
+    height: 84
+    child:
+      column:
+        crossAxisAlignment: stretch
+        children:
+        - divider: {height: 1}
+        - padding:
+            horizontal: 16
+            top: 10
+            bottom: 14
+            child:
+              row:
+                spacing: 8
+                children:
+                - expanded: {CostFigure: {label: shownCostLabel, value: shownCost}}
+                - expanded: {CostFigure: {label: soFarLabel, value: soFarCost}}
+                - expanded:
+                    container:
+                      color: primary
+                      radius: 14
+                      padding: {horizontal: 10, vertical: 8}
+                      child:
+                        column:
+                          crossAxisAlignment: start
+                          spacing: 1
+                          children:
+                          - text: {value: tripTotalLabel, maxLines: 1, style: {variant: labelSmall, color: onPrimary}}
+                          - text: {value: openTripCost, maxLines: 1, style: {variant: titleMedium, color: onPrimary}}

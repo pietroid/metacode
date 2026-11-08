@@ -1,0 +1,5 @@
+# ticket: the ticket sheet of the first flight (code, seat, barcode).
+ticket:
+  state:
+    programIndex: 0
+  route: ticket

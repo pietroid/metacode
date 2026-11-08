@@ -191,7 +191,7 @@ void main() {
     ..writeln('  confirmDelete: {dialog: ConfirmDeleteDialog}')
     ..writeln('```')
     ..writeln()
-    ..writeln('- Each route becomes a constant: `Routes.rate`. Sheets and dialogs size to their content and scroll if long; give them padding.')
+    ..writeln('- Each route becomes a constant: `Routes.rate`. Sheets and dialogs size to their content and scroll if long (a sheet grows up to 90% of the screen); give them padding.')
     ..writeln('- Tab-style screens inside one page stay as state + `match` (see below); routes are for things that open on top.')
     ..writeln()
     ..writeln('## app/views/')

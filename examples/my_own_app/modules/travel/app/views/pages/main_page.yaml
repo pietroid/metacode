@@ -1,0 +1,32 @@
+# MainPage: the `home` route, the trips: a greeting and "Where to next?", how
+# many trips are planned, then a TripCard per trip. It scrolls on the phone's
+# 20px screen margin. Embedded `contained`, so its routes open inside the phone.
+MainPage:
+  scroll:
+    padding:
+      horizontal: 20
+      top: 4
+      bottom: 20
+      child:
+        column:
+          crossAxisAlignment: stretch
+          children:
+          - row:
+              children:
+              - expanded:
+                  column:
+                    crossAxisAlignment: start
+                    spacing: 2
+                    children:
+                    - text: {value: hello, style: {variant: labelMedium, color: ink3}}
+                    - text: {value: whereToNext, style: {variant: headlineSmall}}
+              - container:
+                  width: 44
+                  height: 44
+                  radius: 22
+                  color: accent
+                  child: {center: {icon: {name: flight, size: 20, color: onAccent}}}
+          - sizedBox: {height: 6}
+          - text: {value: tripsSummary, style: {variant: bodySmall, color: ink2}}
+          - sizedBox: {height: 18}
+          - listView: {data: tripList, itemBuilder: TripCard, empty: {text: {value: noTrips, style: {variant: bodySmall, color: ink3}}}}

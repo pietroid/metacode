@@ -1,0 +1,28 @@
+# typography: the text variants (size, weight, family, spacing).
+# Look: warm and fresh, like a summer trip. Plus Jakarta Sans, sea-teal
+# actions and a terracotta accent on a sand page, soft round corners. Keys left out are inherited.
+typography:
+  headlineSmall:
+    font: display
+    size: 26
+    weight: 800
+    height: 1.15
+    tracking: -0.02
+  titleLarge:
+    font: display
+    size: 19
+    weight: 700
+    height: 1.25
+    tracking: -0.01
+  titleMedium:
+    font: display
+    size: 16
+    weight: 700
+    height: 1.3
+    tracking: -0.01
+  titleSmall:
+    font: text
+    size: 14
+    weight: 600
+    height: 1.35
+    tracking: 0

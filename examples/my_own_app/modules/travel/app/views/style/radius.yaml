@@ -1,0 +1,9 @@
+# radius: corner radius tokens.
+# Look: warm and fresh, like a summer trip. Plus Jakarta Sans, sea-teal
+# actions and a terracotta accent on a sand page, soft round corners. Keys left out are inherited.
+radius:
+  xs: 6
+  sm: 999
+  md: 16
+  lg: 22
+  pill: 999

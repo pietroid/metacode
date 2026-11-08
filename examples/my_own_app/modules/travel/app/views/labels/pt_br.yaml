@@ -1,0 +1,43 @@
+# pt_br: all of the app's text in Brazilian Portuguese, the same keys as en.yaml.
+pt_br:
+  hello: Oi, Ana
+  whereToNext: Para onde agora?
+  tripsPlanned: viagens planejadas
+  noTrips: Nenhuma viagem ainda.
+  days: dias
+  oneDay: dia
+  back: Voltar
+  close: Fechar
+  day: Dia
+  allPlans: Tudo
+  transport: Transporte
+  attractions: Atrações
+  attraction: Atração
+  noPlans: Nada desse tipo hoje.
+  free: Grátis
+  ticket: Ingresso
+  foodBudget: Orçamento de comida
+  foodBudgetHint: Refeições, café e lanches
+  thisDay: Este dia
+  transportToday: Transporte
+  attractionsToday: Atrações
+  throughDay: Até o dia
+  tripTotalLabel: Total da viagem
+  whenLabel: Quando
+  details: Detalhes
+  noTicketNeeded: Não precisa de ingresso
+  ofDay: de
+  thisDayLower: neste dia
+  quickAdd: Adicionar rápido
+  plus10: + €10
+  plus20: + €20
+  plus50: + €50
+  customAmount: Ou digite um valor
+  amountHint: Valor em €
+  add: Adicionar
+  addAmount: Adicionar valor
+  dayInTotal: 'Este dia no total:'
+  ofTotal: de
+  previousDayTip: Dia anterior
+  nextDayTip: Próximo dia
+  done: Pronto

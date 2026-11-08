@@ -1,0 +1,5 @@
+# RowDivider: the hairline above a list row inside a Panel, except the first.
+RowDivider:
+  if:
+    condition: notFirstRow
+    then: {divider: {}}

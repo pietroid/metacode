@@ -1,0 +1,5 @@
+# budget: the food budget sheet with a custom amount typed.
+budget:
+  state:
+    budgetDraft: '25'
+  route: budget

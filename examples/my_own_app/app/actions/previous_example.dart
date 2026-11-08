@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import '../../.generated/state.dart';
 import '../models/sample.dart';
 
-const int _previousExampleExampleCount = 4;
+const int _previousExampleExampleCount = 3;
 
 Future<void> previousExample(
   State state,
@@ -20,6 +20,6 @@ Future<void> previousExample(
 void main() {
   test('previousExample wraps around from the first slide', () async {
     final s = await app.previousExample(sample(exampleIndex: 0));
-    expect(s.exampleIndex, 3);
+    expect(s.exampleIndex, 2);
   });
 }

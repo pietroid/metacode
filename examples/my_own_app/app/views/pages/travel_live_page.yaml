@@ -1,0 +1,53 @@
+# TravelLivePage: the `travelLive` route, the travel example on its own page to try
+# it: an app bar (a small icon tile and its name, compact like the landing
+# page's Logo, and a home button back to the landing page) over a
+# PhoneFrame in travel's own colors around the live `module: travel`, centered;
+# it scrolls when the screen is shorter than the phone.
+TravelLivePage:
+  scaffold:
+    appBar:
+      title:
+        row:
+          spacing: 10
+          crossAxisAlignment: center
+          children:
+          - container:
+              width: 28
+              height: 28
+              radius: 8
+              color: fill
+              child:
+                center:
+                  icon:
+                    name: flight
+                    size: 16
+                    color: accent
+          - text:
+              value: travelLive
+              maxLines: 1
+              style:
+                variant: labelLarge
+                fontWeight: w700
+      actions:
+      - padding:
+          right: 8
+          child:
+            iconButton:
+              icon: home
+              tooltip: backHome
+              onPressed: goHome
+    body:
+      center:
+        scroll:
+          padding:
+            horizontal: 16
+            vertical: 24
+            child:
+              PhoneFrame:
+                height: 720
+                screen: '#FBF5EC'
+                ink: '#2B1E16'
+                child:
+                  module:
+                    name: travel
+                    contained: true

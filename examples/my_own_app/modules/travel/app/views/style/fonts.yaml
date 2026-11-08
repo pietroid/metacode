@@ -1,0 +1,6 @@
+# fonts: the display and text families (Google Fonts or bundled).
+# Look: warm and fresh, like a summer trip. Plus Jakarta Sans, sea-teal
+# actions and a terracotta accent on a sand page, soft round corners. Keys left out are inherited.
+fonts:
+  display: Plus Jakarta Sans
+  text: Plus Jakarta Sans

@@ -1,0 +1,62 @@
+# ProgramRow: one plan of the day under a RowDivider: its time, a photo of
+# the attraction (or a tile: sea-teal map for transport, terracotta camera
+# for an attraction without one), the title and
+# place, its cost and a "Ticket" mark when it has one. Tapping it opens the
+# ticket sheet.
+ProgramRow:
+  column:
+    crossAxisAlignment: stretch
+    children:
+    - RowDivider
+    - tappable:
+        onTap: openTicket
+        child:
+          padding:
+            vertical: 12
+            child:
+              row:
+                spacing: 10
+                children:
+                - sizedBox:
+                    width: 40
+                    child: {text: {value: programTime, style: {variant: labelMedium, color: ink2}}}
+                - if:
+                    condition: programShowsPhoto
+                    then: {image: {src: programImage, width: 40, height: 40, fit: cover, radius: 12}}
+                    else:
+                      if:
+                        condition: programIsTransport
+                        then:
+                          container:
+                            width: 40
+                            height: 40
+                            radius: 12
+                            color: fill
+                            child: {center: {icon: {name: map, size: 18, color: primary}}}
+                        else:
+                          container:
+                            width: 40
+                            height: 40
+                            radius: 12
+                            color: fill
+                            child: {center: {icon: {name: camera, size: 18, color: accent}}}
+                - expanded:
+                    column:
+                      crossAxisAlignment: start
+                      spacing: 1
+                      children:
+                      - text: {value: programTitle, maxLines: 1, style: {variant: titleSmall}}
+                      - text: {value: programPlace, maxLines: 1, style: {variant: bodySmall, color: ink2}}
+                - column:
+                    crossAxisAlignment: end
+                    spacing: 2
+                    children:
+                    - text: {value: programPrice, style: {variant: titleSmall}}
+                    - if:
+                        condition: programHasTicket
+                        then:
+                          row:
+                            spacing: 3
+                            children:
+                            - icon: {name: receipt, size: 12, color: primary}
+                            - text: {value: ticket, style: {variant: labelSmall, color: primary}}

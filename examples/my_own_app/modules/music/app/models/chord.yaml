@@ -1,5 +1,0 @@
-# chord: a guitar chord being practiced, with finger placement and learned status.
-chord:
-  name: string
-  fingers: string
-  learned: boolean

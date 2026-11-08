@@ -1,0 +1,39 @@
+# TicketStub: the ticket itself, sea teal: when (date and time) and the
+# details (seat, entry), over a white strip with a Barcode and the code.
+TicketStub:
+  container:
+    color: primary
+    radius: 20
+    padding: 16
+    child:
+      column:
+        crossAxisAlignment: stretch
+        spacing: 12
+        children:
+        - row:
+            spacing: 12
+            children:
+            - expanded:
+                column:
+                  crossAxisAlignment: start
+                  spacing: 2
+                  children:
+                  - text: {value: whenLabel, style: {variant: labelSmall, color: onPrimary}}
+                  - text: {value: ticketWhen, maxLines: 1, style: {variant: titleSmall, color: onPrimary}}
+            - icon: {name: receipt, size: 20, color: onPrimary}
+        - column:
+            crossAxisAlignment: start
+            spacing: 2
+            children:
+            - text: {value: details, style: {variant: labelSmall, color: onPrimary}}
+            - text: {value: ticketDetail, maxLines: 2, style: {variant: titleMedium, color: onPrimary}}
+        - container:
+            color: white
+            radius: 12
+            padding: {horizontal: 12, vertical: 12}
+            child:
+              column:
+                spacing: 8
+                children:
+                - Barcode
+                - text: {value: ticketCode, maxLines: 1, style: {variant: labelLarge, color: '#2B1E16', fontWeight: w700}}

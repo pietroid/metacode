@@ -3,9 +3,8 @@
 en:
   previous: Previous
   food: Food
-  music: Music
   work: Work
-  plants: Plants
+  travel: Travel
   next: Next
   myOwnApp: MY OWN APP
   copyright: '© 2026 My Own App'
@@ -32,13 +31,11 @@ en:
   whatWillYouMake: What will you make first?
   wereLettingPeopleIn: We're letting people in a few at a time. Save your spot.
   blurbFood: Tap what you ate. It adds up the calories and suggests what to eat next to stay on track.
-  blurbMusic: One chord at a time. Log your practice and see which songs you can already play.
   blurbWork: Inbox, follow-ups, to-dos and the week ahead, ranked so the next thing to do is always on top.
-  blurbPlants: Every plant on its own schedule. Tap the drop when you water it, and skip ahead a day to see what comes next.
+  blurbTravel: Every day of the trip, its trains and tickets one tap away, and what it all costs, always at the bottom.
   promptFood: Help me eat better without counting everything
-  promptMusic: Teach me guitar, ten minutes a day
   promptWork: Help me prioritize my work day
-  promptPlants: Remind me to water my plants
+  promptTravel: Plan my trip and keep my tickets and costs in one place
   ideaSummaryEmpty: Tell us what you need and we'll have your app ready when you get in.
   yourFirstApp: 'Your first app:'
   readyWhenYouGetIn: We'll have it ready when you get in.
@@ -110,6 +107,5 @@ en:
   tryEachLive: Try each one live
   backHome: Back home
   foodLive: Food tracker
-  musicLive: Guitar practice
   workLive: Work priorities
-  plantsLive: Plant watering
+  travelLive: Trip planner

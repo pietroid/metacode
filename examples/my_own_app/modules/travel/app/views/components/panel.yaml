@@ -1,0 +1,7 @@
+# Panel: a white rounded surface on the sand page holding a group of rows (`.child`).
+Panel:
+  container:
+    color: surface
+    radius: 18
+    padding: {horizontal: 14, vertical: 2}
+    child: .child

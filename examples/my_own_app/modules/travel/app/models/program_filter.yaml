@@ -1,0 +1,2 @@
+# programFilter: which plans the day shows: all, only transport or only attractions.
+programFilter: [all, transport, attraction]

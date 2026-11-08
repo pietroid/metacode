@@ -3,9 +3,8 @@
 pt_br:
   previous: Anterior
   food: Alimentação
-  music: Música
   work: Trabalho
-  plants: Plantas
+  travel: Viagem
   next: Próximo
   myOwnApp: MY OWN APP
   copyright: '© 2026 My Own App'
@@ -32,13 +31,11 @@ pt_br:
   whatWillYouMake: O que você vai criar primeiro?
   wereLettingPeopleIn: Estamos liberando a entrada aos poucos. Garanta seu lugar.
   blurbFood: Toque no que você comeu. Ele soma as calorias e sugere o que comer depois para manter o ritmo.
-  blurbMusic: Um acorde de cada vez. Registre seu treino e veja quais músicas você já consegue tocar.
   blurbWork: Inbox, follow-ups, to-dos e a agenda da semana, priorizados para o próximo passo estar sempre no topo.
-  blurbPlants: Cada planta no seu ritmo. Toque na gota quando regar, e avance um dia para ver o que vem depois.
+  blurbTravel: Cada dia da viagem, os trens e ingressos a um toque, e quanto tudo custa, sempre embaixo.
   promptFood: Me ajude a comer melhor sem contar tudo
-  promptMusic: Me ensine violão, dez minutos por dia
   promptWork: Me ajude a priorizar meu dia de trabalho
-  promptPlants: Me lembre de regar minhas plantas
+  promptTravel: Planeje minha viagem e guarde ingressos e gastos num só lugar
   ideaSummaryEmpty: Diga do que precisa e seu app estará pronto quando você entrar.
   yourFirstApp: 'Seu primeiro app:'
   readyWhenYouGetIn: Vai estar pronto quando você entrar.
@@ -110,6 +107,5 @@ pt_br:
   tryEachLive: Experimente cada um ao vivo
   backHome: Voltar ao início
   foodLive: Diário alimentar
-  musicLive: Prática de violão
   workLive: Prioridades do dia
-  plantsLive: Rega das plantas
+  travelLive: Roteiro de viagem

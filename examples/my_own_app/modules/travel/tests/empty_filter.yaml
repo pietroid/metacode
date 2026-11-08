@@ -1,0 +1,8 @@
+# emptyFilter: Egypt's day 3 (only attractions) filtered to transport: the
+# empty text in the plans panel.
+emptyFilter:
+  state:
+    tripIndex: 1
+    dayIndex: 2
+    filter: transport
+  route: trip

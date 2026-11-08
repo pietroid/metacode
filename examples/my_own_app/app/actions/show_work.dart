@@ -5,11 +5,11 @@ import '../../.generated/state.dart';
 import '../models/sample.dart';
 
 Future<void> showWork(State state, void Function(StateDelta) emit) async =>
-    emit(StateDelta(exampleIndex: 2));
+    emit(StateDelta(exampleIndex: 1));
 
 void main() {
   test('showWork jumps to the work slide', () async {
     final s = await app.showWork(sample());
-    expect(s.exampleIndex, 2);
+    expect(s.exampleIndex, 1);
   });
 }

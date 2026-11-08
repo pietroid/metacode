@@ -1,8 +1,0 @@
-# radius: corner radius tokens.
-# Look: a greenhouse journal. Newsreader titles, sage and terracotta, light
-# icons. Keys left out are inherited.
-radius:
-  xs: 4
-  sm: 12
-  md: 16
-  lg: 22

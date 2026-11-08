@@ -1,0 +1,37 @@
+# TripPage: the `trip` route, one itinerary: TripHeader, the days as a
+# DayGrid of dates (tap to pick one), the DayCard (photo, day and arrows),
+# PlanFilter, the day's plans (ProgramRow) in a Panel, the FoodBudgetRow
+# (when nothing is filtered out), and the CostBar fixed at the bottom.
+TripPage:
+  scaffold:
+    body:
+      scroll:
+        padding:
+          horizontal: 16
+          top: 4
+          bottom: 20
+          child:
+            column:
+              crossAxisAlignment: stretch
+              children:
+              - TripHeader
+              - sizedBox: {height: 10}
+              - gridView: {data: tripDays, itemBuilder: DayCell, columns: 8, spacing: 5, aspectRatio: 0.8}
+              - sizedBox: {height: 14}
+              - DayCard
+              - sizedBox: {height: 14}
+              - PlanFilter
+              - sizedBox: {height: 12}
+              - Panel:
+                  child:
+                    listView:
+                      data: visibleProgramList
+                      itemBuilder: ProgramRow
+                      empty: {padding: {vertical: 16, child: {text: {value: noPlans, style: {variant: bodySmall, color: ink3}}}}}
+              - if:
+                  condition: filterIsAll
+                  then:
+                    padding:
+                      top: 12
+                      child: FoodBudgetRow
+    bottomBar: CostBar

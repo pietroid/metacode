@@ -1,5 +1,0 @@
-# plant: a plant being tracked, with watering frequency and days until the next water.
-plant:
-  name: string
-  everyDays: number
-  daysLeft: number

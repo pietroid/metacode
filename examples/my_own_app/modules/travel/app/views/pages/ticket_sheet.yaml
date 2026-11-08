@@ -1,0 +1,63 @@
+# TicketSheet: the `ticket` bottom sheet, a plan's ticket: its kind tag and a
+# close button, a photo of the place (or where the transport goes), the
+# title and place, then TicketStub (or NoTicket when none is
+# needed), its cost against the day's, and the note.
+TicketSheet:
+  padding:
+    horizontal: 20
+    top: 8
+    bottom: 24
+    child:
+      column:
+        crossAxisAlignment: stretch
+        children:
+        - row:
+            children:
+            - container:
+                color: fill
+                radius: 999
+                padding: {horizontal: 10, vertical: 4}
+                child:
+                  row:
+                    spacing: 5
+                    children:
+                    - if:
+                        condition: ticketIsTransport
+                        then: {icon: {name: map, size: 13, color: primary}}
+                        else: {icon: {name: camera, size: 13, color: accent}}
+                    - text: {value: ticketKind, style: {variant: labelSmall, color: ink2}}
+            - spacer: {}
+            - iconButton: {icon: close, tooltip: close, onPressed: goBack}
+        - if:
+            condition: ticketHasImage
+            then:
+              padding:
+                top: 4
+                bottom: 12
+                child: {image: {src: ticketImage, height: 150, fit: cover, radius: 18}}
+        - text: {value: ticketTitle, maxLines: 2, style: {variant: headlineSmall}}
+        - sizedBox: {height: 4}
+        - text: {value: ticketPlace, maxLines: 2, style: {variant: bodyMedium, color: ink2}}
+        - sizedBox: {height: 18}
+        - if:
+            condition: ticketHasCode
+            then: TicketStub
+            else: NoTicket
+        - sizedBox: {height: 14}
+        - row:
+            spacing: 6
+            children:
+            - icon: {name: coins, size: 16, color: warning}
+            - text: {value: ticketPrice, style: {variant: titleSmall}}
+            - expanded: {text: {value: ticketShare, maxLines: 1, style: {variant: bodySmall, color: ink2}}}
+        - sizedBox: {height: 10}
+        - container:
+            color: fill
+            radius: 14
+            padding: 12
+            child:
+              row:
+                spacing: 8
+                children:
+                - icon: {name: lightbulb, size: 16, color: accent}
+                - expanded: {text: {value: ticketNote, maxLines: 2, style: {variant: bodySmall, color: ink2}}}

@@ -1,0 +1,19 @@
+# NoTicket: in place of TicketStub when a plan needs no ticket: a green check,
+# "No ticket needed" and when it is.
+NoTicket:
+  container:
+    color: fill
+    radius: 20
+    padding: 16
+    child:
+      row:
+        spacing: 12
+        children:
+        - icon: {name: checkCircle, size: 26, color: success}
+        - expanded:
+            column:
+              crossAxisAlignment: start
+              spacing: 2
+              children:
+              - text: {value: noTicketNeeded, style: {variant: titleSmall}}
+              - text: {value: ticketWhen, maxLines: 1, style: {variant: bodySmall, color: ink2}}

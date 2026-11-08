@@ -1,0 +1,5 @@
+# icons: the Phosphor icon weight.
+# Look: warm and fresh, like a summer trip. Plus Jakarta Sans, sea-teal
+# actions and a terracotta accent on a sand page, soft round corners. Keys left out are inherited.
+icons:
+  weight: regular

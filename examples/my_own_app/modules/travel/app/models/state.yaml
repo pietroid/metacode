@@ -1,0 +1,10 @@
+# state: the trips, which one is open (tripIndex) and its day (dayIndex),
+# the plan filter, the plan whose ticket is shown (programIndex, in the day's
+# full list) and the custom amount typed in the food budget sheet.
+state:
+  trips: list(trip)
+  tripIndex: number
+  dayIndex: number
+  filter: programFilter
+  programIndex: number
+  budgetDraft: string

@@ -11,21 +11,15 @@ ExamplePhone:
           screen: '#F4FAF5'
           ink: '#0F2416'
           child: ExampleScreen
-      music:
-        PhoneFrame:
-          height: 720
-          screen: '#0F0F0E'
-          ink: '#F3EEFF'
-          child: ExampleScreen
       work:
         PhoneFrame:
           height: 720
           screen: '#EDF1F6'
           ink: '#18181B'
           child: ExampleScreen
-      plants:
+      travel:
         PhoneFrame:
           height: 720
-          screen: '#0F0F0E'
-          ink: '#F4EEDF'
+          screen: '#FBF5EC'
+          ink: '#2B1E16'
           child: ExampleScreen

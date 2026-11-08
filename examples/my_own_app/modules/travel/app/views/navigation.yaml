@@ -1,0 +1,9 @@
+# navigation: the trip planner's routes. `home` (MainPage) lists the trips;
+# a trip opens on top (TripPage), and from it the ticket of a plan and the
+# food budget open as bottom sheets.
+initial: home
+routes:
+  home: MainPage
+  trip: TripPage
+  ticket: {bottomSheet: TicketSheet}
+  budget: {bottomSheet: BudgetSheet}

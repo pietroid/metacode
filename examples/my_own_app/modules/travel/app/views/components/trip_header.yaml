@@ -1,0 +1,14 @@
+# TripHeader: the top of the trip page: a back button (goBack), the trip's
+# name and, under it, its dates and length.
+TripHeader:
+  row:
+    spacing: 4
+    children:
+    - iconButton: {icon: arrowBack, tooltip: back, onPressed: goBack}
+    - expanded:
+        column:
+          crossAxisAlignment: start
+          spacing: 1
+          children:
+          - text: {value: openTripName, maxLines: 1, style: {variant: titleLarge}}
+          - text: {value: openTripMeta, maxLines: 1, style: {variant: bodySmall, color: ink2}}

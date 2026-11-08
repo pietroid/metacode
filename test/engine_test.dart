@@ -246,6 +246,15 @@ void main() {
     });
   }
 
+  testWidgets('a bottom sheet grows with its content up to 90% of the screen',
+      (tester) async {
+    await pump(tester);
+    await tap(tester, find.text('Sheet'));
+    final sheet = tester.widget<BottomSheet>(find.byType(BottomSheet));
+    final window = tester.view.physicalSize / tester.view.devicePixelRatio;
+    expect(sheet.constraints?.maxHeight, window.height * 0.9);
+  });
+
   testWidgets('a contained module opens its routes inside its box',
       (tester) async {
     await pump(tester);

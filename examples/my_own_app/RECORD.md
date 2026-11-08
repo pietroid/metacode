@@ -44,3 +44,23 @@ Notes:
 | Time | Cost | Tokens | Check runs |
 |---|---|---|---|
 | 1m 8s | $0.24 | n/a (the tool reported 0) | 1 `tool/check.sh` (passed) |
+
+## 2026-11-08: travel example replaces music and plants
+
+- Removed the `music` and `plants` modules and their carousel chips, live links, routes, pages and labels. The carousel is now food · work · travel.
+- Added `modules/travel`, a trip planner. It has a list of trips, and a trip page with a day strip, transport and attraction filters, and each day's plans with their costs. A cost bar stays at the bottom with the day's cost, the cost so far and the trip total. There is a ticket sheet per plan, and a food budget sheet with quick amounts and a typed amount. Its look is warm sand, sea teal and terracotta, in Plus Jakarta Sans, with three SVG cover illustrations.
+
+| Step | Time | Cost | Tokens | Check runs |
+|---|---|---|---|---|
+| Travel example | 8m 19s | $2.33 | n/a | 5 |
+
+## 2026-11-08: travel example, real photos, long trips, Portuguese data
+
+- Replaced the sample trips with two long ones: a 16-day grand tour of Europe (Lisbon, Sintra, Barcelona, Paris, Versailles, Florence, Rome) and 15 days in Egypt (Cairo, Giza, Luxor, a Nile cruise, Aswan, Abu Simbel, Hurghada). There are 63 plans in all.
+- Added 57 real photos from Wikimedia Commons (about 3 MB). They show on the trip covers, each day's card, the attraction rows and the ticket sheet. Credits are in `modules/travel/IMAGE_CREDITS.md`.
+- Every text in the trip data is now a `localized` value (`en`, `ptBr`), shown with the shared `tr`. Dates are written out in both languages, and euros use a decimal comma in Portuguese.
+- The trip page has a grid of dates, with a dot where a new city starts, and a day card with a photo and previous/next arrows. The day chips are gone.
+
+| Step | Time | Cost | Tokens | Check runs |
+|---|---|---|---|---|
+| Photos, long trips, Portuguese data | ~23m (from the previous reading) | $2.96 | n/a | 3 |

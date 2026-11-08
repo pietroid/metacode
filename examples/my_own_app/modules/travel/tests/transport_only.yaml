@@ -1,0 +1,5 @@
+# transportOnly: the trip page filtered to transport (no food budget row).
+transportOnly:
+  state:
+    filter: transport
+  route: trip

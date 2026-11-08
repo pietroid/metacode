@@ -1,6 +1,0 @@
-# fonts: the display and text families (Google Fonts or bundled).
-# Look: a greenhouse journal. Newsreader titles, sage and terracotta, light
-# icons. Keys left out are inherited.
-fonts:
-  display: Newsreader
-  text: Albert Sans

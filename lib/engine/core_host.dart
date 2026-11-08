@@ -88,10 +88,18 @@ class CoreHost implements MetacodeHost {
           builder: (_) => render(route.widget),
         ));
       case RouteType.bottomSheet:
+        // Sized to its content up to 90% of the navigator's height (Flutter's
+        // default stops at 9/16), scrolling beyond that.
+        final box = navigator.context.findRenderObject() as RenderBox?;
+        final height = box != null && box.hasSize
+            ? box.size.height
+            : MediaQuery.sizeOf(navigator.context).height;
         await showModalBottomSheet<void>(
           context: navigator.context,
           routeSettings: RouteSettings(name: name),
           showDragHandle: true,
+          isScrollControlled: true,
+          constraints: BoxConstraints(maxHeight: height * 0.9),
           builder: (_) => SafeArea(
             child: SingleChildScrollView(child: render(route.widget)),
           ),

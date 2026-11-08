@@ -1,0 +1,10 @@
+# tripDay: one day of a trip: the city, the date ("Wed, Jun 2") and its day of
+# the month, a photo of the place, the food budget in euros and the plans
+# (programs) in order.
+tripDay:
+  city: localized
+  date: localized
+  dayOfMonth: number
+  image: string
+  food: number
+  programs: list(program)

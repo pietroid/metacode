@@ -1,0 +1,28 @@
+# DayCard: the selected day: a photo of the place, then "Day 3 of 16" over
+# its date and city, between previous and next day arrows.
+DayCard:
+  container:
+    color: surface
+    radius: 20
+    padding: 8
+    child:
+      column:
+        crossAxisAlignment: stretch
+        children:
+        - image: {src: dayImage, height: 132, fit: cover, radius: 14}
+        - padding:
+            left: 4
+            top: 6
+            child:
+              row:
+                spacing: 4
+                children:
+                - expanded:
+                    column:
+                      crossAxisAlignment: start
+                      spacing: 1
+                      children:
+                      - text: {value: dayOfTotal, maxLines: 1, style: {variant: titleMedium}}
+                      - text: {value: dayDateCity, maxLines: 1, style: {variant: bodySmall, color: ink2}}
+                - iconButton: {icon: chevronLeft, tooltip: previousDayTip, onPressed: previousDay}
+                - iconButton: {icon: chevronRight, tooltip: nextDayTip, onPressed: nextDay}

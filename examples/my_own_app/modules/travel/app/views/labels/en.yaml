@@ -1,0 +1,44 @@
+# en: all of the app's text in English, key: text. Pure strings; values in
+# app/views/values/ join them with the state (they take `Labels labels`).
+en:
+  hello: Hi, Ana
+  whereToNext: Where to next?
+  tripsPlanned: trips planned
+  noTrips: No trips yet.
+  days: days
+  oneDay: day
+  back: Back
+  close: Close
+  day: Day
+  allPlans: All
+  transport: Transport
+  attractions: Attractions
+  attraction: Attraction
+  noPlans: Nothing of this kind today.
+  free: Free
+  ticket: Ticket
+  foodBudget: Food budget
+  foodBudgetHint: Meals, coffee and snacks
+  thisDay: This day
+  transportToday: Transport
+  attractionsToday: Attractions
+  throughDay: Through day
+  tripTotalLabel: Trip total
+  whenLabel: When
+  details: Details
+  noTicketNeeded: No ticket needed
+  ofDay: of
+  thisDayLower: this day
+  quickAdd: Quick add
+  plus10: + €10
+  plus20: + €20
+  plus50: + €50
+  customAmount: Or type an amount
+  amountHint: Amount in €
+  add: Add
+  addAmount: Add amount
+  dayInTotal: 'This day in total:'
+  ofTotal: of
+  previousDayTip: Previous day
+  nextDayTip: Next day
+  done: Done

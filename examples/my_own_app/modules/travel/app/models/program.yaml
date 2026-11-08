@@ -1,0 +1,14 @@
+# program: one plan of a day: time, title, where, whether it is transport or
+# an attraction, its cost in euros (0 = free), a photo (the place, or the
+# destination for transport) and its ticket (an empty code means no ticket is
+# needed).
+program:
+  time: string
+  title: localized
+  place: localized
+  kind: programKind
+  cost: number
+  image: string
+  ticketCode: string
+  ticketDetail: localized
+  ticketNote: localized

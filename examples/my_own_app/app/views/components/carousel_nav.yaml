@@ -1,5 +1,5 @@
-# CarouselNav: one chip per example (food, music, work, plants) that picks
-# the example shown in the phone, with previous/next arrows at the end.
+# CarouselNav: one chip per example (food, work, travel) that picks the
+# example shown in the phone, with previous/next arrows at the end.
 CarouselNav:
   row:
     crossAxisAlignment: center
@@ -14,17 +14,13 @@ CarouselNav:
               selected: exampleIsFood
               onSelected: showFood
           - choiceChip:
-              label: music
-              selected: exampleIsMusic
-              onSelected: showMusic
-          - choiceChip:
               label: work
               selected: exampleIsWork
               onSelected: showWork
           - choiceChip:
-              label: plants
-              selected: exampleIsPlants
-              onSelected: showPlants
+              label: travel
+              selected: exampleIsTravel
+              onSelected: showTravel
     - iconButton:
         icon: chevronLeft
         tooltip: previous

@@ -1,0 +1,50 @@
+# TripCard: one trip on the home list: its cover photo framed in a
+# white card, the name, the places and dates, and its total cost over how
+# many days it lasts.
+# Tapping it opens the trip.
+TripCard:
+  padding:
+    bottom: 14
+    child:
+      tappable:
+        onTap: openTrip
+        child:
+          container:
+            color: surface
+            radius: 22
+            padding: 8
+            child:
+              column:
+                crossAxisAlignment: stretch
+                children:
+                - image: {src: tripCover, height: 150, fit: cover, radius: 16}
+                - padding:
+                    horizontal: 8
+                    top: 12
+                    bottom: 6
+                    child:
+                      row:
+                        spacing: 12
+                        children:
+                        - expanded:
+                            column:
+                              crossAxisAlignment: start
+                              spacing: 3
+                              children:
+                              - text: {value: tripName, maxLines: 1, style: {variant: titleMedium}}
+                              - row:
+                                  spacing: 4
+                                  children:
+                                  - icon: {name: location, size: 13, color: accent}
+                                  - expanded: {text: {value: tripPlaces, maxLines: 1, style: {variant: bodySmall, color: ink2}}}
+                              - row:
+                                  spacing: 4
+                                  children:
+                                  - icon: {name: calendar, size: 13, color: ink3}
+                                  - expanded: {text: {value: tripDates, maxLines: 1, style: {variant: bodySmall, color: ink3}}}
+                        - column:
+                            crossAxisAlignment: end
+                            spacing: 2
+                            children:
+                            - text: {value: tripCost, style: {variant: titleMedium, color: primary}}
+                            - text: {value: tripLength, style: {variant: labelSmall, color: ink3}}

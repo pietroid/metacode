@@ -1,4 +1,0 @@
-# state: the music practice state: chords and today's practice minutes.
-state:
-  chords: list(chord)
-  practiceMinutes: number

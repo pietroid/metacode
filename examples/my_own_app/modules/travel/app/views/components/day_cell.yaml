@@ -1,0 +1,39 @@
+# DayCell: one day in DayGrid: its day of the month, with a small terracotta
+# dot when the trip arrives in a new city that day; filled in sea teal when
+# selected. Tapping it selects the day.
+DayCell:
+  tappable:
+    onTap: selectDay
+    child:
+      if:
+        condition: daySelected
+        then:
+          container:
+            color: primary
+            radius: 10
+            child:
+              center:
+                column:
+                  mainAxisAlignment: center
+                  spacing: 2
+                  children:
+                  - text: {value: dayCellNumber, maxLines: 1, style: {variant: titleSmall, color: onPrimary}}
+                  - if:
+                      condition: dayStartsCity
+                      then: {container: {width: 4, height: 4, radius: 2, color: onPrimary}}
+                      else: {sizedBox: {height: 4}}
+        else:
+          container:
+            color: surface
+            radius: 10
+            child:
+              center:
+                column:
+                  mainAxisAlignment: center
+                  spacing: 2
+                  children:
+                  - text: {value: dayCellNumber, maxLines: 1, style: {variant: titleSmall}}
+                  - if:
+                      condition: dayStartsCity
+                      then: {container: {width: 4, height: 4, radius: 2, color: accent}}
+                      else: {sizedBox: {height: 4}}

@@ -1,0 +1,12 @@
+# CostFigure: one figure of the CostBar: a small caption (`.label`) over an amount (`.value`).
+CostFigure:
+  padding:
+    vertical: 8
+    left: 4
+    child:
+      column:
+        crossAxisAlignment: start
+        spacing: 1
+        children:
+        - text: {value: .label, maxLines: 1, style: {variant: labelSmall, color: ink3}}
+        - text: {value: .value, maxLines: 1, style: {variant: titleMedium}}

@@ -1,0 +1,38 @@
+# Barcode: a printed-looking barcode for TicketStub, dark bars on the white
+# strip (decorative; the code is printed under it).
+Barcode:
+  center:
+    row:
+      spacing: 2
+      mainAxisAlignment: center
+      children:
+      - container: {width: 3.0, height: 40, color: '#2B1E16'}
+      - container: {width: 1.5, height: 40, color: '#2B1E16'}
+      - container: {width: 4.5, height: 40, color: '#2B1E16'}
+      - container: {width: 1.5, height: 40, color: '#2B1E16'}
+      - container: {width: 1.5, height: 40, color: '#2B1E16'}
+      - container: {width: 3.0, height: 40, color: '#2B1E16'}
+      - container: {width: 4.5, height: 40, color: '#2B1E16'}
+      - container: {width: 1.5, height: 40, color: '#2B1E16'}
+      - container: {width: 3.0, height: 40, color: '#2B1E16'}
+      - container: {width: 1.5, height: 40, color: '#2B1E16'}
+      - container: {width: 1.5, height: 40, color: '#2B1E16'}
+      - container: {width: 4.5, height: 40, color: '#2B1E16'}
+      - container: {width: 3.0, height: 40, color: '#2B1E16'}
+      - container: {width: 1.5, height: 40, color: '#2B1E16'}
+      - container: {width: 3.0, height: 40, color: '#2B1E16'}
+      - container: {width: 1.5, height: 40, color: '#2B1E16'}
+      - container: {width: 4.5, height: 40, color: '#2B1E16'}
+      - container: {width: 1.5, height: 40, color: '#2B1E16'}
+      - container: {width: 1.5, height: 40, color: '#2B1E16'}
+      - container: {width: 3.0, height: 40, color: '#2B1E16'}
+      - container: {width: 1.5, height: 40, color: '#2B1E16'}
+      - container: {width: 4.5, height: 40, color: '#2B1E16'}
+      - container: {width: 3.0, height: 40, color: '#2B1E16'}
+      - container: {width: 1.5, height: 40, color: '#2B1E16'}
+      - container: {width: 1.5, height: 40, color: '#2B1E16'}
+      - container: {width: 3.0, height: 40, color: '#2B1E16'}
+      - container: {width: 4.5, height: 40, color: '#2B1E16'}
+      - container: {width: 1.5, height: 40, color: '#2B1E16'}
+      - container: {width: 3.0, height: 40, color: '#2B1E16'}
+      - container: {width: 3.0, height: 40, color: '#2B1E16'}

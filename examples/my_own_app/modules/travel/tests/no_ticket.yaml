@@ -1,0 +1,7 @@
+# noTicket: the ticket sheet of a free plan that needs no ticket (sunset at
+# Montjuïc, day 4 of the Europe trip).
+noTicket:
+  state:
+    dayIndex: 3
+    programIndex: 1
+  route: ticket

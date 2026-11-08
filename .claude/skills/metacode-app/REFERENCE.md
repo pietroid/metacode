@@ -150,7 +150,7 @@ routes:
   confirmDelete: {dialog: ConfirmDeleteDialog}
 ```
 
-- Each route becomes a constant: `Routes.rate`. Sheets and dialogs size to their content and scroll if long; give them padding.
+- Each route becomes a constant: `Routes.rate`. Sheets and dialogs size to their content and scroll if long (a sheet grows up to 90% of the screen); give them padding.
 - Tab-style screens inside one page stay as state + `match` (see below); routes are for things that open on top.
 
 ## app/views/

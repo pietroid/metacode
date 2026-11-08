@@ -1,0 +1,5 @@
+# tripDay: the trip page on Sintra (day 2) with every plan and the food budget.
+tripDay:
+  state:
+    dayIndex: 1
+  route: trip

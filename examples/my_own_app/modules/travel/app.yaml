@@ -1,0 +1,273 @@
+# travel: the trip planner example, embedded in the landing page carousel
+# (`module: travel`). `state:` holds the initial state; types in app/models/state.yaml.
+# Every text is a localized {en, ptBr}; images are Wikimedia Commons photos
+# (credits in modules/travel/IMAGE_CREDITS.md).
+name: travel
+description: A page to plan my trips. Each day's trains and visits, their
+  tickets, a food budget, and what it all costs.
+state:
+  trips:
+  - name: {"en": "Grand tour of Europe", "ptBr": "Grande tour pela Europa"}
+    places: {"en": "Lisbon · Barcelona · Paris · Florence · Rome", "ptBr": "Lisboa · Barcelona · Paris · Florença · Roma"}
+    dates: {"en": "Jun 2 – 17, 2027", "ptBr": "2 a 17 de jun de 2027"}
+    cover: examples/my_own_app/app/views/style/images/travel_europe.jpg
+    days:
+    - city: {"en": "Lisbon", "ptBr": "Lisboa"}
+      date: {"en": "Wed, Jun 2", "ptBr": "Qua, 2 de jun"}
+      dayOfMonth: 2
+      image: examples/my_own_app/app/views/style/images/travel_lisbon.jpg
+      food: 40
+      programs:
+      - {"time": "07:40", "title": {"en": "Flight to Lisbon", "ptBr": "Voo para Lisboa"}, "place": {"en": "São Paulo GRU → Lisbon LIS · TP 82", "ptBr": "São Paulo GRU → Lisboa LIS · TP 82"}, "kind": "transport", "cost": 690, "image": "examples/my_own_app/app/views/style/images/travel_lisbon.jpg", "ticketCode": "TP82-H7QK2", "ticketDetail": {"en": "Seat 23A · Gate 214", "ptBr": "Assento 23A · Portão 214"}, "ticketNote": {"en": "Boarding closes 40 minutes before departure", "ptBr": "O embarque fecha 40 minutos antes da partida"}}
+      - {"time": "17:30", "title": {"en": "Tram 28 ride", "ptBr": "Passeio no elétrico 28"}, "place": {"en": "Martim Moniz", "ptBr": "Martim Moniz"}, "kind": "attraction", "cost": 3, "image": "examples/my_own_app/app/views/style/images/travel_tram28.jpg", "ticketCode": "CARRIS-28-0412", "ticketDetail": {"en": "One ride", "ptBr": "Uma viagem"}, "ticketNote": {"en": "Board at the first stop to get a window seat", "ptBr": "Embarque no primeiro ponto para pegar janela"}}
+    - city: {"en": "Lisbon", "ptBr": "Lisboa"}
+      date: {"en": "Thu, Jun 3", "ptBr": "Qui, 3 de jun"}
+      dayOfMonth: 3
+      image: examples/my_own_app/app/views/style/images/travel_belem.jpg
+      food: 45
+      programs:
+      - {"time": "09:30", "title": {"en": "Belém Tower", "ptBr": "Torre de Belém"}, "place": {"en": "Belém", "ptBr": "Belém"}, "kind": "attraction", "cost": 10, "image": "examples/my_own_app/app/views/style/images/travel_belem.jpg", "ticketCode": "BELEM-55120", "ticketDetail": {"en": "Timed entry 09:30", "ptBr": "Entrada às 09:30"}, "ticketNote": {"en": "Arrive early, the queue grows fast", "ptBr": "Chegue cedo, a fila cresce rápido"}}
+      - {"time": "11:00", "title": {"en": "Jerónimos Monastery", "ptBr": "Mosteiro dos Jerónimos"}, "place": {"en": "Belém", "ptBr": "Belém"}, "kind": "attraction", "cost": 12, "image": "examples/my_own_app/app/views/style/images/travel_jeronimos.jpg", "ticketCode": "JER-30871", "ticketDetail": {"en": "Cloister and church", "ptBr": "Claustro e igreja"}, "ticketNote": {"en": "Try a pastel de Belém next door", "ptBr": "Prove um pastel de Belém ao lado"}}
+      - {"time": "16:00", "title": {"en": "São Jorge Castle", "ptBr": "Castelo de São Jorge"}, "place": {"en": "Alfama", "ptBr": "Alfama"}, "kind": "attraction", "cost": 15, "image": "examples/my_own_app/app/views/style/images/travel_sao_jorge.jpg", "ticketCode": "CSJ-77314", "ticketDetail": {"en": "Open entry", "ptBr": "Entrada livre de horário"}, "ticketNote": {"en": "Stay for the sunset over the river", "ptBr": "Fique para o pôr do sol sobre o rio"}}
+    - city: {"en": "Sintra", "ptBr": "Sintra"}
+      date: {"en": "Fri, Jun 4", "ptBr": "Sex, 4 de jun"}
+      dayOfMonth: 4
+      image: examples/my_own_app/app/views/style/images/travel_pena.jpg
+      food: 40
+      programs:
+      - {"time": "08:40", "title": {"en": "Train to Sintra", "ptBr": "Trem para Sintra"}, "place": {"en": "Rossio → Sintra", "ptBr": "Rossio → Sintra"}, "kind": "transport", "cost": 5, "image": "examples/my_own_app/app/views/style/images/travel_pena.jpg", "ticketCode": "CP-SIN-5512", "ticketDetail": {"en": "Return ticket · Any seat", "ptBr": "Ida e volta · Assento livre"}, "ticketNote": {"en": "Trains leave every 20 minutes", "ptBr": "Trens saem a cada 20 minutos"}}
+      - {"time": "10:00", "title": {"en": "Pena Palace", "ptBr": "Palácio da Pena"}, "place": {"en": "Sintra hills", "ptBr": "Serra de Sintra"}, "kind": "attraction", "cost": 20, "image": "examples/my_own_app/app/views/style/images/travel_pena.jpg", "ticketCode": "PENA-77310", "ticketDetail": {"en": "Timed entry 10:00", "ptBr": "Entrada às 10:00"}, "ticketNote": {"en": "Show the code at the gate", "ptBr": "Mostre o código na entrada"}}
+      - {"time": "14:30", "title": {"en": "Quinta da Regaleira", "ptBr": "Quinta da Regaleira"}, "place": {"en": "Old town", "ptBr": "Centro histórico"}, "kind": "attraction", "cost": 15, "image": "examples/my_own_app/app/views/style/images/travel_regaleira.jpg", "ticketCode": "QR-40912", "ticketDetail": {"en": "Open entry", "ptBr": "Entrada livre de horário"}, "ticketNote": {"en": "The initiation well is worth the queue", "ptBr": "O poço iniciático vale a fila"}}
+    - city: {"en": "Barcelona", "ptBr": "Barcelona"}
+      date: {"en": "Sat, Jun 5", "ptBr": "Sáb, 5 de jun"}
+      dayOfMonth: 5
+      image: examples/my_own_app/app/views/style/images/travel_barcelona.jpg
+      food: 45
+      programs:
+      - {"time": "10:15", "title": {"en": "Flight to Barcelona", "ptBr": "Voo para Barcelona"}, "place": {"en": "Lisbon LIS → Barcelona BCN · VY 8461", "ptBr": "Lisboa LIS → Barcelona BCN · VY 8461"}, "kind": "transport", "cost": 89, "image": "examples/my_own_app/app/views/style/images/travel_barcelona.jpg", "ticketCode": "VY8461-MZ3", "ticketDetail": {"en": "Seat 12F", "ptBr": "Assento 12F"}, "ticketNote": {"en": "Cabin bag only, 10 kg", "ptBr": "Só bagagem de mão, 10 kg"}}
+      - {"time": "19:30", "title": {"en": "Sunset at Montjuïc", "ptBr": "Pôr do sol em Montjuïc"}, "place": {"en": "Montjuïc hill", "ptBr": "Morro de Montjuïc"}, "kind": "attraction", "cost": 0, "image": "examples/my_own_app/app/views/style/images/travel_montjuic.jpg", "ticketCode": "", "ticketDetail": {"en": "", "ptBr": ""}, "ticketNote": {"en": "Take the cable car up, walk down", "ptBr": "Suba de teleférico, desça a pé"}}
+    - city: {"en": "Barcelona", "ptBr": "Barcelona"}
+      date: {"en": "Sun, Jun 6", "ptBr": "Dom, 6 de jun"}
+      dayOfMonth: 6
+      image: examples/my_own_app/app/views/style/images/travel_sagrada.jpg
+      food: 50
+      programs:
+      - {"time": "09:00", "title": {"en": "Sagrada Família", "ptBr": "Sagrada Família"}, "place": {"en": "Eixample", "ptBr": "Eixample"}, "kind": "attraction", "cost": 33, "image": "examples/my_own_app/app/views/style/images/travel_sagrada.jpg", "ticketCode": "SF-209931", "ticketDetail": {"en": "Timed entry 09:00 · With audio guide", "ptBr": "Entrada às 09:00 · Com audioguia"}, "ticketNote": {"en": "Morning light through the stained glass is the best", "ptBr": "A luz da manhã nos vitrais é a melhor"}}
+      - {"time": "15:00", "title": {"en": "Casa Batlló", "ptBr": "Casa Batlló"}, "place": {"en": "Passeig de Gràcia", "ptBr": "Passeig de Gràcia"}, "kind": "attraction", "cost": 35, "image": "examples/my_own_app/app/views/style/images/travel_batllo.jpg", "ticketCode": "CB-44187", "ticketDetail": {"en": "Blue ticket · 15:00", "ptBr": "Ingresso azul · 15:00"}, "ticketNote": {"en": "The rooftop dragon is the highlight", "ptBr": "O dragão no terraço é o destaque"}}
+    - city: {"en": "Barcelona", "ptBr": "Barcelona"}
+      date: {"en": "Mon, Jun 7", "ptBr": "Seg, 7 de jun"}
+      dayOfMonth: 7
+      image: examples/my_own_app/app/views/style/images/travel_guell.jpg
+      food: 45
+      programs:
+      - {"time": "09:30", "title": {"en": "Park Güell", "ptBr": "Park Güell"}, "place": {"en": "Gràcia", "ptBr": "Gràcia"}, "kind": "attraction", "cost": 18, "image": "examples/my_own_app/app/views/style/images/travel_guell.jpg", "ticketCode": "PG-61204", "ticketDetail": {"en": "Timed entry 09:30", "ptBr": "Entrada às 09:30"}, "ticketNote": {"en": "Bus V19 stops at the gate", "ptBr": "O ônibus V19 para na entrada"}}
+      - {"time": "15:00", "title": {"en": "Museu Picasso", "ptBr": "Museu Picasso"}, "place": {"en": "El Born", "ptBr": "El Born"}, "kind": "attraction", "cost": 15, "image": "examples/my_own_app/app/views/style/images/travel_picasso.jpg", "ticketCode": "MP-11893", "ticketDetail": {"en": "Open entry", "ptBr": "Entrada livre de horário"}, "ticketNote": {"en": "Free on Thursday evenings", "ptBr": "Grátis às quintas à noite"}}
+    - city: {"en": "Paris", "ptBr": "Paris"}
+      date: {"en": "Tue, Jun 8", "ptBr": "Ter, 8 de jun"}
+      dayOfMonth: 8
+      image: examples/my_own_app/app/views/style/images/travel_paris.jpg
+      food: 50
+      programs:
+      - {"time": "08:25", "title": {"en": "Train to Paris", "ptBr": "Trem para Paris"}, "place": {"en": "Barcelona Sants → Paris Gare de Lyon · TGV 9714", "ptBr": "Barcelona Sants → Paris Gare de Lyon · TGV 9714"}, "kind": "transport", "cost": 120, "image": "examples/my_own_app/app/views/style/images/travel_paris.jpg", "ticketCode": "TGV9714-R2K", "ticketDetail": {"en": "Car 14 · Seat 63", "ptBr": "Vagão 14 · Assento 63"}, "ticketNote": {"en": "About 6.5 hours, there is a café car", "ptBr": "Cerca de 6h30, tem vagão-restaurante"}}
+      - {"time": "21:00", "title": {"en": "Seine river cruise", "ptBr": "Passeio de barco no Sena"}, "place": {"en": "Pont de l’Alma", "ptBr": "Pont de l’Alma"}, "kind": "attraction", "cost": 17, "image": "examples/my_own_app/app/views/style/images/travel_seine.jpg", "ticketCode": "BM-30219", "ticketDetail": {"en": "Evening cruise · 1 hour", "ptBr": "Passeio noturno · 1 hora"}, "ticketNote": {"en": "Sit on the upper deck for the lights", "ptBr": "Sente no deck de cima para ver as luzes"}}
+    - city: {"en": "Paris", "ptBr": "Paris"}
+      date: {"en": "Wed, Jun 9", "ptBr": "Qua, 9 de jun"}
+      dayOfMonth: 9
+      image: examples/my_own_app/app/views/style/images/travel_louvre.jpg
+      food: 55
+      programs:
+      - {"time": "09:00", "title": {"en": "Louvre Museum", "ptBr": "Museu do Louvre"}, "place": {"en": "Rue de Rivoli", "ptBr": "Rue de Rivoli"}, "kind": "attraction", "cost": 22, "image": "examples/my_own_app/app/views/style/images/travel_louvre.jpg", "ticketCode": "LV-882031", "ticketDetail": {"en": "Timed entry 09:00 · Pyramid entrance", "ptBr": "Entrada às 09:00 · Pela pirâmide"}, "ticketNote": {"en": "Go to the Mona Lisa first, then wander", "ptBr": "Veja a Mona Lisa primeiro, depois passeie"}}
+      - {"time": "18:30", "title": {"en": "Eiffel Tower summit", "ptBr": "Topo da Torre Eiffel"}, "place": {"en": "Champ de Mars", "ptBr": "Champ de Mars"}, "kind": "attraction", "cost": 36, "image": "examples/my_own_app/app/views/style/images/travel_eiffel.jpg", "ticketCode": "TE-570113", "ticketDetail": {"en": "Lift to the top · 18:30", "ptBr": "Elevador até o topo · 18:30"}, "ticketNote": {"en": "The tower sparkles on the hour after dark", "ptBr": "A torre pisca de hora em hora à noite"}}
+    - city: {"en": "Versailles", "ptBr": "Versalhes"}
+      date: {"en": "Thu, Jun 10", "ptBr": "Qui, 10 de jun"}
+      dayOfMonth: 10
+      image: examples/my_own_app/app/views/style/images/travel_versailles.jpg
+      food: 45
+      programs:
+      - {"time": "08:30", "title": {"en": "RER C to Versailles", "ptBr": "RER C para Versalhes"}, "place": {"en": "Paris → Versailles Château", "ptBr": "Paris → Versailles Château"}, "kind": "transport", "cost": 8, "image": "examples/my_own_app/app/views/style/images/travel_versailles.jpg", "ticketCode": "RATP-RERC-2207", "ticketDetail": {"en": "Return ticket", "ptBr": "Ida e volta"}, "ticketNote": {"en": "A regular metro ticket is not enough", "ptBr": "Um bilhete comum de metrô não basta"}}
+      - {"time": "09:30", "title": {"en": "Palace of Versailles", "ptBr": "Palácio de Versalhes"}, "place": {"en": "Versailles", "ptBr": "Versalhes"}, "kind": "attraction", "cost": 21, "image": "examples/my_own_app/app/views/style/images/travel_versailles.jpg", "ticketCode": "CV-938102", "ticketDetail": {"en": "Passport ticket · 09:30", "ptBr": "Ingresso Passaporte · 09:30"}, "ticketNote": {"en": "Rent a bike for the gardens", "ptBr": "Alugue uma bicicleta para os jardins"}}
+    - city: {"en": "Paris", "ptBr": "Paris"}
+      date: {"en": "Fri, Jun 11", "ptBr": "Sex, 11 de jun"}
+      dayOfMonth: 11
+      image: examples/my_own_app/app/views/style/images/travel_orsay.jpg
+      food: 50
+      programs:
+      - {"time": "09:30", "title": {"en": "Musée d'Orsay", "ptBr": "Museu d'Orsay"}, "place": {"en": "Left bank", "ptBr": "Margem esquerda"}, "kind": "attraction", "cost": 16, "image": "examples/my_own_app/app/views/style/images/travel_orsay.jpg", "ticketCode": "MO-402288", "ticketDetail": {"en": "Timed entry 09:30", "ptBr": "Entrada às 09:30"}, "ticketNote": {"en": "See the clock window on the fifth floor", "ptBr": "Veja a janela do relógio no quinto andar"}}
+      - {"time": "13:30", "title": {"en": "Sainte-Chapelle", "ptBr": "Sainte-Chapelle"}, "place": {"en": "Île de la Cité", "ptBr": "Île de la Cité"}, "kind": "attraction", "cost": 13, "image": "examples/my_own_app/app/views/style/images/travel_sainte_chapelle.jpg", "ticketCode": "SC-11840", "ticketDetail": {"en": "Timed entry 13:30", "ptBr": "Entrada às 13:30"}, "ticketNote": {"en": "Best on a sunny day", "ptBr": "Melhor em dia de sol"}}
+      - {"time": "18:00", "title": {"en": "Sacré-Cœur and Montmartre", "ptBr": "Sacré-Cœur e Montmartre"}, "place": {"en": "Montmartre", "ptBr": "Montmartre"}, "kind": "attraction", "cost": 0, "image": "examples/my_own_app/app/views/style/images/travel_sacre_coeur.jpg", "ticketCode": "", "ticketDetail": {"en": "", "ptBr": ""}, "ticketNote": {"en": "Walk the back streets down to Abbesses", "ptBr": "Desça pelas ruelas até Abbesses"}}
+    - city: {"en": "Florence", "ptBr": "Florença"}
+      date: {"en": "Sat, Jun 12", "ptBr": "Sáb, 12 de jun"}
+      dayOfMonth: 12
+      image: examples/my_own_app/app/views/style/images/travel_florence.jpg
+      food: 45
+      programs:
+      - {"time": "11:20", "title": {"en": "Flight to Florence", "ptBr": "Voo para Florença"}, "place": {"en": "Paris CDG → Florence FLR · AF 1366", "ptBr": "Paris CDG → Florença FLR · AF 1366"}, "kind": "transport", "cost": 110, "image": "examples/my_own_app/app/views/style/images/travel_florence.jpg", "ticketCode": "AF1366-TQ8", "ticketDetail": {"en": "Seat 8C", "ptBr": "Assento 8C"}, "ticketNote": {"en": "Tram T2 takes you to the centre", "ptBr": "O bonde T2 leva ao centro"}}
+      - {"time": "19:00", "title": {"en": "Ponte Vecchio at dusk", "ptBr": "Ponte Vecchio ao entardecer"}, "place": {"en": "Arno river", "ptBr": "Rio Arno"}, "kind": "attraction", "cost": 0, "image": "examples/my_own_app/app/views/style/images/travel_ponte_vecchio.jpg", "ticketCode": "", "ticketDetail": {"en": "", "ptBr": ""}, "ticketNote": {"en": "Gelato on the bridge is mandatory", "ptBr": "Gelato na ponte é obrigatório"}}
+    - city: {"en": "Florence", "ptBr": "Florença"}
+      date: {"en": "Sun, Jun 13", "ptBr": "Dom, 13 de jun"}
+      dayOfMonth: 13
+      image: examples/my_own_app/app/views/style/images/travel_duomo.jpg
+      food: 50
+      programs:
+      - {"time": "08:15", "title": {"en": "Duomo dome climb", "ptBr": "Subida à cúpula do Duomo"}, "place": {"en": "Piazza del Duomo", "ptBr": "Piazza del Duomo"}, "kind": "attraction", "cost": 30, "image": "examples/my_own_app/app/views/style/images/travel_duomo.jpg", "ticketCode": "OPA-773021", "ticketDetail": {"en": "Dome slot 08:15 · 463 steps", "ptBr": "Horário da cúpula 08:15 · 463 degraus"}, "ticketNote": {"en": "No large bags on the climb", "ptBr": "Sem bolsas grandes na subida"}}
+      - {"time": "14:00", "title": {"en": "Uffizi Gallery", "ptBr": "Galeria Uffizi"}, "place": {"en": "Piazzale degli Uffizi", "ptBr": "Piazzale degli Uffizi"}, "kind": "attraction", "cost": 25, "image": "examples/my_own_app/app/views/style/images/travel_uffizi.jpg", "ticketCode": "UFF-519034", "ticketDetail": {"en": "Timed entry 14:00", "ptBr": "Entrada às 14:00"}, "ticketNote": {"en": "Botticelli rooms are on the second floor", "ptBr": "As salas de Botticelli ficam no segundo andar"}}
+    - city: {"en": "Rome", "ptBr": "Roma"}
+      date: {"en": "Mon, Jun 14", "ptBr": "Seg, 14 de jun"}
+      dayOfMonth: 14
+      image: examples/my_own_app/app/views/style/images/travel_accademia.jpg
+      food: 45
+      programs:
+      - {"time": "08:30", "title": {"en": "Accademia Gallery (David)", "ptBr": "Galeria da Academia (Davi)"}, "place": {"en": "San Marco", "ptBr": "San Marco"}, "kind": "attraction", "cost": 16, "image": "examples/my_own_app/app/views/style/images/travel_accademia.jpg", "ticketCode": "GA-208817", "ticketDetail": {"en": "Timed entry 08:30", "ptBr": "Entrada às 08:30"}, "ticketNote": {"en": "David is at the end of the main hall", "ptBr": "O Davi fica no fim do salão principal"}}
+      - {"time": "13:10", "title": {"en": "Train to Rome", "ptBr": "Trem para Roma"}, "place": {"en": "Firenze SMN → Roma Termini · FR 9531", "ptBr": "Firenze SMN → Roma Termini · FR 9531"}, "kind": "transport", "cost": 35, "image": "examples/my_own_app/app/views/style/images/travel_rome.jpg", "ticketCode": "FR9531-PL4", "ticketDetail": {"en": "Car 5 · Seat 9D", "ptBr": "Vagão 5 · Assento 9D"}, "ticketNote": {"en": "Validate nothing, it is a reserved seat", "ptBr": "Não precisa validar, o assento é reservado"}}
+    - city: {"en": "Rome", "ptBr": "Roma"}
+      date: {"en": "Tue, Jun 15", "ptBr": "Ter, 15 de jun"}
+      dayOfMonth: 15
+      image: examples/my_own_app/app/views/style/images/travel_colosseum.jpg
+      food: 50
+      programs:
+      - {"time": "09:00", "title": {"en": "Colosseum", "ptBr": "Coliseu"}, "place": {"en": "Piazza del Colosseo", "ptBr": "Piazza del Colosseo"}, "kind": "attraction", "cost": 18, "image": "examples/my_own_app/app/views/style/images/travel_colosseum.jpg", "ticketCode": "COL-660194", "ticketDetail": {"en": "Timed entry 09:00 · Arena floor", "ptBr": "Entrada às 09:00 · Piso da arena"}, "ticketNote": {"en": "Bring water, there is little shade", "ptBr": "Leve água, há pouca sombra"}}
+      - {"time": "11:00", "title": {"en": "Roman Forum and Palatine", "ptBr": "Fórum Romano e Palatino"}, "place": {"en": "Via dei Fori Imperiali", "ptBr": "Via dei Fori Imperiali"}, "kind": "attraction", "cost": 0, "image": "examples/my_own_app/app/views/style/images/travel_forum.jpg", "ticketCode": "COL-660194", "ticketDetail": {"en": "Included with the Colosseum ticket", "ptBr": "Incluído no ingresso do Coliseu"}, "ticketNote": {"en": "Same code as the Colosseum", "ptBr": "Mesmo código do Coliseu"}}
+      - {"time": "21:00", "title": {"en": "Trevi Fountain by night", "ptBr": "Fontana di Trevi à noite"}, "place": {"en": "Trevi", "ptBr": "Trevi"}, "kind": "attraction", "cost": 0, "image": "examples/my_own_app/app/views/style/images/travel_trevi.jpg", "ticketCode": "", "ticketDetail": {"en": "", "ptBr": ""}, "ticketNote": {"en": "Toss a coin with your right hand over your left shoulder", "ptBr": "Jogue a moeda com a mão direita por cima do ombro esquerdo"}}
+    - city: {"en": "Rome", "ptBr": "Roma"}
+      date: {"en": "Wed, Jun 16", "ptBr": "Qua, 16 de jun"}
+      dayOfMonth: 16
+      image: examples/my_own_app/app/views/style/images/travel_vatican.jpg
+      food: 50
+      programs:
+      - {"time": "08:00", "title": {"en": "Vatican Museums", "ptBr": "Museus Vaticanos"}, "place": {"en": "Vatican City", "ptBr": "Cidade do Vaticano"}, "kind": "attraction", "cost": 20, "image": "examples/my_own_app/app/views/style/images/travel_vatican.jpg", "ticketCode": "MV-9910283", "ticketDetail": {"en": "Early entry 08:00 · Sistine Chapel", "ptBr": "Entrada antecipada 08:00 · Capela Sistina"}, "ticketNote": {"en": "Shoulders and knees covered", "ptBr": "Ombros e joelhos cobertos"}}
+      - {"time": "12:30", "title": {"en": "St. Peter's dome", "ptBr": "Cúpula de São Pedro"}, "place": {"en": "St. Peter's Square", "ptBr": "Praça de São Pedro"}, "kind": "attraction", "cost": 10, "image": "examples/my_own_app/app/views/style/images/travel_st_peters.jpg", "ticketCode": "SPD-40821", "ticketDetail": {"en": "Lift and stairs", "ptBr": "Elevador e escadas"}, "ticketNote": {"en": "The view over the square is unbeatable", "ptBr": "A vista da praça é imbatível"}}
+      - {"time": "17:00", "title": {"en": "Pantheon", "ptBr": "Panteão"}, "place": {"en": "Piazza della Rotonda", "ptBr": "Piazza della Rotonda"}, "kind": "attraction", "cost": 5, "image": "examples/my_own_app/app/views/style/images/travel_pantheon.jpg", "ticketCode": "PAN-12077", "ticketDetail": {"en": "Open entry", "ptBr": "Entrada livre de horário"}, "ticketNote": {"en": "Look up at the oculus", "ptBr": "Olhe para o óculo no teto"}}
+    - city: {"en": "Rome", "ptBr": "Roma"}
+      date: {"en": "Thu, Jun 17", "ptBr": "Qui, 17 de jun"}
+      dayOfMonth: 17
+      image: examples/my_own_app/app/views/style/images/travel_borghese.jpg
+      food: 35
+      programs:
+      - {"time": "09:00", "title": {"en": "Borghese Gallery", "ptBr": "Galeria Borghese"}, "place": {"en": "Villa Borghese", "ptBr": "Villa Borghese"}, "kind": "attraction", "cost": 15, "image": "examples/my_own_app/app/views/style/images/travel_borghese.jpg", "ticketCode": "GB-31502", "ticketDetail": {"en": "2-hour slot · 09:00", "ptBr": "Horário de 2 horas · 09:00"}, "ticketNote": {"en": "Bernini sculptures on the ground floor", "ptBr": "Esculturas de Bernini no térreo"}}
+      - {"time": "21:50", "title": {"en": "Flight home", "ptBr": "Voo de volta"}, "place": {"en": "Rome FCO → São Paulo GRU · AZ 674", "ptBr": "Roma FCO → São Paulo GRU · AZ 674"}, "kind": "transport", "cost": 640, "image": "examples/my_own_app/app/views/style/images/travel_rome.jpg", "ticketCode": "AZ674-WB5", "ticketDetail": {"en": "Seat 31K", "ptBr": "Assento 31K"}, "ticketNote": {"en": "Leave the hotel by 18:30", "ptBr": "Saia do hotel até 18:30"}}
+  - name: {"en": "Egypt and the Nile", "ptBr": "Egito e o Nilo"}
+    places: {"en": "Cairo · Luxor · Aswan · Red Sea", "ptBr": "Cairo · Luxor · Assuã · Mar Vermelho"}
+    dates: {"en": "Oct 10 – 24, 2027", "ptBr": "10 a 24 de out de 2027"}
+    cover: examples/my_own_app/app/views/style/images/travel_egypt.jpg
+    days:
+    - city: {"en": "Cairo", "ptBr": "Cairo"}
+      date: {"en": "Sun, Oct 10", "ptBr": "Dom, 10 de out"}
+      dayOfMonth: 10
+      image: examples/my_own_app/app/views/style/images/travel_cairo.jpg
+      food: 25
+      programs:
+      - {"time": "01:15", "title": {"en": "Flight to Cairo", "ptBr": "Voo para o Cairo"}, "place": {"en": "São Paulo GRU → Cairo CAI · MS 876", "ptBr": "São Paulo GRU → Cairo CAI · MS 876"}, "kind": "transport", "cost": 820, "image": "examples/my_own_app/app/views/style/images/travel_cairo.jpg", "ticketCode": "MS876-KD3", "ticketDetail": {"en": "Seat 34C · Gate 302", "ptBr": "Assento 34C · Portão 302"}, "ticketNote": {"en": "Visa on arrival, bring 25 US dollars in cash", "ptBr": "Visto na chegada, leve 25 dólares em espécie"}}
+      - {"time": "19:00", "title": {"en": "Khan el-Khalili bazaar", "ptBr": "Bazar Khan el-Khalili"}, "place": {"en": "Islamic Cairo", "ptBr": "Cairo Islâmico"}, "kind": "attraction", "cost": 0, "image": "examples/my_own_app/app/views/style/images/travel_khan.jpg", "ticketCode": "", "ticketDetail": {"en": "", "ptBr": ""}, "ticketNote": {"en": "Haggling is expected, start at a third", "ptBr": "Pechinchar é esperado, comece em um terço"}}
+    - city: {"en": "Giza", "ptBr": "Gizé"}
+      date: {"en": "Mon, Oct 11", "ptBr": "Seg, 11 de out"}
+      dayOfMonth: 11
+      image: examples/my_own_app/app/views/style/images/travel_egypt.jpg
+      food: 25
+      programs:
+      - {"time": "08:00", "title": {"en": "Pyramids of Giza", "ptBr": "Pirâmides de Gizé"}, "place": {"en": "Giza plateau", "ptBr": "Planalto de Gizé"}, "kind": "attraction", "cost": 27, "image": "examples/my_own_app/app/views/style/images/travel_egypt.jpg", "ticketCode": "GIZA-208114", "ticketDetail": {"en": "Plateau entry · 08:00", "ptBr": "Entrada no planalto · 08:00"}, "ticketNote": {"en": "Go at opening, before the heat and the buses", "ptBr": "Vá na abertura, antes do calor e dos ônibus"}}
+      - {"time": "11:00", "title": {"en": "Great Sphinx", "ptBr": "Grande Esfinge"}, "place": {"en": "Giza plateau", "ptBr": "Planalto de Gizé"}, "kind": "attraction", "cost": 0, "image": "examples/my_own_app/app/views/style/images/travel_sphinx.jpg", "ticketCode": "GIZA-208114", "ticketDetail": {"en": "Included with the plateau ticket", "ptBr": "Incluída no ingresso do planalto"}, "ticketNote": {"en": "Same code as the pyramids", "ptBr": "Mesmo código das pirâmides"}}
+    - city: {"en": "Cairo", "ptBr": "Cairo"}
+      date: {"en": "Tue, Oct 12", "ptBr": "Ter, 12 de out"}
+      dayOfMonth: 12
+      image: examples/my_own_app/app/views/style/images/travel_gem.jpg
+      food: 25
+      programs:
+      - {"time": "09:00", "title": {"en": "Grand Egyptian Museum", "ptBr": "Grande Museu Egípcio"}, "place": {"en": "Giza", "ptBr": "Gizé"}, "kind": "attraction", "cost": 30, "image": "examples/my_own_app/app/views/style/images/travel_gem.jpg", "ticketCode": "GEM-551093", "ticketDetail": {"en": "Timed entry 09:00 · Tutankhamun galleries", "ptBr": "Entrada às 09:00 · Galerias de Tutancâmon"}, "ticketNote": {"en": "Plan at least four hours", "ptBr": "Reserve pelo menos quatro horas"}}
+      - {"time": "15:30", "title": {"en": "Cairo Citadel", "ptBr": "Cidadela do Cairo"}, "place": {"en": "Salah Salem", "ptBr": "Salah Salem"}, "kind": "attraction", "cost": 12, "image": "examples/my_own_app/app/views/style/images/travel_citadel.jpg", "ticketCode": "CIT-40377", "ticketDetail": {"en": "Open entry", "ptBr": "Entrada livre de horário"}, "ticketNote": {"en": "The Muhammad Ali Mosque terrace has the best view", "ptBr": "O terraço da Mesquita de Muhammad Ali tem a melhor vista"}}
+    - city: {"en": "Cairo", "ptBr": "Cairo"}
+      date: {"en": "Wed, Oct 13", "ptBr": "Qua, 13 de out"}
+      dayOfMonth: 13
+      image: examples/my_own_app/app/views/style/images/travel_saqqara.jpg
+      food: 25
+      programs:
+      - {"time": "08:30", "title": {"en": "Step Pyramid of Saqqara", "ptBr": "Pirâmide de Degraus de Saqqara"}, "place": {"en": "Saqqara", "ptBr": "Saqqara"}, "kind": "attraction", "cost": 25, "image": "examples/my_own_app/app/views/style/images/travel_saqqara.jpg", "ticketCode": "SAQ-71208", "ticketDetail": {"en": "Site entry", "ptBr": "Entrada no sítio"}, "ticketNote": {"en": "Book a driver for the morning", "ptBr": "Reserve um motorista para a manhã"}}
+      - {"time": "15:00", "title": {"en": "Egyptian Museum", "ptBr": "Museu Egípcio"}, "place": {"en": "Tahrir Square", "ptBr": "Praça Tahrir"}, "kind": "attraction", "cost": 12, "image": "examples/my_own_app/app/views/style/images/travel_egyptian_museum.jpg", "ticketCode": "EMC-30921", "ticketDetail": {"en": "Open entry", "ptBr": "Entrada livre de horário"}, "ticketNote": {"en": "Smaller and older than the GEM, full of treasures", "ptBr": "Menor e mais antigo que o GEM, cheio de tesouros"}}
+    - city: {"en": "Luxor", "ptBr": "Luxor"}
+      date: {"en": "Thu, Oct 14", "ptBr": "Qui, 14 de out"}
+      dayOfMonth: 14
+      image: examples/my_own_app/app/views/style/images/travel_luxor.jpg
+      food: 20
+      programs:
+      - {"time": "07:00", "title": {"en": "Flight to Luxor", "ptBr": "Voo para Luxor"}, "place": {"en": "Cairo CAI → Luxor LXR · MS 351", "ptBr": "Cairo CAI → Luxor LXR · MS 351"}, "kind": "transport", "cost": 70, "image": "examples/my_own_app/app/views/style/images/travel_luxor.jpg", "ticketCode": "MS351-TA9", "ticketDetail": {"en": "Seat 14A", "ptBr": "Assento 14A"}, "ticketNote": {"en": "Domestic terminal 3", "ptBr": "Terminal doméstico 3"}}
+      - {"time": "18:00", "title": {"en": "Luxor Temple at dusk", "ptBr": "Templo de Luxor ao entardecer"}, "place": {"en": "East bank", "ptBr": "Margem leste"}, "kind": "attraction", "cost": 20, "image": "examples/my_own_app/app/views/style/images/travel_luxor_temple.jpg", "ticketCode": "LXT-22014", "ticketDetail": {"en": "Evening entry", "ptBr": "Entrada noturna"}, "ticketNote": {"en": "Lit up after sunset", "ptBr": "Iluminado depois do pôr do sol"}}
+    - city: {"en": "Luxor", "ptBr": "Luxor"}
+      date: {"en": "Fri, Oct 15", "ptBr": "Sex, 15 de out"}
+      dayOfMonth: 15
+      image: examples/my_own_app/app/views/style/images/travel_karnak.jpg
+      food: 20
+      programs:
+      - {"time": "06:00", "title": {"en": "Karnak Temple", "ptBr": "Templo de Karnak"}, "place": {"en": "East bank", "ptBr": "Margem leste"}, "kind": "attraction", "cost": 25, "image": "examples/my_own_app/app/views/style/images/travel_karnak.jpg", "ticketCode": "KAR-90215", "ticketDetail": {"en": "Open entry", "ptBr": "Entrada livre de horário"}, "ticketNote": {"en": "The hypostyle hall is best in early light", "ptBr": "O salão hipostilo é melhor na luz da manhã"}}
+    - city: {"en": "Luxor", "ptBr": "Luxor"}
+      date: {"en": "Sat, Oct 16", "ptBr": "Sáb, 16 de out"}
+      dayOfMonth: 16
+      image: examples/my_own_app/app/views/style/images/travel_valley_kings.jpg
+      food: 20
+      programs:
+      - {"time": "06:30", "title": {"en": "Valley of the Kings", "ptBr": "Vale dos Reis"}, "place": {"en": "West bank", "ptBr": "Margem oeste"}, "kind": "attraction", "cost": 30, "image": "examples/my_own_app/app/views/style/images/travel_valley_kings.jpg", "ticketCode": "VOK-61833", "ticketDetail": {"en": "Three tombs included", "ptBr": "Três tumbas incluídas"}, "ticketNote": {"en": "Tutankhamun’s tomb is an extra ticket", "ptBr": "A tumba de Tutancâmon é um ingresso à parte"}}
+      - {"time": "10:30", "title": {"en": "Temple of Hatshepsut", "ptBr": "Templo de Hatshepsut"}, "place": {"en": "Deir el-Bahari", "ptBr": "Deir el-Bahari"}, "kind": "attraction", "cost": 12, "image": "examples/my_own_app/app/views/style/images/travel_hatshepsut.jpg", "ticketCode": "HAT-30140", "ticketDetail": {"en": "Open entry", "ptBr": "Entrada livre de horário"}, "ticketNote": {"en": "Little shade, bring a hat", "ptBr": "Pouca sombra, leve chapéu"}}
+      - {"time": "12:30", "title": {"en": "Colossi of Memnon", "ptBr": "Colossos de Mêmnon"}, "place": {"en": "West bank", "ptBr": "Margem oeste"}, "kind": "attraction", "cost": 0, "image": "examples/my_own_app/app/views/style/images/travel_memnon.jpg", "ticketCode": "", "ticketDetail": {"en": "", "ptBr": ""}, "ticketNote": {"en": "A quick roadside stop", "ptBr": "Uma parada rápida na estrada"}}
+    - city: {"en": "On the Nile", "ptBr": "No Nilo"}
+      date: {"en": "Sun, Oct 17", "ptBr": "Dom, 17 de out"}
+      dayOfMonth: 17
+      image: examples/my_own_app/app/views/style/images/travel_felucca.jpg
+      food: 10
+      programs:
+      - {"time": "12:00", "title": {"en": "Nile cruise to Aswan", "ptBr": "Cruzeiro no Nilo até Assuã"}, "place": {"en": "Luxor → Aswan · 3 nights", "ptBr": "Luxor → Assuã · 3 noites"}, "kind": "transport", "cost": 480, "image": "examples/my_own_app/app/views/style/images/travel_felucca.jpg", "ticketCode": "NILE-STAR-118", "ticketDetail": {"en": "Cabin 214 · Full board", "ptBr": "Cabine 214 · Pensão completa"}, "ticketNote": {"en": "Meals are included, drinks are not", "ptBr": "Refeições incluídas, bebidas não"}}
+    - city: {"en": "Edfu · Kom Ombo", "ptBr": "Edfu · Kom Ombo"}
+      date: {"en": "Mon, Oct 18", "ptBr": "Seg, 18 de out"}
+      dayOfMonth: 18
+      image: examples/my_own_app/app/views/style/images/travel_edfu.jpg
+      food: 10
+      programs:
+      - {"time": "08:00", "title": {"en": "Temple of Edfu", "ptBr": "Templo de Edfu"}, "place": {"en": "Edfu", "ptBr": "Edfu"}, "kind": "attraction", "cost": 12, "image": "examples/my_own_app/app/views/style/images/travel_edfu.jpg", "ticketCode": "EDF-11029", "ticketDetail": {"en": "Open entry", "ptBr": "Entrada livre de horário"}, "ticketNote": {"en": "The best preserved temple in Egypt", "ptBr": "O templo mais bem preservado do Egito"}}
+      - {"time": "17:30", "title": {"en": "Kom Ombo Temple", "ptBr": "Templo de Kom Ombo"}, "place": {"en": "Kom Ombo", "ptBr": "Kom Ombo"}, "kind": "attraction", "cost": 10, "image": "examples/my_own_app/app/views/style/images/travel_kom_ombo.jpg", "ticketCode": "KOM-40912", "ticketDetail": {"en": "Open entry", "ptBr": "Entrada livre de horário"}, "ticketNote": {"en": "See the crocodile museum next door", "ptBr": "Veja o museu dos crocodilos ao lado"}}
+    - city: {"en": "Aswan", "ptBr": "Assuã"}
+      date: {"en": "Tue, Oct 19", "ptBr": "Ter, 19 de out"}
+      dayOfMonth: 19
+      image: examples/my_own_app/app/views/style/images/travel_aswan.jpg
+      food: 20
+      programs:
+      - {"time": "09:00", "title": {"en": "Philae Temple", "ptBr": "Templo de Philae"}, "place": {"en": "Agilkia island", "ptBr": "Ilha de Agilkia"}, "kind": "attraction", "cost": 15, "image": "examples/my_own_app/app/views/style/images/travel_philae.jpg", "ticketCode": "PHI-50381", "ticketDetail": {"en": "Boat and entry", "ptBr": "Barco e entrada"}, "ticketNote": {"en": "Agree the boat price before you go", "ptBr": "Combine o preço do barco antes"}}
+      - {"time": "16:30", "title": {"en": "Felucca sail at sunset", "ptBr": "Passeio de felucca ao pôr do sol"}, "place": {"en": "Aswan corniche", "ptBr": "Orla de Assuã"}, "kind": "attraction", "cost": 15, "image": "examples/my_own_app/app/views/style/images/travel_felucca.jpg", "ticketCode": "FEL-0921", "ticketDetail": {"en": "1 hour · Private boat", "ptBr": "1 hora · Barco privativo"}, "ticketNote": {"en": "Pay the captain at the end", "ptBr": "Pague o capitão no final"}}
+    - city: {"en": "Abu Simbel", "ptBr": "Abu Simbel"}
+      date: {"en": "Wed, Oct 20", "ptBr": "Qua, 20 de out"}
+      dayOfMonth: 20
+      image: examples/my_own_app/app/views/style/images/travel_abu_simbel.jpg
+      food: 20
+      programs:
+      - {"time": "04:00", "title": {"en": "Bus to Abu Simbel", "ptBr": "Ônibus para Abu Simbel"}, "place": {"en": "Aswan → Abu Simbel · 3 hours", "ptBr": "Assuã → Abu Simbel · 3 horas"}, "kind": "transport", "cost": 35, "image": "examples/my_own_app/app/views/style/images/travel_abu_simbel.jpg", "ticketCode": "BUS-ABS-0400", "ticketDetail": {"en": "Seat 7 · Return", "ptBr": "Assento 7 · Ida e volta"}, "ticketNote": {"en": "Bring breakfast, the bus leaves before dawn", "ptBr": "Leve café da manhã, o ônibus sai antes do amanhecer"}}
+      - {"time": "07:30", "title": {"en": "Abu Simbel temples", "ptBr": "Templos de Abu Simbel"}, "place": {"en": "Lake Nasser", "ptBr": "Lago Nasser"}, "kind": "attraction", "cost": 25, "image": "examples/my_own_app/app/views/style/images/travel_abu_simbel.jpg", "ticketCode": "ABS-77219", "ticketDetail": {"en": "Both temples", "ptBr": "Os dois templos"}, "ticketNote": {"en": "Ramses II, carved into the mountain", "ptBr": "Ramsés II, esculpido na montanha"}}
+    - city: {"en": "Hurghada", "ptBr": "Hurghada"}
+      date: {"en": "Thu, Oct 21", "ptBr": "Qui, 21 de out"}
+      dayOfMonth: 21
+      image: examples/my_own_app/app/views/style/images/travel_hurghada.jpg
+      food: 30
+      programs:
+      - {"time": "10:40", "title": {"en": "Flight to Hurghada", "ptBr": "Voo para Hurghada"}, "place": {"en": "Aswan ASW → Hurghada HRG · via Cairo", "ptBr": "Assuã ASW → Hurghada HRG · via Cairo"}, "kind": "transport", "cost": 80, "image": "examples/my_own_app/app/views/style/images/travel_hurghada.jpg", "ticketCode": "MS3402-HR1", "ticketDetail": {"en": "Seat 10B", "ptBr": "Assento 10B"}, "ticketNote": {"en": "Short connection in Cairo", "ptBr": "Conexão curta no Cairo"}}
+      - {"time": "16:00", "title": {"en": "Beach afternoon", "ptBr": "Tarde de praia"}, "place": {"en": "El Gouna beach", "ptBr": "Praia de El Gouna"}, "kind": "attraction", "cost": 0, "image": "examples/my_own_app/app/views/style/images/travel_hurghada.jpg", "ticketCode": "", "ticketDetail": {"en": "", "ptBr": ""}, "ticketNote": {"en": "Reef shoes help on the rocks", "ptBr": "Sapatilha ajuda nas pedras"}}
+    - city: {"en": "Hurghada", "ptBr": "Hurghada"}
+      date: {"en": "Fri, Oct 22", "ptBr": "Sex, 22 de out"}
+      dayOfMonth: 22
+      image: examples/my_own_app/app/views/style/images/travel_giftun.jpg
+      food: 30
+      programs:
+      - {"time": "08:30", "title": {"en": "Giftun Island snorkel trip", "ptBr": "Snorkel na Ilha Giftun"}, "place": {"en": "Hurghada marina", "ptBr": "Marina de Hurghada"}, "kind": "attraction", "cost": 45, "image": "examples/my_own_app/app/views/style/images/travel_giftun.jpg", "ticketCode": "GIF-30812", "ticketDetail": {"en": "Boat · Lunch · Gear", "ptBr": "Barco · Almoço · Equipamento"}, "ticketNote": {"en": "Reef-safe sunscreen only", "ptBr": "Só protetor solar seguro para corais"}}
+    - city: {"en": "Hurghada", "ptBr": "Hurghada"}
+      date: {"en": "Sat, Oct 23", "ptBr": "Sáb, 23 de out"}
+      dayOfMonth: 23
+      image: examples/my_own_app/app/views/style/images/travel_hurghada.jpg
+      food: 30
+      programs:
+      - {"time": "09:00", "title": {"en": "Red Sea intro dive", "ptBr": "Mergulho de batismo no Mar Vermelho"}, "place": {"en": "Hurghada marina", "ptBr": "Marina de Hurghada"}, "kind": "attraction", "cost": 60, "image": "examples/my_own_app/app/views/style/images/travel_giftun.jpg", "ticketCode": "DIVE-RS-118", "ticketDetail": {"en": "2 dives with an instructor", "ptBr": "2 mergulhos com instrutor"}, "ticketNote": {"en": "No flying within 24 hours of diving", "ptBr": "Não voe nas 24 horas após o mergulho"}}
+    - city: {"en": "Cairo", "ptBr": "Cairo"}
+      date: {"en": "Sun, Oct 24", "ptBr": "Dom, 24 de out"}
+      dayOfMonth: 24
+      image: examples/my_own_app/app/views/style/images/travel_cairo.jpg
+      food: 15
+      programs:
+      - {"time": "14:00", "title": {"en": "Flight home", "ptBr": "Voo de volta"}, "place": {"en": "Hurghada HRG → Cairo CAI → São Paulo GRU", "ptBr": "Hurghada HRG → Cairo CAI → São Paulo GRU"}, "kind": "transport", "cost": 0, "image": "examples/my_own_app/app/views/style/images/travel_cairo.jpg", "ticketCode": "MS877-KD3", "ticketDetail": {"en": "Seat 33C · Return leg", "ptBr": "Assento 33C · Trecho de volta"}, "ticketNote": {"en": "Part of the round-trip ticket", "ptBr": "Faz parte da passagem de ida e volta"}}
+  tripIndex: 0
+  dayIndex: 0
+  filter: all
+  programIndex: 0
+  budgetDraft: ''

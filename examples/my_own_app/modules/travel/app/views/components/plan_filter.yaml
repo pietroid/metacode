@@ -1,0 +1,10 @@
+# PlanFilter: three chips that filter the day's plans: all, transport only,
+# attractions only.
+PlanFilter:
+  wrap:
+    spacing: 8
+    runSpacing: 8
+    children:
+    - choiceChip: {label: allPlans, selected: filterIsAll, onSelected: showAllPlans}
+    - choiceChip: {label: transport, selected: filterIsTransport, onSelected: showTransport}
+    - choiceChip: {label: attractions, selected: filterIsAttraction, onSelected: showAttractions}

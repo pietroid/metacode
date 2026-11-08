@@ -1,0 +1,8 @@
+# trip: one itinerary: its name, the places it goes, its dates, a cover photo
+# (an image path) and its days.
+trip:
+  name: localized
+  places: localized
+  dates: localized
+  cover: string
+  days: list(tripDay)
