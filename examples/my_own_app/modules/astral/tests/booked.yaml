@@ -1,0 +1,9 @@
+# booked: the reading shown with the consultation booked, and the third
+# course enrolled (its card tagged).
+booked:
+  state:
+    birthDay: '3'
+    birthMonth: '3'
+    readingStage: 5
+    consultBooked: true
+    enrolledCourse: 2

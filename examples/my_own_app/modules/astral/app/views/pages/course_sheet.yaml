@@ -1,0 +1,46 @@
+# CourseSheet: the `course` bottom sheet, one course: its level and a close
+# button, the cover, the title, what it teaches, the lessons and length and
+# the price, then the enroll button (or, once enrolled, a confirmation).
+CourseSheet:
+  padding:
+    horizontal: 20
+    top: 8
+    bottom: 24
+    child:
+      column:
+        crossAxisAlignment: stretch
+        spacing: 10
+        children:
+        - row:
+            children:
+            - container:
+                color: fill
+                radius: 999
+                padding: {horizontal: 10, vertical: 4}
+                child: {text: {value: openCourseLevel, style: {variant: labelSmall, color: accent}}}
+            - spacer: {}
+            - iconButton: {icon: close, tooltip: close, onPressed: closeSheet}
+        - image: {src: openCourseImage, width: 2000, height: 150, fit: cover, radius: 18}
+        - text: {value: openCourseTitle, maxLines: 2, style: {variant: headlineSmall}}
+        - text: {value: openCourseSummary, style: {variant: bodyMedium, color: ink2}}
+        - row:
+            spacing: 6
+            children:
+            - icon: {name: book, size: 16, color: accent}
+            - expanded: {text: {value: openCourseLength, maxLines: 1, style: {variant: bodySmall, color: ink2}}}
+            - text: {value: openCoursePrice, style: {variant: titleMedium, color: primary}}
+        - sizedBox: {height: 4}
+        - if:
+            condition: openCourseEnrolled
+            then:
+              container:
+                color: fill
+                radius: 14
+                padding: 12
+                child:
+                  row:
+                    spacing: 8
+                    children:
+                    - icon: {name: checkCircle, size: 18, color: success}
+                    - expanded: {text: {value: youreEnrolled, style: {variant: bodySmall, color: ink}}}
+            else: {filledButton: {text: enrollNow, icon: school, onPressed: enrollCourse}}

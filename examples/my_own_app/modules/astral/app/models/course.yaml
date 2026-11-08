@@ -1,0 +1,10 @@
+# course: one Venus Astrology School course: its title, level, what it
+# teaches, lessons and length, price (already in each language's currency)
+# and a cover image.
+course:
+  title: localized
+  level: localized
+  summary: localized
+  length: localized
+  price: localized
+  image: string

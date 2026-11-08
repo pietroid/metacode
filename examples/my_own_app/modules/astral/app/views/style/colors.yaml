@@ -1,0 +1,41 @@
+# colors: the palette. Widgets use these names (`color: accent`). The same
+# night palette in light and dark: the school is always a night sky.
+# Look: mystic night. Cormorant Garamond titles, Figtree text, lavender
+# actions and a gold accent on a deep violet sky, soft round corners.
+colors:
+  light:
+    bg: '#120A24'
+    surface: '#1C1236'
+    fill: '#271A48'
+    fillStrong: '#35235F'
+    line: '#2E2050'
+    lineStrong: '#4A3478'
+    ink: '#F4EEFF'
+    ink2: '#C9BAEA'
+    ink3: '#9583BD'
+    primary: '#B794FF'
+    onPrimary: '#1A0B33'
+    accent: '#E9C46A'
+    onAccent: '#2A1A05'
+    success: '#86D9B0'
+    warning: '#E9C46A'
+    danger: '#F49AAE'
+    info: '#B794FF'
+  dark:
+    bg: '#120A24'
+    surface: '#1C1236'
+    fill: '#271A48'
+    fillStrong: '#35235F'
+    line: '#2E2050'
+    lineStrong: '#4A3478'
+    ink: '#F4EEFF'
+    ink2: '#C9BAEA'
+    ink3: '#9583BD'
+    primary: '#B794FF'
+    onPrimary: '#1A0B33'
+    accent: '#E9C46A'
+    onAccent: '#2A1A05'
+    success: '#86D9B0'
+    warning: '#E9C46A'
+    danger: '#F49AAE'
+    info: '#B794FF'

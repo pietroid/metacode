@@ -1,0 +1,26 @@
+# CourseBanner: the call to take a course: the Milky Way on top, "Become an
+# astrologer", what the foundation course does, and its button (opens it).
+CourseBanner:
+  container:
+    color: fillStrong
+    radius: 24
+    borderColor: lineStrong
+    padding: 8
+    child:
+      column:
+        crossAxisAlignment: stretch
+        children:
+        - image: {src: examples/my_own_app/app/views/style/images/astral_milky_way.jpg, width: 2000, height: 130, fit: cover, radius: 18}
+        - padding:
+            horizontal: 10
+            top: 14
+            bottom: 10
+            child:
+              column:
+                crossAxisAlignment: stretch
+                spacing: 8
+                children:
+                - text: {value: bannerTitle, style: {variant: headlineSmall}}
+                - text: {value: bannerBody, style: {variant: bodySmall, color: ink2}}
+                - sizedBox: {height: 4}
+                - filledButton: {text: startTheCourse, icon: school, onPressed: openFoundation}

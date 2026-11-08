@@ -1,0 +1,82 @@
+# en: all of the app's text in English, key: text. Pure strings; values in
+# app/views/values/ join them with the state (they take `Labels labels`).
+en:
+  schoolName: VENUS
+  schoolTagline: Astrology School
+  heroEyebrow: YOUR ASTRAL MAP
+  heroTitle: The sky on the day you were born
+  heroBody: Tell us your birthday and Venus reads the stars that shaped you.
+  whenWereYouBorn: When were you born?
+  birthHint: Your day and month set your sun sign; the week sets your moon and rising.
+  day: Day
+  month: Month
+  pickADate: Pick your day and month first.
+  dateDoesNotExist: That date doesn't exist. Check the day.
+  revealMyMap: Reveal my astral map
+  aligningStars: Aligning the stars…
+  mapEyebrow: YOUR ASTRAL MAP
+  sunIn: Sun in
+  moonIn: Moon in
+  born: Born
+  week: week
+  ofTheMonth: of the month
+  sun: Sun
+  moon: Moon
+  rising: Rising
+  venus: Venus
+  mercury: Mercury
+  mars: Mars
+  elements: Elements
+  fire: Fire
+  earth: Earth
+  air: Air
+  water: Water
+  whatYourSkySays: What your sky says
+  consultTitle: Go deeper with an astrologer
+  consultBody: A 50-minute reading of your whole chart, with your birth time, houses and the year ahead.
+  bookConsultation: Book a consultation
+  bookingConfirmed: Consultation booked. See you there!
+  bookAReading: Book a reading
+  astrologerName: Selene Moraes
+  astrologerRole: Senior astrologer, 18 years reading charts
+  pickATime: Pick a time
+  slotThu: Thu · 7 pm
+  slotFri: Fri · 10 am
+  slotSat: Sat · 4 pm
+  consultPrice: $65 · 50 min · online
+  confirmBooking: Confirm booking
+  close: Close
+  coursesEyebrow: VENUS ASTROLOGY SCHOOL
+  coursesTitle: Learn to read the sky
+  coursesBody: Courses from your first chart to reading for clients. Swipe to see them all.
+  enrolled: Enrolled
+  enrollNow: Enroll now
+  youreEnrolled: You're enrolled! Your first lesson opens on Monday.
+  bannerTitle: Become an astrologer
+  bannerBody: Our foundation course takes you from your sun sign to reading whole charts in 8 weeks.
+  startTheCourse: Start the foundation course
+  footer: Venus Astrology School · Readings are for reflection, not prediction.
+  aries: Aries
+  taurus: Taurus
+  gemini: Gemini
+  cancer: Cancer
+  leo: Leo
+  virgo: Virgo
+  libra: Libra
+  scorpio: Scorpio
+  sagittarius: Sagittarius
+  capricorn: Capricorn
+  aquarius: Aquarius
+  pisces: Pisces
+  january: January
+  february: February
+  march: March
+  april: April
+  may: May
+  june: June
+  july: July
+  august: August
+  september: September
+  october: October
+  november: November
+  december: December

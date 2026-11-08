@@ -1,0 +1,9 @@
+# InsightRow: insight `index` of the week: a small sparkle and its text,
+# typed out (insightReveal) without moving the layout.
+InsightRow:
+  row:
+    spacing: 10
+    crossAxisAlignment: start
+    children:
+    - padding: {top: 2, child: {icon: {name: sparkle, size: 15, color: primary}}}
+    - expanded: {text: {value: insightText, reveal: insightReveal, style: {variant: bodyMedium, color: ink2}}}

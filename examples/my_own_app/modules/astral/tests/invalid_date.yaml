@@ -1,0 +1,6 @@
+# invalidDate: 30 February rejected, the error under the dropdowns.
+invalidDate:
+  state:
+    birthDay: '30'
+    birthMonth: '2'
+    dateInvalid: true

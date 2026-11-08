@@ -1,0 +1,8 @@
+# navigation: the school's routes. `home` (MainPage) holds the birth date,
+# the map and the courses; the consultation and a course open as bottom
+# sheets.
+initial: home
+routes:
+  home: MainPage
+  consult: {bottomSheet: ConsultSheet}
+  course: {bottomSheet: CourseSheet}

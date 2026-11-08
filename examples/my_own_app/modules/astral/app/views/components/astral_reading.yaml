@@ -1,0 +1,11 @@
+# AstralReading: the reading, once it starts: AstralMap (the wheel, the
+# placements, the elements), InsightsCard, then ConsultCard. Each part fades
+# in on its own stage, so the reading unfolds like a little show.
+AstralReading:
+  column:
+    crossAxisAlignment: stretch
+    spacing: 16
+    children:
+    - AstralMap
+    - InsightsCard
+    - ConsultCard

@@ -20,6 +20,7 @@ State sample({
   num waitlistCount = 1284,
   num exampleIndex = 0,
   num chatStage = 0,
+  bool astrology = false,
 }) => State(
   idea: idea,
   appKind: appKind,
@@ -33,4 +34,5 @@ State sample({
   waitlistCount: waitlistCount,
   exampleIndex: exampleIndex,
   chatStage: chatStage,
+  config: Config(astrology: astrology),
 );

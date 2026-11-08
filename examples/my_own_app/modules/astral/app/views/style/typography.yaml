@@ -1,0 +1,40 @@
+# typography: the text variants (size, weight, family, spacing).
+# Look: mystic night. Cormorant Garamond titles, Figtree text, lavender
+# actions and a gold accent on a deep violet sky, soft round corners.
+typography:
+  headlineMedium:
+    font: display
+    size: 34
+    weight: 600
+    height: 1.05
+    tracking: -0.01
+  headlineSmall:
+    font: display
+    size: 29
+    weight: 600
+    height: 1.1
+    tracking: -0.01
+  titleLarge:
+    font: display
+    size: 23
+    weight: 600
+    height: 1.2
+    tracking: 0
+  titleMedium:
+    font: text
+    size: 15
+    weight: 600
+    height: 1.3
+    tracking: 0
+  titleSmall:
+    font: text
+    size: 13
+    weight: 600
+    height: 1.35
+    tracking: 0
+  labelSmall:
+    font: text
+    size: 11
+    weight: 600
+    height: 1.3
+    tracking: 0.12

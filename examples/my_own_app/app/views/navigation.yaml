@@ -8,3 +8,4 @@ routes:
   foodLive: FoodLivePage
   workLive: WorkLivePage
   travelLive: TravelLivePage
+  astralLive: AstralLivePage

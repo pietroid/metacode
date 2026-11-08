@@ -4,6 +4,7 @@ en:
   food: Food
   work: Work
   travel: Travel
+  astral: Astrology
   copyright: '© 2026 My Own App'
   howItWorks: HOW IT WORKS
   useItEveryDay: Use it every day
@@ -87,13 +88,16 @@ en:
   foodLive: Food tracker
   workLive: Work priorities
   travelLive: Trip planner
+  astralLive: Astral map
   sayWhatYouNeed: 'Say what you need. Get '
   ownApp: your own app.
   promptFood: "I want to eat good but also control my food budget. Can you help me?"
   promptWork: "I'm drowning in emails, follow-ups and meetings. Can you help me see what to do first?"
+  promptAstral: "I run an astrology school. I want visitors to see their astral map from their birthday, then book a reading or take a course."
   promptTravel: "I'm going on a trip and I always lose my tickets and overspend. Can you help me organize it?"
   replyFood: "Sure! I made you an app for that. Tell it your monthly budget, what you like to eat and your goal, and it suggests recipes that fit. Keep the ones you like and it builds your shopping list, with the cost and calories adding up as you go, so you eat well without going over."
   replyWork: "Of course. Your app opens on today, with the one thing to do next always on top. Below it: your inbox, the follow-ups waiting on other people (overdue ones flagged), your to-dos with the urgent ones marked, and your week at a glance."
+  replyAstral: "Here it is, under a night sky. Visitors pick their birthday and watch the stars align into their map: sun, moon, rising and planets, their elements and what it all says. Then a call to book an astrologer, and a carousel of your courses to enroll in."
   replyTravel: "Let's do it. Your app has every day of the trip with its places, your trains and tickets one tap away, a food budget for each day, and what it all costs always at the bottom. Nothing gets lost, and nothing surprises you."
   chatYou: "YOU"
   chatAssistant: "YOUR ASSISTANT"

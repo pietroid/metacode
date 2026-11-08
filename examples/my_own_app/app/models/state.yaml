@@ -15,3 +15,4 @@ state:
   waitlistCount: number
   exampleIndex: number
   chatStage: number
+  config: config

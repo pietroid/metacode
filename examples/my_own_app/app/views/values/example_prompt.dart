@@ -5,6 +5,7 @@ import '../../../.generated/state.dart';
 String _examplePromptFor(int i, Labels labels) {
   if (i == 1) return labels.promptWork;
   if (i == 2) return labels.promptTravel;
+  if (i == 3) return labels.promptAstral;
   return labels.promptFood;
 }
 

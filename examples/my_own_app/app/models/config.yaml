@@ -1,0 +1,4 @@
+# config: feature toggles for the site, set in app.yaml's `state:`.
+# `astrology`: shows the astrology (astral) example in the carousel.
+config:
+  astrology: boolean

@@ -1,0 +1,9 @@
+# radius: corner radius tokens.
+# Look: mystic night. Cormorant Garamond titles, Figtree text, lavender
+# actions and a gold accent on a deep violet sky, soft round corners.
+radius:
+  xs: 8
+  sm: 999
+  md: 18
+  lg: 24
+  pill: 999

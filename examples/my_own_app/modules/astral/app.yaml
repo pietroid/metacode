@@ -1,0 +1,111 @@
+# astral: Venus Astrology School, the astral map example embedded in the
+# landing page carousel (`module: astral`). The visitor picks a birth day
+# and month; the map is mocked per week of the month (charts), with the sun
+# sign computed from the date. Insights, a call to book an astrologer, and
+# the school's courses. Images are Wikimedia Commons (credits in
+# modules/astral/IMAGE_CREDITS.md). `state:` holds the initial state; types
+# in app/models/state.yaml.
+name: astral
+description: Venus Astrology School. Your astral map from your birthday, what
+  it says about you, a consultation with an astrologer and courses to learn it.
+state:
+  birthDay: ''
+  birthMonth: ''
+  dateInvalid: false
+  readingStage: 0
+  courseIndex: 0
+  enrolledCourse: -1
+  consultSlot: 0
+  consultBooked: false
+  charts:
+  - wheel: examples/my_own_app/app/views/style/images/astral_wheel_1.webp
+    moon: 4
+    rising: 7
+    venus: 1
+    mercury: 0
+    mars: 9
+    fire: 0.4
+    earth: 0.2
+    air: 0.25
+    water: 0.15
+    theme: {en: "A first-week sky, the sky of beginnings: you start what others only dream about.", ptBr: "Um céu de primeira semana, o céu dos começos: você inicia o que os outros só sonham."}
+    insights:
+    - {en: "Your sun and Mercury travel together: you think out loud and decide fast. Write ideas down before they cool.", ptBr: "Seu sol e Mercúrio andam juntos: você pensa em voz alta e decide rápido. Anote as ideias antes que esfriem."}
+    - {en: "Venus one sign ahead of your sun loves what is new. Small rituals keep the spark alive longer than surprises.", ptBr: "Vênus um signo à frente do seu sol ama o que é novo. Pequenos rituais mantêm a chama acesa mais do que surpresas."}
+    - {en: "Mars at the top of your chart wants a goal everyone can see. This season, pick one and say it out loud.", ptBr: "Marte no topo do seu mapa quer uma meta à vista de todos. Nesta estação, escolha uma e diga em voz alta."}
+  - wheel: examples/my_own_app/app/views/style/images/astral_wheel_2.webp
+    moon: 8
+    rising: 3
+    venus: 11
+    mercury: 1
+    mars: 5
+    fire: 0.2
+    earth: 0.35
+    air: 0.15
+    water: 0.3
+    theme: {en: "A second-week sky, the builder's sky: patient, sensual and loyal to what you love.", ptBr: "Um céu de segunda semana, o céu de quem constrói: paciente, sensorial e fiel ao que ama."}
+    insights:
+    - {en: "Your moon makes a trine to your sun: what you feel and what you want rarely fight. Trust your first instinct.", ptBr: "Sua lua faz um trígono com o seu sol: o que você sente e o que você quer raramente brigam. Confie no primeiro instinto."}
+    - {en: "Venus just behind your sun gives you a taste for the classics: old songs, old friends, slow dinners.", ptBr: "Vênus logo atrás do seu sol te dá gosto pelos clássicos: músicas antigas, velhos amigos, jantares sem pressa."}
+    - {en: "Mars in your fifth house turns play into fuel. Make time for something you do only for joy.", ptBr: "Marte na sua casa cinco transforma diversão em combustível. Reserve tempo para algo que você faz só por prazer."}
+  - wheel: examples/my_own_app/app/views/style/images/astral_wheel_3.webp
+    moon: 2
+    rising: 10
+    venus: 2
+    mercury: 11
+    mars: 3
+    fire: 0.25
+    earth: 0.15
+    air: 0.4
+    water: 0.2
+    theme: {en: "A third-week sky, the messenger's sky: curious, social, always bringing people together.", ptBr: "Um céu de terceira semana, o céu do mensageiro: curioso, sociável, sempre aproximando pessoas."}
+    insights:
+    - {en: "An airy chart: your ideas arrive in conversation. Your best decisions come after you talk them through.", ptBr: "Um mapa de ar: suas ideias chegam conversando. Suas melhores decisões vêm depois de falar sobre elas."}
+    - {en: "Venus in sextile to your moon makes you easy to love and quick to forgive. Ask for what you need, too.", ptBr: "Vênus em sextil com a sua lua te faz fácil de amar e rápido para perdoar. Peça o que você precisa também."}
+    - {en: "Mercury rising before the sun gives you foresight. Notice the hunches you keep dismissing.", ptBr: "Mercúrio nascendo antes do sol te dá visão de futuro. Repare nos pressentimentos que você vive ignorando."}
+  - wheel: examples/my_own_app/app/views/style/images/astral_wheel_4.webp
+    moon: 6
+    rising: 1
+    venus: 10
+    mercury: 2
+    mars: 7
+    fire: 0.15
+    earth: 0.2
+    air: 0.2
+    water: 0.45
+    theme: {en: "A last-week sky, the dreamer's sky: intuitive, deep and close to the unseen.", ptBr: "Um céu de última semana, o céu de quem sonha: intuitivo, profundo e perto do invisível."}
+    insights:
+    - {en: "Your moon opposes your sun: you live between two worlds. Balance comes from honoring both, not choosing one.", ptBr: "Sua lua faz oposição ao seu sol: você vive entre dois mundos. O equilíbrio vem de honrar os dois, não de escolher um."}
+    - {en: "A watery chart feels the room before anyone speaks. Protect your energy with quiet mornings.", ptBr: "Um mapa de água sente o ambiente antes de alguém falar. Proteja sua energia com manhãs tranquilas."}
+    - {en: "Venus near the end of the zodiac loves without conditions. This year, let someone take care of you.", ptBr: "Vênus perto do fim do zodíaco ama sem condições. Este ano, deixe alguém cuidar de você."}
+  courses:
+  - title: {en: "Astrology Foundations", ptBr: "Fundamentos da Astrologia"}
+    level: {en: "Beginner", ptBr: "Iniciante"}
+    summary: {en: "From your sun sign to reading a whole birth chart: planets, signs, houses and aspects, with a live class every week.", ptBr: "Do seu signo solar à leitura de um mapa natal completo: planetas, signos, casas e aspectos, com uma aula ao vivo por semana."}
+    length: {en: "12 lessons · 8 weeks", ptBr: "12 aulas · 8 semanas"}
+    price: {en: "$290", ptBr: "R$ 1.490"}
+    image: examples/my_own_app/app/views/style/images/astral_pillars.jpg
+  - title: {en: "Reading the Moon", ptBr: "Lendo a Lua"}
+    level: {en: "Beginner", ptBr: "Iniciante"}
+    summary: {en: "The lunar phases, the moon in each sign, and how to plan your month by its rhythm.", ptBr: "As fases da lua, a lua em cada signo e como planejar o mês no ritmo dela."}
+    length: {en: "6 lessons · 4 weeks", ptBr: "6 aulas · 4 semanas"}
+    price: {en: "$149", ptBr: "R$ 790"}
+    image: examples/my_own_app/app/views/style/images/astral_moon.jpg
+  - title: {en: "Venus & Love Synastry", ptBr: "Vênus e Sinastria Amorosa"}
+    level: {en: "Intermediate", ptBr: "Intermediário"}
+    summary: {en: "Compare two charts and read love, friendship and partnerships through Venus and Mars.", ptBr: "Compare dois mapas e leia amor, amizade e parcerias através de Vênus e Marte."}
+    length: {en: "8 lessons · 6 weeks", ptBr: "8 aulas · 6 semanas"}
+    price: {en: "$220", ptBr: "R$ 1.190"}
+    image: examples/my_own_app/app/views/style/images/astral_venus.jpg
+  - title: {en: "Tarot & the Stars", ptBr: "Tarô e as Estrelas"}
+    level: {en: "Intermediate", ptBr: "Intermediário"}
+    summary: {en: "The 78 cards and their planets: weave tarot into your astrology readings.", ptBr: "As 78 cartas e seus planetas: una o tarô às suas leituras de astrologia."}
+    length: {en: "10 lessons · 6 weeks", ptBr: "10 aulas · 6 semanas"}
+    price: {en: "$240", ptBr: "R$ 1.290"}
+    image: examples/my_own_app/app/views/style/images/astral_tarot_star.jpg
+  - title: {en: "Professional Astrologer", ptBr: "Astrólogo Profissional"}
+    level: {en: "Advanced", ptBr: "Avançado"}
+    summary: {en: "Transits, progressions, solar returns and the ethics of reading for clients. Certificate included.", ptBr: "Trânsitos, progressões, revolução solar e a ética de atender clientes. Com certificado."}
+    length: {en: "24 lessons · 6 months", ptBr: "24 aulas · 6 meses"}
+    price: {en: "$890", ptBr: "R$ 4.490"}
+    image: examples/my_own_app/app/views/style/images/astral_orion.jpg

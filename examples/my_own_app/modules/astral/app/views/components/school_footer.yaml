@@ -1,0 +1,8 @@
+# SchoolFooter: the page's foot: a small sparkle and the school's line.
+SchoolFooter:
+  column:
+    crossAxisAlignment: center
+    spacing: 6
+    children:
+    - icon: {name: sparkle, size: 14, color: ink3}
+    - text: {value: footer, align: center, style: {variant: bodySmall, color: ink3}}

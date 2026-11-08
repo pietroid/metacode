@@ -19,3 +19,5 @@ state:
   waitlistCount: 1284
   exampleIndex: 0
   chatStage: 0
+  config:
+    astrology: false

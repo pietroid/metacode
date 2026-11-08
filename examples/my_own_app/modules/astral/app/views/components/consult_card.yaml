@@ -1,0 +1,30 @@
+# ConsultCard: the call to consult a specialist, last in the reading (it
+# fades in on stage 5): the moon, "Go deeper with an astrologer", what the
+# reading covers, and the book button (or, once booked, a confirmation).
+ConsultCard:
+  container:
+    opacity: consultOpacity
+    color: fillStrong
+    radius: 24
+    borderColor: lineStrong
+    padding: 18
+    child:
+      column:
+        crossAxisAlignment: stretch
+        spacing: 12
+        children:
+        - row:
+            spacing: 14
+            children:
+            - image: {src: examples/my_own_app/app/views/style/images/astral_moon.jpg, width: 56, height: 56, fit: cover, radius: 28}
+            - expanded: {text: {value: consultTitle, maxLines: 2, style: {variant: titleLarge}}}
+        - text: {value: consultBody, style: {variant: bodySmall, color: ink2}}
+        - if:
+            condition: consultIsBooked
+            then:
+              row:
+                spacing: 8
+                children:
+                - icon: {name: checkCircle, size: 18, color: success}
+                - expanded: {text: {value: bookingConfirmed, style: {variant: titleSmall, color: success}}}
+            else: {filledButton: {text: bookConsultation, icon: calendar, onPressed: openConsult}}

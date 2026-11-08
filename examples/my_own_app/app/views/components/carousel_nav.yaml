@@ -1,5 +1,6 @@
 # CarouselNav: the example selector: one ExampleChip per example (food,
-# work, travel) that picks the example shown in the phone.
+# work, travel, astral) that picks the example shown in the phone. The astral
+# chip shows only when the astrology toggle is on (astrologyEnabled).
 CarouselNav:
   wrap:
     spacing: 10
@@ -8,3 +9,6 @@ CarouselNav:
     - ExampleChip: {index: 0, label: food}
     - ExampleChip: {index: 1, label: work}
     - ExampleChip: {index: 2, label: travel}
+    - if:
+        condition: astrologyEnabled
+        then: {ExampleChip: {index: 3, label: astral}}

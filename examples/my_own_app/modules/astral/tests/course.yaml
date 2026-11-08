@@ -1,0 +1,5 @@
+# course: the course sheet of the last (longest) course, not enrolled.
+course:
+  state:
+    courseIndex: 4
+  route: course

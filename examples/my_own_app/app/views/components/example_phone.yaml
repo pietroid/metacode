@@ -34,6 +34,13 @@ ExamplePhone:
               screen: '#FBF5EC'
               ink: '#2B1E16'
               child: ExampleScreen
+          astral:
+            PhoneFrame:
+              height: 720
+              width: 340
+              screen: '#120A24'
+              ink: '#F4EEFF'
+              child: ExampleScreen
     - filledButton:
         text: playWithIt
         icon: play

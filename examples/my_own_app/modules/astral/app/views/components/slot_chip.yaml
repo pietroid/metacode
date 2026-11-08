@@ -1,0 +1,4 @@
+# SlotChip: consultation time `index`, labelled `.label`: a chip, selected
+# when it is the picked time; tapping picks it.
+SlotChip:
+  choiceChip: {label: {text: .label}, selected: slotSelected, onSelected: pickSlot}

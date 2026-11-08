@@ -1,5 +1,5 @@
 // showExample: Jumps the carousel to example [index] (0 food, 1 work,
-// 2 travel) and plays its chat (see playChat): what an ExampleChip runs
+// 2 travel, 3 astral) and plays its chat (see playChat): what an ExampleChip runs
 // when tapped.
 import 'package:flutter_test/flutter_test.dart';
 

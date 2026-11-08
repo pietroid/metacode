@@ -1,0 +1,5 @@
+# astrologyOn: the astrology toggle on and its example shown in the phone.
+astrologyOn:
+  state:
+    config: {astrology: true}
+    exampleIndex: 3

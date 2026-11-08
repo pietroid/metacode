@@ -1,0 +1,43 @@
+# ConsultSheet: the `consult` bottom sheet, booking a reading: the title and
+# a close button, the astrologer (the moon as her picture, name and role),
+# "Pick a time" with three SlotChips, the price and the confirm button.
+ConsultSheet:
+  padding:
+    horizontal: 20
+    top: 8
+    bottom: 24
+    child:
+      column:
+        crossAxisAlignment: stretch
+        spacing: 12
+        children:
+        - row:
+            children:
+            - expanded: {text: {value: bookAReading, style: {variant: headlineSmall}}}
+            - iconButton: {icon: close, tooltip: close, onPressed: closeSheet}
+        - row:
+            spacing: 12
+            children:
+            - image: {src: examples/my_own_app/app/views/style/images/astral_moon.jpg, width: 52, height: 52, fit: cover, radius: 26}
+            - expanded:
+                column:
+                  crossAxisAlignment: start
+                  spacing: 2
+                  children:
+                  - text: {value: astrologerName, style: {variant: titleMedium}}
+                  - text: {value: astrologerRole, maxLines: 2, style: {variant: bodySmall, color: ink2}}
+        - divider: {}
+        - text: {value: pickATime, style: {variant: titleSmall, color: ink2}}
+        - wrap:
+            spacing: 8
+            runSpacing: 8
+            children:
+            - SlotChip: {index: 0, label: slotThu}
+            - SlotChip: {index: 1, label: slotFri}
+            - SlotChip: {index: 2, label: slotSat}
+        - row:
+            spacing: 6
+            children:
+            - icon: {name: coins, size: 16, color: accent}
+            - expanded: {text: {value: consultPrice, style: {variant: bodySmall, color: ink2}}}
+        - filledButton: {text: confirmBooking, icon: check, onPressed: bookConsult}

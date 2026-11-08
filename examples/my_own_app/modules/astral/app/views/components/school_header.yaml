@@ -1,0 +1,21 @@
+# SchoolHeader: the top of the page: Venus (the planet) in a gold-ringed
+# circle, "VENUS" over "Astrology School", and a gold sparkle.
+SchoolHeader:
+  row:
+    spacing: 12
+    children:
+    - container:
+        width: 42
+        height: 42
+        radius: 21
+        borderColor: accent
+        padding: 3
+        child: {image: {src: examples/my_own_app/app/views/style/images/astral_venus.jpg, width: 36, height: 36, fit: cover, radius: 18}}
+    - expanded:
+        column:
+          crossAxisAlignment: start
+          spacing: 1
+          children:
+          - text: {value: schoolName, style: {variant: labelLarge, color: accent}}
+          - text: {value: schoolTagline, style: {variant: titleLarge}}
+    - icon: {name: sparkle, size: 22, color: accent}

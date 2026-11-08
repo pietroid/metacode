@@ -1,0 +1,5 @@
+# icons: the Phosphor icon weight.
+# Look: mystic night. Cormorant Garamond titles, Figtree text, lavender
+# actions and a gold accent on a deep violet sky, soft round corners.
+icons:
+  weight: light

@@ -1,5 +1,5 @@
 # ExampleScreen: what ExamplePhone shows: the current example's live module
-# (`module: food|work|travel`, picked by exampleKey), contained: it scrolls
+# (`module: food|work|travel|astral`, picked by exampleKey), contained: it scrolls
 # on its own and its routes open inside the phone.
 ExampleScreen:
   match:
@@ -16,4 +16,8 @@ ExampleScreen:
       travel:
         module:
           name: travel
+          contained: true
+      astral:
+        module:
+          name: astral
           contained: true

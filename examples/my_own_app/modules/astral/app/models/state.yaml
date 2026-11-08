@@ -1,0 +1,17 @@
+# state: the birth date picked (day and month, as text; empty until picked),
+# whether that date was rejected, how far the map reading has played
+# (readingStage 0 not started, 1 aligning the stars, 2 wheel, 3 placements,
+# 4 insights, 5 the consult call to action), the four weekly charts, the
+# courses, the course open in the sheet, the one enrolled in (-1 none), the
+# consultation slot picked and whether it is booked.
+state:
+  birthDay: string
+  birthMonth: string
+  dateInvalid: boolean
+  readingStage: number
+  charts: list(astralChart)
+  courses: list(course)
+  courseIndex: number
+  enrolledCourse: number
+  consultSlot: number
+  consultBooked: boolean

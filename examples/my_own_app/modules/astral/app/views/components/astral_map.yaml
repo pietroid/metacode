@@ -1,0 +1,68 @@
+# AstralMap: the map card: the eyebrow, the sun and moon headline and the
+# birth date with its week, the chart wheel of that week in a gold ring
+# (fading in slowly, with "Aligning the stars…" and a spinner over it
+# first, fading away as the wheel comes), then the six placements (PlacementTile, two rows of three) and
+# the four ElementBars, fading in after the wheel.
+AstralMap:
+  container:
+    color: surface
+    radius: 24
+    borderColor: line
+    padding: 18
+    child:
+      column:
+        crossAxisAlignment: stretch
+        spacing: 4
+        children:
+        - text: {value: mapEyebrow, align: center, style: {variant: labelSmall, color: accent}}
+        - text: {value: mapHeadline, align: center, maxLines: 2, style: {variant: titleLarge}}
+        - text: {value: mapSubtitle, align: center, maxLines: 2, style: {variant: bodySmall, color: ink3}}
+        - sizedBox: {height: 14}
+        - center:
+            stack:
+              alignment: center
+              children:
+              - container:
+                  opacity: wheelOpacity
+                  width: 236
+                  height: 236
+                  radius: 118
+                  borderColor: accent
+                  padding: 6
+                  child: {image: {src: wheelImage, width: 222, height: 222, fit: cover, radius: 111}}
+              - if:
+                  condition: isAligning
+                  fade: 700
+                  then:
+                    column:
+                      crossAxisAlignment: center
+                      spacing: 14
+                      children:
+                      - sizedBox: {width: 36, height: 36, child: {progress: {circular: true}}}
+                      - text: {value: aligningStars, style: {variant: titleLarge, color: ink2}}
+        - sizedBox: {height: 16}
+        - container:
+            opacity: placementsOpacity
+            child:
+              column:
+                crossAxisAlignment: stretch
+                spacing: 8
+                children:
+                - row:
+                    spacing: 8
+                    children:
+                    - expanded: {PlacementTile: {icon: lightMode, label: sun, sign: sunPlacement}}
+                    - expanded: {PlacementTile: {icon: darkMode, label: moon, sign: moonPlacement}}
+                    - expanded: {PlacementTile: {icon: arrowUp, label: rising, sign: risingPlacement}}
+                - row:
+                    spacing: 8
+                    children:
+                    - expanded: {PlacementTile: {icon: favorite, label: venus, sign: venusPlacement}}
+                    - expanded: {PlacementTile: {icon: chat, label: mercury, sign: mercuryPlacement}}
+                    - expanded: {PlacementTile: {icon: fitness, label: mars, sign: marsPlacement}}
+                - sizedBox: {height: 8}
+                - text: {value: elements, style: {variant: titleMedium}}
+                - ElementBar: {index: 0, label: fire}
+                - ElementBar: {index: 1, label: earth}
+                - ElementBar: {index: 2, label: air}
+                - ElementBar: {index: 3, label: water}

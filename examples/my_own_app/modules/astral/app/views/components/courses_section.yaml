@@ -1,0 +1,24 @@
+# CoursesSection: the school's courses: the eyebrow, "Learn to read the sky",
+# a line, then the carousel: one CourseCard per course, side by side,
+# scrolling sideways.
+CoursesSection:
+  column:
+    crossAxisAlignment: stretch
+    spacing: 6
+    children:
+    - text: {value: coursesEyebrow, style: {variant: labelSmall, color: accent}}
+    - text: {value: coursesTitle, style: {variant: headlineSmall}}
+    - text: {value: coursesBody, style: {variant: bodySmall, color: ink2}}
+    - sizedBox: {height: 8}
+    - scroll:
+        horizontal: true
+        child:
+          row:
+            spacing: 12
+            crossAxisAlignment: start
+            children:
+            - CourseCard: {index: 0}
+            - CourseCard: {index: 1}
+            - CourseCard: {index: 2}
+            - CourseCard: {index: 3}
+            - CourseCard: {index: 4}

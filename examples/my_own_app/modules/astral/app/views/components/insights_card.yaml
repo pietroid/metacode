@@ -1,0 +1,20 @@
+# InsightsCard: what the sky says: "What your sky says", the week's theme
+# as a gold quote, and three InsightRows typing themselves out. Fades in
+# on stage 4.
+InsightsCard:
+  container:
+    opacity: insightsOpacity
+    color: surface
+    radius: 24
+    borderColor: line
+    padding: 18
+    child:
+      column:
+        crossAxisAlignment: stretch
+        spacing: 12
+        children:
+        - text: {value: whatYourSkySays, style: {variant: titleLarge}}
+        - text: {value: chartTheme, style: {variant: titleMedium, color: accent, italic: true}}
+        - InsightRow: {index: 0}
+        - InsightRow: {index: 1}
+        - InsightRow: {index: 2}

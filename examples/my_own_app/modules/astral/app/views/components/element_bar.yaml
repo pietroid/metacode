@@ -1,0 +1,10 @@
+# ElementBar: one element of the chart (`index`: 0 fire, 1 earth, 2 air,
+# 3 water): its name (`.label`), a bar filled to its share and the
+# percentage.
+ElementBar:
+  row:
+    spacing: 10
+    children:
+    - sizedBox: {width: 52, child: {text: {value: .label, style: {variant: bodySmall, color: ink2}}}}
+    - expanded: {progress: {value: elementShare}}
+    - sizedBox: {width: 36, child: {text: {value: elementPercent, align: right, style: {variant: labelMedium}}}}

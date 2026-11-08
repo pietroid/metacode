@@ -1,0 +1,5 @@
+# consult: the booking sheet with the Saturday time picked.
+consult:
+  state:
+    consultSlot: 2
+  route: consult

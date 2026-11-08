@@ -1,0 +1,6 @@
+# courseEnrolled: the course sheet of the foundation course, enrolled.
+courseEnrolled:
+  state:
+    courseIndex: 0
+    enrolledCourse: 0
+  route: course

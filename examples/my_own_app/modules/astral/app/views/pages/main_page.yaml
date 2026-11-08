@@ -1,0 +1,30 @@
+# MainPage: the `home` route, the whole school on one scrolling night page
+# (20px margins): SchoolHeader, SkyHero, BirthForm, then AstralReading once
+# the reading starts (fading in), CoursesSection (the carousel),
+# CourseBanner and SchoolFooter. Embedded `contained`, so its sheets open
+# inside the phone.
+MainPage:
+  scroll:
+    padding:
+      horizontal: 20
+      top: 4
+      bottom: 28
+      child:
+        column:
+          crossAxisAlignment: stretch
+          children:
+          - SchoolHeader
+          - sizedBox: {height: 18}
+          - SkyHero
+          - sizedBox: {height: 16}
+          - BirthForm
+          - if:
+              condition: readingStarted
+              fade: 500
+              then: {padding: {top: 16, child: AstralReading}}
+          - sizedBox: {height: 32}
+          - CoursesSection
+          - sizedBox: {height: 24}
+          - CourseBanner
+          - sizedBox: {height: 24}
+          - SchoolFooter

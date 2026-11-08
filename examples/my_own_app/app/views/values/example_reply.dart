@@ -6,5 +6,6 @@ String exampleReply(State state, Labels labels) {
   final i = state.exampleIndex.round();
   if (i == 1) return labels.replyWork;
   if (i == 2) return labels.replyTravel;
+  if (i == 3) return labels.replyAstral;
   return labels.replyFood;
 }

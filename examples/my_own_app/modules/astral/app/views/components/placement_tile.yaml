@@ -1,0 +1,15 @@
+# PlacementTile: one placement of the map: a gold `.icon`, the planet or
+# point (`.label`) and its `.sign`, on a soft violet tile.
+PlacementTile:
+  container:
+    color: fill
+    radius: 16
+    padding: {horizontal: 8, vertical: 10}
+    child:
+      column:
+        crossAxisAlignment: center
+        spacing: 3
+        children:
+        - icon: {name: .icon, size: 18, color: accent}
+        - text: {value: .label, maxLines: 1, style: {variant: labelSmall, color: ink3}}
+        - text: {value: .sign, maxLines: 1, style: {variant: titleSmall}}

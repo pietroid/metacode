@@ -1,0 +1,17 @@
+# astralChart: the mocked sky for one week of the month (days 1-7, 8-14,
+# 15-21, 22-31): the wheel picture, where the moon, rising, Venus, Mercury
+# and Mars sit (signs counted on from the sun sign, 0-11), the balance of the
+# four elements (shares 0-1), the week's theme and three insights.
+astralChart:
+  wheel: string
+  moon: number
+  rising: number
+  venus: number
+  mercury: number
+  mars: number
+  fire: number
+  earth: number
+  air: number
+  water: number
+  theme: localized
+  insights: list(localized)

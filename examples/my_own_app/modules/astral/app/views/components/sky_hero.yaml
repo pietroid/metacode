@@ -1,0 +1,23 @@
+# SkyHero: the opening card: the Orion Nebula under a violet veil, with
+# the eyebrow, "The sky on the day you were born" and a line on what Venus
+# does, at its foot. 240 tall, as wide as the page.
+SkyHero:
+  stack:
+    alignment: bottomLeft
+    children:
+    - image: {src: examples/my_own_app/app/views/style/images/astral_orion.jpg, width: 2000, height: 240, fit: cover, radius: 24}
+    - container:
+        width: 2000
+        height: 240
+        radius: 24
+        color: '#A6120A24'
+        padding: 18
+        child:
+          column:
+            mainAxisAlignment: end
+            crossAxisAlignment: start
+            spacing: 6
+            children:
+            - text: {value: heroEyebrow, style: {variant: labelSmall, color: accent}}
+            - text: {value: heroTitle, maxLines: 3, style: {variant: headlineSmall}}
+            - text: {value: heroBody, maxLines: 3, style: {variant: bodySmall, color: ink2}}

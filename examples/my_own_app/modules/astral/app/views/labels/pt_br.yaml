@@ -1,0 +1,81 @@
+# pt_br: all of the app's text in Brazilian Portuguese, the same keys as en.yaml.
+pt_br:
+  schoolName: VENUS
+  schoolTagline: Escola de Astrologia
+  heroEyebrow: SEU MAPA ASTRAL
+  heroTitle: O céu no dia em que você nasceu
+  heroBody: Conte seu aniversário e a Venus lê as estrelas que te formaram.
+  whenWereYouBorn: Quando você nasceu?
+  birthHint: O dia e o mês definem seu signo solar; a semana define sua lua e seu ascendente.
+  day: Dia
+  month: Mês
+  pickADate: Escolha primeiro o dia e o mês.
+  dateDoesNotExist: Essa data não existe. Confira o dia.
+  revealMyMap: Revelar meu mapa astral
+  aligningStars: Alinhando as estrelas…
+  mapEyebrow: SEU MAPA ASTRAL
+  sunIn: Sol em
+  moonIn: Lua em
+  born: Nascimento
+  week: semana
+  ofTheMonth: do mês
+  sun: Sol
+  moon: Lua
+  rising: Ascendente
+  venus: Vênus
+  mercury: Mercúrio
+  mars: Marte
+  elements: Elementos
+  fire: Fogo
+  earth: Terra
+  air: Ar
+  water: Água
+  whatYourSkySays: O que o seu céu diz
+  consultTitle: Aprofunde com uma astróloga
+  consultBody: Uma leitura de 50 minutos do seu mapa completo, com hora de nascimento, casas e o ano que vem.
+  bookConsultation: Agendar consulta
+  bookingConfirmed: Consulta agendada. Até lá!
+  bookAReading: Agende uma leitura
+  astrologerName: Selene Moraes
+  astrologerRole: Astróloga sênior, 18 anos lendo mapas
+  pickATime: Escolha um horário
+  slotThu: Qui · 19h
+  slotFri: Sex · 10h
+  slotSat: Sáb · 16h
+  consultPrice: R$ 320 · 50 min · online
+  confirmBooking: Confirmar agendamento
+  close: Fechar
+  coursesEyebrow: ESCOLA DE ASTROLOGIA VENUS
+  coursesTitle: Aprenda a ler o céu
+  coursesBody: Cursos do seu primeiro mapa até atender clientes. Deslize para ver todos.
+  enrolled: Matriculado
+  enrollNow: Matricular agora
+  youreEnrolled: Matrícula feita! Sua primeira aula abre na segunda.
+  bannerTitle: Torne-se astrólogo
+  bannerBody: Nosso curso de fundamentos te leva do signo solar à leitura de mapas completos em 8 semanas.
+  startTheCourse: Começar o curso de fundamentos
+  footer: Escola de Astrologia Venus · Leituras para reflexão, não previsão.
+  aries: Áries
+  taurus: Touro
+  gemini: Gêmeos
+  cancer: Câncer
+  leo: Leão
+  virgo: Virgem
+  libra: Libra
+  scorpio: Escorpião
+  sagittarius: Sagitário
+  capricorn: Capricórnio
+  aquarius: Aquário
+  pisces: Peixes
+  january: Janeiro
+  february: Fevereiro
+  march: Março
+  april: Abril
+  may: Maio
+  june: Junho
+  july: Julho
+  august: Agosto
+  september: Setembro
+  october: Outubro
+  november: Novembro
+  december: Dezembro

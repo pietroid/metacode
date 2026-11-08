@@ -1,0 +1,5 @@
+# localized: a text in each language the app speaks: English and Brazilian
+# Portuguese. Values show it with the shared `tr` (by labels.locale).
+localized:
+  en: string
+  ptBr: string

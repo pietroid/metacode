@@ -1,0 +1,14 @@
+# AstralLivePage: the `astralLive` route, the astrology example on its own page
+# to try it: a LiveFrame in the school's night colors around the live
+# `module: astral`, with a start over button that resets it (resetAstral).
+AstralLivePage:
+  LiveFrame:
+    icon: sparkle
+    title: astralLive
+    reset: resetAstral
+    screen: '#120A24'
+    ink: '#F4EEFF'
+    child:
+      module:
+        name: astral
+        contained: true

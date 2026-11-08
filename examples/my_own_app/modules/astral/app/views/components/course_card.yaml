@@ -1,0 +1,45 @@
+# CourseCard: course `index` in the carousel, 220 wide: its cover, the level
+# (or "Enrolled"), the title, lessons and length, and the price. Tapping it
+# opens the course sheet.
+CourseCard:
+  tappable:
+    onTap: openCourse
+    child:
+      container:
+        width: 220
+        color: surface
+        radius: 22
+        borderColor: line
+        padding: 8
+        child:
+          column:
+            crossAxisAlignment: start
+            spacing: 6
+            children:
+            - image: {src: courseImage, width: 204, height: 128, fit: cover, radius: 16}
+            - padding:
+                horizontal: 6
+                top: 4
+                bottom: 6
+                child:
+                  column:
+                    crossAxisAlignment: start
+                    spacing: 5
+                    children:
+                    - if:
+                        condition: courseIsEnrolled
+                        then:
+                          container:
+                            color: success
+                            radius: 999
+                            padding: {horizontal: 9, vertical: 3}
+                            child: {text: {value: enrolled, style: {variant: labelSmall, color: onPrimary}}}
+                        else:
+                          container:
+                            color: fill
+                            radius: 999
+                            padding: {horizontal: 9, vertical: 3}
+                            child: {text: {value: courseLevel, style: {variant: labelSmall, color: accent}}}
+                    - sizedBox: {height: 44, child: {text: {value: courseTitle, maxLines: 2, style: {variant: titleLarge}}}}
+                    - text: {value: courseLength, maxLines: 1, style: {variant: bodySmall, color: ink3}}
+                    - text: {value: coursePrice, style: {variant: titleMedium, color: primary}}
