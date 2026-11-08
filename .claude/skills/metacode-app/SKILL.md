@@ -1,13 +1,13 @@
 ---
 name: metacode-app
-description: Change the Metacode app (models, state, view, actions, values, labels, tests, modules) inside metacode/. Use for any feature, fix or tweak to the app itself, not the engine. Fastest loop - edit metacode/ then run tool/check.sh. Never run the app.
+description: Change the Metacode app (models, state, view, actions, values, labels, tests, modules) inside examples/my_own_app/. Use for any feature, fix or tweak to the app itself, not the engine. Fastest loop - edit examples/my_own_app/ then run tool/check.sh. Never run the app.
 ---
 
 # Change the app
 
 **First**, record the starting point for the cost report (see the end of this file): run `date +%s`, and call the `session_cost` tool if it's available (`mcp__usage-bars__session_cost`).
 
-**Only edit `metacode/`** (never `metacode/.generated/`). Then run:
+**Only edit `examples/my_own_app/`** (never `examples/my_own_app/.generated/`). Then run:
 
 ```sh
 tool/check.sh
@@ -17,7 +17,7 @@ It validates every app, regenerates, type-checks and runs every app's tests (the
 
 ## Files
 
-An app is a folder; `metacode/` is the root app. **Modules** live in `modules/<name>/` with the same layout (recursive) and are shown with the `module: <name>` widget. Each app has its own state, actions and values, and can't see its parent's (or vice versa). Work inside the one app the change is about: a change to the food example only touches `modules/food/`.
+An app is a folder; `examples/my_own_app/` is the root app. **Modules** live in `modules/<name>/` with the same layout (recursive) and are shown with the `module: <name>` widget. Each app has its own state, actions and values, and can't see its parent's (or vice versa). Work inside the one app the change is about: a change to the food example only touches `modules/food/`.
 
 | Path (inside an app) | Holds |
 |---|---|
@@ -38,7 +38,7 @@ An app is a folder; `metacode/` is the root app. **Modules** live in `modules/<n
 
 Every `.yaml` file contains exactly one top-level key, named after the file. **Naming:** files are `this_case.dart` / `this_case.yaml`; keys, functions, models and labels are `thisCase`; pages and components are `ThisCase` (`app/views/components/task_list.yaml` holds `TaskList:`, `app/actions/bump_priority.dart` holds `bumpPriority`). Names must not repeat across files. Read only the file you need.
 
-Import the generated files relative to your file (`../../.generated/` from `app/actions/` and `app/models/`, `../../../.generated/` from `app/views/values/`): `state.dart` for `State`, `StateDelta`, model classes, enums and `copyWith`, `core.dart` for `Core` (`core.api.get/post`, `core.navigator.push/pop`), `ApiResponse` and `Routes`, and `labels.dart` for `Labels`. Images go in `metacode/app/views/style/images/` for every app.
+Import the generated files relative to your file (`../../.generated/` from `app/actions/` and `app/models/`, `../../../.generated/` from `app/views/values/`): `state.dart` for `State`, `StateDelta`, model classes, enums and `copyWith`, `core.dart` for `Core` (`core.api.get/post`, `core.navigator.push/pop`), `ApiResponse` and `Routes`, and `labels.dart` for `Labels`. Images go in `examples/my_own_app/app/views/style/images/` for every app.
 
 ### New module
 

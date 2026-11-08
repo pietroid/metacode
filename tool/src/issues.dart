@@ -2,7 +2,7 @@
 ///
 /// [scoped] returns a view that shares the same lists and prefixes file
 /// names with an app's folder (`modules/food/`), so nested apps report
-/// paths relative to `metacode/`.
+/// paths relative to `examples/my_own_app/`.
 class Issues {
   final List<String> errors;
   final List<String> warnings;

@@ -10,7 +10,7 @@ Logo:
     spacing: 12
     children:
     - image:
-        src: metacode/app/views/style/images/logo.svg
+        src: examples/my_own_app/app/views/style/images/logo.svg
         width: 17
         height: 26
     - text:

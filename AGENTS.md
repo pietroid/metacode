@@ -6,8 +6,8 @@ A Flutter engine that runs an app described in YAML plus small Dart functions.
 
 | Path | What |
 |---|---|
-| `metacode/` | **The root app** (the my-own.app website). An app is a folder: `app.yaml`, `app/actions/`, `app/models/` (+ `sample.dart` for tests), `app/views/` (`navigation.yaml`, `pages/`, `components/`, `style/` + `style/images/`, `values/`, `labels/en.yaml`), and **modules** in `modules/<name>/` with the same layout (recursive). Every `.yaml` file contains exactly one top-level key, named after the file; files are not merged. Tests live in the file they test: a `main()` below the action or value. Naming: files `this_case.dart`/`this_case.yaml`, keys and functions `thisCase`, pages and components `ThisCase`. |
-| `metacode/modules/` | Modules: `food`, `music`, `work`, `plants` (the carousel examples), embedded with the `module: <name>` widget. Each has its own state, actions and values. |
+| `examples/my_own_app/` | **The root app** (the my-own.app website). An app is a folder: `app.yaml`, `app/actions/`, `app/models/` (+ `sample.dart` for tests), `app/views/` (`navigation.yaml`, `pages/`, `components/`, `style/` + `style/images/`, `values/`, `labels/en.yaml`), and **modules** in `modules/<name>/` with the same layout (recursive). Every `.yaml` file contains exactly one top-level key, named after the file; files are not merged. Tests live in the file they test: a `main()` below the action or value. Naming: files `this_case.dart`/`this_case.yaml`, keys and functions `thisCase`, pages and components `ThisCase`. |
+| `examples/my_own_app/modules/` | Modules: `food`, `music`, `work`, `plants` (the carousel examples), embedded with the `module: <name>` widget. Each has its own state, actions and values. |
 | `*/.generated/` | Output of the tool, per app. Never edit. The root's `.generated/bundle.json` is the whole tree; the engine loads only that. |
 | `tool/metacode.dart` | CLI: validate + generate. `tool/reference.dart`: writes REFERENCE.md. `tool/src/`: `project.dart` (app folders, merging, recursion), `models.dart` (app/models/state), `functions.dart` (action/value signatures, via analyzer), `ui.dart` (app/views/ widgets), `codegen.dart` (generated files) |
 | `packages/app_ui/` | **UI catalog.** `lib/spec.dart` (pure-Dart contract the tool validates against), `lib/style.dart` (style tokens + the default Metacode style, pure Dart), `lib/src/theme.dart` (tokens -> ThemeData + `MetacodeTokens`), `lib/src/widgets/*.dart` (one builder each), `lib/src/registry.dart`, `lib/src/parsers.dart`, `fonts/` (bundled type) |
@@ -42,7 +42,7 @@ Engine: state (Map) ─> value / label ─> app_ui widget ─> tap ─> action(s
 
 ## Commands (never launch the app to verify)
 
-- `tool/check.sh`: app loop (generate, analyze `metacode/`, the tests in each action and value file's `main()`). About 15s.
+- `tool/check.sh`: app loop (generate, analyze `examples/my_own_app/`, the tests in each action and value file's `main()`). About 15s.
 - `tool/check_engine.sh`: everything (generate, analyze all, all tests).
 
 ## Reference

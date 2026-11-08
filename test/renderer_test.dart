@@ -1,4 +1,4 @@
-// Renders the app (metacode/.generated/bundle.json: every app, modules
+// Renders the app (examples/my_own_app/.generated/bundle.json: every app, modules
 // included) through the engine + app_ui, and drives it with taps.
 // Regenerate first: tool/check_engine.sh.
 
@@ -18,7 +18,7 @@ import 'package:metacode/engine/state_bloc.dart';
 
 void main() {
   final bundle = jsonDecode(
-      File('metacode/.generated/bundle.json').readAsStringSync()) as Map;
+      File('examples/my_own_app/.generated/bundle.json').readAsStringSync()) as Map;
   final styleYaml = Map<String, dynamic>.from(bundle['style'] as Map);
 
   // Real type and icons, so layout (and overflow) matches the app, not the

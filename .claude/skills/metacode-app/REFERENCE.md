@@ -6,7 +6,7 @@ Contents: [Files](#files) · [Types](#types) · [Actions and values](#actions-an
 
 ## Files
 
-An app is a folder. The root app is `metacode/`; modules live in `modules/<name>/` and have the same layout (recursive). Never edit `.generated/`; it is hidden.
+An app is a folder. The root app is `examples/my_own_app/`; modules live in `modules/<name>/` and have the same layout (recursive). Never edit `.generated/`; it is hidden.
 
 ```
 app.yaml                         name, description, version, state: initial values
@@ -45,7 +45,7 @@ Naming: files are `this_case.dart` / `this_case.yaml`; keys, functions, models a
 | `modules/<name>/` | A module. Embed it with `module: <name>`: it runs with its own state, actions and values (it can't see the parent's, and vice versa). |
 | `.state/` | Runtime persisted state, written by the engine. Never commit. |
 
-Images go in `metacode/app/views/style/images/` (`src: metacode/app/views/style/images/x.jpg` or `x.svg`), for every app.
+Images go in `examples/my_own_app/app/views/style/images/` (`src: examples/my_own_app/app/views/style/images/x.jpg` or `x.svg`), for every app.
 
 ## Types
 
@@ -445,7 +445,7 @@ An icon.
 
 #### `image`
 
-An image (PNG, JPG, GIF, WebP or SVG) from a URL (http...) or an app file. Put app files in `metacode/app/views/style/images/` and use the path: `src: metacode/app/views/style/images/logo.svg`.
+An image (PNG, JPG, GIF, WebP or SVG) from a URL (http...) or an app file. Put app files in `examples/my_own_app/app/views/style/images/` and use the path: `src: examples/my_own_app/app/views/style/images/logo.svg`.
 
 | Prop | Kind | Notes |
 |---|---|---|

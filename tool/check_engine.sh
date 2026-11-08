@@ -15,6 +15,6 @@ flutter analyze
 echo "== test"
 flutter test --reporter failures-only \
   test \
-  $(grep -rl --include='*.dart' --exclude-dir=.generated '^void main' metacode | sort)
+  $(grep -rl --include='*.dart' --exclude-dir=.generated '^void main' examples/my_own_app | sort)
 (cd packages/app_ui && flutter test --reporter failures-only)
 echo "OK"

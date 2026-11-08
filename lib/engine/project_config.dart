@@ -12,7 +12,7 @@ import 'program.dart';
 /// modules (`modules/<name>/`).
 ///
 /// Everything here is produced or validated by `dart run tool/metacode.dart`,
-/// which writes the whole tree to `metacode/.generated/bundle.json`.
+/// which writes the whole tree to `examples/my_own_app/.generated/bundle.json`.
 class ProjectConfig {
   final String projectName;
   final String description;
@@ -51,7 +51,7 @@ class ProjectConfig {
         navigation = navigation ?? Navigation.fallback;
 
   /// The engine's only project asset.
-  static const bundleAsset = 'metacode/.generated/bundle.json';
+  static const bundleAsset = 'examples/my_own_app/.generated/bundle.json';
 
   static Future<ProjectConfig> load() async => ProjectConfig.fromBundle(
       jsonDecode(await rootBundle.loadString(bundleAsset)) as Map);

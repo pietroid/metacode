@@ -299,7 +299,7 @@ const widgetCatalog = <String, WidgetSpec>{
   ),
   'image': WidgetSpec(
     _content,
-    'An image (PNG, JPG, GIF, WebP or SVG) from a URL (http...) or an app file. Put app files in `metacode/app/views/style/images/` and use the path: `src: metacode/app/views/style/images/logo.svg`.',
+    'An image (PNG, JPG, GIF, WebP or SVG) from a URL (http...) or an app file. Put app files in `examples/my_own_app/app/views/style/images/` and use the path: `src: examples/my_own_app/app/views/style/images/logo.svg`.',
     {
       'src': PropKind.bindingOrLiteral,
       'width': PropKind.literal,

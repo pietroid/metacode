@@ -411,7 +411,7 @@ String _encodeDart(String type, String expr, Map<String, Model> models) {
 /// Generates `generated/test_app.dart`: typed wrappers that run each action
 /// and binding through the compiled program (dart_eval), exactly like the
 /// engine. Used by the app's test/. [appPath] is the app folder relative to
-/// the repo root (`metacode`, `metacode/modules/food`), where tests run from.
+/// the repo root (`examples/my_own_app`, `examples/my_own_app/modules/food`), where tests run from.
 String generateTestApp(
   List<UserFunction> actions,
   List<UserFunction> bindings,

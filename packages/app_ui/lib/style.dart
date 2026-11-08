@@ -1,4 +1,4 @@
-// The style contract: the design tokens `metacode/style.yaml` can set, and
+// The style contract: the design tokens `examples/my_own_app/style.yaml` can set, and
 // the Metacode style every missing token falls back to. Pure Dart (no
 // Flutter) so `tool/metacode.dart` validates style.yaml against exactly what
 // `src/theme.dart` reads, and `tool/reference.dart` documents it.
@@ -115,7 +115,7 @@ const themeModes = ['system', 'light', 'dark'];
 /// The Metacode style: classic and quiet. Near-black ink on a soft neutral
 /// page, white cards lifted by a whisper of shadow, one deep blue for
 /// progress and highlights, Newsreader headlines over Hanken Grotesk text,
-/// and Phosphor icons. metacode/style.yaml spells out the same values.
+/// and Phosphor icons. examples/my_own_app/style.yaml spells out the same values.
 const metacodeStyle = <String, dynamic>{
   'theme': 'system',
   'fonts': {'display': 'Newsreader', 'text': 'Hanken Grotesk'},

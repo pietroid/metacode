@@ -31,7 +31,7 @@ import 'src/functions.dart';
 import 'src/issues.dart';
 import 'src/project.dart';
 
-const projectDir = 'metacode';
+const projectDir = 'examples/my_own_app';
 
 void main(List<String> args) {
   final checkOnly = args.contains('check');

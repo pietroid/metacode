@@ -4,7 +4,7 @@
 // `Core` (api, navigator) and `.generated/main.dart` uses [hostEmit] for the
 // `emit` callback of actions. Inside dart_eval they are bridged by
 // `host_plugin.dart`; these bodies only exist so the analyzer can type-check
-// metacode/ and never run.
+// examples/my_own_app/ and never run.
 
 /// Runs a host operation (`api`, `navigator.push`, `navigator.pop`) with
 /// JSON [args] and completes with its JSON result.

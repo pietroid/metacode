@@ -31,7 +31,7 @@ class StateBloc extends Cubit<Map<String, dynamic>> {
 
   /// When set (via `--dart-define=METACODE_STATE_PATH=...`), the root app's
   /// state is read from and written to this file directly, e.g. the
-  /// project's own `metacode/.state/state.yaml` during development.
+  /// project's own `examples/my_own_app/.state/state.yaml` during development.
   static const _overridePath = String.fromEnvironment('METACODE_STATE_PATH');
 
   /// Whether changes are written to disk (after [initialize]).

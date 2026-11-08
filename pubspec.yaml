@@ -66,10 +66,10 @@ flutter:
 
   # The tool writes the whole app tree (every app's config, initial state
   # and bytecode, modules included) to one file, so adding an app needs no
-  # change here. Images live in metacode/app/views/style/images/.
+  # change here. Images live in examples/my_own_app/app/views/style/images/.
   assets:
-    - metacode/.generated/bundle.json
-    - metacode/app/views/style/images/
+    - examples/my_own_app/.generated/bundle.json
+    - examples/my_own_app/app/views/style/images/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

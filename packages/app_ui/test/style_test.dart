@@ -42,9 +42,9 @@ void main() {
   });
 
   test("the app's style files are valid and spell out every token", () {
-    // metacode/app/views/style/*.yaml document the template: values may change, but every
+    // examples/my_own_app/app/views/style/*.yaml document the template: values may change, but every
     // file names its keys so nothing is hidden.
-    final dir = Directory('../../metacode/app/views/style');
+    final dir = Directory('../../examples/my_own_app/app/views/style');
     final yaml = <String, dynamic>{};
     for (final file in dir.listSync().whereType<File>().where((f) => f.path.endsWith('.yaml')).toList()
       ..sort((a, b) => a.path.compareTo(b.path))) {

@@ -24,7 +24,7 @@ Footer:
                 spacing: 10
                 children:
                 - image:
-                    src: metacode/app/views/style/images/logo.svg
+                    src: examples/my_own_app/app/views/style/images/logo.svg
                     width: 11
                     height: 16
                 - text:

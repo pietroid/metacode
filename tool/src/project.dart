@@ -39,13 +39,13 @@ import 'ui.dart';
 class AppProject {
   final Directory dir;
 
-  /// Folder relative to the repo root: `metacode`, `metacode/modules/food`.
+  /// Folder relative to the repo root: `examples/my_own_app`, `examples/my_own_app/modules/food`.
   final String path;
 
   /// Folder name: the key `module:` widgets use (the root's is `metacode`).
   final String name;
 
-  /// Prefix for issues, relative to `metacode/`: `''`, `modules/food/`.
+  /// Prefix for issues, relative to `examples/my_own_app/`: `''`, `modules/food/`.
   final String prefix;
 
   String title = '';

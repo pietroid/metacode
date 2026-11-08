@@ -6,7 +6,7 @@ small Dart functions, and the engine runs it. See [PROPOSAL.md](PROPOSAL.md).
 ## Project layout
 
 ```
-metacode/                 the root app (an app is a folder; apps nest)
+examples/my_own_app/      the root app (an app is a folder; apps nest)
   app.yaml                  name, description, version, state: initial values
   app/
     actions/*.dart          async functions that emit StateDeltas (and use Core),
@@ -188,7 +188,7 @@ in pages and components.
 
 ## Style
 
-`metacode/app/views/style/*.yaml` sets the design tokens every catalog widget is themed
+`examples/my_own_app/app/views/style/*.yaml` sets the design tokens every catalog widget is themed
 from: light and dark colors, the two font roles (`display` for headlines,
 `text` for everything else), the type scale (one entry per text variant),
 Phosphor icon weight, radius, spacing and sizes. Each file contains one token
