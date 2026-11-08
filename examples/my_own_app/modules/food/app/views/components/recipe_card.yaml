@@ -1,45 +1,35 @@
-# RecipeCard: the current suggestion, a card to accept or refuse: dish
-# illustration, name, time/kcal/cost pills, its share of the daily kcal,
-# ingredients, then Skip and Add.
+# RecipeCard: the current suggestion: dish illustration, name,
+# time/kcal/cost pills, its share of the daily kcal and ingredients (Skip and
+# Add are in SwipeActions).
 RecipeCard:
-  column:
-    crossAxisAlignment: stretch
-    spacing: 14
-    children:
-    - card:
-        padding: 10
-        child:
-          column:
-            crossAxisAlignment: stretch
-            spacing: 10
-            children:
-            - image: {src: cardImage, height: 150, fit: cover, radius: 16}
-            - padding:
-                horizontal: 4
-                child:
-                  column:
-                    crossAxisAlignment: stretch
-                    spacing: 10
-                    children:
-                    - text: {value: cardName, style: {variant: titleLarge}}
-                    - row:
-                        spacing: 6
-                        children:
-                        - expanded: {MetaPill: {icon: timer, text: cardMinutes}}
-                        - expanded: {MetaPill: {icon: restaurant, text: cardKcal}}
-                        - expanded: {MetaPill: {icon: coins, text: cardCost}}
-                    - row:
-                        spacing: 6
-                        crossAxisAlignment: start
-                        children:
-                        - icon: {name: checkCircle, size: 16, color: success}
-                        - expanded:
-                            text: {value: cardShare, style: {variant: bodySmall, color: success}}
-                    - text: {value: cardIngredients, style: {variant: bodySmall, color: ink2}}
-    - row:
-        spacing: 10
+  card:
+    padding: 12
+    child:
+      column:
+        crossAxisAlignment: stretch
+        spacing: 14
         children:
-        - expanded:
-            outlinedButton: {text: skip, icon: close, onPressed: refuseRecipe}
-        - expanded:
-            filledButton: {text: add, icon: favorite, onPressed: acceptRecipe}
+        - image: {src: cardImage, height: 160, fit: cover, radius: 18}
+        - padding:
+            horizontal: 6
+            bottom: 6
+            child:
+              column:
+                crossAxisAlignment: stretch
+                spacing: 12
+                children:
+                - text: {value: cardName, style: {variant: titleLarge}}
+                - row:
+                    spacing: 8
+                    children:
+                    - expanded: {MetaPill: {icon: timer, text: cardMinutes}}
+                    - expanded: {MetaPill: {icon: restaurant, text: cardKcal}}
+                    - expanded: {MetaPill: {icon: coins, text: cardCost}}
+                - row:
+                    spacing: 6
+                    crossAxisAlignment: start
+                    children:
+                    - icon: {name: checkCircle, size: 16, color: success}
+                    - expanded:
+                        text: {value: cardShare, style: {variant: bodySmall, color: success}}
+                - text: {value: cardIngredients, style: {variant: bodySmall, color: ink2}}

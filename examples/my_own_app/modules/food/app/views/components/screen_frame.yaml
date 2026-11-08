@@ -1,0 +1,19 @@
+# ScreenFrame: the layout every Forkcast screen shares: `.body` scrolls on the
+# phone's 24px margin and `.footer` (the main button) stays pinned at the
+# bottom, in the same place on every screen.
+ScreenFrame:
+  column:
+    crossAxisAlignment: stretch
+    children:
+    - expanded:
+        scroll:
+          padding:
+            horizontal: 24
+            top: 8
+            bottom: 24
+            child: .body
+    - padding:
+        horizontal: 24
+        top: 12
+        bottom: 24
+        child: .footer

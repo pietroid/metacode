@@ -1,0 +1,9 @@
+# PickedDoneActions: the footer at the end of the swipe: Make my shopping
+# list, or Suggest again when nothing was accepted.
+PickedDoneActions:
+  if:
+    condition: hasPicked
+    then:
+      filledButton: {text: makeListCta, icon: shoppingCart, onPressed: makeList}
+    else:
+      filledButton: {text: shuffle, icon: refresh, onPressed: suggestRecipes}

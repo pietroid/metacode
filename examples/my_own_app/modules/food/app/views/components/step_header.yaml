@@ -3,7 +3,6 @@
 StepHeader:
   column:
     crossAxisAlignment: stretch
-    spacing: 10
     children:
     - BrandBar:
         trailing:
@@ -12,16 +11,17 @@ StepHeader:
             style:
               variant: labelSmall
               color: ink3
+    - sizedBox: {height: 16}
     - progress:
         value: .progress
-    - sizedBox:
-        height: 6
+    - sizedBox: {height: 32}
     - text:
         value: .title
         style:
           variant: titleLarge
+    - sizedBox: {height: 10}
     - text:
         value: .hint
         style:
-          variant: bodySmall
+          variant: bodyMedium
           color: ink2

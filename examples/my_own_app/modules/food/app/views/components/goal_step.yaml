@@ -1,15 +1,18 @@
 # GoalStep: onboarding step 3: the program goal (one of GoalCard), then
-# Build my program once one is picked.
+# Build my program once one is picked, pinned at the bottom.
 GoalStep:
-  column:
-    crossAxisAlignment: stretch
-    spacing: 16
-    children:
-    - StepHeader: {progress: 1, step: step3, title: goalTitle, hint: goalHint}
-    - listView:
-        data: goalList
-        itemBuilder: GoalCard
-    - NavButtons:
+  ScreenFrame:
+    body:
+      column:
+        crossAxisAlignment: stretch
+        spacing: 28
+        children:
+        - StepHeader: {progress: 1, step: step3, title: goalTitle, hint: goalHint}
+        - listView:
+            data: goalList
+            itemBuilder: GoalCard
+    footer:
+      NavButtons:
         next:
           if:
             condition: hasGoal

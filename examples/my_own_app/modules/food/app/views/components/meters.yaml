@@ -4,11 +4,11 @@ Meters:
   container:
     borderColor: line
     radius: 20
-    padding: 14
+    padding: 18
     child:
       column:
         crossAxisAlignment: stretch
-        spacing: 14
+        spacing: 18
         children:
         - MeterRow: {icon: wallet, label: budget, text: budgetSpent, progress: budgetSpentProgress}
         - MeterRow: {icon: restaurant, label: calories, text: kcalStocked, progress: kcalStockedProgress}

@@ -1,0 +1,24 @@
+# SwipeActions: the swipe's footer: Skip and Add, then Continue with my picks
+# once at least one recipe is added (a quiet hint until then).
+SwipeActions:
+  column:
+    crossAxisAlignment: stretch
+    spacing: 4
+    children:
+    - row:
+        spacing: 10
+        children:
+        - expanded:
+            outlinedButton: {text: skip, icon: close, onPressed: refuseRecipe}
+        - expanded:
+            filledButton: {text: add, icon: favorite, onPressed: acceptRecipe}
+    - sizedBox:
+        height: 44
+        child:
+          if:
+            condition: hasPicked
+            then:
+              textButton: {text: doneWithPicks, icon: arrowForward, onPressed: donePicking}
+            else:
+              center:
+                text: {value: addOneHint, maxLines: 1, style: {variant: labelMedium, color: ink3}}

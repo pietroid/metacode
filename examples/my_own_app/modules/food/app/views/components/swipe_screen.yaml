@@ -1,20 +1,31 @@
-# SwipeScreen: the recipe picker: a header with the pick count and a close
-# button, then RecipeCard one at a time, or PickedDone when over.
+# SwipeScreen: the recipe picker: a title with a close button, a progress
+# bar with the pick count, then RecipeCard one at a time, or PickedDone when
+# over. The footer holds SwipeActions, or PickedDoneActions when over.
 SwipeScreen:
-  column:
-    crossAxisAlignment: stretch
-    spacing: 12
-    children:
-    - row:
+  ScreenFrame:
+    body:
+      column:
+        crossAxisAlignment: stretch
+        spacing: 20
         children:
-        - expanded:
-            column:
-              crossAxisAlignment: start
-              children:
-              - text: {value: pickRecipes, style: {variant: titleSmall}}
-              - text: {value: pickCounter, style: {variant: bodySmall, color: ink3}}
-        - iconButton: {icon: close, tooltip: close, onPressed: showPlan}
-    - if:
+        - row:
+            children:
+            - expanded:
+                text: {value: pickRecipes, style: {variant: titleLarge}}
+            - iconButton: {icon: close, tooltip: close, onPressed: showPlan}
+        - row:
+            spacing: 12
+            children:
+            - expanded:
+                progress:
+                  value: pickProgress
+            - text: {value: pickCounter, style: {variant: labelMedium, color: ink2}}
+        - if:
+            condition: deckDone
+            then: PickedDone
+            else: RecipeCard
+    footer:
+      if:
         condition: deckDone
-        then: PickedDone
-        else: RecipeCard
+        then: PickedDoneActions
+        else: SwipeActions

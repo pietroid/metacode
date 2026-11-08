@@ -240,8 +240,8 @@ One line per widget: what it is and its props. Details (prop kinds, notes, short
 | `avatar` | A round avatar with an image or short text (initials). | text, image, radius, color |
 | `marquee` | A row of children that scrolls sideways in a loop, like a news ticker. Still (and scrollable) when the device asks for reduced motion. | children, spacing, speed (shorthand `marquee: [a, b]`) |
 | `progress` | Progress indicator. Without `value` it spins forever. | value, circular |
-| `listView` | Scrollable list. `itemBuilder` is built once per item of `data`. | data, itemBuilder, empty |
-| `gridView` | Scrollable grid. `itemBuilder` is built once per item of `data`. | data, itemBuilder, empty, columns, spacing, aspectRatio |
+| `listView` | A list. `itemBuilder` is built once per item of `data`. Inside `scroll` it moves with the page; on its own (in `expanded`) it scrolls itself. | data, itemBuilder, empty |
+| `gridView` | A grid. `itemBuilder` is built once per item of `data`. Inside `scroll` it moves with the page; on its own (in `expanded`) it scrolls itself. | data, itemBuilder, empty, columns, spacing, aspectRatio |
 | `listTile` | A list row. | title, subtitle, leading, trailing, onTap |
 | `if` | Shows `then` when the value is true, else `else`. | condition, then, else |
 | `textField` | Text input. | value, hint, label, multiline, onChanged, onSubmitted |

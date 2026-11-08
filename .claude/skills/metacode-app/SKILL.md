@@ -15,6 +15,14 @@ tool/check.sh
 
 It validates every app, regenerates, type-checks and runs every app's tests (the `main()` in each action and value file), then the layout check: every page and route of every app, from the initial state, plus each app's selected states in `tests/`, at phone, tablet and desktop sizes; an overflow fails it with the app, route or test state, and size. Repeat until it prints `OK`. Do not launch the app, and do not touch `lib/`, `tool/` or `packages/`. Build new UI as components out of the catalog's widgets (see Components first, below); reach for the `metacode-add-widget` skill only when no composition can do it. If it needs engine work, use `metacode-engine`.
 
+**Changed the state's shape?** When you add, rename, retype or remove a field of the state or of any model it holds (`app/models/`), the running app's saved state (`.state/state.yaml`) no longer matches and fails to load (`type 'Null' is not a subtype of type 'bool'`). After `tool/check.sh` prints `OK`, reset that app's saved state, and say so in your reply:
+
+```sh
+tool/reset_state.sh modules/food   # one app, relative to examples/my_own_app/; no argument = every app
+```
+
+On web the state lives in localStorage: tell the user to relaunch with `METACODE_RESET_FILES=true`.
+
 ## Find what to change: read the index first
 
 Before opening any app file, read the index of the app the change is about: `examples/my_own_app/.generated/INDEX.md` (root) or `examples/my_own_app/modules/<name>/.generated/INDEX.md`. If it is missing, run `dart run tool/metacode.dart` first. It lists the state (with who writes and reads each field), models, routes, and every page, component, action and value with its one-line purpose, what it uses and what uses it. From it:
@@ -123,7 +131,7 @@ Use `metacode-add-widget` only for a missing **capability**, something no arrang
 4. `app/actions/bump_priority.dart`: `Future<void> bumpPriority(State state, void Function(StateDelta) emit, int index) async { state.tasks[index].priority += 1; emit(StateDelta(tasks: state.tasks)); }`.
 5. `app/views/components/task_list.yaml`: `trailing: {iconButton: {icon: add, tooltip: raisePriority, onPressed: bumpPriority}}`, and `raisePriority: Raise priority` in `app/views/labels/en.yaml`.
 6. Below it, in `app/actions/bump_priority.dart`: `void main() { test('bumpPriority', () async { expect((await app.bumpPriority(sample(), 0)).tasks[0].priority, 1); }); }`.
-7. `tool/check.sh`.
+7. `tool/check.sh`, then `tool/reset_state.sh` (the task model changed, so the saved state is stale).
 
 ## Report cost (always, at the end)
 

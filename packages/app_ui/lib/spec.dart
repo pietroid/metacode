@@ -339,7 +339,7 @@ const widgetCatalog = <String, WidgetSpec>{
   ),
   'listView': WidgetSpec(
     _content,
-    'Scrollable list. `itemBuilder` is built once per item of `data`.',
+    'A list. `itemBuilder` is built once per item of `data`. Inside `scroll` it moves with the page; on its own (in `expanded`) it scrolls itself.',
     {
       'data': PropKind.binding,
       'itemBuilder': PropKind.node,
@@ -352,7 +352,7 @@ const widgetCatalog = <String, WidgetSpec>{
   ),
   'gridView': WidgetSpec(
     _content,
-    'Scrollable grid. `itemBuilder` is built once per item of `data`.',
+    'A grid. `itemBuilder` is built once per item of `data`. Inside `scroll` it moves with the page; on its own (in `expanded`) it scrolls itself.',
     {
       'data': PropKind.binding,
       'itemBuilder': PropKind.node,

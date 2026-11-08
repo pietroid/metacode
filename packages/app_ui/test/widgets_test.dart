@@ -128,6 +128,31 @@ void main() {
     expect(fmt(calls.single), 'open {index: 2}');
   });
 
+  testWidgets('a listView inside scroll lets drags over its items scroll the page',
+      (tester) async {
+    await render(tester, {
+      'scroll': {
+        'child': {
+          'column': {
+            'children': [
+              {'sizedBox': {'height': 100}},
+              {
+                'listView': {
+                  'data': 'items',
+                  'itemBuilder': {'sizedBox': {'height': 80, 'child': 'Row'}},
+                },
+              },
+            ],
+          },
+        },
+      },
+    }, bindings: {'items': List.generate(30, (i) => i)});
+    final page = tester.state<ScrollableState>(find.byType(Scrollable).first);
+    await tester.drag(find.text('Row').first, const Offset(0, -400));
+    await tester.pumpAndSettle();
+    expect(page.position.pixels, greaterThan(300));
+  });
+
   testWidgets('toggle, slider and dropdown pass their value', (tester) async {
     final calls = await render(tester, {
       'column': [

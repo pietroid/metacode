@@ -2,7 +2,7 @@
 # mark; tap to pick it.
 GoalCard:
   padding:
-    bottom: 10
+    bottom: 12
     child:
       tappable:
         onTap: pickGoal

@@ -1,20 +1,28 @@
-# ShoppingScreen: the shopping list: Meters (filling as items are checked),
-# the total, a ShopRow per ingredient, and back to the plan.
+# ShoppingScreen: the shopping list: a hint, the total and a ShopRow per
+# ingredient to check off; Shopping done pinned at the bottom adds what is
+# checked to the plan's budget and calorie meters.
 ShoppingScreen:
-  column:
-    crossAxisAlignment: stretch
-    spacing: 14
-    children:
-    - row:
-        spacing: 4
+  ScreenFrame:
+    body:
+      column:
+        crossAxisAlignment: stretch
+        spacing: 20
         children:
-        - iconButton: {icon: arrowBack, tooltip: backToPlan, onPressed: showPlan}
-        - expanded:
-            text: {value: shoppingList, style: {variant: titleLarge}}
-    - Meters
-    - text: {value: shopTotal, style: {variant: labelMedium, color: ink2}}
-    - listView:
-        data: shopList
-        itemBuilder: ShopRow
-        empty: emptyList
-    - filledButton: {text: backToPlan, onPressed: showPlan}
+        - row:
+            spacing: 4
+            children:
+            - iconButton: {icon: arrowBack, tooltip: backToPlan, onPressed: showPlan}
+            - expanded:
+                text: {value: shoppingList, style: {variant: titleLarge}}
+        - column:
+            crossAxisAlignment: start
+            spacing: 4
+            children:
+            - text: {value: shoppingHint, style: {variant: bodyMedium, color: ink2}}
+            - text: {value: shopTotal, style: {variant: labelLarge}}
+        - listView:
+            data: shopList
+            itemBuilder: ShopRow
+            empty: emptyList
+    footer:
+      filledButton: {text: shoppingDone, icon: check, onPressed: finishShopping}

@@ -1,5 +1,6 @@
 # item: a shopping list line: an ingredient merged across the accepted
-# recipes (`count` times), checked once it is in the cart.
+# recipes (`count` times), checked once it is in the cart, bought once
+# Shopping done is pressed (the whole list; only bought lines fill the meters).
 item:
   name: string
   namePt: string
@@ -8,3 +9,4 @@ item:
   kcal: number
   count: number
   checked: boolean
+  bought: boolean

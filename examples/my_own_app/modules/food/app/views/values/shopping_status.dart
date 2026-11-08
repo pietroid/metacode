@@ -15,7 +15,7 @@ String shoppingStatus(State state, Labels labels) {
 
 void main() {
   test('shoppingStatus', () async {
-    final s = sample().copyWith(shopping: [Item(name: 'A', namePt: 'A', qty: '1', price: 1, kcal: 1, count: 1, checked: true), Item(name: 'B', namePt: 'B', qty: '1', price: 1, kcal: 1, count: 1, checked: false)]);
+    final s = sample().copyWith(shopping: [Item(name: 'A', namePt: 'A', qty: '1', price: 1, kcal: 1, count: 1, checked: true, bought: true), Item(name: 'B', namePt: 'B', qty: '1', price: 1, kcal: 1, count: 1, checked: false, bought: false)]);
     expect(app.shoppingStatus(s), '1 of 2 in the cart');
   });
 }

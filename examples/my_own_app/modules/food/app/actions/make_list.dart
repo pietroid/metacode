@@ -18,7 +18,7 @@ Future<void> makeList(State state, void Function(StateDelta) emit) async {
         }
       }
       if (!found) {
-        items.add(Item(name: g.name, namePt: g.namePt, qty: g.qty, price: g.price, kcal: g.kcal, count: 1, checked: false));
+        items.add(Item(name: g.name, namePt: g.namePt, qty: g.qty, price: g.price, kcal: g.kcal, count: 1, checked: false, bought: false));
       }
     }
   }

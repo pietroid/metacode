@@ -13,6 +13,6 @@ double budgetSpentProgress(State state) {
 
 void main() {
   test('budgetSpentProgress', () async {
-    expect(app.budgetSpentProgress(sample().copyWith(shopping: [Item(name: 'A', namePt: 'A', qty: '1', price: 30, kcal: 600, count: 1, checked: true), Item(name: 'B', namePt: 'B', qty: '1', price: 10, kcal: 200, count: 1, checked: false)])), closeTo(0.1, 0.001));
+    expect(app.budgetSpentProgress(sample().copyWith(shopping: [Item(name: 'A', namePt: 'A', qty: '1', price: 30, kcal: 600, count: 1, checked: true, bought: true), Item(name: 'B', namePt: 'B', qty: '1', price: 10, kcal: 200, count: 1, checked: false, bought: false)])), closeTo(0.1, 0.001));
   });
 }

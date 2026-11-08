@@ -5,10 +5,10 @@ import '../../../.generated/labels.dart';
 import '../../../.generated/state.dart';
 import '../../models/sample.dart';
 
-String pickCounter(State state, Labels labels) => '${state.picked.length} ${labels.of} ${state.days} ${labels.picked}';
+String pickCounter(State state, Labels labels) => '${state.picked.length} ${labels.of} ${state.days}';
 
 void main() {
   test('pickCounter', () async {
-    expect(app.pickCounter(sample(goal: Goal.weightLoss, program: 8).copyWith(deck: [12, 0], deckPos: 0, picked: [])), '0 of 5 picked');
+    expect(app.pickCounter(sample(goal: Goal.weightLoss, program: 8).copyWith(deck: [12, 0], deckPos: 0, picked: [])), '0 of 5');
   });
 }

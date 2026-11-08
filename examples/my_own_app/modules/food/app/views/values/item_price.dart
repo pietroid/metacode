@@ -10,6 +10,6 @@ String itemPrice(State state, Labels labels, int index) => money(state.shopping[
 
 void main() {
   test('itemPrice', () async {
-    expect(app.itemPrice(sample().copyWith(shopping: [Item(name: 'A', namePt: 'A', qty: '1', price: 30, kcal: 600, count: 1, checked: true), Item(name: 'B', namePt: 'B', qty: '1', price: 10, kcal: 200, count: 1, checked: false)]), 0), r'$30.00');
+    expect(app.itemPrice(sample().copyWith(shopping: [Item(name: 'A', namePt: 'A', qty: '1', price: 30, kcal: 600, count: 1, checked: true, bought: true), Item(name: 'B', namePt: 'B', qty: '1', price: 10, kcal: 200, count: 1, checked: false, bought: false)]), 0), r'$30.00');
   });
 }

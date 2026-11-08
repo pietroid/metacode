@@ -16,6 +16,6 @@ String shopTotal(State state, Labels labels) {
 
 void main() {
   test('shopTotal', () async {
-    expect(app.shopTotal(sample().copyWith(shopping: [Item(name: 'A', namePt: 'A', qty: '1', price: 30, kcal: 600, count: 1, checked: true), Item(name: 'B', namePt: 'B', qty: '1', price: 10, kcal: 200, count: 1, checked: false)])), r'Total $40.00');
+    expect(app.shopTotal(sample().copyWith(shopping: [Item(name: 'A', namePt: 'A', qty: '1', price: 30, kcal: 600, count: 1, checked: true, bought: true), Item(name: 'B', namePt: 'B', qty: '1', price: 10, kcal: 200, count: 1, checked: false, bought: false)])), r'Total $40.00');
   });
 }

@@ -20,3 +20,9 @@ typography:
     weight: 600
     height: 1.25
     tracking: -0.002
+  displaySmall:
+    font: text
+    size: 48
+    weight: 600
+    height: 1.1
+    tracking: -0.03

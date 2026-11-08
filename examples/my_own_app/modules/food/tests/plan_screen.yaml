@@ -1,5 +1,5 @@
-# planScreen: the plan with everything on: over budget (warning line), a
-# shopping list (entry and filled bars) and three other matching programs.
+# planScreen: the plan with everything on: over budget (warning line) and a
+# shopping list with one line bought (entry and filled meters).
 planScreen:
   state:
     stage: plan
@@ -8,5 +8,5 @@ planScreen:
     program: 9
     matches: [8, 9, 10, 11]
     shopping:
-    - {name: Salmon fillets, namePt: Filés de salmão, qty: 300 g, price: 8, kcal: 470, count: 1, checked: true}
-    - {name: Garlic & ginger, namePt: Alho e gengibre, qty: 50 g, price: 2, kcal: 30, count: 2, checked: false}
+    - {name: Salmon fillets, namePt: Filés de salmão, qty: 300 g, price: 8, kcal: 470, count: 1, checked: true, bought: true}
+    - {name: Garlic & ginger, namePt: Alho e gengibre, qty: 50 g, price: 2, kcal: 30, count: 2, checked: false, bought: false}
