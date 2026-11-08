@@ -11,7 +11,7 @@ Read `AGENTS.md` first (map and flow). Verify with:
 tool/check_engine.sh
 ```
 
-Never launch the app. `test/renderer_test.dart` renders `examples/my_own_app/.generated/bundle.json` (all apps) and taps it. Extend it for UI and runtime behavior.
+Never launch the app. Engine tests never use the real app (`examples/`): `test/engine_test.dart` compiles `test/fixture_app/` (a tiny app with one of each feature: state, values, labels in en/pt_br, every route type, a module embedded contained and not) and taps it. For new runtime or UI behavior, add the smallest thing that exercises it to the fixture (generate it with `dart run tool/metacode.dart test/fixture_app`) and a test to `engine_test.dart`. `test/web/` and `project_files_test.dart` use the fixture too.
 
 ## Where things are
 
@@ -28,7 +28,7 @@ Never launch the app. `test/renderer_test.dart` renders `examples/my_own_app/.ge
 | Project files (read/write/watch, same folder structure everywhere) | `lib/files/project_files.dart` (`ProjectFiles`: in memory, sync reads, `changes` stream), `io_project_files.dart` (a folder, watched), `local_storage_project_files.dart` (web; sources only). Platform pick: `lib/engine/files/open_project_files.dart` (`METACODE_PROJECT_DIR` on desktop; web seeds from `.generated/files.json`, reset with `METACODE_RESET_FILES`) |
 | Calling user code at runtime | `lib/engine/program.dart` (one dart_eval `Runtime`, JSON in/out) |
 | Node resolution (values, then labels), actions to state, value cache, rebuilds | `lib/engine/ui_renderer.dart` (`_EngineUi implements Ui`; `UiRenderer.value` caches per state identity, so never mutate a state map in place; `_Scope` = one page/component/lazy node: records the values it reads while building, then `context.select`s them, so it rebuilds only when those results change) |
-| Modules at runtime | `lib/engine/app_runtime.dart` (`AppRuntime.embed`: own `StateBloc` via `StateBloc.child`, own program and `CoreHost`, shared navigator; theme from its style/ if any) |
+| Modules at runtime | `lib/engine/app_runtime.dart` (`AppRuntime.embed`: own `StateBloc` via `StateBloc.child`, own program and `CoreHost`; shared navigator, or its own with `contained: true` (`_ContainedModule`); routes go to the navigator the action was tapped in, `CoreHost.actionFrom`; theme from its style/ if any) |
 | State persistence | `lib/engine/state_bloc.dart` on a `StateStore` (`lib/engine/state_store.dart`): from the project's files, `FilesStateStore` saves `.state/state.yaml` next to each app's sources (disk or localStorage); from the bundle, `DocumentsStateStore` (`METACODE_STATE_PATH` for the root, else `<docs>/<name>/[modules/<module>/].state/state.yaml`; none on web). Saved values merge over the initial state |
 | New app version at runtime (hot reload, downloaded bundle) | `MetacodeApp` given a new config -> `AppRuntime.reload` (in place, recursive into created modules; every `render`ed route listens) -> `StateBloc.reconfigure` (values kept, new fields get their initial value). Dev trigger: `LiveProject.watch` (`lib/engine/live_project.dart`: recompiles on every source change) -> `_LiveApp` in `lib/main.dart`; without live files, `_LiveApp.reassemble` reloads `bundle.json` |
 | App files at runtime (images) | `Ui.file(path)` (app_ui) -> `UiRenderer.readFile` -> `ProjectConfig.readFile` (set by `LiveProject`, reads `ProjectFiles`); null means a bundled asset. The image widget prefers it |

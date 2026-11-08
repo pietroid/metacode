@@ -59,13 +59,9 @@ FoodLivePage:
                         children:
                         - PhoneStatusBar
                         - expanded:
-                            scroll:
-                              padding:
-                                horizontal: 20
-                                top: 4
-                                bottom: 20
-                                child:
-                                  module: food
+                            module:
+                              name: food
+                              contained: true
                         - sizedBox:
                             height: 28
                             child:

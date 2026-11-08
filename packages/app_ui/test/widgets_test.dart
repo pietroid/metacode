@@ -52,7 +52,8 @@ class FakeUi implements Ui {
       : null;
 
   @override
-  Widget module(String name) => Text('module $name');
+  Widget module(String name, {bool contained = false}) =>
+      Text('module $name${contained ? ' contained' : ''}');
 
   @override
   Uint8List? file(String path) => files[path];

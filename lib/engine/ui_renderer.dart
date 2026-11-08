@@ -22,7 +22,11 @@ class UiRenderer {
   final Map<String, Map<String, String>> labels;
   final String? defaultLanguage;
   final StateBloc bloc;
-  final Widget Function(String app) embed;
+  final Widget Function(String app, {bool contained}) embed;
+
+  /// Called with the tapped widget's context before an action runs, so
+  /// `core.navigator` uses the navigator the tap came from.
+  final void Function(BuildContext context)? onAction;
 
   /// App files by repo-relative path, when running from the project's
   /// files (see [ProjectConfig.readFile]).
@@ -35,6 +39,7 @@ class UiRenderer {
     this.defaultLanguage,
     required this.bloc,
     required this.embed,
+    this.onAction,
     this.readFile,
   }) : widgets = Map<String, dynamic>.from(ui['widgets'] ?? {});
 
@@ -199,7 +204,8 @@ class _EngineUi implements Ui {
   }
 
   @override
-  Widget module(String name) => renderer.embed(name);
+  Widget module(String name, {bool contained = false}) =>
+      renderer.embed(name, contained: contained);
 
   @override
   VoidCallback? action(dynamic name) =>
@@ -223,6 +229,7 @@ class _EngineUi implements Ui {
   /// `emit` (see CoreHost), so nothing is applied here.
   Future<void> _run(String name, Map<String, dynamic> extra) async {
     final bloc = renderer.bloc;
+    if (context.mounted) renderer.onAction?.call(context);
     try {
       await _program.action(name, bloc.state, {..._callParams, ...extra});
     } catch (e, stack) {

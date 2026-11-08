@@ -12,8 +12,10 @@ import 'state_bloc.dart';
 ///
 /// - `emit(delta)` merges the delta into the [StateBloc].
 /// - `core.api` runs real HTTP requests with [client].
-/// - `core.navigator` pushes routing/ routes on [navigatorKey]: pages,
-///   bottom sheets and dialogs are all routes, so `pop` closes any of them.
+/// - `core.navigator` pushes routing/ routes on the navigator the last
+///   action was tapped in (see [actionFrom]): the app's [navigatorKey], or
+///   a contained module's own. Pages, bottom sheets and dialogs are all
+///   routes, so `pop` closes any of them.
 /// - `core.locale.set` picks the language of the whole app ([locale]).
 class CoreHost implements MetacodeHost {
   final StateBloc bloc;
@@ -34,6 +36,20 @@ class CoreHost implements MetacodeHost {
     http.Client? client,
   }) : client = client ?? http.Client();
 
+  NavigatorState? _tappedIn;
+
+  /// Called before an action runs: its routes go to the navigator around
+  /// [context] (a contained module's, or the app's).
+  void actionFrom(BuildContext context) =>
+      _tappedIn = Navigator.maybeOf(context);
+
+  NavigatorState? get _navigator {
+    final tapped = _tappedIn;
+    return tapped != null && tapped.mounted
+        ? tapped
+        : navigatorKey.currentState;
+  }
+
   @override
   void emit(Map<String, dynamic> delta) =>
       bloc.setState({...bloc.state, ...delta});
@@ -47,7 +63,7 @@ class CoreHost implements MetacodeHost {
         await push(args['route'] as String);
         return null;
       case 'navigator.pop':
-        navigatorKey.currentState?.maybePop();
+        _navigator?.maybePop();
         return null;
       case 'locale.set':
         await locale.set(args['locale'] as String?);
@@ -60,7 +76,7 @@ class CoreHost implements MetacodeHost {
   /// Opens a route and completes when it closes.
   Future<void> push(String name) async {
     final route = navigation.routes[name];
-    final navigator = navigatorKey.currentState;
+    final navigator = _navigator;
     if (route == null || navigator == null) {
       debugPrint('metacode: cannot push route "$name"');
       return;
@@ -83,6 +99,7 @@ class CoreHost implements MetacodeHost {
       case RouteType.dialog:
         await showDialog<void>(
           context: navigator.context,
+          useRootNavigator: false,
           routeSettings: RouteSettings(name: name),
           builder: (_) => Dialog(
             child: SingleChildScrollView(child: render(route.widget)),

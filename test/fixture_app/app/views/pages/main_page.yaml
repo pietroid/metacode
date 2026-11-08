@@ -1,0 +1,23 @@
+# MainPage: the count, a button per action, and the counter module twice:
+# contained in a 300x300 box, then over the whole app.
+MainPage:
+  scaffold:
+    appBar:
+      title: {text: title}
+      actions:
+      - textButton: {text: portuguese, onPressed: usePortuguese}
+    body:
+      column:
+        children:
+        - text: countText
+        - wrap:
+          - filledButton: {text: add, onPressed: increment}
+          - outlinedButton: {text: details, onPressed: openDetails}
+          - outlinedButton: {text: sheet, onPressed: openSheet}
+          - outlinedButton: {text: dialog, onPressed: openDialog}
+        - sizedBox:
+            width: 300
+            height: 300
+            child:
+              module: {name: counter, contained: true}
+        - module: counter

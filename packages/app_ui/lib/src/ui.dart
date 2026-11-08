@@ -31,8 +31,9 @@ abstract class Ui {
   ValueChanged<T>? actionWithValue<T>(dynamic name);
 
   /// The module `modules/<name>/`, running with its own state, actions and
-  /// values.
-  Widget module(String name);
+  /// values. When [contained], its routes open inside it (its own
+  /// navigator) instead of over the whole app.
+  Widget module(String name, {bool contained = false});
 
   /// A [Ui] whose bindings and actions also receive [params]
   /// (e.g. `{'index': i}` for list items).

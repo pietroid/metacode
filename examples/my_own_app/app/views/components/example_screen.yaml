@@ -1,29 +1,38 @@
-# ExampleScreen: what ExamplePhone shows: the current example's photo and its
-# live module (`module: food|music|work|plants`, picked by exampleKey), both
-# on the same 20px screen margin.
+# ExampleScreen: what ExamplePhone shows: the current example's photo on the
+# 20px screen margin, over its live module (`module: food|music|work|plants`,
+# picked by exampleKey), contained: it scrolls on its own and its routes open
+# inside the phone.
 ExampleScreen:
-  padding:
-    horizontal: 20
-    top: 4
-    bottom: 20
-    child:
-      column:
-        crossAxisAlignment: stretch
-        spacing: 20
-        children:
-        - image:
+  column:
+    crossAxisAlignment: stretch
+    children:
+    - padding:
+        horizontal: 20
+        top: 4
+        bottom: 16
+        child:
+          image:
             src: exampleImage
             height: 190
             fit: cover
             radius: 20
-        - match:
-            value: exampleKey
-            cases:
-              food:
-                module: food
-              music:
-                module: music
-              work:
-                module: work
-              plants:
-                module: plants
+    - expanded:
+        match:
+          value: exampleKey
+          cases:
+            food:
+              module:
+                name: food
+                contained: true
+            music:
+              module:
+                name: music
+                contained: true
+            work:
+              module:
+                name: work
+                contained: true
+            plants:
+              module:
+                name: plants
+                contained: true

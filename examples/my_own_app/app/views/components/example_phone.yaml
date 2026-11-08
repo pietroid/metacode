@@ -1,6 +1,6 @@
 # ExamplePhone: a phone with the current example living inside: a dark bezel
 # (no border) around a rounded screen with PhoneStatusBar, ExampleScreen
-# (scrolls) and a home indicator. 340 wide at most, centered.
+# and a home indicator. 340 wide at most, centered.
 ExamplePhone:
   container:
     maxWidth: 340
@@ -17,8 +17,7 @@ ExamplePhone:
             crossAxisAlignment: stretch
             children:
             - PhoneStatusBar
-            - expanded:
-                scroll: ExampleScreen
+            - expanded: ExampleScreen
             - sizedBox:
                 height: 28
                 child:

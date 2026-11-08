@@ -1,8 +1,8 @@
 // The compiler and the engine in a browser (dart2js), as the web app runs
 // them: flutter test --platform chrome test/web
-// Needs fixture.g.dart (dart run tool/metacode.dart, then
-// dart run tool/web_fixture.dart): the project's files and the bundle the
-// CLI compiled.
+// Needs fixture.g.dart (dart run tool/metacode.dart test/fixture_app, then
+// dart run tool/web_fixture.dart): the engine's test app's files and the
+// bundle the CLI compiled.
 @TestOn('browser')
 library;
 
@@ -20,7 +20,7 @@ import 'package:web/web.dart' as web;
 
 import 'fixture.g.dart';
 
-const projectDir = 'examples/my_own_app';
+const projectDir = 'test/fixture_app';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -84,16 +84,16 @@ void main() {
       final config = (await LiveProject(files, path: projectDir).compile())!;
       final bloc = StateBloc(config: config, store: FilesStateStore(files));
       await bloc.initialize();
-      final food = bloc.child('food', config.modules['food']!);
+      final module = bloc.child('counter', config.modules['counter']!);
       await Future<void>.delayed(Duration.zero);
-      await food.setState({...food.state});
+      await module.setState({...module.state});
 
       final storage = web.window.localStorage;
       expect(storage.getItem('${LocalStorageProjectFiles.prefix}.state/state.yaml'),
           startsWith('t:state:'));
       expect(
           storage.getItem(
-              '${LocalStorageProjectFiles.prefix}modules/food/.state/state.yaml'),
+              '${LocalStorageProjectFiles.prefix}modules/counter/.state/state.yaml'),
           startsWith('t:state:'));
       await files.close();
     });

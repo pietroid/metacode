@@ -1,0 +1,8 @@
+# MainPage: a greeting, the taps and two buttons.
+MainPage:
+  column:
+    children:
+    - text: hello
+    - text: tapsText
+    - textButton: {text: tapMe, onPressed: tap}
+    - textButton: {text: moduleSheet, onPressed: openModuleSheet}

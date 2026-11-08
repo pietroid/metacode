@@ -225,7 +225,7 @@ One line per widget: what it is and its props. Details (prop kinds, notes, short
 | `card` | A surface with a hairline edge. Tappable with `onTap`. | child, padding, color, onTap (shorthand `card: child`) |
 | `scroll` | Makes its child scrollable. Do not put `expanded` directly inside. | child, horizontal (shorthand `scroll: child`) |
 | `divider` | A thin line. Write `divider: {}`. | height, color |
-| `module` | Embeds a module from `modules/<name>/`: its initial page, with its own state, actions and values. It inherits the theme unless it has a style/ folder. | name (shorthand `module: food`) |
+| `module` | Embeds a module from `modules/<name>/`: its initial page, with its own state, actions and values. It inherits the theme unless it has a style/ folder. Its routes (pages, sheets, dialogs) open over the whole app, unless `contained: true`: then it gets its own navigator and they open inside its box (a phone frame), which must have a bounded size (e.g. inside `expanded`, not `scroll`). | name, contained (shorthand `module: food`) |
 | `match` | Shows the case matching a value (e.g. the current page). Falls back to `default`. | value, cases, default |
 | `navigationBar` | Bottom navigation. Put it in `scaffold.bottomBar`. | destinations, selected, onSelected |
 | `text` | Text. | value, spans, style, align, maxLines (shorthand `text: "Hello"`) |

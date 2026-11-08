@@ -1,0 +1,4 @@
+initial: home
+routes:
+  home: MainPage
+  sheet: {bottomSheet: ModuleSheet}

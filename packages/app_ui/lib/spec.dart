@@ -241,9 +241,13 @@ const widgetCatalog = <String, WidgetSpec>{
     _layout,
     'Embeds a module from `modules/<name>/`: its initial page, with its own '
         'state, actions and values. It inherits the theme unless it has a '
-        'style/ folder.',
-    {'name': PropKind.module},
+        'style/ folder. Its routes (pages, sheets, dialogs) open over the '
+        'whole app, unless `contained: true`: then it gets its own navigator '
+        'and they open inside its box (a phone frame), which must have a '
+        'bounded size (e.g. inside `expanded`, not `scroll`).',
+    {'name': PropKind.module, 'contained': PropKind.literal},
     shorthand: Shorthand.name,
+    notes: {'contained': 'true or false (default); `module: food` is short for `module: {name: food}`'},
   ),
 
   // Navigation

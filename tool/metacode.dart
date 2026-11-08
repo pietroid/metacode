@@ -3,6 +3,9 @@
 //   dart run tool/metacode.dart          validate + generate
 //   dart run tool/metacode.dart check    validate only
 //   dart run tool/metacode.dart watch    validate + generate on every change
+//   dart run tool/metacode.dart <folder> another app folder (default
+//                                        examples/my_own_app), e.g. the
+//                                        engine's test/fixture_app
 //
 // The work itself is lib/compiler/build.dart, on the project's files in
 // memory (lib/files/): the running app does the same on every change, so
@@ -17,9 +20,13 @@ import 'package:metacode/compiler/build.dart';
 import 'package:metacode/files/io_project_files.dart';
 import 'package:metacode/files/project_files.dart';
 
-const projectDir = 'examples/my_own_app';
+late final String projectDir;
 
 Future<void> main(List<String> args) async {
+  projectDir = args
+      .firstWhere((a) => a != 'watch' && a != 'check',
+          orElse: () => 'examples/my_own_app')
+      .replaceFirst(RegExp(r'/$'), '');
   final watch = args.contains('watch');
   final files = await IoProjectFiles.open(projectDir, watch: watch);
   if (watch) return _watch(files);

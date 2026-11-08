@@ -11,7 +11,7 @@ import 'package:metacode/engine/live_project.dart';
 import 'package:metacode/engine/state_bloc.dart';
 import 'package:metacode/engine/state_store.dart';
 
-const projectDir = 'examples/my_own_app';
+const projectDir = 'test/fixture_app';
 
 void main() {
   group('ProjectFiles', () {
@@ -145,20 +145,16 @@ void main() {
       await bloc.initialize();
       expect(files.read('.state/state.yaml'), startsWith('state:'));
 
-      final food = bloc.child('food', config.modules['food']!);
+      final module = bloc.child('counter', config.modules['counter']!);
       await Future<void>.delayed(Duration.zero);
-      expect(files.read('modules/food/.state/state.yaml'), startsWith('state:'));
+      expect(files.read('modules/counter/.state/state.yaml'), startsWith('state:'));
 
       // A field changed, then a new bloc (the next launch) reads it.
-      final key = food.state.keys.firstWhere((k) => food.state[k] is String,
-          orElse: () => '');
-      if (key.isNotEmpty) {
-        await food.setState({...food.state, key: 'saved value'});
-        final again = StateBloc(
-            config: config.modules['food']!, store: store, app: ['food']);
-        await again.initialize();
-        expect(again.state[key], 'saved value');
-      }
+      await module.setState({...module.state, 'taps': 5});
+      final again = StateBloc(
+          config: config.modules['counter']!, store: store, app: ['counter']);
+      await again.initialize();
+      expect(again.state['taps'], 5);
     });
   });
 }

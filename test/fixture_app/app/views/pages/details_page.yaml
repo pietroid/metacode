@@ -1,0 +1,6 @@
+# DetailsPage: a pushed page.
+DetailsPage:
+  scaffold:
+    appBar:
+      title: {text: details}
+    body: RouteContent

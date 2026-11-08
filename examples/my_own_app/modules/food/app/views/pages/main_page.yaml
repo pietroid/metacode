@@ -1,6 +1,10 @@
-# MainPage: the food tracker page (Content), with no frame of its own: it is
-# embedded in the carousel's phone, which sets the margins.
+# MainPage: the food tracker page (Content), the module's whole screen: it
+# scrolls on the phone's 20px screen margin. Embedded `contained`, so its
+# routes open inside the phone.
 MainPage:
-  padding:
-    vertical: 0
-    child: Content
+  scroll:
+    padding:
+      horizontal: 20
+      top: 4
+      bottom: 20
+      child: Content

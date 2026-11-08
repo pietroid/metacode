@@ -1,0 +1,6 @@
+# fixture: the engine's test app (test/engine_test.dart): one of each engine
+# feature, nothing else. Not a real app; change it only with the engine.
+name: fixture
+description: The engine's test app.
+state:
+  count: 0

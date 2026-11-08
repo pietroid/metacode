@@ -59,13 +59,9 @@ MusicLivePage:
                         children:
                         - PhoneStatusBar
                         - expanded:
-                            scroll:
-                              padding:
-                                horizontal: 20
-                                top: 4
-                                bottom: 20
-                                child:
-                                  module: music
+                            module:
+                              name: music
+                              contained: true
                         - sizedBox:
                             height: 28
                             child:

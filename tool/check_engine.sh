@@ -5,6 +5,7 @@ cd "$(dirname "$0")/.."
 
 echo "== generate"
 dart run tool/metacode.dart 2>&1 | sed 's/Running build hooks\.\.\.//g'
+dart run tool/metacode.dart test/fixture_app 2>&1 | sed 's/Running build hooks\.\.\.//g'
 
 echo "== reference"
 dart run tool/reference.dart 2>&1 | sed 's/Running build hooks\.\.\.//g'
@@ -15,7 +16,8 @@ flutter analyze
 echo "== test"
 flutter test --reporter failures-only \
   test \
-  examples/my_own_app/.generated/all_test.dart
+  examples/my_own_app/.generated/all_test.dart \
+  tool/layout_test.dart
 (cd packages/app_ui && flutter test --reporter failures-only)
 
 echo "== web (Chrome)"

@@ -13,7 +13,7 @@ description: Change the Metacode app (models, state, view, actions, values, labe
 tool/check.sh
 ```
 
-It validates every app, regenerates, type-checks and runs every app's tests (the `main()` in each action and value file). Repeat until it prints `OK`. Do not launch the app, and do not touch `lib/`, `tool/` or `packages/`. Build new UI as components out of the catalog's widgets (see Components first, below); reach for the `metacode-add-widget` skill only when no composition can do it. If it needs engine work, use `metacode-engine`.
+It validates every app, regenerates, type-checks and runs every app's tests (the `main()` in each action and value file), then the layout check: every page and route of every app, from the initial state, at phone, tablet and desktop sizes; an overflow fails it with the app, route and size. Repeat until it prints `OK`. Do not launch the app, and do not touch `lib/`, `tool/` or `packages/`. Build new UI as components out of the catalog's widgets (see Components first, below); reach for the `metacode-add-widget` skill only when no composition can do it. If it needs engine work, use `metacode-engine`.
 
 ## Find what to change: read the index first
 
@@ -53,7 +53,7 @@ Import the generated files relative to your file (`../../.generated/` from `app/
 ### New module
 
 1. `modules/<name>/` with `app.yaml` (include `state:`), `app/models/state.yaml` and other models, `app/actions/*.dart`, `app/views/pages/main_page.yaml`, `app/views/components/*.yaml`, `app/views/values/*.dart`, `app/views/labels/en.yaml`, `app/models/sample.dart` (`final app = TestApp();` from `../../.generated/test_app.dart`), and tests in a `main()` in each action and value file. Copy `modules/plants/` as a template.
-2. Show it from a parent component: `module: <name>`.
+2. Show it from a parent component: `module: <name>`. Its routes open over the whole app; to keep them inside a frame (a phone mockup showing it as a separate app), use `module: {name: <name>, contained: true}` in a bounded box (`expanded`, not `scroll`), and let its main page scroll itself.
 3. `tool/check.sh` (no pubspec change needed).
 
 ## Reference

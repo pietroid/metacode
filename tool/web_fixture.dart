@@ -1,11 +1,11 @@
-// Writes test/web/fixture.g.dart: the project's files and the bundle the
+// Writes test/web/fixture.g.dart: the engine's test app's (test/fixture_app/) files and the bundle the
 // CLI compiled, as Dart constants, for test/web/ (browser tests cannot read
-// files or, in `flutter test`, assets). Run after `dart run tool/metacode.dart`.
+// files or, in `flutter test`, assets). Run after `dart run tool/metacode.dart test/fixture_app`.
 
 import 'dart:convert';
 import 'dart:io';
 
-const projectDir = 'examples/my_own_app';
+const projectDir = 'test/fixture_app';
 
 void main() {
   String quote(String path) =>

@@ -59,13 +59,9 @@ PlantsLivePage:
                         children:
                         - PhoneStatusBar
                         - expanded:
-                            scroll:
-                              padding:
-                                horizontal: 20
-                                top: 4
-                                bottom: 20
-                                child:
-                                  module: plants
+                            module:
+                              name: plants
+                              contained: true
                         - sizedBox:
                             height: 28
                             child:

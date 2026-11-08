@@ -1,0 +1,3 @@
+# state: a counter.
+state:
+  count: number

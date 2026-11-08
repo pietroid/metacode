@@ -1,0 +1,5 @@
+# counter: a module with its own state, labels and routes.
+name: counter
+description: A module for the engine's tests.
+state:
+  taps: 0

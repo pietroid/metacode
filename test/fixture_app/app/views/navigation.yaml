@@ -1,0 +1,7 @@
+# navigation: one route of each type.
+initial: home
+routes:
+  home: MainPage
+  details: DetailsPage
+  sheet: {bottomSheet: RouteContent}
+  dialog: {dialog: RouteContent}

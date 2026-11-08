@@ -1,0 +1,9 @@
+# RouteContent: what every route shows: the count and a close button.
+RouteContent:
+  padding:
+    all: 16
+    child:
+      column:
+        children:
+        - text: countText
+        - textButton: {text: closeText, onPressed: close}
