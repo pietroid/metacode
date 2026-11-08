@@ -37,7 +37,7 @@ void main() {
     ..writeln('An app is a folder. The root app is `examples/my_own_app/`; modules live in `modules/<name>/` and have the same layout (recursive). Never edit `.generated/`; it is hidden.')
     ..writeln()
     ..writeln('```')
-    ..writeln('app.yaml                         name, description, version, state: initial values')
+    ..writeln('app.yaml                         name, description, version, state: initial values, start: an action')
     ..writeln('app/')
     ..writeln('  actions/*.dart                 actions, one per file, its tests in main() below it')
     ..writeln('  actions/shared/*.dart          helpers any action or value can call, one function per file')
@@ -61,7 +61,7 @@ void main() {
     ..writeln()
     ..writeln('| Path | Holds |')
     ..writeln('|---|---|')
-    ..writeln('| `app.yaml` | `name`, `description`, `state:` initial values. |')
+    ..writeln('| `app.yaml` | `name`, `description`, `state:` initial values, and optionally `start: <action>`: run when the app starts (a module: when first shown, and on `core.modules.reset`), never on a live reload; it takes no `index` or `value`. With `Future.delayed` between emits it can play a sequence (an intro, a chat that types out). The layout check skips it. |')
     ..writeln('| `app/actions/*.dart` | `Future<void>` functions that change the state with `emit(StateDelta(...))`. One public action per file. |')
     ..writeln('| `app/models/` | Models and enums, one per file. The reserved `state` model lives in `app/models/state.yaml`. |')
     ..writeln('| `app/views/navigation.yaml` | `initial:` and `routes:` (pages, bottom sheets, dialogs) actions open with `core.navigator`. Optional. |')
@@ -141,7 +141,7 @@ void main() {
     ..writeln("  - `labels` (`Labels`): the text from app/views/labels/ as getters (`labels.peopleOnTheList`), in the language shown; `labels.locale` is that language (`pt_br`), `labels.locales` all of them. Import `.generated/labels.dart` relative to the file.");
   contextParamTypes.forEach((name, types) {
     final doc = name == 'index'
-        ? 'position of the item inside a `listView`/`gridView` `itemBuilder`'
+        ? 'position of the item inside a `listView`/`gridView` `itemBuilder`, or the `index:` a component is called with (`ExampleChip: {index: 0}`)'
         : 'the new value from an input (see each widget\'s notes for its type)';
     out.writeln('  - `$name` (${types.join(' | ')}): $doc');
   });
@@ -149,6 +149,8 @@ void main() {
     ..writeln('- Actions never return a state. `StateDelta` (generated next to `State`) has every State field, all optional; set only the ones that change. Top-level fields are replaced whole, so for a list or model, change `state`\'s copy and emit it (`StateDelta(tasks: state.tasks)`). A delta can\'t set a field to null.')
     ..writeln('- `state` is a fresh copy taken when the action starts; it does not see its own emits.')
     ..writeln('- Values return a primitive, a model, an enum, or a `List` of those (nullable allowed).')
+    ..writeln("- A color prop (`color`, `borderColor`, `style: {color: ...}`) takes a value returning a color name or hex, as it takes a label: `color: chipFill`.")
+    ..writeln("- **Animation**: mark a value `@Animated(ms: 240, curve: 'easeOutCubic', reverseMs: 0)` (all optional; defaults 220, easeOut; `reverseMs` is the duration when a number goes down, 0 = at once) and, when its result changes, every color or number it feeds eases from the old result to the new one on the screen. The value stays pure (it returns the target; test it as usual) and the state switches at once: only the drawing eases. It returns a `String` (a color) or a number (`opacity`, `reveal`). It snaps when the device asks for reduced motion. Curves: ${animationCurves.join(', ')}. One value per animated prop: a chip that fills in when selected is `chipFill`, `chipBorder`, `chipInk`, each `@Animated`. Sequences are state: a `chatStage` number stepped by an action (`emit`, `await Future.delayed(...)`, `emit`), each stage's values animating what it shows (`container.opacity`, `text.reveal` to type text out).")
     ..writeln("- Text that depends on state is a value that joins labels: `'\${state.count} \${labels.peopleOnTheList}'`. Labels stay pure strings (no placeholders).")
     ..writeln('- Names must be unique across the app\'s actions, values and labels (each module is separate). Private helpers start with `_`.')
     ..writeln()
@@ -165,6 +167,7 @@ void main() {
     ..writeln('Future<void> core.navigator.pop()                   // closes the page, sheet or dialog on top')
     ..writeln()
     ..writeln("Future<void> core.locale.set('pt_br')   // the whole app (modules too) in pt_br.yaml, saved; null: the device's language again")
+    ..writeln("Future<void> core.modules.reset('food') // starts this app's module modules/food/ over: its state back to its app.yaml's, its contained routes closed")
     ..writeln('```')
     ..writeln()
     ..writeln("The language is the device's by default (Flutter's localization, among the root app's labels files). A language menu is a `dropdown` with `value:` a value returning `labels.locale`, `options: [{value: en, text: english}, {value: pt_br, text: portuguese}]` and `onChanged:` an action calling `core.locale.set(value)`.")
@@ -229,7 +232,7 @@ void main() {
     ..writeln('- A widget is a map with **one key**, its type: `text: {...}`.')
     ..writeln('- A string node is: a page or component (`ThisCase`), else a value (its result is shown as text), else a label, else literal text. Put text in app/views/labels/; the tool warns about literal text.')
     ..writeln('- Labels and values are referenced the same way, by key: `text: joinTitle`.')
-    ..writeln('- Components take parameters: `.name` anywhere in a component (`color: .screen`, `child: .child`) is filled by the caller, which writes the component like a widget: `PhoneFrame: {screen: \'#F4FAF5\', child: {module: food}}`. Parameters are not declared; they are the `.name`s the component uses, their kind is the prop they fill, and all are required. Arguments are anything that prop takes (a value, a label, an action, a widget), resolved where the component is called; `text: .label` passes the caller\'s own parameter on. Pages have no parameters. INDEX.md lists each component\'s.')
+    ..writeln('- Components take parameters: `.name` anywhere in a component (`color: .screen`, `child: .child`) is filled by the caller, which writes the component like a widget: `PhoneFrame: {screen: \'#F4FAF5\', child: {module: food}}`. Parameters are not declared; they are the `.name`s the component uses, their kind is the prop they fill, and all are required. Arguments are anything that prop takes (a value, a label, an action, a widget), resolved where the component is called; `text: .label` passes the caller\'s own parameter on. Pages have no parameters. INDEX.md lists each component\'s. `index: <int>` is always accepted: the component\'s values and actions get it as their `index` param, as a list item\'s do (`ExampleChip: {index: 1, label: work}`, one `showExample(index)` action for every chip).')
     ..writeln('- `module: food` embeds the module `modules/food/` (its initial page). Use it anywhere a widget goes, e.g. as a `match` case. Module folder names are valid identifiers; use thisCase for new ones.')
     ..writeln('- Some widgets have a shorthand (shown below): `column: [a, b]`, `expanded: child`, `text: "Hi"`.')
     ..writeln('- Widgets with no required props are written with an empty map: `divider: {}`.')

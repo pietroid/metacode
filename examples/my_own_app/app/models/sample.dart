@@ -19,6 +19,7 @@ State sample({
   WaitlistStatus waitlistStatus = WaitlistStatus.idle,
   num waitlistCount = 1284,
   num exampleIndex = 0,
+  num chatStage = 0,
 }) => State(
   idea: idea,
   appKind: appKind,
@@ -31,4 +32,5 @@ State sample({
   waitlistStatus: waitlistStatus,
   waitlistCount: waitlistCount,
   exampleIndex: exampleIndex,
+  chatStage: chatStage,
 );

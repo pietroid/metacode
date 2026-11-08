@@ -1,53 +1,14 @@
 # WorkLivePage: the `workLive` route, the work example on its own page to try
-# it: an app bar (a small icon tile and its name, compact like the landing
-# page's Logo, and a home button back to the landing page) over a
-# PhoneFrame in work's own colors around the live `module: work`, centered;
-# it scrolls when the screen is shorter than the phone.
+# it: a LiveFrame in work's own colors around the live `module: work`, with a
+# start over button that resets it (resetWork).
 WorkLivePage:
-  scaffold:
-    appBar:
-      title:
-        row:
-          spacing: 10
-          crossAxisAlignment: center
-          children:
-          - container:
-              width: 28
-              height: 28
-              radius: 8
-              color: fill
-              child:
-                center:
-                  icon:
-                    name: work
-                    size: 16
-                    color: accent
-          - text:
-              value: workLive
-              maxLines: 1
-              style:
-                variant: labelLarge
-                fontWeight: w700
-      actions:
-      - padding:
-          right: 8
-          child:
-            iconButton:
-              icon: home
-              tooltip: backHome
-              onPressed: goHome
-    body:
-      center:
-        scroll:
-          padding:
-            horizontal: 16
-            vertical: 24
-            child:
-              PhoneFrame:
-                height: 720
-                screen: '#EDF1F6'
-                ink: '#18181B'
-                child:
-                  module:
-                    name: work
-                    contained: true
+  LiveFrame:
+    icon: work
+    title: workLive
+    reset: resetWork
+    screen: '#EDF1F6'
+    ink: '#18181B'
+    child:
+      module:
+        name: work
+        contained: true

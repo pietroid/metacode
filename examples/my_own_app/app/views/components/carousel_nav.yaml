@@ -1,31 +1,10 @@
-# CarouselNav: one chip per example (food, work, travel) that picks the
-# example shown in the phone, with previous/next arrows at the end.
+# CarouselNav: the example selector: one ExampleChip per example (food,
+# work, travel) that picks the example shown in the phone.
 CarouselNav:
-  row:
-    crossAxisAlignment: center
+  wrap:
+    spacing: 10
+    runSpacing: 10
     children:
-    - expanded:
-        wrap:
-          spacing: 8
-          runSpacing: 8
-          children:
-          - choiceChip:
-              label: food
-              selected: exampleIsFood
-              onSelected: showFood
-          - choiceChip:
-              label: work
-              selected: exampleIsWork
-              onSelected: showWork
-          - choiceChip:
-              label: travel
-              selected: exampleIsTravel
-              onSelected: showTravel
-    - iconButton:
-        icon: chevronLeft
-        tooltip: previous
-        onPressed: previousExample
-    - iconButton:
-        icon: chevronRight
-        tooltip: next
-        onPressed: nextExample
+    - ExampleChip: {index: 0, label: food}
+    - ExampleChip: {index: 1, label: work}
+    - ExampleChip: {index: 2, label: travel}

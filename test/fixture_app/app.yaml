@@ -2,5 +2,7 @@
 # feature, nothing else. Not a real app; change it only with the engine.
 name: fixture
 description: The engine's test app.
+start: markStarted
 state:
   count: 0
+  started: false

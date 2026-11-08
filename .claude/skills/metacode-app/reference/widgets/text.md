@@ -12,5 +12,6 @@ Shorthand: `text: "Hello"` (sets `value`).
 | `style` | literal | {variant (see Text variants), fontSize, fontWeight (bold, w100..w900), color, italic} |
 | `align` | literal | left, center, right |
 | `maxLines` | literal |  |
+| `reveal` | number | how much of `value` shows, 0 to 1 (default 1), from the start; the rest keeps its space, so the layout does not move. An `@Animated` value going 0 -> 1 types it out |
 
 Kinds are explained in REFERENCE.md (Widgets). Icons, colors and text variants: style.md.

@@ -1,6 +1,6 @@
-# LogoMark: the My Own App mark, app bar size.
+# LogoMark: the My Own App mark (the orange phone with two dots), app bar size.
 LogoMark:
   image:
-    src: examples/my_own_app/app/views/style/images/logo.svg
-    width: 17
-    height: 26
+    src: examples/my_own_app/app/views/style/images/my_own_app_mark.svg
+    width: 22
+    height: 38

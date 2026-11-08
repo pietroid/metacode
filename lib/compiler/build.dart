@@ -179,6 +179,10 @@ Map<String, dynamic>? _generate(
   final manifest = {
     'actions': [for (final f in app.actions) f.name],
     'bindings': [for (final f in app.bindings) f.name],
+    'animated': {
+      for (final f in app.bindings)
+        if (f.animated != null) f.name: f.animated,
+    },
   };
   outputs[app.at('.generated/manifest.json')] =
       '${const JsonEncoder.withIndent('  ').convert(manifest)}\n';
@@ -186,6 +190,7 @@ Map<String, dynamic>? _generate(
   return {
     'name': app.title,
     'description': app.description,
+    'start': ?app.start,
     'ui': {'widgets': app.widgets},
     'state': app.state,
     'navigation': app.navigationDoc,

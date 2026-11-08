@@ -1,4 +1,4 @@
-// examplePrompt: The one-sentence prompt for the currently visible example.
+// examplePrompt: What the visitor asked for the currently visible example, in quotes.
 import '../../../.generated/labels.dart';
 import '../../../.generated/state.dart';
 

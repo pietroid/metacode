@@ -19,7 +19,8 @@ enum PropKind {
   bindingOrLiteral('text', 'a value, a label or a literal'),
   literal('literal', 'a literal (number, text, list, map)'),
   icon('icon', 'an icon name (see Icons)'),
-  color('color', 'a color (see Colors)'),
+  color('color', 'a color (see Colors), or a value returning one'),
+  number('number', 'a number, or a value returning one (an `@Animated` value eases it)'),
   inline('inline', "another widget's properties, written inline"),
   module('module', 'name of a module (a folder in modules/)');
 
@@ -201,10 +202,12 @@ const widgetCatalog = <String, WidgetSpec>{
       ..._box,
       'borderColor': PropKind.color,
       'maxWidth': PropKind.literal,
+      'opacity': PropKind.number,
     },
     notes: {
       ..._boxNotes,
       'borderColor': 'draws a hairline border (style `sizes.border` wide)',
+      'opacity': '0 (invisible, still takes its space) to 1 (default); fade it with an `@Animated` value',
       'maxWidth': 'fills the width up to this cap, centered when there is more room (page columns on wide screens)',
     },
   ),
@@ -259,8 +262,12 @@ const widgetCatalog = <String, WidgetSpec>{
       'value': PropKind.binding,
       'cases': PropKind.nodeMap,
       'default': PropKind.node,
+      'fade': PropKind.literal,
     },
-    notes: {'cases': 'keys are compared to the value as text (enum names work)'},
+    notes: {
+      'cases': 'keys are compared to the value as text (enum names work)',
+      'fade': 'milliseconds: when the case changes, the old one fades out, then the new one fades in (each half the time). Off by default',
+    },
   ),
   'navigationBar': WidgetSpec(
     _navigation,
@@ -287,9 +294,11 @@ const widgetCatalog = <String, WidgetSpec>{
       'style': PropKind.literal,
       'align': PropKind.literal,
       'maxLines': PropKind.literal,
+      'reveal': PropKind.number,
     },
     shorthand: Shorthand.value,
     notes: {
+      'reveal': 'how much of `value` shows, 0 to 1 (default 1), from the start; the rest keeps its space, so the layout does not move. An `@Animated` value going 0 -> 1 types it out',
       'spans': 'instead of `value`, runs of text with their own style: a list of strings or {value, style}; each one is a value, a label or literal text, each style overrides `style` (e.g. {color: primary})',
       'style': '{variant (see Text variants), fontSize, fontWeight '
           '(bold, w100..w900), color, italic}',
@@ -374,11 +383,19 @@ const widgetCatalog = <String, WidgetSpec>{
     'trailing': PropKind.node,
     'onTap': PropKind.action,
   }),
-  'if': WidgetSpec(_content, 'Shows `then` when the value is true, else `else`.', {
-    'condition': PropKind.binding,
-    'then': PropKind.node,
-    'else': PropKind.node,
-  }),
+  'if': WidgetSpec(
+    _content,
+    'Shows `then` when the value is true, else `else`.',
+    {
+      'condition': PropKind.binding,
+      'then': PropKind.node,
+      'else': PropKind.node,
+      'fade': PropKind.literal,
+    },
+    notes: {
+      'fade': 'milliseconds: when it flips, the old branch fades out, then the new one fades in (each half the time). Off by default',
+    },
+  ),
 
   // Input
   'textField': WidgetSpec(
@@ -522,6 +539,13 @@ const colorNames = [
   // Hues, mapped to the style's tuned colors where one exists.
   'transparent', 'white', 'black', 'grey', 'red', 'green', 'blue', 'orange',
   'amber', 'purple', 'pink', 'teal',
+];
+
+/// Curves an animated value (`@Animated(curve: ...)`) can ease with.
+const animationCurves = [
+  'linear', 'easeIn', 'easeOut', 'easeInOut', 'easeOutCubic',
+  'easeInOutCubic', 'fastOutSlowIn', 'decelerate', 'easeOutBack',
+  'elasticOut',
 ];
 
 /// Text style variants (`text.style.variant`), from the app's theme.

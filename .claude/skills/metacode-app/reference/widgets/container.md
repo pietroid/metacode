@@ -15,5 +15,6 @@ A box with padding, margin, background color, border, size and rounded corners.
 | `height` | literal |  |
 | `borderColor` | color | draws a hairline border (style `sizes.border` wide) |
 | `maxWidth` | literal | fills the width up to this cap, centered when there is more room (page columns on wide screens) |
+| `opacity` | number | 0 (invisible, still takes its space) to 1 (default); fade it with an `@Animated` value |
 
 Kinds are explained in REFERENCE.md (Widgets). Icons, colors and text variants: style.md.

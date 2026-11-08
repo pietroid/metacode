@@ -39,12 +39,16 @@ class MetacodeApp extends StatefulWidget {
   /// there is a mouse), not on phones.
   final bool? selectableText;
 
+  /// Whether app.yaml's `start:` actions run (see [AppRuntime.runStart]).
+  final bool runStart;
+
   const MetacodeApp({
     super.key,
     required this.config,
     this.client,
     this.themeMode,
     this.selectableText,
+    this.runStart = true,
   });
 
   static bool get _mousePlatform =>
@@ -77,6 +81,7 @@ class _MetacodeAppState extends State<MetacodeApp> {
       navigatorKey: _navigatorKey,
       locale: _locale,
       client: widget.client,
+      runStart: widget.runStart,
     );
   }
 

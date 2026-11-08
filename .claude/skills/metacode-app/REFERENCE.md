@@ -9,7 +9,7 @@ Contents: [Files](#files) · [Types](#types) · [Actions and values](#actions-an
 An app is a folder. The root app is `examples/my_own_app/`; modules live in `modules/<name>/` and have the same layout (recursive). Never edit `.generated/`; it is hidden.
 
 ```
-app.yaml                         name, description, version, state: initial values
+app.yaml                         name, description, version, state: initial values, start: an action
 app/
   actions/*.dart                 actions, one per file, its tests in main() below it
   actions/shared/*.dart          helpers any action or value can call, one function per file
@@ -33,7 +33,7 @@ Naming: files are `this_case.dart` / `this_case.yaml`; keys, functions, models a
 
 | Path | Holds |
 |---|---|
-| `app.yaml` | `name`, `description`, `state:` initial values. |
+| `app.yaml` | `name`, `description`, `state:` initial values, and optionally `start: <action>`: run when the app starts (a module: when first shown, and on `core.modules.reset`), never on a live reload; it takes no `index` or `value`. With `Future.delayed` between emits it can play a sequence (an intro, a chat that types out). The layout check skips it. |
 | `app/actions/*.dart` | `Future<void>` functions that change the state with `emit(StateDelta(...))`. One public action per file. |
 | `app/models/` | Models and enums, one per file. The reserved `state` model lives in `app/models/state.yaml`. |
 | `app/views/navigation.yaml` | `initial:` and `routes:` (pages, bottom sheets, dialogs) actions open with `core.navigator`. Optional. |
@@ -103,11 +103,13 @@ Future<void> addTask(State state, void Function(StateDelta) emit) async {
   - `emit` (`void Function(StateDelta)`, actions only): applies a `StateDelta`. Call it as often as needed (loading, then result).
   - `core` (`Core`, actions only): `core.api` and `core.navigator`, see below.
   - `labels` (`Labels`): the text from app/views/labels/ as getters (`labels.peopleOnTheList`), in the language shown; `labels.locale` is that language (`pt_br`), `labels.locales` all of them. Import `.generated/labels.dart` relative to the file.
-  - `index` (int): position of the item inside a `listView`/`gridView` `itemBuilder`
+  - `index` (int): position of the item inside a `listView`/`gridView` `itemBuilder`, or the `index:` a component is called with (`ExampleChip: {index: 0}`)
   - `value` (String | bool | num | int | double): the new value from an input (see each widget's notes for its type)
 - Actions never return a state. `StateDelta` (generated next to `State`) has every State field, all optional; set only the ones that change. Top-level fields are replaced whole, so for a list or model, change `state`'s copy and emit it (`StateDelta(tasks: state.tasks)`). A delta can't set a field to null.
 - `state` is a fresh copy taken when the action starts; it does not see its own emits.
 - Values return a primitive, a model, an enum, or a `List` of those (nullable allowed).
+- A color prop (`color`, `borderColor`, `style: {color: ...}`) takes a value returning a color name or hex, as it takes a label: `color: chipFill`.
+- **Animation**: mark a value `@Animated(ms: 240, curve: 'easeOutCubic', reverseMs: 0)` (all optional; defaults 220, easeOut; `reverseMs` is the duration when a number goes down, 0 = at once) and, when its result changes, every color or number it feeds eases from the old result to the new one on the screen. The value stays pure (it returns the target; test it as usual) and the state switches at once: only the drawing eases. It returns a `String` (a color) or a number (`opacity`, `reveal`). It snaps when the device asks for reduced motion. Curves: linear, easeIn, easeOut, easeInOut, easeOutCubic, easeInOutCubic, fastOutSlowIn, decelerate, easeOutBack, elasticOut. One value per animated prop: a chip that fills in when selected is `chipFill`, `chipBorder`, `chipInk`, each `@Animated`. Sequences are state: a `chatStage` number stepped by an action (`emit`, `await Future.delayed(...)`, `emit`), each stage's values animating what it shows (`container.opacity`, `text.reveal` to type text out).
 - Text that depends on state is a value that joins labels: `'${state.count} ${labels.peopleOnTheList}'`. Labels stay pure strings (no placeholders).
 - Names must be unique across the app's actions, values and labels (each module is separate). Private helpers start with `_`.
 
@@ -124,6 +126,7 @@ Future<void> core.navigator.push(Routes.settings)   // completes when the route 
 Future<void> core.navigator.pop()                   // closes the page, sheet or dialog on top
 
 Future<void> core.locale.set('pt_br')   // the whole app (modules too) in pt_br.yaml, saved; null: the device's language again
+Future<void> core.modules.reset('food') // starts this app's module modules/food/ over: its state back to its app.yaml's, its contained routes closed
 ```
 
 The language is the device's by default (Flutter's localization, among the root app's labels files). A language menu is a `dropdown` with `value:` a value returning `labels.locale`, `options: [{value: en, text: english}, {value: pt_br, text: portuguese}]` and `onChanged:` an action calling `core.locale.set(value)`.
@@ -188,7 +191,7 @@ en:
 - A widget is a map with **one key**, its type: `text: {...}`.
 - A string node is: a page or component (`ThisCase`), else a value (its result is shown as text), else a label, else literal text. Put text in app/views/labels/; the tool warns about literal text.
 - Labels and values are referenced the same way, by key: `text: joinTitle`.
-- Components take parameters: `.name` anywhere in a component (`color: .screen`, `child: .child`) is filled by the caller, which writes the component like a widget: `PhoneFrame: {screen: '#F4FAF5', child: {module: food}}`. Parameters are not declared; they are the `.name`s the component uses, their kind is the prop they fill, and all are required. Arguments are anything that prop takes (a value, a label, an action, a widget), resolved where the component is called; `text: .label` passes the caller's own parameter on. Pages have no parameters. INDEX.md lists each component's.
+- Components take parameters: `.name` anywhere in a component (`color: .screen`, `child: .child`) is filled by the caller, which writes the component like a widget: `PhoneFrame: {screen: '#F4FAF5', child: {module: food}}`. Parameters are not declared; they are the `.name`s the component uses, their kind is the prop they fill, and all are required. Arguments are anything that prop takes (a value, a label, an action, a widget), resolved where the component is called; `text: .label` passes the caller's own parameter on. Pages have no parameters. INDEX.md lists each component's. `index: <int>` is always accepted: the component's values and actions get it as their `index` param, as a list item's do (`ExampleChip: {index: 1, label: work}`, one `showExample(index)` action for every chip).
 - `module: food` embeds the module `modules/food/` (its initial page). Use it anywhere a widget goes, e.g. as a `match` case. Module folder names are valid identifiers; use thisCase for new ones.
 - Some widgets have a shorthand (shown below): `column: [a, b]`, `expanded: child`, `text: "Hi"`.
 - Widgets with no required props are written with an empty map: `divider: {}`.
@@ -205,7 +208,8 @@ Prop kinds:
 | `text` | a value, a label or a literal |
 | `literal` | a literal (number, text, list, map) |
 | `icon` | an icon name (see Icons) |
-| `color` | a color (see Colors) |
+| `color` | a color (see Colors), or a value returning one |
+| `number` | a number, or a value returning one (an `@Animated` value eases it) |
 | `inline` | another widget's properties, written inline |
 | `module` | name of a module (a folder in modules/) |
 
@@ -226,15 +230,15 @@ One line per widget: what it is and its props. Details (prop kinds, notes, short
 | `center` | Centers its child. | child (shorthand `center: child`) |
 | `padding` | Space around a child. | child, all, horizontal, vertical, left, right, top, bottom |
 | `sizedBox` | Fixed-size box or empty space. | width, height, child |
-| `container` | A box with padding, margin, background color, border, size and rounded corners. | child, padding, margin, color, radius, width, height, borderColor, maxWidth |
+| `container` | A box with padding, margin, background color, border, size and rounded corners. | child, padding, margin, color, radius, width, height, borderColor, maxWidth, opacity |
 | `responsive` | Shows `wide` when the available width reaches `breakpoint`, else `narrow`. Use it to switch a row of columns to a stack on phones. | narrow, wide, breakpoint |
 | `card` | A surface with a hairline edge. Tappable with `onTap`. | child, padding, color, onTap (shorthand `card: child`) |
 | `scroll` | Makes its child scrollable. Do not put `expanded` directly inside. | child, horizontal (shorthand `scroll: child`) |
 | `divider` | A thin line. Write `divider: {}`. | height, color |
 | `module` | Embeds a module from `modules/<name>/`: its initial page, with its own state, actions and values. It inherits the theme unless it has a style/ folder. Its routes (pages, sheets, dialogs) open over the whole app, unless `contained: true`: then it gets its own navigator and they open inside its box (a phone frame), which must have a bounded size (e.g. inside `expanded`, not `scroll`). | name, contained (shorthand `module: food`) |
-| `match` | Shows the case matching a value (e.g. the current page). Falls back to `default`. | value, cases, default |
+| `match` | Shows the case matching a value (e.g. the current page). Falls back to `default`. | value, cases, default, fade |
 | `navigationBar` | Bottom navigation. Put it in `scaffold.bottomBar`. | destinations, selected, onSelected |
-| `text` | Text. | value, spans, style, align, maxLines (shorthand `text: "Hello"`) |
+| `text` | Text. | value, spans, style, align, maxLines, reveal (shorthand `text: "Hello"`) |
 | `icon` | An icon. | name, size, color |
 | `image` | An image (PNG, JPG, GIF, WebP or SVG) from a URL (http...) or an app file. Put app files in `examples/my_own_app/app/views/style/images/` and use the path: `src: examples/my_own_app/app/views/style/images/logo.svg`. | src, width, height, fit, radius |
 | `avatar` | A round avatar with an image or short text (initials). | text, image, radius, color |
@@ -243,7 +247,7 @@ One line per widget: what it is and its props. Details (prop kinds, notes, short
 | `listView` | A list. `itemBuilder` is built once per item of `data`. Inside `scroll` it moves with the page; on its own (in `expanded`) it scrolls itself. | data, itemBuilder, empty |
 | `gridView` | A grid. `itemBuilder` is built once per item of `data`. Inside `scroll` it moves with the page; on its own (in `expanded`) it scrolls itself. | data, itemBuilder, empty, columns, spacing, aspectRatio |
 | `listTile` | A list row. | title, subtitle, leading, trailing, onTap |
-| `if` | Shows `then` when the value is true, else `else`. | condition, then, else |
+| `if` | Shows `then` when the value is true, else `else`. | condition, then, else, fade |
 | `textField` | Text input. | value, hint, label, multiline, onChanged, onSubmitted |
 | `checkbox` | Checkbox. | value, onChanged |
 | `toggle` | On/off switch, optionally with a label. | value, label, onChanged |

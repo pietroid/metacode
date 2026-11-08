@@ -58,7 +58,7 @@ An app is a folder; `examples/my_own_app/` is the root app. **Modules** live in 
 
 Every `.yaml` file contains exactly one top-level key, named after the file. **Naming:** files are `this_case.dart` / `this_case.yaml`; keys, functions, models and labels are `thisCase`; pages and components are `ThisCase` (`app/views/components/task_list.yaml` holds `TaskList:`, `app/actions/bump_priority.dart` holds `bumpPriority`). Names must not repeat across files. Read only the file you need.
 
-Import the generated files relative to your file (`../../.generated/` from `app/actions/` and `app/models/`, `../../../.generated/` from `app/views/values/`): `state.dart` for `State`, `StateDelta`, model classes, enums and `copyWith`, `core.dart` for `Core` (`core.api.get/post`, `core.navigator.push/pop`, `core.locale.set`), `ApiResponse` and `Routes`, and `labels.dart` for `Labels`. Images go in `examples/my_own_app/app/views/style/images/` for every app.
+Import the generated files relative to your file (`../../.generated/` from `app/actions/` and `app/models/`, `../../../.generated/` from `app/views/values/`): `state.dart` for `State`, `StateDelta`, model classes, enums and `copyWith`, `core.dart` for `Core` (`core.api.get/post`, `core.navigator.push/pop`, `core.locale.set`, `core.modules.reset`), `ApiResponse` and `Routes`, and `labels.dart` for `Labels`. Images go in `examples/my_own_app/app/views/style/images/` for every app.
 
 ### New module
 

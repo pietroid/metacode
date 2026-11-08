@@ -1,15 +1,10 @@
 # pt_br: all of the app's text in Brazilian Portuguese, the same keys as
 # en.yaml (a missing key shows the English text).
 pt_br:
-  previous: Anterior
   food: Alimentação
   work: Trabalho
   travel: Viagem
-  next: Próximo
-  myOwnApp: MY OWN APP
   copyright: '© 2026 My Own App'
-  sayWhatYouNeed: 'Diga do que precisa. Tenha o seu '
-  ownApp: próprio app.
   howItWorks: COMO FUNCIONA
   useItEveryDay: Use todo dia
   trackMyDailyHabits: Acompanhar meus hábitos diários
@@ -30,12 +25,6 @@ pt_br:
   notNow: Agora não
   whatWillYouMake: O que você vai criar primeiro?
   wereLettingPeopleIn: Estamos liberando a entrada aos poucos. Garanta seu lugar.
-  blurbFood: Toque no que você comeu. Ele soma as calorias e sugere o que comer depois para manter o ritmo.
-  blurbWork: Inbox, follow-ups, to-dos e a agenda da semana, priorizados para o próximo passo estar sempre no topo.
-  blurbTravel: Cada dia da viagem, os trens e ingressos a um toque, e quanto tudo custa, sempre embaixo.
-  promptFood: Me ajude a comer melhor sem contar tudo
-  promptWork: Me ajude a priorizar meu dia de trabalho
-  promptTravel: Planeje minha viagem e guarde ingressos e gastos num só lugar
   ideaSummaryEmpty: Diga do que precisa e seu app estará pronto quando você entrar.
   yourFirstApp: 'Seu primeiro app:'
   readyWhenYouGetIn: Vai estar pronto quando você entrar.
@@ -47,9 +36,6 @@ pt_br:
   peopleOnTheList: pessoas já estão na lista
   languageEnglish: EN
   languagePortuguese: PT-BR
-  heroSubtitle: "Conte o que deixaria o seu dia mais fácil. Criamos um app exatamente para isso, feito só para você, e mudamos sempre que você pedir."
-  madeWithOneSentence: "CADA UM COMEÇOU COM UMA FRASE"
-  itStartedWith: "Começou com"
   tryIt: "EXPERIMENTE"
   makeItThenMakeItYours: "Crie. Depois deixe do seu jeito."
   studioIntro: "Descreva do que precisa e veja o app ser criado. Depois mude o que quiser: as cores, as fotos, o que ele mostra. Cada mudança leva segundos."
@@ -97,15 +83,22 @@ pt_br:
   weTailorIt: "Ajustamos para você"
   weTailorItBody: "Seu app ganha as telas, listas e lembretes que combinam com a sua vida. As cores e fotos também."
   useItEveryDayBody: "É um app de verdade no seu celular. Quando sua vida mudar, é só pedir e ele muda junto."
-  chatYou: "Minhas plantas vivem morrendo. Socorro!"
-  chatApp: "Deixa comigo. Quais plantas você tem?"
-  tailorWater: "Regar a cada 3 dias"
-  tailorPhoto: "Uma foto para cada planta"
-  notifyApp: "MINHAS PLANTAS · AGORA"
-  notifyText: "Hora de regar a samambaia"
-  notifyText2: "5 dias seguidos. Boa!"
-  tryEachLive: Experimente cada um ao vivo
   backHome: Voltar ao início
   foodLive: Diário alimentar
   workLive: Prioridades do dia
   travelLive: Roteiro de viagem
+  sayWhatYouNeed: 'Diga do que precisa. Tenha '
+  ownApp: o seu próprio app.
+  promptFood: "Quero comer bem, mas também controlar quanto gasto com comida. Você me ajuda?"
+  promptWork: "Estou afogado em e-mails, follow-ups e reuniões. Você me ajuda a ver o que fazer primeiro?"
+  promptTravel: "Vou viajar e sempre perco meus ingressos e gasto demais. Você me ajuda a organizar?"
+  replyFood: "Claro! Fiz um app para isso. Diga seu orçamento do mês, o que você gosta de comer e seu objetivo, e ele sugere receitas que cabem. Fique com as que gostar e ele monta sua lista de compras, somando o custo e as calorias, para você comer bem sem estourar."
+  replyWork: "Claro. Seu app abre no dia de hoje, com a próxima coisa a fazer sempre no topo. Logo abaixo: sua inbox, os follow-ups esperando outras pessoas (os atrasados em destaque), seus to-dos com os urgentes marcados e sua semana num relance."
+  replyTravel: "Vamos lá. Seu app tem cada dia da viagem com seus lugares, os trens e ingressos a um toque, um orçamento de comida para cada dia e quanto tudo custa sempre embaixo. Nada se perde, nada te surpreende."
+  chatYou: "VOCÊ"
+  chatAssistant: "SEU ASSISTENTE"
+  heroQuestions: "Precisa organizar sua viagem? Precisa de uma ajuda no trabalho?"
+  heroSubtitle: "Imagine ter o seu próprio assistente, sem se afogar em paredes de texto nem perder o que você já fez."
+  heroTagline: "Inteligência de verdade, com uma experiência feita para você."
+  startOver: Recomeçar
+  playWithIt: "Este app é de verdade! Experimente"

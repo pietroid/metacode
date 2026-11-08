@@ -1,15 +1,10 @@
 # en: all of the app's text in English, key: text. Pure strings; values in
 # app/views/values/ join them with the state (they take `Labels labels`).
 en:
-  previous: Previous
   food: Food
   work: Work
   travel: Travel
-  next: Next
-  myOwnApp: MY OWN APP
   copyright: '© 2026 My Own App'
-  sayWhatYouNeed: 'Say what you need. Get your '
-  ownApp: own app.
   howItWorks: HOW IT WORKS
   useItEveryDay: Use it every day
   trackMyDailyHabits: Track my daily habits
@@ -30,12 +25,6 @@ en:
   notNow: Not now
   whatWillYouMake: What will you make first?
   wereLettingPeopleIn: We're letting people in a few at a time. Save your spot.
-  blurbFood: Tap what you ate. It adds up the calories and suggests what to eat next to stay on track.
-  blurbWork: Inbox, follow-ups, to-dos and the week ahead, ranked so the next thing to do is always on top.
-  blurbTravel: Every day of the trip, its trains and tickets one tap away, and what it all costs, always at the bottom.
-  promptFood: Help me eat better without counting everything
-  promptWork: Help me prioritize my work day
-  promptTravel: Plan my trip and keep my tickets and costs in one place
   ideaSummaryEmpty: Tell us what you need and we'll have your app ready when you get in.
   yourFirstApp: 'Your first app:'
   readyWhenYouGetIn: We'll have it ready when you get in.
@@ -47,9 +36,6 @@ en:
   peopleOnTheList: people are already on the list
   languageEnglish: EN
   languagePortuguese: PT-BR
-  heroSubtitle: "Tell us what would make your day easier. We build an app for exactly that, made only for you, and change it whenever you ask."
-  madeWithOneSentence: "EACH ONE STARTED WITH A SENTENCE"
-  itStartedWith: "It started with"
   tryIt: "TRY IT"
   makeItThenMakeItYours: "Make it. Then make it yours."
   studioIntro: "Describe what you need and watch it get made. Then change anything: the colors, the photos, what it shows. Every change takes seconds."
@@ -97,15 +83,22 @@ en:
   weTailorIt: "We tailor it for your needs"
   weTailorItBody: "Your app gets the screens, lists and reminders that fit how you live. The colors and photos too."
   useItEveryDayBody: "It's a real app on your phone. When your life changes, just ask and it changes with you."
-  chatYou: "My plants keep dying. Help!"
-  chatApp: "On it. Which plants do you have?"
-  tailorWater: "Water every 3 days"
-  tailorPhoto: "A photo for each plant"
-  notifyApp: "MY PLANTS · NOW"
-  notifyText: "Time to water the fern"
-  notifyText2: "5-day streak. Nice!"
-  tryEachLive: Try each one live
   backHome: Back home
   foodLive: Food tracker
   workLive: Work priorities
   travelLive: Trip planner
+  sayWhatYouNeed: 'Say what you need. Get '
+  ownApp: your own app.
+  promptFood: "I want to eat good but also control my food budget. Can you help me?"
+  promptWork: "I'm drowning in emails, follow-ups and meetings. Can you help me see what to do first?"
+  promptTravel: "I'm going on a trip and I always lose my tickets and overspend. Can you help me organize it?"
+  replyFood: "Sure! I made you an app for that. Tell it your monthly budget, what you like to eat and your goal, and it suggests recipes that fit. Keep the ones you like and it builds your shopping list, with the cost and calories adding up as you go, so you eat well without going over."
+  replyWork: "Of course. Your app opens on today, with the one thing to do next always on top. Below it: your inbox, the follow-ups waiting on other people (overdue ones flagged), your to-dos with the urgent ones marked, and your week at a glance."
+  replyTravel: "Let's do it. Your app has every day of the trip with its places, your trains and tickets one tap away, a food budget for each day, and what it all costs always at the bottom. Nothing gets lost, and nothing surprises you."
+  chatYou: "YOU"
+  chatAssistant: "YOUR ASSISTANT"
+  heroQuestions: "Need to organize your trip? Need some help with your work?"
+  heroSubtitle: "Imagine you have your own assistant, without being flooded with walls of text or losing the things you did in the past."
+  heroTagline: "Real intelligence, with an experience tailored to you."
+  startOver: Start over
+  playWithIt: "This app is real! Play with it"

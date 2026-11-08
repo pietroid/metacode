@@ -1,112 +1,29 @@
-# HowStep3: how it works, step 3: "Use it every day", over two notifications.
+# HowStep3: how it works, step 3: "Use it every day", its number, title and text on a card.
 HowStep3:
   container:
     color: surface
     borderColor: line
     radius: 24
+    padding:
+      horizontal: 24
+      top: 28
+      bottom: 28
     child:
       column:
-        crossAxisAlignment: stretch
+        crossAxisAlignment: start
+        spacing: 10
         children:
-        - container:
-            margin: 8
-            height: 210
-            radius: 18
-            color: fill
-            padding: 24
-            child:
-              column:
-                mainAxisAlignment: center
-                crossAxisAlignment: stretch
-                spacing: 10
-                children:
-                - container:
-                      color: surface
-                      radius: 16
-                      padding: 12
-                      child:
-                        row:
-                          spacing: 12
-                          children:
-                          - container:
-                              width: 36
-                              height: 36
-                              radius: 10
-                              color: primary
-                              child:
-                                center:
-                                  icon:
-                                    name: pottedPlant
-                                    size: 18
-                                    color: white
-                          - expanded:
-                              column:
-                                crossAxisAlignment: start
-                                spacing: 2
-                                children:
-                                - text:
-                                    value: notifyApp
-                                    style:
-                                      variant: labelSmall
-                                      color: ink3
-                                - text:
-                                    value: notifyText
-                                    style:
-                                      variant: bodySmall
-                - container:
-                      color: surface
-                      radius: 16
-                      padding: 12
-                      child:
-                        row:
-                          spacing: 12
-                          children:
-                          - container:
-                              width: 36
-                              height: 36
-                              radius: 10
-                              color: primary
-                              child:
-                                center:
-                                  icon:
-                                    name: confetti
-                                    size: 18
-                                    color: white
-                          - expanded:
-                              column:
-                                crossAxisAlignment: start
-                                spacing: 2
-                                children:
-                                - text:
-                                    value: notifyApp
-                                    style:
-                                      variant: labelSmall
-                                      color: ink3
-                                - text:
-                                    value: notifyText2
-                                    style:
-                                      variant: bodySmall
-        - padding:
-            left: 24
-            right: 24
-            top: 16
-            bottom: 28
-            child:
-              column:
-                crossAxisAlignment: start
-                spacing: 10
-                children:
-                - text:
-                    value: '03'
-                    style:
-                      variant: labelMedium
-                      color: primary
-                - text:
-                    value: useItEveryDay
-                    style:
-                      variant: titleLarge
-                - text:
-                    value: useItEveryDayBody
-                    style:
-                      variant: bodyMedium
-                      color: ink2
+        - text:
+            value: '03'
+            style:
+              variant: labelMedium
+              color: primary
+        - text:
+            value: useItEveryDay
+            style:
+              variant: titleLarge
+        - text:
+            value: useItEveryDayBody
+            style:
+              variant: bodyMedium
+              color: ink2

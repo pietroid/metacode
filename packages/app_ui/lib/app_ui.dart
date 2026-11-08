@@ -10,6 +10,7 @@ library;
 export 'spec.dart';
 export 'src/parsers.dart';
 export 'src/clickable.dart';
+export 'src/fade_switch.dart' show Leaving;
 export 'src/registry.dart';
 export 'src/icons.dart' show phosphorIcons, phosphorNames;
 export 'src/theme.dart';

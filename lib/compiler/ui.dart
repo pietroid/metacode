@@ -134,6 +134,12 @@ class _UiValidator {
     for (final entry in args.entries) {
       final name = entry.key.toString();
       final kinds = declared[name];
+      // `index: 0`: the component's values and actions get it as their
+      // `index` param, as a list item's do.
+      if (kinds == null && name == 'index') {
+        if (entry.value is! int) error('$path.index', 'index is an int');
+        continue;
+      }
       if (kinds == null) {
         error('$path.$name', '$id has no .$name; its parameters: '
             '${declared.isEmpty ? '(none)' : declared.keys.map((p) => '.$p').join(', ')}');
@@ -253,9 +259,18 @@ class _UiValidator {
           error(path, 'unknown icon "$value"; see Icons in REFERENCE.md');
         }
       case PropKind.color:
-        if (!isColor(value)) {
-          error(path, 'unknown color "$value"; use #RRGGBB or a name from '
-              'Colors in REFERENCE.md');
+        // A value returning a color name or hex (`color: chipFill`).
+        if (bindings.contains(value)) {
+          refs.values.add(value);
+        } else if (!isColor(value)) {
+          error(path, 'unknown color "$value"; use #RRGGBB, a name from '
+              'Colors in REFERENCE.md, or a value that returns one');
+        }
+      case PropKind.number:
+        if (bindings.contains(value)) {
+          refs.values.add(value);
+        } else if (value is! num) {
+          error(path, 'expected a number or a value returning one, got "$value"');
         }
       case PropKind.bindingOrLiteral:
       case PropKind.literal:
@@ -277,6 +292,12 @@ class _UiValidator {
     } else if (value is Map) {
       _recordNames(value['value']);
       _recordNames(value['text']);
+      // A color from a value (`style: {color: chipInk}`).
+      for (final e in value.entries) {
+        if (_isColorKey(e.key) && bindings.contains(e.value)) {
+          refs.values.add(e.value);
+        }
+      }
     }
   }
 
@@ -302,3 +323,8 @@ class _UiValidator {
     }
   }
 }
+
+/// Keys of a literal map that hold a color (`color`, `borderColor`): they
+/// may name a value, resolved by the engine.
+bool _isColorKey(Object? key) =>
+    key is String && (key == 'color' || key.endsWith('Color'));

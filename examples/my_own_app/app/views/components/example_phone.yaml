@@ -1,25 +1,40 @@
 # ExamplePhone: a phone with the current example living inside: a
 # PhoneFrame around ExampleScreen, in the colors of the example's module
-# (picked by exampleKey), so its screen matches the module's theme.
+# (picked by exampleKey), so its screen matches the module's theme; on a
+# switch the old app fades out, then the new one fades in. Below
+# it, one button ("This is a live app! Play with it") that opens the
+# example on its own page.
 ExamplePhone:
-  match:
-    value: exampleKey
-    cases:
-      food:
-        PhoneFrame:
-          height: 720
-          screen: '#F4FAF5'
-          ink: '#0F2416'
-          child: ExampleScreen
-      work:
-        PhoneFrame:
-          height: 720
-          screen: '#EDF1F6'
-          ink: '#18181B'
-          child: ExampleScreen
-      travel:
-        PhoneFrame:
-          height: 720
-          screen: '#FBF5EC'
-          ink: '#2B1E16'
-          child: ExampleScreen
+  column:
+    crossAxisAlignment: center
+    spacing: 24
+    children:
+    - match:
+        value: exampleKey
+        fade: 500
+        cases:
+          food:
+            PhoneFrame:
+              height: 720
+              width: 340
+              screen: '#F4FAF5'
+              ink: '#0F2416'
+              child: ExampleScreen
+          work:
+            PhoneFrame:
+              height: 720
+              width: 340
+              screen: '#EDF1F6'
+              ink: '#18181B'
+              child: ExampleScreen
+          travel:
+            PhoneFrame:
+              height: 720
+              width: 340
+              screen: '#FBF5EC'
+              ink: '#2B1E16'
+              child: ExampleScreen
+    - filledButton:
+        text: playWithIt
+        icon: play
+        onPressed: openExampleLive

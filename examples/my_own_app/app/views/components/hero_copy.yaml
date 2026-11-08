@@ -1,38 +1,39 @@
-# HeroCopy: the text side of the hero, left-aligned: HeroTitle, the
-# subtitle, the get early access button, then CarouselNav and PromptCard (the
-# sentence the example in the phone started from), then LiveLinks (each
-# example on its own page).
+# HeroCopy: the text side of the hero, left-aligned, with generous gaps
+# between levels: HeroTitle, the questions, the subtitle
+# (each its own paragraph), the tagline, then the example
+# carousel: CarouselNav (the selector) over ExampleChat (what the visitor
+# asked and what the assistant answered, in a card).
 HeroCopy:
   column:
     crossAxisAlignment: start
     children:
     - HeroTitle
     - sizedBox:
-        height: 20
-    - text:
-        value: heroSubtitle
-        style:
-          variant: bodyLarge
-          color: ink2
+        height: 36
+    - container:
+        maxWidth: 560
+        child:
+          column:
+            crossAxisAlignment: start
+            spacing: 20
+            children:
+            - text:
+                value: heroQuestions
+                style:
+                  variant: bodyLarge
+                  color: ink2
+            - text:
+                value: heroSubtitle
+                style:
+                  variant: bodyLarge
+                  color: ink2
+            - text:
+                value: heroTagline
+                style:
+                  variant: titleMedium
     - sizedBox:
-        height: 28
-    - filledButton:
-        text: getEarlyAccess
-        icon: arrowForward
-        onPressed: openWaitlist
-    - sizedBox:
-        height: 56
-    - text:
-        value: madeWithOneSentence
-        style:
-          variant: labelSmall
-          color: ink3
-    - sizedBox:
-        height: 12
+        height: 80
     - CarouselNav
     - sizedBox:
-        height: 16
-    - PromptCard
-    - sizedBox:
         height: 24
-    - LiveLinks
+    - ExampleChat

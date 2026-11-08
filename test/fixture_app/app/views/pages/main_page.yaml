@@ -1,5 +1,8 @@
-# MainPage: the count, a Tag (a component with parameters), a button per
-# action, and the counter module twice:
+# MainPage: the count, a Tag (a component with parameters), a Swatch (an
+# animated value, with a component `index`), a typed text fading in (the
+# animated `shown`: opacity and reveal), Parity in an `if` that fades (the
+# leaving branch keeps showing the old state), a button per
+# action (reset starts the counter module over), and the counter module twice:
 # contained in a 300x300 box, then over the whole app.
 MainPage:
   scaffold:
@@ -12,11 +15,15 @@ MainPage:
         children:
         - text: countText
         - Tag: {label: tagged, tap: increment}
+        - Swatch: {index: 1}
+        - container: {opacity: shown, child: {text: {value: typed, reveal: shown}}}
+        - if: {condition: isOdd, then: Parity, else: Parity, fade: 200}
         - wrap:
           - filledButton: {text: add, onPressed: increment}
           - outlinedButton: {text: details, onPressed: openDetails}
           - outlinedButton: {text: sheet, onPressed: openSheet}
           - outlinedButton: {text: dialog, onPressed: openDialog}
+          - outlinedButton: {text: resetText, onPressed: resetCounter}
         - sizedBox:
             width: 300
             height: 300

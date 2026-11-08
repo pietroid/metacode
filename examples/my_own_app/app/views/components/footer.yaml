@@ -1,4 +1,4 @@
-# Footer: the page footer: logo, name and copyright.
+# Footer: the page footer: the logo and the copyright.
 Footer:
   column:
     crossAxisAlignment: stretch
@@ -14,18 +14,10 @@ Footer:
         child:
           row:
             children:
-            - row:
-                spacing: 10
-                children:
-                - image:
-                    src: examples/my_own_app/app/views/style/images/logo.svg
-                    width: 11
-                    height: 16
-                - text:
-                    value: myOwnApp
-                    style:
-                      variant: labelSmall
-                      color: ink3
+            - image:
+                src: examples/my_own_app/app/views/style/images/my_own_app_logo.svg
+                width: 92
+                height: 32
             - spacer: {}
             - text:
                 value: copyright

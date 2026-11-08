@@ -44,6 +44,9 @@ class UserFunction {
   /// finds what uses each shared function.
   final Set<String> calls = {};
 
+  /// For values marked `@Animated(ms:, curve:)`: `{ms, curve}`, else null.
+  Map<String, dynamic>? animated;
+
   UserFunction(this.name, this.file, this.returnType, this.params);
 }
 
@@ -292,7 +295,61 @@ UserFunction? _readFunction(
     return null;
   }
 
-  return UserFunction(name, file, returnType, params);
+  final fn = UserFunction(name, file, returnType, params);
+  for (final a in decl.metadata) {
+    if (a.name.name != 'Animated') continue;
+    if (_actionKinds.contains(kind)) {
+      fail('@Animated is for values, not actions');
+      return null;
+    }
+    final animated = _readAnimated(a, returnType, fail);
+    if (animated == null) return null;
+    fn.animated = animated;
+  }
+  return fn;
+}
+
+/// Types an animated value can return: color names or hex (String) and
+/// numbers. Other results switch at once, so they are rejected here.
+const _animatableTypes = {'String', 'double', 'num', 'int'};
+
+/// `@Animated(ms: 300, curve: 'easeOutCubic', reverseMs: 0)` ->
+/// `{ms: 300, curve: ..., reverseMs: 0}`.
+Map<String, dynamic>? _readAnimated(
+    Annotation a, String returnType, void Function(String) fail) {
+  final type = returnType.endsWith('?')
+      ? returnType.substring(0, returnType.length - 1)
+      : returnType;
+  if (!_animatableTypes.contains(type)) {
+    fail('@Animated values return a color (String) or a number, '
+        'got "$returnType"');
+    return null;
+  }
+  final out = <String, dynamic>{'ms': 220, 'curve': 'easeOut'};
+  for (final arg in a.arguments?.arguments ?? const <Expression>[]) {
+    if (arg is! NamedExpression) {
+      fail('@Animated takes named arguments: @Animated(ms: 220, curve: \'easeOut\')');
+      return null;
+    }
+    final name = arg.name.label.name;
+    final value = arg.expression;
+    if (name == 'ms' && value is IntegerLiteral && (value.value ?? 0) > 0) {
+      out['ms'] = value.value;
+    } else if (name == 'reverseMs' &&
+        value is IntegerLiteral &&
+        (value.value ?? -1) >= 0) {
+      out['reverseMs'] = value.value;
+    } else if (name == 'curve' &&
+        value is SimpleStringLiteral &&
+        animationCurves.contains(value.value)) {
+      out['curve'] = value.value;
+    } else {
+      fail('@Animated: "$name: ${value.toSource()}" is not valid; ms is a '
+          'positive int, reverseMs an int >= 0, curve one of ${animationCurves.join(', ')}');
+      return null;
+    }
+  }
+  return out;
 }
 
 /// The sub-folder of app/actions/ and app/views/values/ holding helpers

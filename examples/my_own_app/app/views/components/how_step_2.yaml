@@ -1,107 +1,29 @@
-# HowStep2: how it works, step 2: "We tailor it for your needs", over color swatches and two settings.
+# HowStep2: how it works, step 2: "We tailor it for your needs", its number, title and text on a card.
 HowStep2:
   container:
     color: surface
     borderColor: line
     radius: 24
+    padding:
+      horizontal: 24
+      top: 28
+      bottom: 28
     child:
       column:
-        crossAxisAlignment: stretch
+        crossAxisAlignment: start
+        spacing: 10
         children:
-        - container:
-            margin: 8
-            height: 210
-            radius: 18
-            color: fill
-            padding: 24
-            child:
-              column:
-                mainAxisAlignment: center
-                crossAxisAlignment: stretch
-                spacing: 10
-                children:
-                - row:
-                    spacing: 8
-                    children:
-                    - container:
-                        width: 22
-                        height: 22
-                        radius: 11
-                        color: primary
-                    - container:
-                        width: 22
-                        height: 22
-                        radius: 11
-                        color: '#16A36A'
-                    - container:
-                        width: 22
-                        height: 22
-                        radius: 11
-                        color: '#3157D5'
-                    - container:
-                        width: 22
-                        height: 22
-                        radius: 11
-                        color: '#7C4DDB'
-                - container:
-                      color: surface
-                      radius: 12
-                      padding:
-                        horizontal: 12
-                        vertical: 10
-                      child:
-                        row:
-                          spacing: 10
-                          children:
-                          - icon:
-                              name: drop
-                              size: 16
-                              color: '#3157D5'
-                          - expanded:
-                              text:
-                                value: tailorWater
-                                style:
-                                  variant: bodySmall
-                - container:
-                      color: surface
-                      radius: 12
-                      padding:
-                        horizontal: 12
-                        vertical: 10
-                      child:
-                        row:
-                          spacing: 10
-                          children:
-                          - icon:
-                              name: photo
-                              size: 16
-                              color: ink2
-                          - expanded:
-                              text:
-                                value: tailorPhoto
-                                style:
-                                  variant: bodySmall
-        - padding:
-            left: 24
-            right: 24
-            top: 16
-            bottom: 28
-            child:
-              column:
-                crossAxisAlignment: start
-                spacing: 10
-                children:
-                - text:
-                    value: '02'
-                    style:
-                      variant: labelMedium
-                      color: primary
-                - text:
-                    value: weTailorIt
-                    style:
-                      variant: titleLarge
-                - text:
-                    value: weTailorItBody
-                    style:
-                      variant: bodyMedium
-                      color: ink2
+        - text:
+            value: '02'
+            style:
+              variant: labelMedium
+              color: primary
+        - text:
+            value: weTailorIt
+            style:
+              variant: titleLarge
+        - text:
+            value: weTailorItBody
+            style:
+              variant: bodyMedium
+              color: ink2

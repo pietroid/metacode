@@ -9,5 +9,6 @@ Shows the case matching a value (e.g. the current page). Falls back to `default`
 | `value` | value |  |
 | `cases` | cases | keys are compared to the value as text (enum names work) |
 | `default` | node |  |
+| `fade` | literal | milliseconds: when the case changes, the old one fades out, then the new one fades in (each half the time). Off by default |
 
 Kinds are explained in REFERENCE.md (Widgets). Icons, colors and text variants: style.md.

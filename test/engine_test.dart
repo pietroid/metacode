@@ -93,6 +93,129 @@ void main() {
     expect(bloc.state['count'], 1);
   });
 
+  testWidgets('an @Animated value eases on a ticker; the state switches at once',
+      (tester) async {
+    final bloc = await pump(tester);
+    // Swatch {index: 1}: container color `swatch`, black when count == 1.
+    Color swatch() => tester
+        .widgetList<Container>(find.byType(Container))
+        .map((c) => c.decoration)
+        .whereType<BoxDecoration>()
+        .firstWhere((d) => d.borderRadius == BorderRadius.circular(7))
+        .color!;
+    expect(swatch(), const Color(0xFFFFFFFF));
+
+    await tester.tap(find.text('Add'));
+    await tester.pump(); // the state changes, the ticker starts
+    expect(bloc.state['count'], 1);
+    expect(swatch(), const Color(0xFFFFFFFF));
+    await tester.pump(const Duration(milliseconds: 50)); // halfway, linear
+    final mid = swatch();
+    expect(mid.r, closeTo(0.5, 0.05));
+    expect(bloc.state['count'], 1); // in-between frames never touch the state
+    await tester.pumpAndSettle();
+    expect(swatch(), const Color(0xFF000000));
+
+    // Interrupted: eases back from where it is, not from black.
+    await tester.tap(find.text('Add'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(swatch(), const Color(0xFFFFFFFF));
+  });
+
+  testWidgets('an @Animated number fades a container and types a text out; '
+      'reverseMs: 0 drops it at once', (tester) async {
+    await pump(tester);
+    // container {opacity: shown, child: text {value: typed, reveal: shown}};
+    // shown is 1 while count == 1.
+    double opacity() => tester
+        .widget<Opacity>(find.ancestor(
+            of: find.text('Typed text', findRichText: true),
+            matching: find.byType(Opacity)))
+        .opacity;
+    String visible() {
+      final span = tester
+          .widget<RichText>(find.text('Typed text', findRichText: true))
+          .text as TextSpan;
+      final shown = span.children!.first as TextSpan;
+      return shown.children!.first.toPlainText();
+    }
+
+    expect(opacity(), 0);
+    expect(visible(), '');
+    await tester.tap(find.text('Add'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+    expect(opacity(), closeTo(0.5, 0.05));
+    expect(visible(), 'Typed');
+    await tester.pumpAndSettle();
+    expect(find.text('Typed text'), findsOneWidget); // whole: a plain Text
+
+    await tester.tap(find.text('Add'));
+    await tester.pump();
+    expect(opacity(), 0);
+  });
+
+  testWidgets('match/if with fade: the old case fades out, then the new one in',
+      (tester) async {
+    await pump(tester);
+    // if {condition: isOdd, then: Parity, else: Parity, fade: 200}; Parity
+    // shows the `parity` value, which reads the same count.
+    double opacityOf(String text) {
+      final fade = tester.widget<FadeTransition>(find
+          .ancestor(of: find.text(text), matching: find.byType(FadeTransition))
+          .first);
+      return fade.opacity.value;
+    }
+
+    expect(find.text('Even'), findsOneWidget);
+    await tester.tap(find.text('Add'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50)); // first half: out
+    expect(opacityOf('Even'), inExclusiveRange(0, 1));
+    expect(opacityOf('Odd'), 0);
+    // The leaving branch is frozen: it still says Even, not the new Odd.
+    expect(find.text('Even'), findsOneWidget);
+    expect(find.text('Odd'), findsOneWidget);
+    await tester.pump(const Duration(milliseconds: 100)); // second half: in
+    expect(opacityOf('Odd'), inExclusiveRange(0, 1));
+    await tester.pumpAndSettle();
+    expect(find.text('Even'), findsNothing);
+    expect(find.text('Odd'), findsOneWidget);
+  });
+
+  testWidgets("app.yaml's start action runs when the app starts",
+      (tester) async {
+    final bloc = await pump(tester);
+    expect(bloc.state['started'], true);
+  });
+
+  group('@Animated is checked', () {
+    const file = 'app/views/values/swatch.dart';
+    List<String> errors(String from, String to) {
+      final source = fixtureFiles()[file]!;
+      expect(source, contains(from));
+      return build(
+              ProjectFiles.fromSnapshot(
+                  {...fixtureFiles(), file: source.replaceFirst(from, to)}),
+              path: fixtureDir)
+          .issues
+          .errors;
+    }
+
+    test('an unknown curve', () {
+      expect(errors("curve: 'linear'", "curve: 'wobbly'"),
+          contains(contains('curve one of linear')));
+    });
+    test('a result that cannot ease', () {
+      expect(
+          errors('String swatch(State state, int index) =>\n'
+              "    state.count == index ? '#000000' : '#FFFFFF';",
+              'bool swatch(State state, int index) => state.count == index;'),
+          contains(contains('return a color (String) or a number')));
+    });
+  });
+
   group('component parameters are checked', () {
     List<String> errors(Map<String, String> changes) => build(
             ProjectFiles.fromSnapshot({...fixtureFiles(), ...changes}),
@@ -174,7 +297,7 @@ void main() {
     });
     test('an unquoted comma in a flow map gets a hint', () {
       expect(
-          buildWith({'app.yaml': 'name: fixture\nstate: {count: 1, a b}\n'})
+          buildWith({'app.yaml': 'name: fixture\nstate: {count: 1, started: false, a b}\n'})
               .issues
               .errors,
           [contains('an unquoted comma')]);
@@ -270,6 +393,17 @@ void main() {
 
     // Its actions pop its own navigator.
     await tap(tester, find.text('Done'));
+    expect(find.byType(BottomSheet), findsNothing);
+    expect(moduleNavigator(tester).canPop(), isFalse);
+  });
+
+  testWidgets('core.modules.reset starts a module over', (tester) async {
+    await pump(tester);
+    await tap(tester, find.text('Tap').first);
+    await tap(tester, find.text('Module sheet').first);
+    expect(moduleNavigator(tester).canPop(), isTrue);
+    await tap(tester, find.text('Reset'));
+    expect(find.text('Taps 0'), findsNWidgets(2));
     expect(find.byType(BottomSheet), findsNothing);
     expect(moduleNavigator(tester).canPop(), isFalse);
   });

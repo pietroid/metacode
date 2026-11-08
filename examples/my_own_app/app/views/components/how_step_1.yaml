@@ -1,80 +1,29 @@
-# HowStep1: how it works, step 1: "Tell your problem", over a little chat
-# (the bubbles wrap, keeping a 40px gap on the open side).
+# HowStep1: how it works, step 1: "Tell your problem", its number, title and text on a card.
 HowStep1:
   container:
     color: surface
     borderColor: line
     radius: 24
+    padding:
+      horizontal: 24
+      top: 28
+      bottom: 28
     child:
       column:
-        crossAxisAlignment: stretch
+        crossAxisAlignment: start
+        spacing: 10
         children:
-        - container:
-            margin: 8
-            height: 210
-            radius: 18
-            color: fill
-            padding: 24
-            child:
-              column:
-                mainAxisAlignment: center
-                crossAxisAlignment: stretch
-                spacing: 10
-                children:
-                - column:
-                    crossAxisAlignment: end
-                    children:
-                    - container:
-                        margin:
-                          left: 40
-                        color: primary
-                        radius: 16
-                        padding:
-                          horizontal: 14
-                          vertical: 10
-                        child:
-                          text:
-                            value: chatYou
-                            style:
-                              variant: bodySmall
-                              color: white
-                - column:
-                    crossAxisAlignment: start
-                    children:
-                    - container:
-                        margin:
-                          right: 40
-                        color: surface
-                        radius: 16
-                        padding:
-                          horizontal: 14
-                          vertical: 10
-                        child:
-                          text:
-                            value: chatApp
-                            style:
-                              variant: bodySmall
-        - padding:
-            left: 24
-            right: 24
-            top: 16
-            bottom: 28
-            child:
-              column:
-                crossAxisAlignment: start
-                spacing: 10
-                children:
-                - text:
-                    value: '01'
-                    style:
-                      variant: labelMedium
-                      color: primary
-                - text:
-                    value: tellYourProblem
-                    style:
-                      variant: titleLarge
-                - text:
-                    value: tellYourProblemBody
-                    style:
-                      variant: bodyMedium
-                      color: ink2
+        - text:
+            value: '01'
+            style:
+              variant: labelMedium
+              color: primary
+        - text:
+            value: tellYourProblem
+            style:
+              variant: titleLarge
+        - text:
+            value: tellYourProblemBody
+            style:
+              variant: bodyMedium
+              color: ink2

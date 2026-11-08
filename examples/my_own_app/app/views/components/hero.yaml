@@ -1,6 +1,7 @@
 # Hero: the top section: HeroCopy (headline, call to action and the example
-# carousel) beside HeroPhone (the live example). Stacked, phone below, under
-# 900 wide.
+# carousel) beside HeroPhone (the live example), both pinned to the top, so
+# a taller or shorter example card never moves the rest. Stacked, phone
+# below, under 900 wide.
 Hero:
   container:
     maxWidth: 1120
@@ -20,7 +21,7 @@ Hero:
             - ExamplePhone
         wide:
           row:
-            crossAxisAlignment: center
+            crossAxisAlignment: start
             spacing: 72
             children:
             - expanded: HeroCopy

@@ -1,94 +1,95 @@
 # typography: the text variants (size, weight, family, spacing).
 # Look: My Own App. Calm near-black, one orange, Plus Jakarta Sans. The root
+# Weights stay light: medium for display, semibold at most for small text.
 # names every token of the Metacode style (packages/app_ui/lib/style.dart).
 typography:
   displayLarge:
     font: display
     size: 80
-    weight: 600
-    height: 1.0
+    weight: 500
+    height: 1.05
     tracking: -0.045
   displayMedium:
     font: display
     size: 46
-    weight: 600
-    height: 1.04
+    weight: 500
+    height: 1.1
     tracking: -0.04
   displaySmall:
     font: display
     size: 36
-    weight: 600
-    height: 1.08
+    weight: 500
+    height: 1.12
     tracking: -0.035
   headlineLarge:
     font: display
     size: 44
-    weight: 700
+    weight: 600
     height: 1.06
     tracking: -0.04
   headlineMedium:
     font: display
     size: 32
-    weight: 700
+    weight: 600
     height: 1.1
     tracking: -0.035
   headlineSmall:
     font: display
     size: 22
-    weight: 700
-    height: 1.2
+    weight: 600
+    height: 1.3
     tracking: -0.02
   titleLarge:
     font: display
     size: 20
-    weight: 700
+    weight: 600
     height: 1.3
     tracking: -0.02
   titleMedium:
     font: text
     size: 17
-    weight: 700
+    weight: 600
     height: 1.35
     tracking: -0.01
   titleSmall:
     font: text
     size: 15
-    weight: 600
+    weight: 500
     height: 1.4
     tracking: -0.005
   bodyLarge:
     font: text
     size: 19
     weight: 400
-    height: 1.55
+    height: 1.6
     tracking: 0
   bodyMedium:
     font: text
     size: 15
     weight: 400
-    height: 1.55
+    height: 1.6
     tracking: 0
   bodySmall:
     font: text
     size: 13
     weight: 400
-    height: 1.45
+    height: 1.5
     tracking: 0
   labelLarge:
     font: text
     size: 15
-    weight: 700
+    weight: 600
     height: 1.25
     tracking: 0
   labelMedium:
     font: text
     size: 13
-    weight: 600
+    weight: 500
     height: 1.3
     tracking: 0.02
   labelSmall:
     font: text
     size: 12
-    weight: 700
+    weight: 500
     height: 1.3
     tracking: 0.06

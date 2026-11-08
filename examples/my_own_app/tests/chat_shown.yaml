@@ -1,0 +1,5 @@
+# chatShown: the example chat fully played (the card shown, both texts
+# typed out), as after the start action.
+chatShown:
+  state:
+    chatStage: 2

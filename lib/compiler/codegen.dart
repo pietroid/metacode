@@ -20,8 +20,28 @@ String generateState(Map<String, Model> models) {
   }
   final state = models['state'];
   if (state is ClassModel) _writeDelta(out, state, models);
+  out
+    ..writeln()
+    ..write(_animatedClass);
   return '${out.toString().trimRight()}\n';
 }
+
+/// `@Animated()` on a value: when its result changes, whatever it feeds
+/// (a color, a number) eases to the new one. Read by the tool
+/// (functions.dart), never at runtime.
+const _animatedClass = '''
+/// Marks a value as animated: when its result changes, the props it feeds
+/// ease from the old result to the new one (colors and numbers; anything
+/// else switches at once). [ms] is the duration, [curve] one of the curve
+/// names in REFERENCE.md; [reverseMs], when set, is the duration when a
+/// number goes down (0: at once, e.g. text clearing before it types again).
+class Animated {
+  final int ms;
+  final String curve;
+  final int? reverseMs;
+  const Animated({this.ms = 220, this.curve = 'easeOut', this.reverseMs});
+}
+''';
 
 /// `StateDelta`: the State fields an action changes. Every field is
 /// optional; only the ones set are sent, and the engine merges them over the
@@ -88,7 +108,8 @@ class Core {
   Core()
       : api = Api(),
         navigator = AppNavigator(),
-        locale = AppLocale();
+        locale = AppLocale(),
+        modules = AppModules();
 
   /// HTTP requests.
   final Api api;
@@ -98,6 +119,18 @@ class Core {
 
   /// The language the whole app shows. Read it with `labels.locale`.
   final AppLocale locale;
+
+  /// This app's modules (modules/<name>/).
+  final AppModules modules;
+}
+
+/// This app's modules, the folders in modules/ shown with `module: <name>`.
+class AppModules {
+  /// Starts the module [name] over: its state (and its own modules') back
+  /// to its app.yaml's, saved, and its contained routes closed.
+  Future<void> reset(String name) async {
+    await hostCall('modules.reset', jsonEncode({'name': name}));
+  }
 }
 
 /// The language of the whole app (every module too). By default it is the
@@ -553,6 +586,9 @@ const _testAppHead = r'''
   /// Api requests of the last action: `GET <url>`, `POST <url>`.
   final requests = <String>[];
 
+  /// Modules the last action reset (`core.modules.reset`), by name.
+  final modulesReset = <String>[];
+
   /// The language labels are in (a labels file name, `pt_br`); null is the
   /// default one. `core.locale.set` changes it.
   String? locale;
@@ -564,6 +600,7 @@ const _testAppHead = r'''
     emitted.clear();
     navigation.clear();
     requests.clear();
+    modulesReset.clear();
     _state = jsonDecode(jsonEncode(state.toJson())) as Map<String, dynamic>;
     params = {...params, '_locale': ?locale};
     // Fake time: delays inside actions (animations, demo steps) resolve
@@ -613,6 +650,8 @@ const _testAppHead = r'''
         navigation.add('pop');
       case 'locale.set':
         locale = args['locale'] as String?;
+      case 'modules.reset':
+        modulesReset.add(args['name'] as String);
     }
     return null;
   }

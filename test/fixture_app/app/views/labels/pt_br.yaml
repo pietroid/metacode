@@ -1,6 +1,9 @@
 pt_br:
   title: Fixture
   count: Contagem
+  typed: Texto digitado
+  even: Par
+  odd: Ímpar
   add: Somar
   details: Detalhes
   sheet: Folha
@@ -8,3 +11,4 @@ pt_br:
   portuguese: Português
   closeText: Fechar
   tagged: Marcado
+  resetText: Recomeçar

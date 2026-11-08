@@ -173,7 +173,8 @@ Future<(ProjectConfig, CoreHost)> render(
   final bloc = StateBloc(config: root, initial: root.initialState);
   await tester.pumpWidget(BlocProvider.value(
     value: bloc,
-    child: MetacodeApp(config: root, client: client),
+    // From the initial state: app.yaml `start:` actions don't run.
+    child: MetacodeApp(config: root, client: client, runStart: false),
   ));
   await tester.pumpAndSettle();
   expect(tester.takeException(), isNull, reason: where);

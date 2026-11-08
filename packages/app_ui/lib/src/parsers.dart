@@ -176,3 +176,17 @@ EdgeInsets? parseEdgeInsets(dynamic value) {
     bottom: parseDouble(value['bottom']) ?? v ?? 0,
   );
 }
+
+/// A curve from [animationCurves] (spec.dart); `easeOut` otherwise.
+Curve parseCurve(dynamic name) => switch (name) {
+      'linear' => Curves.linear,
+      'easeIn' => Curves.easeIn,
+      'easeInOut' => Curves.easeInOut,
+      'easeOutCubic' => Curves.easeOutCubic,
+      'easeInOutCubic' => Curves.easeInOutCubic,
+      'fastOutSlowIn' => Curves.fastOutSlowIn,
+      'decelerate' => Curves.decelerate,
+      'easeOutBack' => Curves.easeOutBack,
+      'elasticOut' => Curves.elasticOut,
+      _ => Curves.easeOut,
+    };

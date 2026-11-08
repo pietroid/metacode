@@ -17,6 +17,9 @@ class MetacodeProgram {
   final Set<String> actions;
   final Set<String> bindings;
 
+  /// Values marked `@Animated`: name -> `{ms, curve}`.
+  final Map<String, Map<String, dynamic>> animated;
+
   /// Receives what actions emit and ask for. Set by the app (or a test)
   /// before running actions.
   MetacodeHost host = const _NoHost();
@@ -25,7 +28,11 @@ class MetacodeProgram {
 
   MetacodeProgram(ByteData bytecode, Map<String, dynamic> manifest)
       : actions = Set<String>.from(manifest['actions'] as List),
-        bindings = Set<String>.from(manifest['bindings'] as List) {
+        bindings = Set<String>.from(manifest['bindings'] as List),
+        animated = {
+          for (final e in ((manifest['animated'] as Map?) ?? const {}).entries)
+            e.key as String: Map<String, dynamic>.from(e.value as Map),
+        } {
     _runtime = Runtime(bytecode)..addPlugin(HostPlugin(() => host));
   }
 

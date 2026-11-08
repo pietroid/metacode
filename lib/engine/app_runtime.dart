@@ -44,8 +44,34 @@ class AppRuntime extends ChangeNotifier {
     required this.locale,
     this.client,
     this.isModule = false,
+    this.runStart = true,
   }) {
     _start();
+    _runStartAction();
+  }
+
+  /// Whether app.yaml's `start:` action runs (off in the layout check, which
+  /// shows the initial state).
+  final bool runStart;
+
+  /// Runs app.yaml's `start:` action, if any: when the app is created and
+  /// when [_reset] starts it over, never on [reload] (the state is kept).
+  void _runStartAction() {
+    final start = config.start;
+    if (!runStart || start == null) return;
+    // After this build: the action may emit right away.
+    Future.microtask(() async {
+      try {
+        await config.program.action(start, bloc.state);
+      } catch (e, stack) {
+        FlutterError.reportError(FlutterErrorDetails(
+          exception: e,
+          stack: stack,
+          library: 'metacode',
+          context: ErrorDescription('while running the start action "$start"'),
+        ));
+      }
+    });
   }
 
   ProjectConfig get config => _config;
@@ -68,7 +94,32 @@ class AppRuntime extends ChangeNotifier {
       locale: locale,
       client: client,
       render: render,
+      resetModule: _resetModule,
     );
+  }
+
+  /// Bumped by [_reset], so the module's embeds start over (a fresh
+  /// navigator when contained, fresh widget state either way).
+  int _generation = 0;
+
+  void _resetModule(String name) {
+    final child = _child(name);
+    if (child == null) {
+      debugPrint('metacode: cannot reset unknown module "$name"');
+      return;
+    }
+    child._reset();
+  }
+
+  /// This app's state back to its initial one (saved), and its modules'.
+  void _reset() {
+    bloc.setState(Map<String, dynamic>.from(config.initialState));
+    for (final child in _children.values) {
+      child._reset();
+    }
+    _generation++;
+    notifyListeners();
+    _runStartAction();
   }
 
   /// Runs [config], a new version of this app (a regenerated or downloaded
@@ -120,20 +171,24 @@ class AppRuntime extends ChangeNotifier {
 
   /// The module [name], themed by its own style/ if it has one. When
   /// [contained], it gets its own navigator, so its routes open inside
-  /// its box; that box must have a bounded size.
+  /// its box; that box must have a bounded size. A reset
+  /// (`core.modules.reset`) rebuilds it from scratch.
   Widget embed(String name, {bool contained = false}) {
     final child = _child(name);
     if (child == null) {
       return Text('Unknown module "$name"',
           style: const TextStyle(color: Colors.red));
     }
-    final home = contained
-        ? _ContainedModule(key: ValueKey(name), home: child.home)
-        : child.home;
     return ListenableBuilder(
       listenable: child,
-      builder: (context, home) => child._themed(context, home!),
-      child: home,
+      builder: (context, _) {
+        final key = ValueKey('$name#${child._generation}');
+        return child._themed(
+            context,
+            contained
+                ? _ContainedModule(key: key, home: child.home)
+                : KeyedSubtree(key: key, child: child.home));
+      },
     );
   }
 
@@ -149,6 +204,7 @@ class AppRuntime extends ChangeNotifier {
       locale: locale,
       client: client,
       isModule: true,
+      runStart: runStart,
     );
   }
 

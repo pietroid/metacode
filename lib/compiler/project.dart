@@ -1,6 +1,7 @@
 // Loads one app folder (and, recursively, its modules) into an [AppProject]:
 // reads every file, validates it, and keeps what codegen and the index need.
 
+import 'package:app_ui/spec.dart' show contextParams;
 import 'package:app_ui/style.dart';
 import 'package:metacode/engine/navigation.dart';
 import 'package:metacode/files/project_files.dart';
@@ -15,7 +16,8 @@ import 'ui.dart';
 /// `modules/<name>/` and have the same layout.
 ///
 /// ```
-/// app.yaml                  name, description, version, state (initial values)
+/// app.yaml                  name, description, version, state (initial values),
+///                           start (an action run when the app starts)
 /// app/
 ///   actions/*.dart          one action per file; its tests in a main() below it
 ///   actions/shared/*.dart   helpers any code can call, one function per file
@@ -59,6 +61,10 @@ class AppProject {
 
   String title = '';
   String description = '';
+
+  /// app.yaml `start:`: the action run when the app starts (a module: when
+  /// first shown, and when `core.modules.reset` starts it over).
+  String? start;
   Map<String, Model> models = {};
   Map<String, dynamic> state = {};
   Map<String, dynamic> widgets = {};
@@ -146,6 +152,8 @@ AppProject loadApp(ProjectFiles files, String path, Issues root,
   if (appYaml is Map) {
     app.title = appYaml['name']?.toString() ?? name;
     app.description = appYaml['description']?.toString() ?? '';
+    final start = appYaml['start'];
+    if (start != null) app.start = start.toString();
     final state = appYaml['state'];
     if (state is Map) {
       app.state = Map<String, dynamic>.from(state);
@@ -175,6 +183,19 @@ AppProject loadApp(ProjectFiles files, String path, Issues root,
     for (final folder in ['app/actions', 'app/views/values'])
       ...readShared(app.files, app.dir, folder, issues),
   ];
+
+  final start = app.start;
+  if (start != null) {
+    final action = app.actions.where((a) => a.name == start).firstOrNull;
+    if (action == null) {
+      issues.error('app.yaml', 'start', '"$start" is not an action; '
+          'available: ${app.actions.map((a) => a.name).join(', ')}');
+    } else if (action.params.any((p) => contextParams.contains(p.name))) {
+      issues.error('app.yaml', 'start', '"$start" takes '
+          '${action.params.where((p) => contextParams.contains(p.name)).map((p) => p.name).join(', ')}; '
+          'a start action has no index or value');
+    }
+  }
 
   final seen = <String, String>{};
   for (final fn in [...app.actions, ...app.bindings, ...app.shared]) {

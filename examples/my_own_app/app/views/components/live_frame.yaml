@@ -1,0 +1,55 @@
+# LiveFrame: an example on its own page, as big as it fits: a tight app bar
+# (a small `.icon` tile and the `.title`, then a start over (refresh) icon button running
+# `.reset` and a home button back to the landing page) over a large
+# PhoneFrame (420 wide, 860 tall at most) in the example's own `.screen`
+# and `.ink` colors around `.child` (the live module); it scrolls when the
+# screen is shorter than the phone.
+LiveFrame:
+  scaffold:
+    appBar:
+      title:
+        row:
+          spacing: 8
+          crossAxisAlignment: center
+          children:
+          - container:
+              width: 24
+              height: 24
+              radius: 6
+              color: fill
+              child:
+                center:
+                  icon:
+                    name: .icon
+                    size: 14
+                    color: accent
+          - text:
+              value: .title
+              maxLines: 1
+              style:
+                variant: labelLarge
+      actions:
+      - iconButton:
+          icon: refresh
+          tooltip: startOver
+          onPressed: .reset
+      - padding:
+          right: 8
+          child:
+            iconButton:
+              icon: home
+              tooltip: backHome
+              onPressed: goHome
+    body:
+      center:
+        scroll:
+          padding:
+            horizontal: 12
+            vertical: 12
+            child:
+              PhoneFrame:
+                width: 420
+                height: 860
+                screen: .screen
+                ink: .ink
+                child: .child

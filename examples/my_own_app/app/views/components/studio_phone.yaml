@@ -3,6 +3,7 @@
 StudioPhone:
   PhoneFrame:
     height: 680
+    width: 340
     screen: surface
     ink: ink
     child:

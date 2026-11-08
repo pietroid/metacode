@@ -1,0 +1,4 @@
+# Swatch: a square in the animated `swatch` color for its `index` (a
+# component argument that reaches its values as a list item's would).
+Swatch:
+  container: {width: 20, height: 20, radius: 7, color: swatch}

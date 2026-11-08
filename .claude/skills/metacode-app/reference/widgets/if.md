@@ -9,5 +9,6 @@ Shows `then` when the value is true, else `else`.
 | `condition` | value |  |
 | `then` | node |  |
 | `else` | node |  |
+| `fade` | literal | milliseconds: when it flips, the old branch fades out, then the new one fades in (each half the time). Off by default |
 
 Kinds are explained in REFERENCE.md (Widgets). Icons, colors and text variants: style.md.

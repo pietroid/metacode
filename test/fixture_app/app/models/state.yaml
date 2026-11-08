@@ -1,3 +1,4 @@
-# state: a counter.
+# state: a counter, and whether the start action ran.
 state:
   count: number
+  started: boolean

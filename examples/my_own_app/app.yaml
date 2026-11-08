@@ -1,6 +1,8 @@
 # metacode: the root app, the my-own.app landing page. `state:` holds the initial
-# state; its types are in app/models/state.yaml.
+# state; its types are in app/models/state.yaml. `start:` runs when the app
+# opens: the example chat plays (types the question, then the answer).
 name: metacode
+start: playExample
 description: My Own App website, an AI-driven app where you build and use your own
   customized app in minutes.
 version: 0.1.0
@@ -16,3 +18,4 @@ state:
   waitlistStatus: invalid
   waitlistCount: 1284
   exampleIndex: 0
+  chatStage: 0

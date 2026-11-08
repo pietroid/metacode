@@ -1,0 +1,17 @@
+# ExampleChip: one example selector: a pill labelled `.label` for example
+# `index` (a component argument). Its fill, edge and label ease to orange
+# when its example is shown (the animated chipFill, chipBorder, chipInk);
+# tapping shows it.
+ExampleChip:
+  tappable:
+    onTap: showExample
+    child:
+      container:
+        radius: 999
+        padding: {horizontal: 18, vertical: 9}
+        color: chipFill
+        borderColor: chipBorder
+        child:
+          text:
+            value: .label
+            style: {variant: labelLarge, color: chipInk}

@@ -20,6 +20,9 @@ class ProjectConfig {
   final Map<String, dynamic> initialState;
   final MetacodeProgram program;
 
+  /// app.yaml `start:`: the action run when the app starts, if any.
+  final String? start;
+
   /// app/views/labels/: language (the file name, `en`, `pt_br`) -> key ->
   /// text.
   final Map<String, Map<String, String>> labels;
@@ -51,6 +54,7 @@ class ProjectConfig {
     required this.ui,
     required this.initialState,
     required this.program,
+    this.start,
     this.labels = const {},
     this.defaultLanguage,
     Map<String, dynamic>? style,
@@ -86,6 +90,7 @@ class ProjectConfig {
       ui: Map<String, dynamic>.from(json['ui'] as Map),
       initialState: Map<String, dynamic>.from(json['state'] as Map? ?? {}),
       program: MetacodeProgram(ByteData.sublistView(bytecode), manifest),
+      start: json['start'] as String?,
       labels: _labels(json['labels']),
       defaultLanguage: json['language'] as String?,
       style: style == null ? null : resolveStyle(style),

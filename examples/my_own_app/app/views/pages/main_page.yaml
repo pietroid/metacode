@@ -1,6 +1,7 @@
 # MainPage: the landing page. An app bar (Logo, LanguagePicker, join
-# button) over one scrolling column of sections: Hero, Studio, HowItWorks,
-# WaitlistSection, Footer. Sections cap at 1120 wide and center.
+# button) over one scrolling column of sections: Hero, HowItWorks,
+# WaitlistSection, Footer (the Studio "try it" section is
+# out for now). Sections cap at 1120 wide and center.
 MainPage:
   scaffold:
     appBar:
@@ -21,7 +22,6 @@ MainPage:
           crossAxisAlignment: stretch
           children:
           - Hero
-          - Studio
           - HowItWorks
           - WaitlistSection
           - Footer

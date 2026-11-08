@@ -1,0 +1,48 @@
+# ExampleChat: the current example as a conversation in a card: what the
+# visitor asked (examplePrompt), a divider, then the assistant's answer
+# describing the app it made (exampleReply). It plays in stages
+# (chatStage): the card fades in (chatOpacity), the question types out
+# (promptReveal), then the answer (replyReveal).
+ExampleChat:
+  container:
+    opacity: chatOpacity
+    color: surface
+    borderColor: line
+    radius: 24
+    padding: 32
+    child:
+      column:
+        crossAxisAlignment: stretch
+        spacing: 28
+        children:
+        - column:
+            crossAxisAlignment: start
+            spacing: 12
+            children:
+            - text:
+                value: chatYou
+                style:
+                  variant: labelSmall
+                  color: ink3
+            - text:
+                value: examplePrompt
+                reveal: promptReveal
+                style:
+                  variant: headlineSmall
+        - divider:
+            height: 1
+        - column:
+            crossAxisAlignment: start
+            spacing: 12
+            children:
+            - text:
+                value: chatAssistant
+                style:
+                  variant: labelSmall
+                  color: primary
+            - text:
+                value: exampleReply
+                reveal: replyReveal
+                style:
+                  variant: bodyMedium
+                  color: ink2

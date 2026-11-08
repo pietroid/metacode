@@ -17,6 +17,8 @@ import 'state_bloc.dart';
 ///   a contained module's own. Pages, bottom sheets and dialogs are all
 ///   routes, so `pop` closes any of them.
 /// - `core.locale.set` picks the language of the whole app ([locale]).
+/// - `core.modules.reset` starts one of this app's modules over
+///   ([resetModule]).
 class CoreHost implements MetacodeHost {
   final StateBloc bloc;
   final Navigation navigation;
@@ -27,7 +29,11 @@ class CoreHost implements MetacodeHost {
   /// Renders a page (app/views/pages/), kept up to date with the state.
   final Widget Function(String widget) render;
 
+  /// Starts this app's module [name] over (`core.modules.reset`).
+  final void Function(String name) resetModule;
+
   CoreHost({
+    required this.resetModule,
     required this.bloc,
     required this.navigation,
     required this.navigatorKey,
@@ -67,6 +73,9 @@ class CoreHost implements MetacodeHost {
         return null;
       case 'locale.set':
         await locale.set(args['locale'] as String?);
+        return null;
+      case 'modules.reset':
+        resetModule(args['name'] as String);
         return null;
     }
     debugPrint('metacode: unknown host operation "$op"');

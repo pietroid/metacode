@@ -8,7 +8,8 @@ Widget buildContainer(Ui ui, Map<String, dynamic> p) {
   final radius = parseDouble(p['radius']);
   final borderColor = parseColor(p['borderColor'], ui.context);
   final maxWidth = parseDouble(p['maxWidth']);
-  final Widget box = Container(
+  final opacity = parseDouble(p['opacity'])?.clamp(0.0, 1.0);
+  final Widget plain = Container(
     padding: parseEdgeInsets(p['padding']),
     margin: parseEdgeInsets(p['margin']),
     width: parseDouble(p['width']),
@@ -23,6 +24,8 @@ Widget buildContainer(Ui ui, Map<String, dynamic> p) {
     ),
     child: p['child'] == null ? null : ui.node(p['child']),
   );
+  final box =
+      opacity == null || opacity >= 1 ? plain : Opacity(opacity: opacity, child: plain);
   if (maxWidth == null) return box;
   return Align(
     alignment: Alignment.topCenter,
