@@ -40,7 +40,7 @@ An app is a folder; `examples/my_own_app/` is the root app. **Modules** live in 
 | `app/views/style/*.yaml` | Design tokens, one group per file: `theme`, `fonts`, `icons`, `colors`, `radius`, `spacing`, `sizes`, `typography`. The root spells out the full template; restyle here, not in pages/components. Modules omit it and inherit the theme. |
 | `app/views/style/images/` | Image assets for the app. |
 | `app/views/values/*.dart` | `T name(State state, [Labels labels], [int index])` computes a value for the UI. One public value per file; private helpers must have unique names across files. |
-| `app/views/labels/en.yaml` | All the app's text: `en:` then `key: text`. Pure strings, no placeholders: text that depends on state is a value joining labels (`'$n ${labels.peopleOnTheList}'`). |
+| `app/views/labels/<language>.yaml` | All the app's text: `en:` then `key: text`, one file per language (`en.yaml`, `pt_br.yaml`) with the same keys; add a key to every language. Pure strings, no placeholders: text that depends on state is a value joining labels (`'$n ${labels.peopleOnTheList}'`). The device's language shows by default; `core.locale.set('pt_br')` picks one for the whole app, `labels.locale` reads it (the root's LanguagePicker). |
 | Tests | In the same file as the action or value, below it: `void main() { test('...', () async { ... }); }` with `import 'package:flutter_test/flutter_test.dart';` and the sample (`import '../models/sample.dart';` from `app/actions/`, `import '../../models/sample.dart';` from `app/views/values/`). The tool ignores `main()` and leaves it out of the compiled program; keep test helpers inside it. |
 | `app/models/sample.dart` | Sample states: `final app = TestApp();` (runs actions and values through the compiled program) and `State sample(...)`. |
 | `modules/<name>/` | Modules. |
@@ -48,7 +48,7 @@ An app is a folder; `examples/my_own_app/` is the root app. **Modules** live in 
 
 Every `.yaml` file contains exactly one top-level key, named after the file. **Naming:** files are `this_case.dart` / `this_case.yaml`; keys, functions, models and labels are `thisCase`; pages and components are `ThisCase` (`app/views/components/task_list.yaml` holds `TaskList:`, `app/actions/bump_priority.dart` holds `bumpPriority`). Names must not repeat across files. Read only the file you need.
 
-Import the generated files relative to your file (`../../.generated/` from `app/actions/` and `app/models/`, `../../../.generated/` from `app/views/values/`): `state.dart` for `State`, `StateDelta`, model classes, enums and `copyWith`, `core.dart` for `Core` (`core.api.get/post`, `core.navigator.push/pop`), `ApiResponse` and `Routes`, and `labels.dart` for `Labels`. Images go in `examples/my_own_app/app/views/style/images/` for every app.
+Import the generated files relative to your file (`../../.generated/` from `app/actions/` and `app/models/`, `../../../.generated/` from `app/views/values/`): `state.dart` for `State`, `StateDelta`, model classes, enums and `copyWith`, `core.dart` for `Core` (`core.api.get/post`, `core.navigator.push/pop`, `core.locale.set`), `ApiResponse` and `Routes`, and `labels.dart` for `Labels`. Images go in `examples/my_own_app/app/views/style/images/` for every app.
 
 ### New module
 

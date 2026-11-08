@@ -257,6 +257,10 @@ AppProject loadApp(ProjectFiles files, String path, Issues root,
   return app;
 }
 
+/// A labels file name: a language (`en`, `pt`), optionally with a region
+/// (`pt_br`, `en_us`). The engine maps it to a Flutter `Locale`.
+final languageFileName = RegExp(r'^[a-z]{2,3}(_[a-z]{2}|_[0-9]{3})?$');
+
 /// Reads `app/views/labels/<language>.yaml`: `en: {joinTitle: Join the waitlist}`.
 /// Labels are pure strings; values join them with state (they take
 /// `Labels labels`). Every language must have the default one's keys.
@@ -265,6 +269,11 @@ void _readLabels(AppProject app, _FolderReader reader, Issues issues) {
   for (final entry in files.entries) {
     final language = baseName(entry.key);
     final doc = entry.value;
+    if (!languageFileName.hasMatch(language)) {
+      issues.error(entry.key, '', 'name a labels file after its language: '
+          'en.yaml, pt.yaml, or with a region, pt_br.yaml');
+      continue;
+    }
     if (doc is! Map || doc.length != 1 || doc[language] is! Map) {
       issues.error(entry.key, '', 'must contain one key, "$language:", '
           'with the labels as key: text');

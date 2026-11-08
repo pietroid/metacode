@@ -39,7 +39,7 @@ Engine: state (Map) ─> value / label ─> app_ui widget ─> tap ─> action(s
 
 - Actions: `Future<void> name(State state, [void Function(StateDelta) emit], [Core core], [Labels labels], [int index], [T value])`; params after State match by name. State changes only via `emit`.
 - Values (formerly relations/bindings): `T name(State state, [Labels labels], [int index])`, return a primitive, model, enum or List of those. Internally (spec `PropKind.binding`, `Ui.binding`, manifest `bindings`) the old name stays.
-- Labels: `app/views/labels/<language>.yaml` (`en:` then `key: text`), pure strings. Widgets reference labels and values the same way, by key (`text: joinTitle`); values join labels with state.
+- Labels: `app/views/labels/<language>.yaml` (`en:` then `key: text`; `en.yaml`, `pt_br.yaml`), pure strings. Widgets reference labels and values the same way, by key (`text: joinTitle`); values join labels with state. Locale: Flutter localization (`MaterialApp.supportedLocales` = the root's languages, device locale by default); `core.locale.set` picks one app-wide (`lib/engine/locale.dart`, saved in `.state/locale.yaml`); each app shows its best-matching labels file, passed to user code as `_locale` (`labels.locale`).
 - User code runs in dart_eval. The tool bundles each app's files into one library before compiling; apps don't share code.
 
 ## Commands (never launch the app to verify)

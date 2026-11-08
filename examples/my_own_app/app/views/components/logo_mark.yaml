@@ -1,0 +1,6 @@
+# LogoMark: the My Own App mark, app bar size.
+LogoMark:
+  image:
+    src: examples/my_own_app/app/views/style/images/logo.svg
+    width: 17
+    height: 26

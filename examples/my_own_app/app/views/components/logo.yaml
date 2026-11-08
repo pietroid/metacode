@@ -1,14 +1,17 @@
-# Logo: the app bar logo: the mark and "My Own App".
+# Logo: the app bar logo: the mark and "My Own App". Where the app bar is
+# too narrow for both (a phone, with the LanguagePicker and the join
+# button), just the mark.
 Logo:
-  row:
-    spacing: 12
-    children:
-    - image:
-        src: examples/my_own_app/app/views/style/images/logo.svg
-        width: 17
-        height: 26
-    - text:
-        value: myOwnApp
-        style:
-          variant: labelLarge
-          fontWeight: w800
+  responsive:
+    breakpoint: 130
+    narrow: LogoMark
+    wide:
+      row:
+        spacing: 12
+        children:
+        - LogoMark
+        - text:
+            value: myOwnApp
+            style:
+              variant: labelLarge
+              fontWeight: w800

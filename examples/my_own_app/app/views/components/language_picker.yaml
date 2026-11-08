@@ -1,0 +1,14 @@
+# LanguagePicker: the small language menu in the app bar: a flag and a
+# short name per language. Shows the current language; picking one switches the whole site (modules too).
+LanguagePicker:
+  dropdown:
+    compact: true
+    value: currentLanguage
+    options:
+    - value: en
+      text: languageEnglish
+      image: examples/my_own_app/app/views/style/images/flag_us.png
+    - value: pt_br
+      text: languagePortuguese
+      image: examples/my_own_app/app/views/style/images/flag_br.png
+    onChanged: setLanguage

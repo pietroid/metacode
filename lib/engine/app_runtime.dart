@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 import 'core_host.dart';
+import 'locale.dart';
 import 'project_config.dart';
 import 'state_bloc.dart';
 import 'ui_renderer.dart';
@@ -22,6 +23,9 @@ class AppRuntime extends ChangeNotifier {
   final GlobalKey<NavigatorState> navigatorKey;
   final http.Client? client;
 
+  /// The app-wide language (`core.locale.set`), shared by every module.
+  final AppLocale locale;
+
   ProjectConfig _config;
   late UiRenderer _renderer;
 
@@ -31,6 +35,7 @@ class AppRuntime extends ChangeNotifier {
     required this._config,
     required this.bloc,
     required this.navigatorKey,
+    required this.locale,
     this.client,
   }) {
     _start();
@@ -43,6 +48,7 @@ class AppRuntime extends ChangeNotifier {
       ui: config.ui,
       program: config.program,
       labels: config.labels,
+      defaultLanguage: config.defaultLanguage,
       bloc: bloc,
       embed: embed,
       readFile: config.readFile,
@@ -51,6 +57,7 @@ class AppRuntime extends ChangeNotifier {
       bloc: bloc,
       navigation: config.navigation,
       navigatorKey: navigatorKey,
+      locale: locale,
       client: client,
       render: render,
     );
@@ -114,6 +121,7 @@ class AppRuntime extends ChangeNotifier {
       config: config,
       bloc: bloc.child(name, config),
       navigatorKey: navigatorKey,
+      locale: locale,
       client: client,
     );
   }

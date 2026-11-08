@@ -87,13 +87,28 @@ const _coreClasses = r'''
 class Core {
   Core()
       : api = Api(),
-        navigator = AppNavigator();
+        navigator = AppNavigator(),
+        locale = AppLocale();
 
   /// HTTP requests.
   final Api api;
 
   /// Opens and closes routing/ routes.
   final AppNavigator navigator;
+
+  /// The language the whole app shows. Read it with `labels.locale`.
+  final AppLocale locale;
+}
+
+/// The language of the whole app (every module too). By default it is the
+/// device's, when app/views/labels/ has it.
+class AppLocale {
+  /// Shows [language], a labels file name (`en`, `pt_br`; see
+  /// `labels.locales`), from now on and on the next launches. Null goes
+  /// back to the device's language.
+  Future<void> set(String? language) async {
+    await hostCall('locale.set', jsonEncode({'locale': language}));
+  }
 }
 
 /// An HTTP response. A network error has status 0 and the error as body.
@@ -279,17 +294,47 @@ String _toJson(TypeRef t, String expr, Map<String, Model> models) {
 }
 
 /// Generates `.generated/labels.dart`: app/views/labels/ as typed getters, for
-/// values (and actions) that take `Labels labels`.
-String generateLabels(Map<String, String> labels, String? language) {
+/// values (and actions) that take `Labels labels`. Every language is in it;
+/// the engine says which one to show (the device's, or the one picked with
+/// `core.locale.set`), and a key a language lacks falls back to
+/// [language], the default.
+String generateLabels(Map<String, Map<String, String>> labels, String? language) {
+  final languages = labels.keys.toList();
+  final fallback = language ?? 'en';
+  final defaults = labels[language] ?? const <String, String>{};
   final out = StringBuffer(_header)
     ..writeln()
-    ..writeln('/// The app\'s text from app/views/labels/${language ?? '<language>'}.yaml.')
+    ..writeln('/// The app\'s text from app/views/labels/, in [locale].')
     ..writeln('class Labels {')
-    ..writeln('  Labels();');
-  for (final e in labels.entries) {
-    out
-      ..writeln()
-      ..writeln('  String get ${e.key} => ${_dartString(e.value)};');
+    ..writeln('  Labels([this.locale = ${_dartString(fallback)}]);')
+    ..writeln()
+    ..writeln('  /// The language shown: one of [locales] (the labels file name,')
+    ..writeln('  /// `en`, `pt_br`).')
+    ..writeln('  final String locale;')
+    ..writeln()
+    ..writeln('  /// Every language in app/views/labels/, the default first.')
+    ..writeln('  List<String> get locales => <String>[${[
+      fallback,
+      for (final l in languages)
+        if (l != fallback) l,
+    ].map(_dartString).join(', ')}];');
+  for (final e in defaults.entries) {
+    // locale == 'pt_br' ? '...' : locale == 'es' ? '...' : '<default>'
+    final branches = [
+      for (final l in languages)
+        if (l != language && labels[l]!.containsKey(e.key))
+          "locale == ${_dartString(l)} ? ${_dartString(labels[l]![e.key]!)} :",
+    ];
+    out.writeln();
+    if (branches.isEmpty) {
+      out.writeln('  String get ${e.key} => ${_dartString(e.value)};');
+    } else {
+      out.writeln('  String get ${e.key} =>');
+      for (final b in branches) {
+        out.writeln('      $b');
+      }
+      out.writeln('      ${_dartString(e.value)};');
+    }
   }
   out.writeln('}');
   return out.toString();
@@ -306,12 +351,16 @@ String _dartString(String value) {
 
 /// Generates `generated/main.dart`: the bridge between the engine and the
 /// user's functions. The engine speaks JSON; user code only sees typed objects.
+///
+/// The engine passes the language to show as `_locale` in the params (see
+/// `Labels`); [defaultLanguage] is used without one.
 String generateMain(
   List<UserFunction> actions,
   List<UserFunction> bindings,
   List<String> imports,
-  Map<String, Model> models,
-) {
+  Map<String, Model> models, {
+  String? defaultLanguage,
+}) {
   final out = StringBuffer(_header)
     ..writeln('// ignore_for_file: non_constant_identifier_names, prefer_function_declarations_over_variables')
     ..writeln()
@@ -339,7 +388,8 @@ String generateMain(
         switch (p.name) {
           'emit' => 'emit',
           'core' => 'Core()',
-          'labels' => 'Labels()',
+          'labels' =>
+            "Labels((params['_locale'] ?? '${defaultLanguage ?? 'en'}') as String)",
           _ => "params['${p.name}'] as ${p.type}",
         },
     ];
@@ -347,7 +397,8 @@ String generateMain(
   }
 
   String paramsLine(UserFunction fn) =>
-      fn.params.any((p) => contextParamTypes.containsKey(p.name))
+      fn.params.any((p) =>
+              contextParamTypes.containsKey(p.name) || p.name == 'labels')
           ? '  final params = jsonDecode(paramsJson) as Map;\n'
           : '';
 
@@ -448,9 +499,7 @@ String generateTestApp(
   String params(UserFunction fn) {
     final context =
         fn.params.where((p) => contextParamTypes.containsKey(p.name));
-    return context.isEmpty
-        ? ''
-        : ', {${context.map((p) => "'${p.name}': ${p.name}").join(', ')}}';
+    return ", {'_locale': ?locale${context.map((p) => ", '${p.name}': ${p.name}").join()}}";
   }
 
   for (final fn in actions) {
@@ -504,6 +553,10 @@ const _testAppHead = r'''
   /// Api requests of the last action: `GET <url>`, `POST <url>`.
   final requests = <String>[];
 
+  /// The language labels are in (a labels file name, `pt_br`); null is the
+  /// default one. `core.locale.set` changes it.
+  String? locale;
+
   Map<String, dynamic> _state = {};
 
   Future<State> _run(String name, State state,
@@ -512,6 +565,7 @@ const _testAppHead = r'''
     navigation.clear();
     requests.clear();
     _state = jsonDecode(jsonEncode(state.toJson())) as Map<String, dynamic>;
+    params = {...params, '_locale': ?locale};
     // Fake time: delays inside actions (animations, demo steps) resolve
     // instantly, so tests do not wait in real time.
     var done = false;
@@ -557,6 +611,8 @@ const _testAppHead = r'''
         navigation.add('push ${args['route']}');
       case 'navigator.pop':
         navigation.add('pop');
+      case 'locale.set':
+        locale = args['locale'] as String?;
     }
     return null;
   }

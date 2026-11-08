@@ -173,8 +173,9 @@ class _UiValidator {
   }
 
   /// Records the values and labels a literal names: a bare string, or the
-  /// strings and `value:` entries of a list (text `spans`). Other map keys
-  /// (`style:` and so on) are skipped: they hold variants, not names.
+  /// strings and `value:`/`text:` entries of a list (text `spans`, dropdown
+  /// `options`). Other map keys (`style:` and so on) are skipped: they hold
+  /// variants, not names.
   void _recordNames(dynamic value) {
     if (value is String) {
       if (bindings.contains(value)) refs.values.add(value);
@@ -183,6 +184,7 @@ class _UiValidator {
       value.forEach(_recordNames);
     } else if (value is Map) {
       _recordNames(value['value']);
+      _recordNames(value['text']);
     }
   }
 

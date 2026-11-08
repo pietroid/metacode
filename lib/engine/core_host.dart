@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 import 'host_plugin.dart';
+import 'locale.dart';
 import 'navigation.dart';
 import 'state_bloc.dart';
 
@@ -13,10 +14,12 @@ import 'state_bloc.dart';
 /// - `core.api` runs real HTTP requests with [client].
 /// - `core.navigator` pushes routing/ routes on [navigatorKey]: pages,
 ///   bottom sheets and dialogs are all routes, so `pop` closes any of them.
+/// - `core.locale.set` picks the language of the whole app ([locale]).
 class CoreHost implements MetacodeHost {
   final StateBloc bloc;
   final Navigation navigation;
   final GlobalKey<NavigatorState> navigatorKey;
+  final AppLocale locale;
   final http.Client client;
 
   /// Renders a page (app/views/pages/), kept up to date with the state.
@@ -26,6 +29,7 @@ class CoreHost implements MetacodeHost {
     required this.bloc,
     required this.navigation,
     required this.navigatorKey,
+    required this.locale,
     required this.render,
     http.Client? client,
   }) : client = client ?? http.Client();
@@ -44,6 +48,9 @@ class CoreHost implements MetacodeHost {
         return null;
       case 'navigator.pop':
         navigatorKey.currentState?.maybePop();
+        return null;
+      case 'locale.set':
+        await locale.set(args['locale'] as String?);
         return null;
     }
     debugPrint('metacode: unknown host operation "$op"');

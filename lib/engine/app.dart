@@ -2,9 +2,11 @@ import 'package:app_ui/app_ui.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:http/http.dart' as http;
 
 import 'app_runtime.dart';
+import 'locale.dart';
 import 'project_config.dart';
 import 'state_bloc.dart';
 
@@ -15,6 +17,11 @@ import 'state_bloc.dart';
 /// On the web and desktop all text is selectable, like a web page (pages,
 /// sheets and dialogs alike); clickable widgets keep their text out of the
 /// selection (app_ui's `Clickable`). Not an app setting.
+///
+/// Localized with Flutter's localization: the languages are the root
+/// app's labels files (app/views/labels/), the locale is the device's
+/// unless one was picked with `core.locale.set` (saved with the state), and
+/// every app shows the labels file that fits it (engine/locale.dart).
 ///
 /// Expects the root app's [StateBloc] above it. A new [config] (a new
 /// version of the app) replaces the running one in place, keeping the
@@ -57,14 +64,18 @@ class MetacodeApp extends StatefulWidget {
 class _MetacodeAppState extends State<MetacodeApp> {
   final _navigatorKey = GlobalKey<NavigatorState>();
   late final AppRuntime _runtime;
+  late final AppLocale _locale;
 
   @override
   void initState() {
     super.initState();
+    final bloc = context.read<StateBloc>();
+    _locale = AppLocale(store: bloc.store)..load();
     _runtime = AppRuntime(
       config: widget.config,
-      bloc: context.read<StateBloc>(),
+      bloc: bloc,
       navigatorKey: _navigatorKey,
+      locale: _locale,
       client: widget.client,
     );
   }
@@ -80,16 +91,34 @@ class _MetacodeAppState extends State<MetacodeApp> {
   @override
   void dispose() {
     _runtime.dispose();
+    _locale.dispose();
     super.dispose();
   }
 
+  /// The root app's languages, the default first (Flutter's fallback).
+  static List<Locale> _supportedLocales(ProjectConfig config) {
+    final languages = {
+      ?config.defaultLanguage,
+      ...config.labels.keys,
+    };
+    return languages.isEmpty
+        ? const [Locale('en')]
+        : [for (final l in languages) languageLocale(l)];
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) =>
+      ListenableBuilder(listenable: _locale, builder: _app);
+
+  Widget _app(BuildContext context, Widget? _) {
     final config = widget.config;
     return MaterialApp(
       title: config.projectName,
       debugShowCheckedModeBanner: false,
       navigatorKey: _navigatorKey,
+      locale: _locale.locale,
+      supportedLocales: _supportedLocales(config),
+      localizationsDelegates: GlobalMaterialLocalizations.delegates,
       theme: MetacodeTheme.build(config.style, Brightness.light),
       darkTheme: MetacodeTheme.build(config.style, Brightness.dark),
       themeMode: widget.themeMode ?? MetacodeTheme.mode(config.style),

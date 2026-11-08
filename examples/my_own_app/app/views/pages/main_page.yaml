@@ -1,4 +1,5 @@
-# MainPage: the landing page. An app bar (Logo, join button) over one
+# MainPage: the landing page. An app bar (Logo, LanguagePicker, join
+# button) over one
 # scrolling column of sections: Hero, Examples, HowItWorks, Ideas,
 # WaitlistSection, Footer. Sections cap at 1120 wide and center.
 MainPage:
@@ -6,6 +7,9 @@ MainPage:
     appBar:
       title: Logo
       actions:
+      - LanguagePicker
+      - sizedBox:
+          width: 8
       - padding:
           right: 16
           child:

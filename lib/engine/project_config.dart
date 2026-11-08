@@ -20,8 +20,12 @@ class ProjectConfig {
   final Map<String, dynamic> initialState;
   final MetacodeProgram program;
 
-  /// app/views/labels/ in the current language: key -> text.
-  final Map<String, String> labels;
+  /// app/views/labels/: language (the file name, `en`, `pt_br`) -> key ->
+  /// text.
+  final Map<String, Map<String, String>> labels;
+
+  /// The language of keys other languages lack (`en` when there is one).
+  final String? defaultLanguage;
 
   /// app/views/navigation.yaml (validated by the tool), or a single `MainPage`.
   final Navigation navigation;
@@ -48,6 +52,7 @@ class ProjectConfig {
     required this.initialState,
     required this.program,
     this.labels = const {},
+    this.defaultLanguage,
     Map<String, dynamic>? style,
     Navigation? navigation,
     this.modules = const {},
@@ -81,7 +86,8 @@ class ProjectConfig {
       ui: Map<String, dynamic>.from(json['ui'] as Map),
       initialState: Map<String, dynamic>.from(json['state'] as Map? ?? {}),
       program: MetacodeProgram(ByteData.sublistView(bytecode), manifest),
-      labels: _labels(json['labels'], json['language']),
+      labels: _labels(json['labels']),
+      defaultLanguage: json['language'] as String?,
       style: style == null ? null : resolveStyle(style),
       navigation: navigation == null ? null : Navigation.parse(navigation),
       modules: {
@@ -94,12 +100,14 @@ class ProjectConfig {
   }
 }
 
-/// The labels of [language] (the default one), over nothing else yet.
-Map<String, String> _labels(dynamic labels, dynamic language) {
-  if (labels is! Map || labels[language] is! Map) return const {};
+Map<String, Map<String, String>> _labels(dynamic labels) {
+  if (labels is! Map) return const {};
   return {
-    for (final e in (labels[language] as Map).entries)
-      e.key.toString(): e.value.toString(),
+    for (final MapEntry(:key, :value) in labels.entries)
+      if (value is Map)
+        key.toString(): {
+          for (final e in value.entries) e.key.toString(): e.value.toString(),
+        },
   };
 }
 

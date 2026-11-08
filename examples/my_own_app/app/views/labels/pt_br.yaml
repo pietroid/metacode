@@ -1,0 +1,78 @@
+# pt_br: all of the app's text in Brazilian Portuguese, the same keys as
+# en.yaml (a missing key shows the English text).
+pt_br:
+  previous: Anterior
+  food: Alimentação
+  music: Música
+  work: Trabalho
+  plants: Plantas
+  next: Próximo
+  makeOneLikeThis: Fazer um assim
+  examples: EXEMPLOS
+  oneSentenceOneApp: Uma frase. Um app.
+  eachOfTheseStarted: Cada um destes começou com alguém dizendo do que precisava. Vá em frente e toque, eles funcionam.
+  myOwnApp: MY OWN APP
+  copyright: '© 2026 My Own App'
+  myOwnAppUses: O My Own App usa IA para criar um app feito só para você, em poucos minutos. Sem precisar saber de tecnologia. Se quiser diferente, é só pedir.
+  sayWhatYouNeed: 'Diga do que precisa. Tenha o seu '
+  ownApp: próprio app.
+  howItWorks: COMO FUNCIONA
+  asEasyAsSending: Tão fácil quanto mandar uma mensagem.
+  tellItWhatYou: Diga do que você precisa
+  inYourOwnWords: Com suas palavras, do jeito que você explicaria para um amigo.
+  watchItComeTogether: Veja tudo se encaixar
+  inAFewMinutes: Em poucos minutos seu app fica pronto, com as telas e listas que combinam com a sua vida.
+  useItEveryDay: Use todo dia
+  itsARealApp: É um app de verdade no seu celular, não uma demonstração.
+  changeItAnytime: Mude quando quiser
+  wantAPhotoFor: Quer uma foto para cada planta, ou um visual diferente? É só pedir e ele se atualiza.
+  trackMyDailyHabits: Acompanhar meus hábitos diários
+  planMealsForThe: Planejar as refeições da semana
+  splitBillsWithRoommates: Dividir as contas com quem mora comigo
+  keepMyBookList: Manter minha lista de livros
+  ideas: IDEIAS
+  whateverYouNeedIt: Seja o que for, pode virar um app.
+  yourAppIsReady: Seu app está pronto
+  in2Minutes: '  em 2 minutos'
+  getEarlyAccess: Garantir acesso antecipado
+  understandingWhatYouNeed: Entendendo do que você precisa
+  designingYourScreens: Desenhando suas telas
+  settingUpYourLists: Preparando suas listas e lembretes
+  puttingItOnYour: Colocando no seu celular
+  whatWouldMakeYour: O que deixaria o seu dia mais fácil?
+  remindMeToWater: Me lembre de regar minhas plantas
+  health: Saúde
+  habitsWorkoutsWaterSleep: Hábitos, treinos, água, sono. Do seu jeito.
+  hobbies: Hobbies
+  readingListsRecipesGig: Listas de leitura, receitas, agenda de shows, coleções.
+  home: Casa
+  choresBillsGroceriesThe: Tarefas, contas, mercado, as plantas que ninguém rega.
+  clientListsSmallShop: Listas de clientes, pedidos da lojinha, reuniões da equipe.
+  youreOnTheList: Você está na lista
+  done: Pronto
+  email: E-mail
+  youExampleCom: voce@exemplo.com
+  thatEmailDoesntLook: Esse e-mail não parece certo.
+  joinWaitlistText: Entrar na lista
+  notNow: Agora não
+  whatWillYouMake: O que você vai criar primeiro?
+  wereLettingPeopleIn: Estamos liberando a entrada aos poucos. Garanta seu lugar.
+  blurbFood: Toque no que você comeu. Ele soma as calorias e sugere o que comer depois para manter o ritmo.
+  blurbMusic: Um acorde de cada vez. Registre seu treino e veja quais músicas você já consegue tocar.
+  blurbWork: Quem pagou, quem ainda te deve e quanto separar para os impostos. Sem planilha.
+  blurbPlants: Cada planta no seu ritmo. Toque na gota quando regar, e avance um dia para ver o que vem depois.
+  promptFood: Me ajude a comer melhor sem contar tudo
+  promptMusic: Me ensine violão, dez minutos por dia
+  promptWork: Me ajude a acompanhar meus trabalhos de freelancer
+  promptPlants: Me lembre de regar minhas plantas
+  ideaSummaryEmpty: Diga do que precisa e seu app estará pronto quando você entrar.
+  yourFirstApp: 'Seu primeiro app:'
+  readyWhenYouGetIn: Vai estar pronto quando você entrar.
+  making: Criando…
+  makeItAgain: Criar de novo
+  makeMyApp: Criar meu app
+  weWillEmail: Vamos avisar
+  whenYourSpotOpens: quando sua vaga abrir.
+  peopleOnTheList: pessoas já estão na lista
+  languageEnglish: EN
+  languagePortuguese: PT-BR

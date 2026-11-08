@@ -424,9 +424,14 @@ const widgetCatalog = <String, WidgetSpec>{
       'value': PropKind.binding,
       'options': PropKind.bindingOrLiteral,
       'hint': PropKind.bindingOrLiteral,
+      'compact': PropKind.literal,
       'onChanged': PropKind.action,
     },
-    notes: {'options': 'list of strings', 'onChanged': 'gets `value` (String)'},
+    notes: {
+      'options': 'list of strings, or of {value, text, image} (text: a value, a label or literal text; image: an optional small picture before it, 20x14, e.g. a flag)',
+      'compact': 'true: no frame, sized to its text (a small inline picker)',
+      'onChanged': 'gets `value` (String)',
+    },
   ),
   'choiceChip': WidgetSpec(
     _input,

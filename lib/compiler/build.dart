@@ -124,9 +124,10 @@ Map<String, dynamic>? _generate(
     '.generated/state.dart': generateState(app.models),
     '.generated/core.dart': generateCore(app.navigation.routes.keys),
     '.generated/labels.dart':
-        generateLabels(app.defaultLabels, app.defaultLanguage),
+        generateLabels(app.labels, app.defaultLanguage),
     '.generated/main.dart':
-        generateMain(app.actions, app.bindings, userFiles, app.models),
+        generateMain(app.actions, app.bindings, userFiles, app.models,
+            defaultLanguage: app.defaultLanguage),
     '.generated/test_app.dart':
         generateTestApp(app.actions, app.bindings, app.models, app.path),
     // The app's map for agents and people; not part of the bundle.

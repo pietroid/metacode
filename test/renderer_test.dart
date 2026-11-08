@@ -135,6 +135,34 @@ void main() {
     expect(bloc.state['buildStep'], 5);
   });
 
+  testWidgets('the language picker switches every app, modules too',
+      (tester) async {
+    await pump(tester, state());
+    Finder inBar(String text) =>
+        find.descendant(of: find.byType(AppBar), matching: find.text(text));
+    // The test device is en_US: English, automatically.
+    expect(inBar('Join waitlist'), findsOneWidget);
+    expect(inBar('EN'), findsOneWidget);
+    expect(find.text('Today'), findsWidgets); // the food module
+
+    await tester.tap(inBar('EN'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('PT-BR').last);
+    await tester.pumpAndSettle();
+
+    expect(inBar('Entrar na lista'), findsOneWidget);
+    expect(inBar('PT-BR'), findsOneWidget);
+    expect(find.text('Criar meu app'), findsOneWidget);
+    expect(find.text('Hoje'), findsWidgets);
+    expect(Localizations.localeOf(tester.element(find.byType(AppBar))),
+        const Locale('pt', 'BR'));
+    // Material's own text follows.
+    expect(
+        MaterialLocalizations.of(tester.element(find.byType(AppBar)))
+            .okButtonLabel,
+        'OK');
+  });
+
   testWidgets('hero: make my app walks the steps, then is ready', (tester) async {
     final bloc = await pump(tester, state());
     expect(find.text('MY OWN APP'), findsWidgets);

@@ -1,0 +1,13 @@
+# pt_br: all of the app's text in Brazilian Portuguese, the same keys as
+# en.yaml (a missing key shows the English text).
+pt_br:
+  guitarBasics: Violão básico
+  addFiveMinutes: '+5 min'
+  of: de
+  chordsLearned: acordes aprendidos
+  tipAllSix: 'Você sabe os seis. Semana que vem: ritmos de batida.'
+  tipFourChords: 'G, C, D e Em: esses quatro acordes tocam centenas de músicas pop. Dá para começar uma hoje.'
+  nextUp: 'Próximo:'
+  tipPickChord: Escolha um acorde para começar.
+  minTodayGoalReached: min hoje. Meta batida
+  ofTenMinToday: de 10 min hoje

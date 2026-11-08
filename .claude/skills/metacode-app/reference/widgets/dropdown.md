@@ -7,8 +7,9 @@ Pick one option from a list.
 | Prop | Kind | Notes |
 |---|---|---|
 | `value` | value |  |
-| `options` | text | list of strings |
+| `options` | text | list of strings, or of {value, text, image} (text: a value, a label or literal text; image: an optional small picture before it, 20x14, e.g. a flag) |
 | `hint` | text |  |
+| `compact` | literal | true: no frame, sized to its text (a small inline picker) |
 | `onChanged` | action | gets `value` (String) |
 
 Kinds are explained in REFERENCE.md (Widgets). Icons, colors and text variants: style.md.

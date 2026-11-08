@@ -27,7 +27,7 @@ void main() {
         'packages/app_ui/lib/spec.dart and lib/compiler. Do not edit. -->')
     ..writeln()
     ..writeln('Contents: [Files](#files) · [Types](#types) · '
-        '[Actions and values](#actions-and-values) · [Core: api and navigator](#core-api-and-navigator) · [app/views/](#view) · '
+        '[Actions and values](#actions-and-values) · [Core: api, navigator and locale](#core-api-navigator-and-locale) · [app/views/](#view) · '
         '[Widgets](#widgets) · [Interpreter rules](#interpreter-rules). '
         'Each widget\'s props: `reference/widgets/<name>.md`. Style tokens, '
         'icons, colors and text variants: `reference/style.md`.')
@@ -49,7 +49,7 @@ void main() {
     ..writeln('    style/*.yaml                 design tokens (optional)')
     ..writeln('    style/images/                image assets')
     ..writeln('    values/*.dart                values computed from state, one per file, its tests in main() below it')
-    ..writeln('    labels/<language>.yaml       the app text, pure strings (en.yaml)')
+    ..writeln('    labels/<language>.yaml       the app text, pure strings (en.yaml, pt_br.yaml)')
     ..writeln('modules/<name>/                  modules (same layout)')
     ..writeln('.state/                          runtime state (never commit)')
     ..writeln('```')
@@ -67,7 +67,7 @@ void main() {
     ..writeln('| `app/views/style/` | Design tokens, one group per file: `theme`, `fonts`, `icons`, `colors`, `radius`, `spacing`, `sizes`, `typography`. Optional; a module without it inherits the theme. See `reference/style.md`. |')
     ..writeln('| `app/views/style/images/` | Image assets. |')
     ..writeln('| `app/views/values/*.dart` | Functions that compute a value for the UI from the state. One public value per file. |')
-    ..writeln('| `app/views/labels/<language>.yaml` | The app text: `en:` then `key: text`. Pure strings; values join them with state. |')
+    ..writeln('| `app/views/labels/<language>.yaml` | The app text: `en:` then `key: text`, one file per language (`en.yaml`, `pt.yaml`, `pt_br.yaml`), the same keys in each (a missing one shows the default language, `en`). Pure strings; values join them with state. |')
     ..writeln('| Tests | In the same file as the action or value they test, in a `void main() { test(...); }` below it. The tool ignores `main()` and leaves it out of the compiled program. |')
     ..writeln('| `app/models/sample.dart` | Sample states: `final app = TestApp();` (runs actions and values through the compiled program) and `State sample(...)`. |')
     ..writeln('| `modules/<name>/` | A module. Embed it with `module: <name>`: it runs with its own state, actions and values (it can\'t see the parent\'s, and vice versa). |')
@@ -133,7 +133,7 @@ void main() {
     ..writeln('- The first parameter is always `State`. Others are matched **by name**:')
     ..writeln('  - `emit` (`void Function(StateDelta)`, actions only): applies a `StateDelta`. Call it as often as needed (loading, then result).')
     ..writeln('  - `core` (`Core`, actions only): `core.api` and `core.navigator`, see below.')
-    ..writeln("  - `labels` (`Labels`): the text from app/views/labels/ as getters (`labels.peopleOnTheList`). Import `.generated/labels.dart` relative to the file.");
+    ..writeln("  - `labels` (`Labels`): the text from app/views/labels/ as getters (`labels.peopleOnTheList`), in the language shown; `labels.locale` is that language (`pt_br`), `labels.locales` all of them. Import `.generated/labels.dart` relative to the file.");
   contextParamTypes.forEach((name, types) {
     final doc = name == 'index'
         ? 'position of the item inside a `listView`/`gridView` `itemBuilder`'
@@ -147,7 +147,7 @@ void main() {
     ..writeln("- Text that depends on state is a value that joins labels: `'\${state.count} \${labels.peopleOnTheList}'`. Labels stay pure strings (no placeholders).")
     ..writeln('- Names must be unique across the app\'s actions, values and labels (each module is separate). Private helpers start with `_`.')
     ..writeln()
-    ..writeln('## Core: api and navigator')
+    ..writeln('## Core: api, navigator and locale')
     ..writeln()
     ..writeln("Import `../../.generated/core.dart` (from app/actions/).")
     ..writeln()
@@ -158,7 +158,11 @@ void main() {
     ..writeln()
     ..writeln('Future<void> core.navigator.push(Routes.settings)   // completes when the route closes')
     ..writeln('Future<void> core.navigator.pop()                   // closes the page, sheet or dialog on top')
+    ..writeln()
+    ..writeln("Future<void> core.locale.set('pt_br')   // the whole app (modules too) in pt_br.yaml, saved; null: the device's language again")
     ..writeln('```')
+    ..writeln()
+    ..writeln("The language is the device's by default (Flutter's localization, among the root app's labels files). A language menu is a `dropdown` with `value:` a value returning `labels.locale`, `options: [{value: en, text: english}, {value: pt_br, text: portuguese}]` and `onChanged:` an action calling `core.locale.set(value)`.")
     ..writeln()
     ..writeln('```dart')
     ..writeln('Future<void> loadRate(State state, void Function(StateDelta) emit, Core core) async {')

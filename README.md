@@ -20,7 +20,7 @@ examples/my_own_app/      the root app (an app is a folder; apps nest)
       style/*.yaml          design tokens, one group per file
       style/images/         image assets
       values/*.dart         State -> value for the UI, tests in main() below it
-      labels/en.yaml        the app's text, pure strings, one file per language
+      labels/en.yaml        the app's text, pure strings, one file per language (pt_br.yaml)
   modules/<name>/           modules, same layout (food, music, work, plants)
   .generated/             produced by the tool, do not edit
   .state/                 runtime state, do not commit
@@ -135,7 +135,8 @@ String tasksLeftText(State state, Labels labels) =>
   changed field is fine.
 - `core.api.get/post` make HTTP requests (`ApiResponse`: `status`, `body`,
   `ok`, `json`; status 0 is a network error). `core.navigator.push/pop` open
-  and close app/views/navigation.yaml routes.
+  and close app/views/navigation.yaml routes. `core.locale.set` picks the
+  language.
 - Values return a primitive, a model, an enum, or a `List` of those.
 
 ### Interpreter limits (dart_eval)
@@ -171,8 +172,8 @@ open on top of the whole app.
 
 ## Labels
 
-All the app's text lives in `app/views/labels/<language>.yaml` (only `en.yaml` for
-now), as pure strings:
+All the app's text lives in `app/views/labels/<language>.yaml`, one file per
+language named after it (`en.yaml`, `pt.yaml`, `pt_br.yaml`), as pure strings:
 
 ```yaml
 # app/views/labels/en.yaml
@@ -185,6 +186,14 @@ Widgets use a label exactly like a value, by key: `text: joinWaitlistText`.
 Text that depends on the state is a value that joins labels
 (`'$count ${labels.peopleOnTheList}'`). The tool warns about literal text left
 in pages and components.
+
+The engine uses Flutter's localization: the root app's languages are the
+`supportedLocales`, the device's locale picks one (`en` by default), and each
+app (modules too) shows its labels file that fits it; a key a language lacks
+shows the default language's text. `core.locale.set('pt_br')` picks the
+language for the whole app (saved in `.state/locale.yaml`; `null` follows the
+device again), and `labels.locale` / `labels.locales` read it, e.g. for a
+`dropdown` language menu (the root's `LanguagePicker`).
 
 ## Style
 
