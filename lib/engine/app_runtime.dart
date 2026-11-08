@@ -14,28 +14,38 @@ import 'ui_renderer.dart';
 ///
 /// All apps share one [navigatorKey]: a module's routes open on top of
 /// the whole app.
-class AppRuntime {
-  final ProjectConfig config;
+///
+/// [reload] swaps in a new version of the app in place; everything
+/// [render]ed (the home and pushed routes alike) rebuilds with it.
+class AppRuntime extends ChangeNotifier {
   final StateBloc bloc;
   final GlobalKey<NavigatorState> navigatorKey;
   final http.Client? client;
 
-  late final UiRenderer renderer = UiRenderer(
-    ui: config.ui,
-    program: config.program,
-    labels: config.labels,
-    bloc: bloc,
-    embed: embed,
-  );
+  ProjectConfig _config;
+  late UiRenderer _renderer;
 
   final _children = <String, AppRuntime>{};
 
   AppRuntime({
-    required this.config,
+    required this._config,
     required this.bloc,
     required this.navigatorKey,
     this.client,
   }) {
+    _start();
+  }
+
+  ProjectConfig get config => _config;
+
+  void _start() {
+    _renderer = UiRenderer(
+      ui: config.ui,
+      program: config.program,
+      labels: config.labels,
+      bloc: bloc,
+      embed: embed,
+    );
     config.program.host = CoreHost(
       bloc: bloc,
       navigation: config.navigation,
@@ -45,12 +55,33 @@ class AppRuntime {
     );
   }
 
+  /// Runs [config], a new version of this app (a regenerated or downloaded
+  /// bundle), and the new versions of the modules created so far. The state
+  /// carries over (see [StateBloc.reconfigure]).
+  void reload(ProjectConfig config) {
+    _config = config;
+    bloc.reconfigure(config);
+    _start();
+    for (final name in _children.keys.toList()) {
+      final childConfig = config.modules[name];
+      if (childConfig == null) {
+        _children.remove(name)!._close();
+      } else {
+        _children[name]!.reload(childConfig);
+      }
+    }
+    notifyListeners();
+  }
+
   /// A ui/ widget of this app. Each page and component inside it rebuilds
-  /// only when the values it reads change.
-  Widget render(String id) => renderer.build(id);
+  /// only when the values it reads change (or the app is reloaded).
+  Widget render(String id) =>
+      ListenableBuilder(listenable: this, builder: (_, _) => _renderer.build(id));
 
   /// The initial route's widget.
-  Widget get home => render(config.navigation.initialRoute.widget);
+  Widget get home => ListenableBuilder(
+      listenable: this,
+      builder: (_, _) => _renderer.build(config.navigation.initialRoute.widget));
 
   /// The module [name], themed by its own style/ if it has one.
   Widget embed(String name) {
@@ -60,13 +91,16 @@ class AppRuntime {
           style: const TextStyle(color: Colors.red));
     }
     final home = child.home;
-    if (!child.config.hasOwnStyle) return home;
-    return Builder(
-      builder: (context) => Theme(
-        data: MetacodeTheme.build(
-            child.config.style, Theme.of(context).brightness),
-        child: home,
-      ),
+    return ListenableBuilder(
+      listenable: child,
+      builder: (context, home) => !child.config.hasOwnStyle
+          ? home!
+          : Theme(
+              data: MetacodeTheme.build(
+                  child.config.style, Theme.of(context).brightness),
+              child: home!,
+            ),
+      child: home,
     );
   }
 
@@ -84,11 +118,17 @@ class AppRuntime {
   }
 
   /// Closes the modules' state (this app's bloc belongs to whoever made it).
+  @override
   void dispose() {
     for (final child in _children.values) {
-      child.dispose();
-      child.bloc.close();
+      child._close();
     }
     _children.clear();
+    super.dispose();
+  }
+
+  void _close() {
+    dispose();
+    bloc.close();
   }
 }

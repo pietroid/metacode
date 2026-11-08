@@ -11,7 +11,9 @@ import 'state_bloc.dart';
 /// actions wired to the state, http and the navigator. Modules (`module:`
 /// widgets) run inside it with their own state (see [AppRuntime]).
 ///
-/// Expects the root app's [StateBloc] above it.
+/// Expects the root app's [StateBloc] above it. A new [config] (a new
+/// version of the app) replaces the running one in place, keeping the
+/// state; open routes rebuild with it.
 class MetacodeApp extends StatefulWidget {
   final ProjectConfig config;
 
@@ -45,6 +47,14 @@ class _MetacodeAppState extends State<MetacodeApp> {
       navigatorKey: _navigatorKey,
       client: widget.client,
     );
+  }
+
+  @override
+  void didUpdateWidget(MetacodeApp oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.config != oldWidget.config) {
+      _runtime.reload(widget.config);
+    }
   }
 
   @override

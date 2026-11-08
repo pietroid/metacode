@@ -9,6 +9,23 @@
       "presentation": { "reveal": "silent", "revealProblems": "onProblem" }
     },
     {
+      "label": "metacode: watch",
+      "detail": "Regenerates on every save; hot reload (not restart) shows the change.",
+      "type": "shell",
+      "command": "dart run tool/metacode.dart watch",
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "metacode",
+        "pattern": { "regexp": "^error: (.*)$", "message": 1 },
+        "background": {
+          "activeBegins": true,
+          "beginsPattern": "^metacode: .* changed$",
+          "endsPattern": "^metacode: watching"
+        }
+      },
+      "presentation": { "reveal": "silent", "revealProblems": "onProblem" }
+    },
+    {
       "label": "metacode: check",
       "type": "shell",
       "command": "dart run tool/metacode.dart check",

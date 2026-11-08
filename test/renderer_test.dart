@@ -93,6 +93,46 @@ void main() {
         'waitlistCount': 1284,
       };
 
+  testWidgets('a new bundle replaces the running app and keeps the state',
+      (tester) async {
+    final bloc = await pump(tester, state());
+    await bloc.setState({...bloc.state, 'email': 'me@example.com'});
+    Finder inBar(String text) =>
+        find.descendant(of: find.byType(AppBar), matching: find.text(text));
+    expect(inBar('Join waitlist'), findsOneWidget);
+
+    // A new version: a changed label and a new state field.
+    final labels = jsonDecode(jsonEncode(bundle['labels'])) as Map;
+    (labels['en'] as Map)['joinWaitlistText'] = 'Count me in';
+    final next = ProjectConfig.fromBundle({
+      ...bundle,
+      'state': {...state(), 'addedField': 7},
+      'labels': labels,
+    });
+    await tester.pumpWidget(BlocProvider.value(
+      value: bloc,
+      child: MetacodeApp(
+          config: next, client: client, themeMode: ThemeMode.dark),
+    ));
+    await tester.pump();
+
+    expect(inBar('Join waitlist'), findsNothing);
+    expect(inBar('Count me in'), findsOneWidget);
+    expect(bloc.config, same(next));
+    expect(bloc.state['email'], 'me@example.com');
+    expect(bloc.state['addedField'], 7);
+
+    // Actions run on the new version.
+    await tester.tap(find.text('Make my app'));
+    await tester.pump();
+    expect(bloc.state['buildStep'], 1);
+    for (var i = 0; i < 4; i++) {
+      await tester.pump(const Duration(milliseconds: 700));
+    }
+    await tester.pumpAndSettle();
+    expect(bloc.state['buildStep'], 5);
+  });
+
   testWidgets('hero: make my app walks the steps, then is ready', (tester) async {
     final bloc = await pump(tester, state());
     expect(find.text('MY OWN APP'), findsWidgets);

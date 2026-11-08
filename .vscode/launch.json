@@ -10,7 +10,7 @@
       "args": [
         "--dart-define=METACODE_STATE_PATH=${workspaceFolder}/examples/my_own_app/.state/state.yaml"
       ],
-      "preLaunchTask": "metacode: generate"
+      "preLaunchTask": "metacode: watch"
     },
     {
       "name": "metacode (pick device)",
@@ -20,7 +20,7 @@
       "args": [
         "--dart-define=METACODE_STATE_PATH=${workspaceFolder}/examples/my_own_app/.state/state.yaml"
       ],
-      "preLaunchTask": "metacode: generate"
+      "preLaunchTask": "metacode: watch"
     }
   ]
 }

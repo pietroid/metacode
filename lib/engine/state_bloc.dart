@@ -15,7 +15,10 @@ import 'project_config.dart';
 /// the bundled initial state when there is none, and the file is written back
 /// on every change.
 class StateBloc extends Cubit<Map<String, dynamic>> {
-  final ProjectConfig config;
+  ProjectConfig _config;
+
+  /// The app version this state belongs to (see [reconfigure]).
+  ProjectConfig get config => _config;
 
   /// Folders under the documents folder: `[metacode]`,
   /// `[metacode, modules, food]`.
@@ -23,10 +26,11 @@ class StateBloc extends Cubit<Map<String, dynamic>> {
   File? _stateFile;
 
   StateBloc({
-    required this.config,
+    required ProjectConfig config,
     Map<String, dynamic>? initial,
     List<String>? path,
-  })  : path = path ?? [config.projectName],
+  })  : _config = config,
+        path = path ?? [config.projectName],
         super(initial ?? {});
 
   /// When set (via `--dart-define=METACODE_STATE_PATH=...`), the root app's
@@ -79,11 +83,23 @@ class StateBloc extends Cubit<Map<String, dynamic>> {
   Future<void> _load() async {
     final doc = loadYaml(await _stateFile!.readAsString());
     final saved = doc is Map ? yamlToDart(doc['state']) : null;
-    emit({
-      ...config.initialState,
-      if (saved is Map) ...Map<String, dynamic>.from(saved),
-    });
+    emit(_overInitial(saved));
   }
+
+  /// Moves this state to a new version of the app (a regenerated or
+  /// downloaded bundle), keeping its values; fields the new version adds
+  /// get their initial value.
+  void reconfigure(ProjectConfig config) {
+    _config = config;
+    emit(_overInitial(state));
+  }
+
+  /// [saved] over the initial state, so fields added since it was saved
+  /// get their initial value.
+  Map<String, dynamic> _overInitial(Object? saved) => {
+        ...config.initialState,
+        if (saved is Map) ...Map<String, dynamic>.from(saved),
+      };
 
   Future<void> setState(Map<String, dynamic> newState) async {
     emit(Map<String, dynamic>.from(newState));

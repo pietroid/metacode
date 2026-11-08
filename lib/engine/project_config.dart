@@ -53,8 +53,13 @@ class ProjectConfig {
   /// The engine's only project asset.
   static const bundleAsset = 'examples/my_own_app/.generated/bundle.json';
 
-  static Future<ProjectConfig> load() async => ProjectConfig.fromBundle(
-      jsonDecode(await rootBundle.loadString(bundleAsset)) as Map);
+  static Future<ProjectConfig> load() async =>
+      ProjectConfig.fromBundle(jsonDecode(await loadBundle()) as Map);
+
+  /// The raw bundle, read fresh (not cached), so a regenerated one is seen
+  /// after a hot reload.
+  static Future<String> loadBundle() =>
+      rootBundle.loadString(bundleAsset, cache: false);
 
   /// Builds the app tree from `generated/bundle.json`.
   factory ProjectConfig.fromBundle(Map json) {

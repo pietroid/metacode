@@ -2,6 +2,9 @@
 //
 //   dart run tool/metacode.dart          validate + generate
 //   dart run tool/metacode.dart check    validate only
+//   dart run tool/metacode.dart watch    validate + generate on every change
+//                                        (the running app picks the new
+//                                        bundle up on hot reload)
 //
 // An app is a folder (see tool/src/project.dart): app.yaml (name, description
 // and initial state), app/actions/, app/models/, app/views/ (navigation.yaml,
@@ -22,6 +25,7 @@
 // .generated/bundle.json: the whole app tree, which the engine loads as its
 // only asset (besides images).
 
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -36,8 +40,14 @@ import 'src/project.dart';
 
 const projectDir = 'examples/my_own_app';
 
-void main(List<String> args) {
-  final checkOnly = args.contains('check');
+Future<void> main(List<String> args) async {
+  if (args.contains('watch')) return _watch();
+  if (!_run(checkOnly: args.contains('check'))) exit(1);
+}
+
+/// Validates (and unless [checkOnly], generates) the project, printing the
+/// issues. Returns whether it is valid.
+bool _run({bool checkOnly = false}) {
   final issues = Issues();
 
   final root = loadApp(Directory(projectDir), projectDir, issues);
@@ -45,8 +55,12 @@ void main(List<String> args) {
   if (!issues.hasErrors && !checkOnly) {
     final bundle = _generate(root, issues);
     if (bundle != null && !issues.hasErrors) {
-      File('$projectDir/.generated/bundle.json')
-          .writeAsStringSync(jsonEncode(bundle));
+      final file = File('$projectDir/.generated/bundle.json');
+      final json = jsonEncode(bundle);
+      // Unchanged output is not rewritten, so the app does not reload it.
+      if (!file.existsSync() || file.readAsStringSync() != json) {
+        file.writeAsStringSync(json);
+      }
     }
   }
 
@@ -58,13 +72,41 @@ void main(List<String> args) {
   }
   if (issues.hasErrors) {
     stderr.writeln('\n${issues.errors.length} error(s).');
-    exit(1);
+    return false;
   }
   final apps = root.tree.toList();
   stdout.writeln(checkOnly
       ? 'OK: ${apps.length} app(s) valid.'
       : 'OK: ${apps.map((a) => '${a.label}: ${a.actions.length} actions, '
           '${a.bindings.length} values').join('; ')} -> .generated/');
+  return true;
+}
+
+/// Generates now and again after every change to the project's sources
+/// (not its .generated/ or .state/ folders). Runs stay in this process, so
+/// after the first one the compiler is warm.
+Future<void> _watch() async {
+  _run();
+  stdout.writeln('metacode: watching $projectDir');
+  Timer? pending;
+  await for (final event
+      in Directory(projectDir).watch(recursive: true)) {
+    final path = event.path.replaceAll(r'\', '/');
+    if (path.contains('/.generated/') ||
+        path.contains('/.state/') ||
+        path.split('/').last.startsWith('.')) {
+      continue;
+    }
+    // An editor save is often several events; generate once after them.
+    pending?.cancel();
+    pending = Timer(const Duration(milliseconds: 200), () {
+      final watch = Stopwatch()..start();
+      stdout.writeln('\nmetacode: ${path.substring(projectDir.length + 1)} '
+          'changed');
+      if (_run()) stdout.writeln('(${watch.elapsedMilliseconds}ms)');
+      stdout.writeln('metacode: watching $projectDir');
+    });
+  }
 }
 
 /// Generates [app] and its modules; returns its bundle node (null if
