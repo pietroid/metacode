@@ -2,53 +2,36 @@ import 'package:app_ui/spec.dart';
 
 import 'issues.dart';
 
-/// Validates the ui/ files against the widget catalog, the relations, the
-/// actions and the sub-apps. [files] maps each file (`ui/home.yaml`) to its
-/// parsed document; their `widgets:` maps share one namespace.
+/// Validates app/views/ widgets (pages and components) against the widget catalog,
+/// the values, the labels, the actions and the modules. [widgets] maps each widget id to its
+/// definition; [fileOf] maps each id back to the file that declared it.
 ///
 /// Returns every widget by id (empty on errors in the file shapes).
-Map<String, dynamic> validateUi(
-  Map<String, dynamic> files,
+Map<String, dynamic> validateWidgets(
+  Map<String, dynamic> widgets,
+  Map<String, String> fileOf,
   Set<String> bindings,
+  Set<String> labels,
   Set<String> actions,
-  Set<String> apps,
+  Set<String> modules,
   Issues issues, {
-  bool requireHomePage = true, // false when navigation/ names the pages
+  bool requireMainPage = true, // false when app/views/navigation.yaml names the pages
 }) {
-  final widgets = <String, dynamic>{};
-  final fileOf = <String, String>{};
-  for (final entry in files.entries) {
-    final file = entry.key;
-    final doc = entry.value;
-    if (doc is! Map || doc['widgets'] is! Map) {
-      issues.error(file, '', 'must contain a top-level "widgets:" map');
-      continue;
-    }
-    for (final w in (doc['widgets'] as Map).entries) {
-      final id = w.key.toString();
-      final other = fileOf[id];
-      if (other != null) {
-        issues.error(file, 'widgets.$id', 'also defined in $other');
-        continue;
-      }
-      fileOf[id] = file;
-      widgets[id] = w.value;
-    }
-  }
-
-  if (requireHomePage && !widgets.containsKey('homePage')) {
-    issues.error('ui/', 'widgets', 'missing "homePage", the entry widget');
+  if (requireMainPage && !widgets.containsKey('MainPage')) {
+    issues.error('app/views/pages/main_page.yaml', '',
+        'missing "MainPage", the entry page (or add app/views/navigation.yaml)');
   }
   for (final id in widgets.keys) {
     if (bindings.contains(id) || actions.contains(id)) {
-      issues.error(fileOf[id]!, 'widgets.$id',
-          'widget id is also the name of a ${bindings.contains(id) ? 'relation' : 'action'}');
+      issues.error(fileOf[id]!, id,
+          'widget id is also the name of a ${bindings.contains(id) ? 'value' : 'action'}');
     }
   }
 
   for (final entry in widgets.entries) {
-    _UiValidator(fileOf[entry.key]!, widgets, bindings, actions, apps, issues)
-        .node(entry.value, 'widgets.${entry.key}');
+    _UiValidator(fileOf[entry.key]!, widgets, bindings, labels, actions, modules,
+            issues)
+        .node(entry.value, entry.key);
   }
   return widgets;
 }
@@ -57,14 +40,16 @@ class _UiValidator {
   final String file;
   final Map<String, dynamic> widgets;
   final Set<String> bindings;
+  final Set<String> labels;
   final Set<String> actions;
-  final Set<String> apps;
+  final Set<String> modules;
   final Issues issues;
 
-  _UiValidator(this.file, this.widgets, this.bindings, this.actions, this.apps,
-      this.issues);
+  _UiValidator(this.file, this.widgets, this.bindings, this.labels,
+      this.actions, this.modules, this.issues);
 
-  static final _looksLikeName = RegExp(r'^[a-z][a-zA-Z0-9]*$');
+  /// Props that show text: a value, a label or (discouraged) literal text.
+  static const _textProps = {'hint', 'label', 'tooltip'};
 
   void error(String path, String message) =>
       issues.error(file, path, message);
@@ -72,12 +57,11 @@ class _UiValidator {
   void node(dynamic value, String path) {
     if (value == null) return;
     if (value is String) {
-      if (_looksLikeName.hasMatch(value) &&
-          !widgets.containsKey(value) &&
-          !bindings.contains(value)) {
-        issues.warn(file, path,
-            '"$value" is not a widget or relation; it will show as literal text');
+      if (pascalCase.hasMatch(value) && !widgets.containsKey(value)) {
+        return error(path, '"$value" is not a page or component in app/views/ '
+            '(text belongs in app/views/labels/)');
       }
+      if (!widgets.containsKey(value)) text(value, path);
       return;
     }
     if (value is num || value is bool) return;
@@ -112,6 +96,9 @@ class _UiValidator {
         continue;
       }
       property(kind, entry.value, propPath, spec.inline[prop]);
+      final isText = _textProps.contains(prop) ||
+          (identical(spec, widgetCatalog['text']) && prop == 'value');
+      if (isText && entry.value is String) text(entry.value, propPath);
     }
   }
 
@@ -129,13 +116,13 @@ class _UiValidator {
         }
       case PropKind.binding:
         if (!bindings.contains(value)) {
-          error(path, '"$value" is not a relation; '
+          error(path, '"$value" is not a value (app/views/values/); '
               'available: ${bindings.isEmpty ? '(none)' : bindings.join(', ')}');
         }
-      case PropKind.app:
-        if (!apps.contains(value)) {
-          error(path, '"$value" is not a sub-app (a folder in apps/); '
-              'available: ${apps.isEmpty ? '(none)' : apps.join(', ')}');
+      case PropKind.module:
+        if (!modules.contains(value)) {
+          error(path, '"$value" is not a module (a folder in modules/); '
+              'available: ${modules.isEmpty ? '(none)' : modules.join(', ')}');
         }
       case PropKind.inline:
         widget(widgetCatalog[inline]!, value, path);
@@ -156,6 +143,19 @@ class _UiValidator {
       case PropKind.bindingOrLiteral:
       case PropKind.literal:
         break;
+    }
+  }
+
+  /// A string shown as text: a value, a label, or literal text (which
+  /// belongs in app/views/labels/).
+  void text(String value, String path) {
+    if (bindings.contains(value) || labels.contains(value)) return;
+    if (camelCase.hasMatch(value)) {
+      issues.warn(file, path, '"$value" is not a value or label; '
+          'it will show as literal text');
+    } else if (RegExp(r'[A-Za-z]').hasMatch(value)) {
+      issues.warn(file, path,
+          'literal text; move it to app/views/labels/ and use its key');
     }
   }
 

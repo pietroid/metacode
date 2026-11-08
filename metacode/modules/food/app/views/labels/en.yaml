@@ -1,0 +1,17 @@
+# The app's text in English. Pure strings: values in
+# view/values/ join them with the state (they take `Labels labels`).
+en:
+  today: Today
+  clear: Clear
+  removeOne: Remove one
+  addOne: Add one
+  tipStart: Start with breakfast. Oatmeal or eggs keep you full until lunch.
+  tipOverBefore: You're
+  tipOverAfter: 'kcal over today. No stress: a walk after dinner and a lighter lunch tomorrow even it out.'
+  tipAlmost: Almost there. Greek yogurt or an apple fits what is left.
+  tipLowProtein: kcal left, and you are low on protein. A grilled chicken salad would cover both.
+  tipBalanced: Good balance so far.
+  tipKcalLeftDay: kcal left for the rest of the day.
+  kcal: kcal
+  gProtein: g protein
+  gProteinToday: g protein today

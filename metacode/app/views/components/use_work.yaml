@@ -1,0 +1,37 @@
+# Ticker, how it works and ideas.
+UseWork:
+  sizedBox:
+    width: 256
+    child:
+      container:
+        color: surface
+        borderColor: line
+        radius: 18
+        padding: 24
+        child:
+          column:
+            crossAxisAlignment: start
+            spacing: 8
+            children:
+            - container:
+                width: 40
+                height: 40
+                radius: 12
+                color: fill
+                child:
+                  center:
+                    icon:
+                      name: work
+                      size: 20
+                      color: primary
+            - sizedBox:
+                height: 22
+            - text:
+                value: work
+                style:
+                  variant: titleMedium
+            - text:
+                value: clientListsSmallShop
+                style:
+                  variant: bodySmall
+                  color: ink2

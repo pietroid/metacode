@@ -1,0 +1,35 @@
+# Ticker, how it works and ideas.
+HowStep1:
+  padding:
+    vertical: 28
+    child:
+      row:
+        spacing: 20
+        crossAxisAlignment: start
+        children:
+        - container:
+            width: 36
+            height: 36
+            radius: 10
+            borderColor: lineStrong
+            child:
+              center:
+                text:
+                  value: '1'
+                  style:
+                    variant: labelLarge
+                    color: ink2
+        - expanded:
+            column:
+              crossAxisAlignment: start
+              spacing: 8
+              children:
+              - text:
+                  value: tellItWhatYou
+                  style:
+                    variant: titleLarge
+              - text:
+                  value: inYourOwnWords
+                  style:
+                    variant: bodyMedium
+                    color: ink2

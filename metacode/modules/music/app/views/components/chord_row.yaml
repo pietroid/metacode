@@ -1,0 +1,29 @@
+# Guitar practice. Embedded in the landing page's examples carousel
+# (`module: music`).
+ChordRow:
+  padding:
+    vertical: 4
+    child:
+      row:
+        spacing: 12
+        children:
+        - container:
+            width: 40
+            height: 40
+            radius: 10
+            color: fill
+            child:
+              center:
+                text:
+                  value: chordName
+                  style:
+                    variant: titleSmall
+        - expanded:
+            text:
+              value: chordFingers
+              style:
+                variant: bodySmall
+                color: ink2
+        - checkbox:
+            value: chordLearned
+            onChanged: toggleChord

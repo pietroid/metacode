@@ -3,20 +3,20 @@
 //
 //   initial: home
 //   routes:
-//     home: homePage                        # a page (shorthand)
-//     settings: {page: settingsPage}
-//     rate: {bottomSheet: rateSheet}
-//     confirmReset: {dialog: confirmResetDialog}
+//     home: MainPage                        # a page (shorthand)
+//     settings: {page: SettingsPage}
+//     rate: {bottomSheet: RateSheet}
+//     confirmReset: {dialog: ConfirmResetDialog}
 //
-// Each route shows one ui.yaml widget. Without navigation.yaml the app has a
-// single page, `homePage`.
+// Each route shows one page (app/views/pages/). Without navigation.yaml the app
+// has a single page, `MainPage`.
 
 enum RouteType { page, bottomSheet, dialog }
 
 class RouteSpec {
   final String name;
   final RouteType type;
-  final String widget; // ui.yaml widget id
+  final String widget; // presentation/ widget id
 
   const RouteSpec(this.name, this.type, this.widget);
 }
@@ -27,9 +27,9 @@ class Navigation {
 
   const Navigation(this.initial, this.routes);
 
-  /// The app without navigation.yaml: one page, `homePage`.
+  /// The app without navigation.yaml: one page, `MainPage`.
   static const fallback = Navigation('home', {
-    'home': RouteSpec('home', RouteType.page, 'homePage'),
+    'home': RouteSpec('home', RouteType.page, 'MainPage'),
   });
 
   RouteSpec get initialRoute => routes[initial]!;

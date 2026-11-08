@@ -11,7 +11,7 @@ import 'state_bloc.dart';
 ///
 /// - `emit(delta)` merges the delta into the [StateBloc].
 /// - `core.api` runs real HTTP requests with [client].
-/// - `core.navigator` pushes navigation.yaml routes on [navigatorKey]: pages,
+/// - `core.navigator` pushes routing/ routes on [navigatorKey]: pages,
 ///   bottom sheets and dialogs are all routes, so `pop` closes any of them.
 class CoreHost implements MetacodeHost {
   final StateBloc bloc;
@@ -19,7 +19,7 @@ class CoreHost implements MetacodeHost {
   final GlobalKey<NavigatorState> navigatorKey;
   final http.Client client;
 
-  /// Renders a ui.yaml widget id (kept up to date with the state).
+  /// Renders a presentation/ widget id (kept up to date with the state).
   final Widget Function(String widget) render;
 
   CoreHost({

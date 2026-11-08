@@ -5,7 +5,7 @@ import 'package:dart_eval/stdlib/core.dart';
 
 /// What the interpreted program can ask of the engine: apply state deltas
 /// and run host operations (http, navigation). The app implements it in
-/// `core_host.dart`; tests use a fake (`generated/test_app.dart`).
+/// `core_host.dart`; tests use a fake (`.generated/test_app.dart`).
 abstract class MetacodeHost {
   /// Merges a top-level state delta (JSON, same encoding as the state).
   void emit(Map<String, dynamic> delta);

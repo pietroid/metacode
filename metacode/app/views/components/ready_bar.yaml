@@ -1,0 +1,29 @@
+# Hero: title, the live "make my app" demo and the idea chips.
+ReadyBar:
+  container:
+    color: fill
+    padding:
+      left: 24
+      right: 16
+      vertical: 14
+    child:
+      row:
+        spacing: 10
+        children:
+        - icon:
+            name: confetti
+            size: 20
+            color: primary
+        - expanded:
+            text:
+              spans:
+              - yourAppIsReady
+              - value: in2Minutes
+                style:
+                  color: ink3
+                  fontWeight: w500
+              style:
+                variant: titleSmall
+        - outlinedButton:
+            text: getEarlyAccess
+            onPressed: openWaitlist

@@ -8,7 +8,7 @@ import 'project_config.dart';
 import 'state_bloc.dart';
 
 /// The running app: the initial navigation/ route, themed from style/, with
-/// actions wired to the state, http and the navigator. Sub-apps (`app:`
+/// actions wired to the state, http and the navigator. Modules (`module:`
 /// widgets) run inside it with their own state (see [AppRuntime]).
 ///
 /// Expects the root app's [StateBloc] above it.

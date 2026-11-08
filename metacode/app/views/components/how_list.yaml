@@ -1,0 +1,19 @@
+# Ticker, how it works and ideas.
+HowList:
+  column:
+    crossAxisAlignment: stretch
+    children:
+    - divider:
+        height: 1
+    - HowStep1
+    - divider:
+        height: 1
+    - HowStep2
+    - divider:
+        height: 1
+    - HowStep3
+    - divider:
+        height: 1
+    - HowStep4
+    - divider:
+        height: 1

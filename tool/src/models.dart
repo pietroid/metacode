@@ -61,10 +61,14 @@ class EnumModel extends Model {
 /// The reserved model that types state.yaml.
 const stateModelName = 'state';
 
-/// Validates the models (every file in models/, merged).
-Map<String, Model> parseModels(dynamic doc, Issues issues) {
-  const file = 'models/';
-  final models = <String, Model>{};
+/// Validates the models (every file in [file], merged).
+///
+/// If [baseModels] is provided, models can reference those types and new
+/// class names must not clash with them. The reserved `state` model is
+/// parsed from `archetypes/state.yaml`; this function does not require it.
+Map<String, Model> parseModels(dynamic doc, Issues issues,
+    {String file = 'models/', Map<String, Model>? baseModels}) {
+  final models = <String, Model>{...?baseModels};
 
   if (doc is! Map) {
     issues.error(file, '', 'must be a map of model names to definitions');
@@ -132,29 +136,22 @@ Map<String, Model> parseModels(dynamic doc, Issues issues) {
 
     if (model is ClassModel) {
       for (final field in model.fields.entries) {
-        _checkResolves(field.value, models, issues, '${model.name}.${field.key}');
+        _checkResolves(
+            field.value, models, issues, '${model.name}.${field.key}', file);
       }
     }
-  }
-
-  final state = models[stateModelName];
-  if (state == null) {
-    issues.error(file, '',
-        'missing the reserved "$stateModelName" model that types state.yaml');
-  } else if (state is! ClassModel) {
-    issues.error(file, stateModelName, 'must be a model (map of fields), not an enum');
   }
 
   return models;
 }
 
-void _checkResolves(
-    TypeRef type, Map<String, Model> models, Issues issues, String path) {
+void _checkResolves(TypeRef type, Map<String, Model> models, Issues issues,
+    String path, String file) {
   if (type.isList) {
-    _checkResolves(type.item!, models, issues, path);
+    _checkResolves(type.item!, models, issues, path, file);
   } else if (!primitives.containsKey(type.name) &&
       !models.containsKey(type.name)) {
-    issues.error('models/', path, 'unknown type "${type.name}"');
+    issues.error(file, path, 'unknown type "${type.name}"');
   }
 }
 

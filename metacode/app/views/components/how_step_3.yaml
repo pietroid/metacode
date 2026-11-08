@@ -1,0 +1,35 @@
+# Ticker, how it works and ideas.
+HowStep3:
+  padding:
+    vertical: 28
+    child:
+      row:
+        spacing: 20
+        crossAxisAlignment: start
+        children:
+        - container:
+            width: 36
+            height: 36
+            radius: 10
+            borderColor: lineStrong
+            child:
+              center:
+                text:
+                  value: '3'
+                  style:
+                    variant: labelLarge
+                    color: ink2
+        - expanded:
+            column:
+              crossAxisAlignment: start
+              spacing: 6
+              children:
+              - text:
+                  value: useItEveryDay
+                  style:
+                    variant: titleLarge
+              - text:
+                  value: itsARealApp
+                  style:
+                    variant: bodyMedium
+                    color: ink2

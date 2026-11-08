@@ -1,0 +1,88 @@
+# Ticker, how it works and ideas.
+Ticker:
+  padding:
+    top: 112
+    child:
+      column:
+        crossAxisAlignment: stretch
+        children:
+        - divider:
+            height: 1
+        - padding:
+            vertical: 20
+            child:
+              marquee:
+                spacing: 52
+                children:
+                - text:
+                    spans:
+                    - value: ana
+                      style:
+                        color: ink2
+                        fontWeight: w600
+                    - madeAPlantReminder
+                    style:
+                      variant: bodyMedium
+                      color: ink3
+                - text:
+                    spans:
+                    - value: leo
+                      style:
+                        color: ink2
+                        fontWeight: w600
+                    - madeAWeeklyMeal
+                    style:
+                      variant: bodyMedium
+                      color: ink3
+                - text:
+                    spans:
+                    - value: mia
+                      style:
+                        color: ink2
+                        fontWeight: w600
+                    - madeARunningClub
+                    style:
+                      variant: bodyMedium
+                      color: ink3
+                - text:
+                    spans:
+                    - value: raj
+                      style:
+                        color: ink2
+                        fontWeight: w600
+                    - madeABillSplitter
+                    style:
+                      variant: bodyMedium
+                      color: ink3
+                - text:
+                    spans:
+                    - value: sam
+                      style:
+                        color: ink2
+                        fontWeight: w600
+                    - madeAReadingList
+                    style:
+                      variant: bodyMedium
+                      color: ink3
+                - text:
+                    spans:
+                    - value: kai
+                      style:
+                        color: ink2
+                        fontWeight: w600
+                    - madeAGigCalendar
+                    style:
+                      variant: bodyMedium
+                      color: ink3
+                - text:
+                    spans:
+                    - value: lu
+                      style:
+                        color: ink2
+                        fontWeight: w600
+                    - madeABabySleep
+                    style:
+                      variant: bodyMedium
+                      color: ink3
+        - divider:
+            height: 1

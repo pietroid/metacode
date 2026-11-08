@@ -1,0 +1,11 @@
+# Hero: title, the live "make my app" demo and the idea chips.
+StepDoing:
+  sizedBox:
+    width: 22
+    height: 22
+    child:
+      padding:
+        all: 2
+        child:
+          progress:
+            circular: true

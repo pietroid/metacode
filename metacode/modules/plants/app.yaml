@@ -1,0 +1,16 @@
+name: plants
+description: Remind me to water my plants. Every plant on its own schedule.
+state:
+  plants:
+  - name: Monstera
+    everyDays: 7
+    daysLeft: 2
+  - name: Fiddle leaf
+    everyDays: 10
+    daysLeft: 5
+  - name: Snake plant
+    everyDays: 14
+    daysLeft: 1
+  - name: Basil
+    everyDays: 3
+    daysLeft: 0

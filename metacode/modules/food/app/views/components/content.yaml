@@ -1,0 +1,32 @@
+# Food tracker. Embedded in the landing page's examples carousel
+# (`module: food`), so the entry is a plain column, not a scaffold.
+Content:
+  column:
+    crossAxisAlignment: stretch
+    spacing: 10
+    children:
+    - row:
+        children:
+        - expanded:
+            text:
+              value: today
+              style:
+                variant: titleLarge
+        - textButton:
+            text: clear
+            onPressed: clearFoods
+    - text:
+        value: caloriesText
+        style:
+          variant: titleSmall
+    - progress:
+        value: caloriesProgress
+    - text:
+        value: proteinText
+        style:
+          variant: bodySmall
+          color: ink3
+    - Tip
+    - listView:
+        data: foodList
+        itemBuilder: FoodRow

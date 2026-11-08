@@ -23,7 +23,7 @@ Widget buildDropdown(Ui ui, Map<String, dynamic> p) {
         value: options.contains(value) ? value : null,
         hint: p['hint'] == null
             ? null
-            : Text(p['hint'].toString(),
+            : Text(ui.resolve(p['hint']).toString(),
                 style: text.bodyLarge!.copyWith(color: t.ink3)),
         isExpanded: true,
         isDense: true,

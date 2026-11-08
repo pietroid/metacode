@@ -1,0 +1,25 @@
+# Waitlist: the section near the bottom and the bottom sheet route
+# (view/navigation.yaml).
+WaitlistDone:
+  column:
+    crossAxisAlignment: stretch
+    spacing: 12
+    children:
+    - icon:
+        name: checkCircle
+        size: 40
+        color: success
+    - text:
+        value: youreOnTheList
+        style:
+          variant: headlineSmall
+        align: center
+    - text:
+        value: joinedText
+        style:
+          variant: bodyMedium
+          color: ink2
+        align: center
+    - filledButton:
+        text: done
+        onPressed: close

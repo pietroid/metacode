@@ -1,0 +1,22 @@
+// exampleImage: The hero image asset path for the currently visible example.
+import 'package:flutter_test/flutter_test.dart';
+
+import '../../../.generated/state.dart';
+import '../../models/sample.dart';
+
+String exampleImage(State state) {
+  final i = state.exampleIndex.round();
+  if (i == 1) return 'metacode/app/views/style/images/guitar.jpg';
+  if (i == 2) return 'metacode/app/views/style/images/desk.jpg';
+  if (i == 3) return 'metacode/app/views/style/images/plant.jpg';
+  return 'metacode/app/views/style/images/food.jpg';
+}
+
+void main() {
+  test('exampleImage', () {
+    expect(
+      app.exampleImage(sample(exampleIndex: 0)),
+      'metacode/app/views/style/images/food.jpg',
+    );
+  });
+}

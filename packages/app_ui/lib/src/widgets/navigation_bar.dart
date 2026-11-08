@@ -11,7 +11,7 @@ Widget buildNavigationBar(Ui ui, Map<String, dynamic> p) {
       .map((d) => NavigationDestination(
             icon: Icon(parseIcon(d['icon'], ui.context)),
             selectedIcon: Icon(parseSelectedIcon(d['icon'])),
-            label: d['label']?.toString() ?? '',
+            label: ui.resolve(d['label'])?.toString() ?? '',
           ))
       .toList();
   final selected = ui.binding(p['selected']);

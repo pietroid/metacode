@@ -1,0 +1,90 @@
+# The app's text in English. Pure strings: values in
+# view/values/ join them with the state (they take `Labels labels`).
+en:
+  previous: Previous
+  food: Food
+  music: Music
+  work: Work
+  plants: Plants
+  next: Next
+  makeOneLikeThis: Make one like this
+  examples: EXAMPLES
+  oneSentenceOneApp: One sentence. One app.
+  eachOfTheseStarted: Each of these started with someone saying what they needed. Go ahead and tap around, they work.
+  myOwnApp: MY OWN APP
+  copyright: '© 2026 My Own App'
+  myOwnAppUses: My Own App uses AI to build an app made just for you, in a few minutes. No tech skills needed. If you want it different, just ask.
+  sayWhatYouNeed: 'Say what you need. Get your '
+  ownApp: own app.
+  howItWorks: HOW IT WORKS
+  asEasyAsSending: As easy as sending a message.
+  tellItWhatYou: Tell it what you need
+  inYourOwnWords: In your own words, the way you'd explain it to a friend.
+  watchItComeTogether: Watch it come together
+  inAFewMinutes: In a few minutes, your app is ready, with the screens and lists that fit your life.
+  useItEveryDay: Use it every day
+  itsARealApp: It's a real app on your phone, not a demo.
+  changeItAnytime: Change it anytime
+  wantAPhotoFor: Want a photo for each plant, or a different look? Just ask and it updates.
+  trackMyDailyHabits: Track my daily habits
+  planMealsForThe: Plan meals for the week
+  splitBillsWithRoommates: Split bills with roommates
+  keepMyBookList: Keep my book list
+  ideas: IDEAS
+  whateverYouNeedIt: Whatever you need, it can be an app.
+  yourAppIsReady: Your app is ready
+  in2Minutes: '  in 2 minutes'
+  getEarlyAccess: Get early access
+  understandingWhatYouNeed: Understanding what you need
+  designingYourScreens: Designing your screens
+  settingUpYourLists: Setting up your lists and reminders
+  puttingItOnYour: Putting it on your phone
+  ana: Ana
+  madeAPlantReminder: ' made a plant reminder app'
+  leo: Leo
+  madeAWeeklyMeal: ' made a weekly meal planner'
+  mia: Mia
+  madeARunningClub: ' made a running club tracker'
+  raj: Raj
+  madeABillSplitter: ' made a bill splitter'
+  sam: Sam
+  madeAReadingList: ' made a reading list'
+  kai: Kai
+  madeAGigCalendar: ' made a gig calendar'
+  lu: Lu
+  madeABabySleep: ' made a baby sleep log'
+  whatWouldMakeYour: What would make your day easier?
+  remindMeToWater: Remind me to water my plants
+  health: Health
+  habitsWorkoutsWaterSleep: Habits, workouts, water, sleep. Tracked your way.
+  hobbies: Hobbies
+  readingListsRecipesGig: Reading lists, recipes, gig calendars, collections.
+  home: Home
+  choresBillsGroceriesThe: Chores, bills, groceries, the plants nobody waters.
+  clientListsSmallShop: Client lists, small shop orders, team check-ins.
+  youreOnTheList: You're on the list
+  done: Done
+  email: Email
+  youExampleCom: you@example.com
+  thatEmailDoesntLook: That email doesn't look right.
+  joinWaitlistText: Join waitlist
+  notNow: Not now
+  whatWillYouMake: What will you make first?
+  wereLettingPeopleIn: We're letting people in a few at a time. Save your spot.
+  blurbFood: Tap what you ate. It adds up the calories and suggests what to eat next to stay on track.
+  blurbMusic: One chord at a time. Log your practice and see which songs you can already play.
+  blurbWork: Who paid, who still owes you, and how much to put aside for taxes. No spreadsheet.
+  blurbPlants: Every plant on its own schedule. Tap the drop when you water it, and skip ahead a day to see what comes next.
+  promptFood: Help me eat better without counting everything
+  promptMusic: Teach me guitar, ten minutes a day
+  promptWork: Help me keep track of my freelance jobs
+  promptPlants: Remind me to water my plants
+  ideaSummaryEmpty: Tell us what you need and we'll have your app ready when you get in.
+  yourFirstApp: 'Your first app:'
+  readyWhenYouGetIn: We'll have it ready when you get in.
+  making: Making…
+  makeItAgain: Make it again
+  makeMyApp: Make my app
+  weWillEmail: We'll email
+  whenYourSpotOpens: when your spot opens.
+  peopleOnTheList: people are already on the list

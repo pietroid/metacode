@@ -49,7 +49,7 @@ class FakeUi implements Ui {
       : null;
 
   @override
-  Widget app(String name) => Text('app $name');
+  Widget module(String name) => Text('module $name');
 
   @override
   Ui withParams(Map<String, dynamic> extra) =>
@@ -250,7 +250,7 @@ void main() {
 
   testWidgets('image renders SVG files with SvgPicture', (tester) async {
     await render(tester, {
-      'image': {'src': 'metacode/assets/logo.svg', 'width': 20, 'height': 30},
+      'image': {'src': 'metacode/app/views/style/images/logo.svg', 'width': 20, 'height': 30},
     });
     expect(find.byType(SvgPicture), findsOneWidget);
     expect(tester.getSize(find.byType(SvgPicture)), const Size(20, 30));

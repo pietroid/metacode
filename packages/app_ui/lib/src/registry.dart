@@ -1,5 +1,4 @@
 import 'ui.dart';
-import 'widgets/app.dart';
 import 'widgets/app_bar.dart';
 import 'widgets/avatar.dart';
 import 'widgets/card.dart';
@@ -23,6 +22,7 @@ import 'widgets/list_tile.dart';
 import 'widgets/list_view.dart';
 import 'widgets/marquee.dart';
 import 'widgets/match.dart';
+import 'widgets/module.dart';
 import 'widgets/navigation_bar.dart';
 import 'widgets/outlined_button.dart';
 import 'widgets/padding.dart';
@@ -59,7 +59,7 @@ const widgetBuilders = <String, UiWidgetBuilder>{
   'sizedBox': buildSizedBox,
   'container': buildContainer,
   'responsive': buildResponsive,
-  'app': buildApp,
+  'module': buildModule,
   'card': buildCard,
   'scroll': buildScroll,
   'divider': buildDivider,

@@ -60,9 +60,9 @@ void _writeDelta(StringBuffer out, ClassModel state, Map<String, Model> models) 
     ..writeln('}');
 }
 
-/// Generates `generated/core.dart`: what actions receive as `core`
-/// (`core.api`, `core.navigator`) and the navigation.yaml route names. The
-/// calls go to the engine through `package:metacode/engine/host.dart`.
+  /// Generates `generated/core.dart`: what actions receive as `core`
+  /// (`core.api`, `core.navigator`) and the routing/ route names. The
+  /// calls go to the engine through `package:metacode/engine/host.dart`.
 String generateCore(Iterable<String> routes) {
   final out = StringBuffer(_header)
     ..writeln()
@@ -70,7 +70,7 @@ String generateCore(Iterable<String> routes) {
     ..writeln()
     ..writeln("import 'package:metacode/engine/host.dart';")
     ..writeln()
-    ..writeln('/// Route names from navigation.yaml, for `core.navigator.push`.')
+    ..writeln('  /// Route names from routing/, for `core.navigator.push`.')
     ..writeln('class Routes {');
   for (final r in routes) {
     out.writeln("  static const String $r = '$r';");
@@ -92,7 +92,7 @@ class Core {
   /// HTTP requests.
   final Api api;
 
-  /// Opens and closes navigation.yaml routes.
+  /// Opens and closes routing/ routes.
   final AppNavigator navigator;
 }
 
@@ -134,7 +134,7 @@ class Api {
   }
 }
 
-/// Pages, bottom sheets and dialogs are all routes (see navigation.yaml),
+  /// Pages, bottom sheets and dialogs are all routes (see routing/),
 /// so `pop` closes whichever is on top.
 class AppNavigator {
   /// Opens [route] (use `Routes`). Completes when it closes.
@@ -278,6 +278,32 @@ String _toJson(TypeRef t, String expr, Map<String, Model> models) {
   return t.optional ? '$expr == null ? null : $inner' : inner;
 }
 
+/// Generates `.generated/labels.dart`: app/views/labels/ as typed getters, for
+/// values (and actions) that take `Labels labels`.
+String generateLabels(Map<String, String> labels, String? language) {
+  final out = StringBuffer(_header)
+    ..writeln()
+    ..writeln('/// The app\'s text from app/views/labels/${language ?? '<language>'}.yaml.')
+    ..writeln('class Labels {')
+    ..writeln('  Labels();');
+  for (final e in labels.entries) {
+    out
+      ..writeln()
+      ..writeln('  String get ${e.key} => ${_dartString(e.value)};');
+  }
+  out.writeln('}');
+  return out.toString();
+}
+
+String _dartString(String value) {
+  final escaped = value
+      .replaceAll(r'\', r'\\')
+      .replaceAll("'", r"\'")
+      .replaceAll(r'$', r'\$')
+      .replaceAll('\n', r'\n');
+  return "'$escaped'";
+}
+
 /// Generates `generated/main.dart`: the bridge between the engine and the
 /// user's functions. The engine speaks JSON; user code only sees typed objects.
 String generateMain(
@@ -296,6 +322,10 @@ String generateMain(
   if (actions.any((fn) => fn.params.any((p) => p.name == 'core'))) {
     out.writeln("import 'core.dart';");
   }
+  if ([...actions, ...bindings]
+      .any((fn) => fn.params.any((p) => p.name == 'labels'))) {
+    out.writeln("import 'labels.dart';");
+  }
   out.writeln("import 'state.dart';");
   for (final i in imports) {
     out.writeln("import '../$i';");
@@ -309,6 +339,7 @@ String generateMain(
         switch (p.name) {
           'emit' => 'emit',
           'core' => 'Core()',
+          'labels' => 'Labels()',
           _ => "params['${p.name}'] as ${p.type}",
         },
     ];
@@ -380,7 +411,7 @@ String _encodeDart(String type, String expr, Map<String, Model> models) {
 /// Generates `generated/test_app.dart`: typed wrappers that run each action
 /// and binding through the compiled program (dart_eval), exactly like the
 /// engine. Used by the app's test/. [appPath] is the app folder relative to
-/// the repo root (`metacode`, `metacode/apps/food`), where tests run from.
+/// the repo root (`metacode`, `metacode/modules/food`), where tests run from.
 String generateTestApp(
   List<UserFunction> actions,
   List<UserFunction> bindings,
@@ -401,27 +432,25 @@ String generateTestApp(
     ..writeln("import 'state.dart';")
     ..writeln()
     ..write(_testAppHead.replaceAll(r'$appPath', appPath))
-    ..writeln('  /// The state in $appPath/state/ (every file, merged).')
-    ..writeln('  State get initialState {')
-    ..writeln('    final state = <String, dynamic>{};')
-    ..writeln("    final files = Directory('$appPath/state').listSync().whereType<File>()")
-    ..writeln("        .where((f) => f.path.endsWith('.yaml')).toList()")
-    ..writeln('      ..sort((a, b) => a.path.compareTo(b.path));')
-    ..writeln('    for (final f in files) {')
-    ..writeln('      final doc = loadYaml(f.readAsStringSync());')
-    ..writeln("      state.addAll(Map<String, dynamic>.from(jsonDecode(jsonEncode(doc['state'])) as Map));")
-    ..writeln('    }')
-    ..writeln('    return State.fromJson(state);')
-    ..writeln('  }');
+  ..writeln('  /// The initial state from $appPath/app.yaml.')
+  ..writeln('  State get initialState {')
+  ..writeln("    final doc = loadYaml(File('$appPath/app.yaml').readAsStringSync()) as Map;")
+  ..writeln("    final state = Map<String, dynamic>.from(jsonDecode(jsonEncode(doc['state'])) as Map);")
+  ..writeln('    return State.fromJson(state);')
+  ..writeln('  }');
 
   String signature(UserFunction fn) => [
         'State state',
         for (final p in fn.params)
           if (contextParamTypes.containsKey(p.name)) '${p.type} ${p.name}',
       ].join(', ');
-  String params(UserFunction fn) => fn.params.isEmpty
-      ? ''
-      : ', {${fn.params.map((p) => "'${p.name}': ${p.name}").join(', ')}}';
+  String params(UserFunction fn) {
+    final context =
+        fn.params.where((p) => contextParamTypes.containsKey(p.name));
+    return context.isEmpty
+        ? ''
+        : ', {${context.map((p) => "'${p.name}': ${p.name}").join(', ')}}';
+  }
 
   for (final fn in actions) {
     final contextOnly =
@@ -450,16 +479,16 @@ String generateTestApp(
 }
 
 const _testAppHead = r'''
-/// Runs actions and bindings through the compiled program, like the engine
-/// does, with typed inputs and outputs. Actions run against a fake host:
-/// deltas are applied to the returned state, navigator calls are recorded
-/// in [navigation] and api requests are answered by [api].
-class TestApp implements MetacodeHost {
-  late final MetacodeProgram _program = MetacodeProgram(
-    ByteData.sublistView(File('$appPath/generated/program.evc').readAsBytesSync()),
-    jsonDecode(File('$appPath/generated/manifest.json').readAsStringSync())
-        as Map<String, dynamic>,
-  )..host = this;
+  /// Runs actions and bindings through the compiled program, like the engine
+  /// does, with typed inputs and outputs. Actions run against a fake host:
+  /// deltas are applied to the returned state, navigator calls are recorded
+  /// in [navigation] and api requests are answered by [api].
+  class TestApp implements MetacodeHost {
+    late final MetacodeProgram _program = MetacodeProgram(
+      ByteData.sublistView(File('$appPath/.generated/program.evc').readAsBytesSync()),
+      jsonDecode(File('$appPath/.generated/manifest.json').readAsStringSync())
+          as Map<String, dynamic>,
+    )..host = this;
 
   /// Answers `core.api` requests. Defaults to 404.
   ApiResponse Function(String method, String url, Object? body) api =

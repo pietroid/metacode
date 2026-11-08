@@ -1,0 +1,7 @@
+# Hero: title, the live "make my app" demo and the idea chips.
+StepTodo:
+  container:
+    width: 22
+    height: 22
+    radius: 11
+    borderColor: lineStrong

@@ -13,7 +13,7 @@ class Param {
   const Param(this.name, this.type);
 }
 
-/// A public top-level function from actions/ or relations/.
+/// A public top-level function from actions/ or app/views/values/.
 class UserFunction {
   final String name;
   final String file; // relative to its app folder
@@ -36,31 +36,42 @@ const actionParamTypes = {
   'core': 'Core',
 };
 
-/// Reads every `.dart` file in [dir] and returns its public functions.
+/// Params every function can take: `labels` reads app/views/labels/ (the
+/// current language).
+const sharedParamTypes = {'labels': 'Labels'};
+
+const _actionKinds = {'actions'};
+
+/// Reads every `.dart` file in `$appDir/$folder` (recursively) and returns
+/// its public functions.
 ///
 /// Every function must take the `State` as its first parameter; further
 /// parameters are matched by name: context params (see [contextParams]) and,
 /// for actions, `emit` and `core` (see [actionParamTypes]). Actions return
-/// `Future<void>` and change the state only through `emit`; relations return
-/// something the engine can hand to the UI (relations).
+/// `Future<void>` and change the state only through `emit`; values return
+/// something the engine can hand to the UI.
 List<UserFunction> readFunctions(
-  Directory dir,
-  String kind, // 'actions' or 'relations'
+  Directory appDir,
+  String folder, // 'app/actions' or 'app/views/values'
+  String kind, // 'actions' or 'values'
   Map<String, Model> models,
   Issues issues,
 ) {
+  final dir = Directory('${appDir.path}/$folder');
   final functions = <UserFunction>[];
   if (!dir.existsSync()) return functions;
 
   final files = dir
-      .listSync()
+      .listSync(recursive: true)
       .whereType<File>()
-      .where((f) => f.path.endsWith('.dart'))
+      .where((f) => isUserCode(f.path))
       .toList()
     ..sort((a, b) => a.path.compareTo(b.path));
 
   for (final file in files) {
-    final rel = '$kind/${file.uri.pathSegments.last}';
+    final name = file.uri.pathSegments.last;
+    if (name.startsWith('_')) continue;
+    final rel = file.path.substring(appDir.path.length + 1);
     final result = parseString(
       content: file.readAsStringSync(),
       path: file.path,
@@ -75,6 +86,7 @@ List<UserFunction> readFunctions(
       if (decl is! FunctionDeclaration) continue;
       final name = decl.name.lexeme;
       if (name.startsWith('_') || decl.isGetter || decl.isSetter) continue;
+      if (name == testsFunction) continue;
 
       final fn = _readFunction(decl, name, rel, kind, models, issues);
       if (fn != null) functions.add(fn);
@@ -117,9 +129,19 @@ UserFunction? _readFunction(
       continue;
     }
 
+    final sharedType = sharedParamTypes[paramName];
+    if (sharedType != null) {
+      if (type != sharedType) {
+        fail('"$paramName" must be $sharedType, got $type');
+        return null;
+      }
+      params.add(Param(paramName, sharedType));
+      continue;
+    }
+
     final actionType = actionParamTypes[paramName];
     if (actionType != null) {
-      if (kind != 'actions') {
+      if (!_actionKinds.contains(kind)) {
         fail('"$paramName" is only available to actions');
         return null;
       }
@@ -137,7 +159,8 @@ UserFunction? _readFunction(
     if (allowed == null) {
       final available = [
         ...contextParams,
-        if (kind == 'actions') ...actionParamTypes.keys,
+        ...sharedParamTypes.keys,
+        if (_actionKinds.contains(kind)) ...actionParamTypes.keys,
       ];
       fail('unknown parameter "$paramName"; available: ${available.join(', ')}');
       return null;
@@ -150,19 +173,38 @@ UserFunction? _readFunction(
   }
 
   final returnType = decl.returnType?.toSource() ?? 'dynamic';
-  if (kind == 'actions') {
+  if (_actionKinds.contains(kind)) {
     if (returnType != 'Future<void>') {
       fail('actions return Future<void> and change the state with '
           'emit(StateDelta(...)), got "$returnType"');
       return null;
     }
   } else if (!isEncodable(returnType, models)) {
-    fail('relations must return a model, enum, primitive or List of those, '
+    fail('values must return a model, enum, primitive or List of those, '
         'got "$returnType"');
     return null;
   }
 
   return UserFunction(name, file, returnType, params);
+}
+
+/// Whether [path] is user code the engine runs.
+bool isUserCode(String path) => path.endsWith('.dart');
+
+/// Each action or value file holds its own tests in a top-level `main()`,
+/// below the function. The tool ignores it and [stripTests] drops it before
+/// compiling, so it never reaches the engine.
+const testsFunction = 'main';
+
+/// [source] without its top-level `main()` (the file's tests).
+String stripTests(String source) {
+  final unit = parseString(content: source, throwIfDiagnostics: false).unit;
+  for (final decl in unit.declarations.reversed) {
+    if (decl is FunctionDeclaration && decl.name.lexeme == testsFunction) {
+      source = source.replaceRange(decl.offset, decl.end, '');
+    }
+  }
+  return source;
 }
 
 const _primitiveDartTypes = {'String', 'bool', 'int', 'double', 'num', 'DateTime'};

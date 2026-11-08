@@ -7,28 +7,31 @@ small Dart functions, and the engine runs it. See [PROPOSAL.md](PROPOSAL.md).
 
 ```
 metacode/                 the root app (an app is a folder; apps nest)
-  app.yaml                name, description
-  models/models.yaml      data shapes; the reserved `state` model types the state
-  state/state.yaml        the app state (validated against `state`)
-  ui/*.yaml               widgets (catalog: packages/app_ui/lib/spec.dart)
-  navigation/navigation.yaml  routes: pages, bottom sheets, dialogs (optional)
-  style/style.yaml        design tokens: colors, fonts, type, radius, spacing
-  actions/*.dart          async functions that emit StateDeltas (and use Core)
-  relations/*.dart        State -> value for the UI
-  test/                   tests for actions and relations
-  apps/<name>/            sub-apps, same layout (food, music, work, plants)
-  assets/                 images, for every app
-  generated/              produced by the tool, do not edit
-packages/app_ui/          the UI catalog (spec + one builder per widget)
-lib/engine/               the Flutter engine
-tool/metacode.dart        validator + code generator
+  app.yaml                  name, description, version, state: initial values
+  app/
+    actions/*.dart          async functions that emit StateDeltas (and use Core),
+                            each with its tests in a main() below it
+    models/*.yaml           data shapes, one parent per file (models and enums)
+    models/sample.dart      sample states for tests
+    views/
+      navigation.yaml       routes: pages, bottom sheets, dialogs (optional)
+      pages/*.yaml          what routes open (MainPage, sheets, dialogs)
+      components/*.yaml     one widget per file
+      style/*.yaml          design tokens, one group per file
+      style/images/         image assets
+      values/*.dart         State -> value for the UI, tests in main() below it
+      labels/en.yaml        the app's text, pure strings, one file per language
+  modules/<name>/           modules, same layout (food, music, work, plants)
+  .generated/             produced by the tool, do not edit
+  .state/                 runtime state, do not commit
 ```
 
-Every `.yaml` in a folder is merged, so a folder can be split into several
-files (the root's ui/ is split by page section). A sub-app is shown with
-the `app: <name>` widget and runs with its own state, actions and relations:
-a change inside it rebuilds only it. Each app (sub-apps included) persists its
-own `state.yaml`.
+Every `.yaml` file contains exactly one top-level key, named after the file;
+files are not merged. Files are `this_case.dart` / `this_case.yaml`, keys and
+functions `thisCase`, pages and components `ThisCase`
+(`app/views/components/example_slide.yaml` holds `ExampleSlide:`). A module is shown
+with the `module: <name>` widget and runs with its own state, actions and values: a change inside it rebuilds only it. Each app (modules included)
+persists its own state under `.state/`.
 
 Agents: see [AGENTS.md](AGENTS.md) and the skills in `.claude/skills/`.
 
@@ -42,52 +45,66 @@ dart run tool/metacode.dart         # just validate + generate
 
 In VS Code, F5 runs the generator first (`preLaunchTask`).
 
-The tool validates each app, sub-apps included, in order: models → state
-against the `state` model → action/relation signatures → ui/ (widget types,
-properties, and that every action, relation and sub-app it names exists) →
-navigation/ (routes point at ui/ widgets) → style/ (token names and values).
-Then it generates, per app:
+The tool validates each app, modules included, in order: app/models/
+(including the reserved `state.yaml`) → `app.yaml`'s `state:` against the `state`
+model → action/value signatures and file names → app/views/labels/ → app/views/pages/ and
+app/views/components/ (widget types, properties, and that every action, value, label
+and module it names exists) → app/views/navigation.yaml (routes point at pages) →
+app/views/style/ (token names and values). Then it generates,
+per app:
 
-- `generated/state.dart`: typed classes (`State`, `Task`, enums) with
+- `.generated/state.dart`: typed classes (`State`, `Task`, enums) with
   `copyWith`, plus `StateDelta` (every State field, optional) for `emit`.
-  This is what your actions and relations import.
-- `generated/core.dart`: `Core` (`api`, `navigator`), `ApiResponse` and
-  `Routes` (one constant per navigation/ route).
-- `generated/main.dart`: the JSON bridge the engine calls. You never touch JSON.
-- `generated/program.evc` and `manifest.json`: the compiled bytecode the
+  This is what your actions and values import.
+- `.generated/core.dart`: `Core` (`api`, `navigator`), `ApiResponse` and
+  `Routes` (one constant per app/views/navigation.yaml route).
+- `.generated/labels.dart`: `Labels`, the app/views/labels/ text as getters.
+- `.generated/main.dart`: the JSON bridge the engine calls. You never touch JSON.
+- `.generated/program.evc` and `manifest.json`: the compiled bytecode the
   engine loads.
-- `generated/test_app.dart`: typed wrappers that run your actions and
-  relations through the compiled program, for the app's `test/`.
-- `generated/bundle.json` (root only): the whole app tree (ui, state, routes,
-  style and bytecode of every app). The engine's only project asset, so adding
-  a sub-app needs no pubspec change.
+- `.generated/test_app.dart`: typed wrappers that run your actions and
+  values through the compiled program, for the tests in each file's `main()`.
+- `.generated/bundle.json` (root only): the whole app tree (ui, state, routes,
+  labels, style and bytecode of every app). The engine's only project asset, so adding
+  a module needs no pubspec change.
 
 ## Models
 
 ```yaml
+# app/models/task.yaml
+# A task in the tracker.
 task:
   title: string        # string, boolean, number, datetime
   note: string?        # optional
   tags: list(string)   # lists
+
+# app/models/filter.yaml
+# Which tasks are currently visible.
 filter: [all, open, done]   # enum
 
-state:                 # reserved: the shape of state/
+# app/models/state.yaml
+# The reserved state model types the app's dynamic state.
+state:
   tasks: list(task)
   filter: filter
 ```
 
-## Actions and relations
+## Actions and values
 
 ```dart
-// actions/actions.dart
+// app/actions/add_task.dart
 Future<void> addTask(State state, void Function(StateDelta) emit) async {
   state.tasks.add(Task(title: state.draft, done: false, createdAt: DateTime.now()));
   emit(StateDelta(tasks: state.tasks, draft: ''));    // only what changes
 }
 
+// app/actions/toggle_task.dart
 Future<void> toggleTask(State state, void Function(StateDelta) emit, int index) async { ... }
+
+// app/actions/update_draft.dart
 Future<void> updateDraft(State state, void Function(StateDelta) emit, String value) async { ... }
 
+// app/actions/load_rate.dart
 Future<void> loadRate(State state, void Function(StateDelta) emit, Core core) async {
   emit(StateDelta(rateStatus: FetchStatus.loading));
   final r = await core.api.get('https://open.er-api.com/v6/latest/USD');
@@ -95,17 +112,22 @@ Future<void> loadRate(State state, void Function(StateDelta) emit, Core core) as
   emit(StateDelta(rate: rate, rateStatus: FetchStatus.loaded));
 }
 
+// app/actions/open_settings.dart
 Future<void> openSettings(State state, Core core) async {
-  await core.navigator.push(Routes.settings);   // navigation.yaml route
+  await core.navigator.push(Routes.settings);   // app/views/navigation.yaml route
 }
 
-// relations/relations.dart
+// app/views/values/task_title.dart
 String taskTitle(State state, int index) => visibleTasks(state)[index].title;
+
+// app/views/values/tasks_left_text.dart: text from state joins labels
+String tasksLeftText(State state, Labels labels) =>
+    '${openTasks(state).length} ${labels.tasksLeft}';
 ```
 
 - The first parameter is always `State`. Extra parameters are matched by
   name: `index` (inside a `listView` item), `value` (from inputs) and, for
-  actions, `emit` and `core`.
+  actions, `emit` and `core`; any function can take `labels`.
 - Actions are `Future<void>` and change the state only with
   `emit(StateDelta(...))`, like a bloc: as many emits as needed, each merged
   over the current state (top-level fields replaced whole). `state` is a
@@ -113,8 +135,8 @@ String taskTitle(State state, int index) => visibleTasks(state)[index].title;
   changed field is fine.
 - `core.api.get/post` make HTTP requests (`ApiResponse`: `status`, `body`,
   `ok`, `json`; status 0 is a network error). `core.navigator.push/pop` open
-  and close navigation/ routes.
-- Relations return a primitive, a model, an enum, or a `List` of those.
+  and close app/views/navigation.yaml routes.
+- Values return a primitive, a model, an enum, or a `List` of those.
 
 ### Interpreter limits (dart_eval)
 
@@ -130,42 +152,72 @@ at runtime.
 
 ## Navigation
 
-`metacode/navigation/navigation.yaml` lists what can open on top of the app.
-Each route shows one ui/ widget:
+`app/views/navigation.yaml` lists what can open on top of the app. Each route shows
+one page from app/views/pages/:
 
 ```yaml
+# app/views/navigation.yaml
 initial: home                          # the first page
 routes:
-  home: homePage                       # page (shorthand for {page: homePage})
-  dollarRate: {bottomSheet: dollarRateSheet}
-  confirmReset: {dialog: confirmResetDialog}
+  home: MainPage                       # page (shorthand for {page: MainPage})
+  dollarRate: {bottomSheet: DollarRateSheet}
+  confirmReset: {dialog: ConfirmResetDialog}
 ```
 
 Actions open routes with `core.navigator.push(Routes.dollarRate)` (completes
 when the route closes) and close the top one with `core.navigator.pop()`.
-Without navigation/ the app is the single page `homePage`. A sub-app's routes
+Without navigation.yaml the app is the single page `MainPage`. A module's routes
 open on top of the whole app.
+
+## Labels
+
+All the app's text lives in `app/views/labels/<language>.yaml` (only `en.yaml` for
+now), as pure strings:
+
+```yaml
+# app/views/labels/en.yaml
+en:
+  joinWaitlistText: Join waitlist
+  peopleOnTheList: people are already on the list
+```
+
+Widgets use a label exactly like a value, by key: `text: joinWaitlistText`.
+Text that depends on the state is a value that joins labels
+(`'$count ${labels.peopleOnTheList}'`). The tool warns about literal text left
+in pages and components.
 
 ## Style
 
-`metacode/style/style.yaml` sets the design tokens every catalog widget is themed
+`metacode/app/views/style/*.yaml` sets the design tokens every catalog widget is themed
 from: light and dark colors, the two font roles (`display` for headlines,
 `text` for everything else), the type scale (one entry per text variant),
-Phosphor icon weight, radius, spacing and sizes. The app's file spells out every
-value of the Metacode style (`packages/app_ui/lib/style.dart`), so it shows
-exactly how the template looks; keys left out fall back to it. Bundled fonts
-(OFL): Newsreader, Albert Sans, Hanken Grotesk, Schibsted Grotesk, Figtree, Plus Jakarta Sans, Cormorant Garamond.
+Phosphor icon weight, radius, spacing and sizes. Each file contains one token
+group, so the app's style spells out every value of the Metacode style
+(`packages/app_ui/lib/style.dart`); keys left out fall back to it. Bundled
+fonts (OFL): Newsreader, Albert Sans, Hanken Grotesk, Schibsted Grotesk,
+Figtree, Plus Jakarta Sans, Cormorant Garamond.
 Icons: Phosphor (MIT), bundled as fonts in `packages/app_ui/fonts/phosphor`.
 
 ```yaml
+# style/theme.yaml
 theme: system
+
+# style/fonts.yaml
 fonts: {display: Newsreader, text: Hanken Grotesk}
+
+# style/icons.yaml
 icons: {weight: regular}
+
+# style/colors.yaml
 colors:
   light: {accent: "#3049C6"}
+
+# style/radius.yaml
 radius: {sm: 10, md: 14}
+
+# style/typography.yaml
 typography:
   headlineMedium: {font: display, size: 26, weight: 500, height: 1.2, tracking: -0.009}
 ```
 
-ui/ colors can use the token names (`ink2`, `accent`, `success`, `danger`...).
+Pages and components can use the token names (`ink2`, `accent`, `success`, `danger`...).

@@ -1,0 +1,28 @@
+# Freelance work's own look: a sharp ledger. Schibsted Grotesk, ink blue,
+# square corners, bold icons. Keys left out are inherited.
+colors:
+  light:
+    surface: '#F7F9FC'
+    fill: '#E9EEF6'
+    fillStrong: '#D5DEEC'
+    line: '#DCE3EE'
+    ink: '#0D1726'
+    ink2: '#4A5870'
+    ink3: '#8794AA'
+    primary: '#1F5FD6'
+    accent: '#1F5FD6'
+    success: '#0E8F5B'
+  dark:
+    surface: '#0C121C'
+    fill: '#141D2B'
+    fillStrong: '#1C2A3E'
+    line: '#1A2536'
+    lineStrong: '#283850'
+    ink: '#EDF2FA'
+    ink2: '#9FB0C9'
+    ink3: '#64758F'
+    primary: '#5C93FF'
+    onPrimary: '#06122A'
+    accent: '#5C93FF'
+    onAccent: '#06122A'
+    success: '#3DDC97'

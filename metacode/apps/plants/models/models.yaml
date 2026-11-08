@@ -1,7 +1,0 @@
-plant:
-  name: string
-  everyDays: number
-  daysLeft: number     # 0 means water today
-
-state:
-  plants: list(plant)

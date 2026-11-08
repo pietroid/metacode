@@ -43,3 +43,7 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Metacode generated output and runtime state
+**/.generated/
+**/.state/

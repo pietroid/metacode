@@ -1,0 +1,13 @@
+# Hero: title, the live "make my app" demo and the idea chips.
+StepDone:
+  container:
+    width: 22
+    height: 22
+    radius: 11
+    color: success
+    child:
+      center:
+        icon:
+          name: check
+          size: 13
+          color: bg

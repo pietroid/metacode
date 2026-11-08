@@ -1,7 +1,7 @@
 // The two functions the interpreted program uses to reach the engine.
 //
-// User code never calls these directly: `generated/core.dart` wraps them in
-// `Core` (api, navigator) and `generated/main.dart` uses [hostEmit] for the
+// User code never calls these directly: `.generated/core.dart` wraps them in
+// `Core` (api, navigator) and `.generated/main.dart` uses [hostEmit] for the
 // `emit` callback of actions. Inside dart_eval they are bridged by
 // `host_plugin.dart`; these bodies only exist so the analyzer can type-check
 // metacode/ and never run.

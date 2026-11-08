@@ -1,0 +1,3 @@
+# The plant tracker state: the list of plants and their schedules.
+state:
+  plants: list(plant)

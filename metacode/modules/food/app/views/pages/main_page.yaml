@@ -1,0 +1,8 @@
+# The food tracker's main page, embedded in the landing page carousel.
+MainPage:
+  container:
+    color: surface
+    borderColor: line
+    radius: 28
+    padding: 16
+    child: Content

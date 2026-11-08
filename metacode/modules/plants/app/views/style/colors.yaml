@@ -1,0 +1,28 @@
+# Plant care's own look: a greenhouse journal. Newsreader serif titles,
+# sage and terracotta, light icons. Keys left out are inherited.
+colors:
+  light:
+    surface: '#FBF7EF'
+    fill: '#F0E8D8'
+    fillStrong: '#E2D6BE'
+    line: '#E8DFCC'
+    ink: '#2A2418'
+    ink2: '#6B604B'
+    ink3: '#A39880'
+    primary: '#C2643C'
+    accent: '#6E8B5A'
+    success: '#6E8B5A'
+  dark:
+    surface: '#17150F'
+    fill: '#221F16'
+    fillStrong: '#302B1E'
+    line: '#2A261B'
+    lineStrong: '#3D3727'
+    ink: '#F4EEDF'
+    ink2: '#C2B79D'
+    ink3: '#857B64'
+    primary: '#E08A5E'
+    onPrimary: '#2A1206'
+    accent: '#9FBF85'
+    onAccent: '#13200A'
+    success: '#9FBF85'

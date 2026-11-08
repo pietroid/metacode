@@ -28,9 +28,9 @@ abstract class Ui {
   /// Like [action], passing the input's new value as the `value` param.
   ValueChanged<T>? actionWithValue<T>(dynamic name);
 
-  /// The sub-app `apps/<name>/`, running with its own state, actions and
-  /// relations.
-  Widget app(String name);
+  /// The module `modules/<name>/`, running with its own state, actions and
+  /// values.
+  Widget module(String name);
 
   /// A [Ui] whose bindings and actions also receive [params]
   /// (e.g. `{'index': i}` for list items).

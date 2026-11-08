@@ -1,0 +1,9 @@
+# Plant care's own look: a greenhouse journal. Newsreader serif titles,
+# sage and terracotta, light icons. Keys left out are inherited.
+typography:
+  titleLarge:
+    font: display
+    size: 26
+    weight: 500
+    height: 1.15
+    tracking: -0.01

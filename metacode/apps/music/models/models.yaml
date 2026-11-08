@@ -1,8 +1,0 @@
-chord:
-  name: string
-  fingers: string
-  learned: boolean
-
-state:
-  chords: list(chord)
-  practiceMinutes: number

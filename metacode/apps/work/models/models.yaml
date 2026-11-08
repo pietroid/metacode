@@ -1,9 +1,0 @@
-job:
-  client: string
-  task: string
-  amount: number
-  paid: boolean
-
-state:
-  jobs: list(job)
-  taxRate: number        # percent set aside for taxes

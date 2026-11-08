@@ -1,4 +1,4 @@
-// Renders the app (metacode/generated/bundle.json: every app, sub-apps
+// Renders the app (metacode/.generated/bundle.json: every app, modules
 // included) through the engine + app_ui, and drives it with taps.
 // Regenerate first: tool/check_engine.sh.
 
@@ -15,12 +15,11 @@ import 'package:http/testing.dart';
 import 'package:metacode/engine/app.dart';
 import 'package:metacode/engine/project_config.dart';
 import 'package:metacode/engine/state_bloc.dart';
-import 'package:yaml/yaml.dart';
 
 void main() {
   final bundle = jsonDecode(
-      File('metacode/generated/bundle.json').readAsStringSync()) as Map;
-  final styleYaml = loadYaml(File('metacode/style/style.yaml').readAsStringSync()) as Map;
+      File('metacode/.generated/bundle.json').readAsStringSync()) as Map;
+  final styleYaml = Map<String, dynamic>.from(bundle['style'] as Map);
 
   // Real type and icons, so layout (and overflow) matches the app, not the
   // test font.
@@ -65,7 +64,7 @@ void main() {
         const FakeAccessibilityFeatures(disableAnimations: true);
     addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
     // A fresh tree per pump: each app's program keeps its host and each
-    // sub-app starts from its own initial state.
+    // module starts from its own initial state.
     final config = ProjectConfig.fromBundle({
       ...bundle,
       'state': state,
@@ -211,7 +210,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(water);
     await tester.pumpAndSettle();
-    // The plants sub-app has its own state: Monstera is due again in 7 days.
+    // The plants module has its own state: Monstera is due again in 7 days.
     expect(find.text('In 7 days'), findsOneWidget);
     expect(bloc.state.containsKey('plants'), isFalse);
   });

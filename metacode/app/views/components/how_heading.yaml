@@ -1,0 +1,15 @@
+# Ticker, how it works and ideas.
+HowHeading:
+  column:
+    crossAxisAlignment: start
+    spacing: 16
+    children:
+    - text:
+        value: howItWorks
+        style:
+          variant: labelSmall
+          color: accent
+    - text:
+        value: asEasyAsSending
+        style:
+          variant: headlineLarge

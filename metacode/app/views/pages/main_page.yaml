@@ -1,0 +1,25 @@
+# The root page of the My Own App website: a scrolling landing page made of
+# reusable components defined in view/components/.
+MainPage:
+  scaffold:
+    appBar:
+      title: Logo
+      actions:
+      - padding:
+          right: 16
+          child:
+            outlinedButton:
+              text: joinWaitlistText
+              onPressed: openWaitlist
+    body:
+      scroll:
+        column:
+          crossAxisAlignment: stretch
+          children:
+          - Hero
+          - Ticker
+          - Examples
+          - HowItWorks
+          - Ideas
+          - WaitlistSection
+          - Footer

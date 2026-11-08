@@ -1,0 +1,8 @@
+# The plant watering reminder's main page, embedded in the landing page carousel.
+MainPage:
+  container:
+    color: surface
+    borderColor: line
+    radius: 18
+    padding: 14
+    child: Content

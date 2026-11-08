@@ -1,0 +1,56 @@
+# Freelance jobs and taxes. Embedded in the landing page's examples carousel
+# (`module: work`).
+Content:
+  column:
+    crossAxisAlignment: stretch
+    spacing: 10
+    children:
+    - text:
+        value: november
+        style:
+          variant: titleLarge
+    - row:
+        spacing: 12
+        children:
+        - expanded:
+            column:
+              crossAxisAlignment: start
+              children:
+              - text:
+                  value: received
+                  style:
+                    variant: bodySmall
+                    color: ink3
+              - text:
+                  value: receivedText
+                  style:
+                    variant: headlineSmall
+                    color: success
+        - expanded:
+            column:
+              crossAxisAlignment: start
+              children:
+              - text:
+                  value: waiting
+                  style:
+                    variant: bodySmall
+                    color: ink3
+              - text:
+                  value: waitingText
+                  style:
+                    variant: headlineSmall
+    - Tip
+    - text:
+        value: taxText
+        style:
+          variant: bodySmall
+          color: ink2
+    - slider:
+        value: taxRateValue
+        min: 0
+        max: 30
+        divisions: 30
+        onChanged: setTaxRate
+    - listView:
+        data: jobList
+        itemBuilder: JobRow

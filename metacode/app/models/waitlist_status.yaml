@@ -1,0 +1,6 @@
+# Status of the waitlist form: idle while typing, invalid if the email fails
+# validation, joined after a successful sign-up.
+waitlistStatus:
+- idle
+- invalid
+- joined

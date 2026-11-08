@@ -7,17 +7,18 @@ import 'package:yaml/yaml.dart';
 
 import 'project_config.dart';
 
-/// The state of one app (each sub-app has its own), persisted as YAML.
+/// The state of one app (each module has its own), persisted as YAML.
 ///
-/// [initialize] loads `state.yaml` from the app documents folder
-/// (`<projectName>/state.yaml`, and `<projectName>/apps/<name>/state.yaml`
-/// for sub-apps), starting from the bundled initial state when there is
-/// none, and the file is written back on every change.
+/// [initialize] loads `.state/state.yaml` from the app documents folder
+/// (`<projectName>/.state/state.yaml`, and
+/// `<projectName>/modules/<name>/.state/state.yaml` for modules), starting from
+/// the bundled initial state when there is none, and the file is written back
+/// on every change.
 class StateBloc extends Cubit<Map<String, dynamic>> {
   final ProjectConfig config;
 
   /// Folders under the documents folder: `[metacode]`,
-  /// `[metacode, apps, food]`.
+  /// `[metacode, modules, food]`.
   final List<String> path;
   File? _stateFile;
 
@@ -30,19 +31,19 @@ class StateBloc extends Cubit<Map<String, dynamic>> {
 
   /// When set (via `--dart-define=METACODE_STATE_PATH=...`), the root app's
   /// state is read from and written to this file directly, e.g. the
-  /// project's own `metacode/state/state.yaml` during development.
+  /// project's own `metacode/.state/state.yaml` during development.
   static const _overridePath = String.fromEnvironment('METACODE_STATE_PATH');
 
   /// Whether changes are written to disk (after [initialize]).
   bool get persistent => _stateFile != null;
 
-  /// The state of the sub-app [name], persisted next to this one when this
+  /// The state of the module [name], persisted next to this one when this
   /// one is.
   StateBloc child(String name, ProjectConfig config) {
     final bloc = StateBloc(
       config: config,
       initial: Map<String, dynamic>.from(config.initialState),
-      path: [...path, 'apps', name],
+      path: [...path, 'modules', name],
     );
     if (persistent) bloc.initialize();
     return bloc;
@@ -58,7 +59,7 @@ class StateBloc extends Cubit<Map<String, dynamic>> {
     }
 
     final dir = await getApplicationDocumentsDirectory();
-    final folder = Directory([dir.path, ...path].join('/'));
+    final folder = Directory([dir.path, ...path, '.state'].join('/'));
     if (!folder.existsSync()) {
       folder.createSync(recursive: true);
     }

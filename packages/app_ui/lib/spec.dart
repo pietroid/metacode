@@ -11,17 +11,17 @@ import 'style.dart';
 export 'style.dart';
 
 enum PropKind {
-  node('node', 'a widget id, a relation, an inline widget, or literal text'),
+  node('node', 'a page or component, a value, a label, an inline widget, or literal text'),
   nodes('nodes', 'a list of nodes'),
   nodeMap('cases', 'a map of value -> node'),
   action('action', 'name of an action'),
-  binding('relation', 'name of a relation (a function in relations/)'),
-  bindingOrLiteral('value', 'a relation name or a literal'),
+  binding('value', 'name of a value (a function in app/views/values/)'),
+  bindingOrLiteral('text', 'a value, a label or a literal'),
   literal('literal', 'a literal (number, text, list, map)'),
   icon('icon', 'an icon name (see Icons)'),
   color('color', 'a color (see Colors)'),
   inline('inline', "another widget's properties, written inline"),
-  app('app', 'name of a sub-app (a folder in apps/)');
+  module('module', 'name of a module (a folder in modules/)');
 
   final String label;
   final String doc;
@@ -43,7 +43,7 @@ enum Shorthand {
   /// `text: "Hello"` or `text: someBinding`.
   value('value'),
 
-  /// `app: food`.
+  /// `module: food`.
   name('name');
 
   final String? prop;
@@ -237,19 +237,19 @@ const widgetCatalog = <String, WidgetSpec>{
     'color': PropKind.color,
   }),
 
-  'app': WidgetSpec(
+  'module': WidgetSpec(
     _layout,
-    'Embeds a sub-app from `apps/<name>/`: its initial page, with its own '
-        'state, actions and relations. It inherits the theme unless it has a '
+    'Embeds a module from `modules/<name>/`: its initial page, with its own '
+        'state, actions and values. It inherits the theme unless it has a '
         'style/ folder.',
-    {'name': PropKind.app},
+    {'name': PropKind.module},
     shorthand: Shorthand.name,
   ),
 
   // Navigation
   'match': WidgetSpec(
     _navigation,
-    'Shows the case matching a relation value (e.g. the current page). '
+    'Shows the case matching a value (e.g. the current page). '
         'Falls back to `default`.',
     {
       'value': PropKind.binding,
@@ -268,7 +268,7 @@ const widgetCatalog = <String, WidgetSpec>{
     },
     notes: {
       'destinations': 'list of {icon, label}',
-      'selected': 'relation returning the selected index (int)',
+      'selected': 'value returning the selected index (int)',
       'onSelected': 'gets `value` (int): the tapped index',
     },
   ),
@@ -286,7 +286,7 @@ const widgetCatalog = <String, WidgetSpec>{
     },
     shorthand: Shorthand.value,
     notes: {
-      'spans': 'instead of `value`, runs of text with their own style: a list of strings or {value, style}; each value is a relation or literal, each style overrides `style` (e.g. {color: primary})',
+      'spans': 'instead of `value`, runs of text with their own style: a list of strings or {value, style}; each one is a value, a label or literal text, each style overrides `style` (e.g. {color: primary})',
       'style': '{variant (see Text variants), fontSize, fontWeight '
           '(bold, w100..w900), color, italic}',
       'align': 'left, center, right',
@@ -299,7 +299,7 @@ const widgetCatalog = <String, WidgetSpec>{
   ),
   'image': WidgetSpec(
     _content,
-    'An image (PNG, JPG, GIF, WebP or SVG) from a URL (http...) or an app file. Put app files in `metacode/assets/` and use the path: `src: metacode/assets/logo.svg`.',
+    'An image (PNG, JPG, GIF, WebP or SVG) from a URL (http...) or an app file. Put app files in `metacode/app/views/style/images/` and use the path: `src: metacode/app/views/style/images/logo.svg`.',
     {
       'src': PropKind.bindingOrLiteral,
       'width': PropKind.literal,
@@ -342,8 +342,8 @@ const widgetCatalog = <String, WidgetSpec>{
       'empty': PropKind.node,
     },
     notes: {
-      'data': 'relation returning a list',
-      'itemBuilder': 'relations and actions inside get `index`',
+      'data': 'value returning a list',
+      'itemBuilder': 'values and actions inside get `index`',
     },
   ),
   'gridView': WidgetSpec(
@@ -360,7 +360,7 @@ const widgetCatalog = <String, WidgetSpec>{
     notes: {
       'columns': 'default 2',
       'aspectRatio': 'item width / height, default 1',
-      'itemBuilder': 'relations and actions inside get `index`',
+      'itemBuilder': 'values and actions inside get `index`',
     },
   ),
   'listTile': WidgetSpec(_content, 'A list row.', {
@@ -370,7 +370,7 @@ const widgetCatalog = <String, WidgetSpec>{
     'trailing': PropKind.node,
     'onTap': PropKind.action,
   }),
-  'if': WidgetSpec(_content, 'Shows `then` when the relation is true, else `else`.', {
+  'if': WidgetSpec(_content, 'Shows `then` when the value is true, else `else`.', {
     'condition': PropKind.binding,
     'then': PropKind.node,
     'else': PropKind.node,
@@ -382,8 +382,8 @@ const widgetCatalog = <String, WidgetSpec>{
     'Text input.',
     {
       'value': PropKind.bindingOrLiteral,
-      'hint': PropKind.literal,
-      'label': PropKind.literal,
+      'hint': PropKind.bindingOrLiteral,
+      'label': PropKind.bindingOrLiteral,
       'multiline': PropKind.literal,
       'onChanged': PropKind.action,
       'onSubmitted': PropKind.action,
@@ -423,7 +423,7 @@ const widgetCatalog = <String, WidgetSpec>{
     {
       'value': PropKind.binding,
       'options': PropKind.bindingOrLiteral,
-      'hint': PropKind.literal,
+      'hint': PropKind.bindingOrLiteral,
       'onChanged': PropKind.action,
     },
     notes: {'options': 'list of strings', 'onChanged': 'gets `value` (String)'},
@@ -436,7 +436,7 @@ const widgetCatalog = <String, WidgetSpec>{
   ),
   'iconButton': WidgetSpec(_input, 'Icon that runs an action.', {
     'icon': PropKind.icon,
-    'tooltip': PropKind.literal,
+    'tooltip': PropKind.bindingOrLiteral,
     'color': PropKind.color,
     'onPressed': PropKind.action,
   }),
@@ -471,7 +471,7 @@ const widgetCatalog = <String, WidgetSpec>{
   ),
 };
 
-/// Event params an action or relation can ask for, by parameter name.
+/// Event params an action or value can ask for, by parameter name.
 ///
 /// - `index`: position of the current item inside a `listView`/`gridView`.
 /// - `value`: the new value from an input (`textField`, `slider`, ...).

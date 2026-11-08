@@ -1,0 +1,15 @@
+# Freelance work's own look: a sharp ledger. Schibsted Grotesk, ink blue,
+# square corners, bold icons. Keys left out are inherited.
+typography:
+  titleLarge:
+    font: display
+    size: 18
+    weight: 800
+    height: 1.3
+    tracking: 0.04
+  headlineSmall:
+    font: display
+    size: 24
+    weight: 800
+    height: 1.15
+    tracking: -0.03

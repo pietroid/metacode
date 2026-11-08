@@ -27,8 +27,8 @@ Prop kinds (validated by the tool):
 - `nodes`: a list of children.
 - `nodeMap`: a map of value to node.
 - `action`: names an action.
-- `binding`: names a relation (a function in `relations/`; the code keeps the old name).
-- `bindingOrLiteral`: a relation name or a literal.
+- `binding`: names a value (a function in `app/views/values/`; the code keeps the old name).
+- `bindingOrLiteral`: a value, a label (`app/views/labels/`) or a literal. Read it with `ui.resolve(...)`; use it for every prop that shows text so labels work.
 - `literal`: anything.
 - `icon`: a name from `iconNames`.
 - `color`: `#hex` or a name from `colorNames`.

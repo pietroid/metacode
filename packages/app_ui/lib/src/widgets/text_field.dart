@@ -4,8 +4,8 @@ import '../ui.dart';
 
 Widget buildTextField(Ui ui, Map<String, dynamic> p) => _TextField(
       value: ui.resolve(p['value'])?.toString() ?? '',
-      hint: p['hint']?.toString(),
-      label: p['label']?.toString(),
+      hint: ui.resolve(p['hint'])?.toString(),
+      label: ui.resolve(p['label'])?.toString(),
       multiline: p['multiline'] == true,
       onChanged: ui.actionWithValue<String>(p['onChanged']),
       onSubmitted: ui.actionWithValue<String>(p['onSubmitted']),

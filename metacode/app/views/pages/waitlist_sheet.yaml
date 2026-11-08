@@ -1,0 +1,12 @@
+# Waitlist: the section near the bottom and the bottom sheet route
+# (view/navigation.yaml).
+WaitlistSheet:
+  padding:
+    left: 24
+    right: 24
+    bottom: 24
+    child:
+      if:
+        condition: waitlistJoined
+        then: WaitlistDone
+        else: WaitlistForm

@@ -1,0 +1,36 @@
+# Waitlist: the section near the bottom and the bottom sheet route
+# (view/navigation.yaml).
+WaitlistForm:
+  column:
+    crossAxisAlignment: stretch
+    spacing: 12
+    children:
+    - text:
+        value: getEarlyAccess
+        style:
+          variant: headlineSmall
+    - text:
+        value: ideaSummary
+        style:
+          variant: bodyMedium
+          color: ink2
+    - textField:
+        value: emailValue
+        label: email
+        hint: youExampleCom
+        onChanged: updateEmail
+        onSubmitted: joinWaitlist
+    - if:
+        condition: waitlistInvalid
+        then:
+          text:
+            value: thatEmailDoesntLook
+            style:
+              variant: bodySmall
+              color: danger
+    - filledButton:
+        text: joinWaitlistText
+        onPressed: joinWaitlist
+    - textButton:
+        text: notNow
+        onPressed: close

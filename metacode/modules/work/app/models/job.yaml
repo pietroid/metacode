@@ -1,0 +1,6 @@
+# A freelance job, with client, task, amount and payment status.
+job:
+  client: string
+  task: string
+  amount: number
+  paid: boolean

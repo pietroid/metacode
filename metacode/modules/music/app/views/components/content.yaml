@@ -1,0 +1,40 @@
+# Guitar practice. Embedded in the landing page's examples carousel
+# (`module: music`).
+Content:
+  column:
+    crossAxisAlignment: stretch
+    spacing: 10
+    children:
+    - text:
+        value: guitarBasics
+        style:
+          variant: titleLarge
+    - text:
+        value: chordsText
+        style:
+          variant: titleSmall
+    - progress:
+        value: chordsProgress
+    - Tip
+    - row:
+        spacing: 12
+        children:
+        - expanded:
+            column:
+              crossAxisAlignment: stretch
+              spacing: 6
+              children:
+              - text:
+                  value: practiceText
+                  style:
+                    variant: bodySmall
+                    color: ink2
+              - progress:
+                  value: practiceProgress
+        - outlinedButton:
+            text: addFiveMinutes
+            icon: timer
+            onPressed: logPractice
+    - listView:
+        data: chordList
+        itemBuilder: ChordRow

@@ -1,0 +1,16 @@
+# Hero: title, the live "make my app" demo and the idea chips.
+Step2:
+  row:
+    spacing: 12
+    children:
+    - match:
+        value: step2State
+        cases:
+          done: StepDone
+          doing: StepDoing
+        default: StepTodo
+    - expanded:
+        text:
+          value: designingYourScreens
+          style:
+            variant: bodyMedium

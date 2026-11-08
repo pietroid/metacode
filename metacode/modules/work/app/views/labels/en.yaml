@@ -1,0 +1,11 @@
+# The app's text in English. Pure strings: values in
+# view/values/ join them with the state (they take `Labels labels`).
+en:
+  november: November
+  received: Received
+  waiting: Waiting
+  setAside: Set aside
+  forTaxes: 'for taxes:'
+  everyonePaid: Everyone paid. Nice month.
+  stillOwesYou: still owes you
+  draftReminder: Want me to draft a friendly reminder?

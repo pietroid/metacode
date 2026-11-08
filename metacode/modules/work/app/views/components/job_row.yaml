@@ -1,0 +1,30 @@
+# Freelance jobs and taxes. Embedded in the landing page's examples carousel
+# (`module: work`).
+JobRow:
+  padding:
+    vertical: 2
+    child:
+      row:
+        spacing: 8
+        children:
+        - checkbox:
+            value: jobPaid
+            onChanged: toggleJobPaid
+        - expanded:
+            column:
+              crossAxisAlignment: start
+              children:
+              - text:
+                  value: jobClient
+                  style:
+                    variant: titleSmall
+              - text:
+                  value: jobTask
+                  style:
+                    variant: bodySmall
+                    color: ink3
+        - text:
+            value: jobAmount
+            style:
+              variant: labelLarge
+              color: ink2

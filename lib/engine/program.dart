@@ -9,7 +9,7 @@ import 'host_plugin.dart';
 /// The project's actions and bindings, precompiled by `tool/metacode.dart`
 /// into dart_eval bytecode and loaded once at startup.
 ///
-/// The engine talks JSON to the generated bridge (`generated/main.dart`),
+/// The engine talks JSON to the generated bridge (`.generated/main.dart`),
 /// which hands typed objects to the user's functions. Actions reach back
 /// through [host]: `emit` deltas and `Core` calls (api, navigator).
 class MetacodeProgram {
@@ -57,7 +57,7 @@ class MetacodeProgram {
         $String(params.isEmpty ? '{}' : jsonEncode(params)),
       ]);
 
-  // A build evaluates many relations on the same state map (the engine
+  // A build evaluates many values on the same state map (the engine
   // replaces the map on every change, never mutates it), so encode it once.
   Map<String, dynamic>? _encodedState;
   String _encodedJson = '';

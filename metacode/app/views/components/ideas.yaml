@@ -1,0 +1,32 @@
+# Ticker, how it works and ideas.
+Ideas:
+  container:
+    maxWidth: 1120
+    padding:
+      horizontal: 24
+      top: 128
+    child:
+      column:
+        crossAxisAlignment: stretch
+        spacing: 16
+        children:
+        - text:
+            value: ideas
+            style:
+              variant: labelSmall
+              color: accent
+        - text:
+            value: whateverYouNeedIt
+            style:
+              variant: headlineLarge
+        - sizedBox:
+            height: 32
+        - wrap:
+            alignment: center
+            spacing: 16
+            runSpacing: 16
+            children:
+            - UseHome
+            - UseHealth
+            - UseWork
+            - UseHobbies

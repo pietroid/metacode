@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# Fast loop for changing the app in metacode/ (and its sub-apps in apps/).
+# Fast loop for changing the app in metacode/ (and its modules in modules/).
 # Never launches the app.
-#   1. validate every app (models, state, ui, actions, relations...) and generate code
+#   1. validate every app (models, state, view, actions, values...) and generate code
 #   2. type-check metacode/
-#   3. run every app's test/ (actions and relations, through the compiled program)
+#   3. run every app's tests (the main() in each action and value file, through the compiled program)
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -14,5 +14,6 @@ echo "== analyze"
 dart analyze --fatal-infos metacode
 
 echo "== test"
-flutter test --reporter failures-only metacode/test $(find metacode/apps -type d -name test 2>/dev/null | sort)
+flutter test --reporter failures-only \
+  $(grep -rl --include='*.dart' --exclude-dir=.generated '^void main' metacode | sort)
 echo "OK"

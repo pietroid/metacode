@@ -1,5 +1,5 @@
 name: metacode
-description: "Metacode engine: YAML-driven apps with typed actions and bindings."
+description: "Metacode engine: YAML-driven apps with typed actions and values."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -65,11 +65,11 @@ flutter:
   uses-material-design: true
 
   # The tool writes the whole app tree (every app's config, initial state
-  # and bytecode, sub-apps included) to one file, so adding an app needs no
-  # change here. Images live in metacode/assets/.
+  # and bytecode, modules included) to one file, so adding an app needs no
+  # change here. Images live in metacode/app/views/style/images/.
   assets:
-    - metacode/generated/bundle.json
-    - metacode/assets/
+    - metacode/.generated/bundle.json
+    - metacode/app/views/style/images/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

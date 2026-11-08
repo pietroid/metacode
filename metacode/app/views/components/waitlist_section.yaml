@@ -1,0 +1,53 @@
+# Waitlist: the section near the bottom and the bottom sheet route
+# (view/navigation.yaml).
+WaitlistSection:
+  container:
+    maxWidth: 1120
+    padding:
+      horizontal: 24
+      top: 128
+      bottom: 80
+    child:
+      container:
+        color: surface
+        borderColor: line
+        radius: 24
+        padding:
+          horizontal: 24
+          vertical: 72
+        child:
+          column:
+            spacing: 16
+            children:
+            - text:
+                value: whatWillYouMake
+                style:
+                  variant: headlineLarge
+                align: center
+            - text:
+                value: wereLettingPeopleIn
+                style:
+                  variant: bodyMedium
+                  color: ink2
+                align: center
+            - sizedBox:
+                height: 16
+            - container:
+                maxWidth: 460
+                child:
+                  if:
+                    condition: waitlistJoined
+                    then:
+                      text:
+                        value: joinedText
+                        style:
+                          variant: titleSmall
+                          color: success
+                        align: center
+                    else: WaitlistInline
+            - text:
+                value: waitlistCountText
+                style:
+                  variant: bodySmall
+                  color: ink3
+                align: center

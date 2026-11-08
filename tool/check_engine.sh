@@ -13,6 +13,8 @@ echo "== analyze"
 flutter analyze
 
 echo "== test"
-flutter test --reporter failures-only test metacode/test $(find metacode/apps -type d -name test 2>/dev/null | sort)
+flutter test --reporter failures-only \
+  test \
+  $(grep -rl --include='*.dart' --exclude-dir=.generated '^void main' metacode | sort)
 (cd packages/app_ui && flutter test --reporter failures-only)
 echo "OK"

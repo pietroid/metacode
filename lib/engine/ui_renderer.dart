@@ -4,32 +4,37 @@ import 'package:flutter/material.dart';
 import 'program.dart';
 import 'state_bloc.dart';
 
-/// Renders one app's ui/ widgets with the `app_ui` catalog.
+/// Renders one app's app/views/ widgets with the `app_ui` catalog.
 ///
-/// Resolves node references (widget ids, relations, literals), expands
+/// Resolves node references (pages and components, values, labels,
+/// literals), expands
 /// shorthands, and gives widget builders a [Ui] wired to the program.
-/// Actions run against [bloc]; `app:` widgets are built by [embed].
+/// Actions run against [bloc]; `module:` widgets are built by [embed].
 class UiRenderer {
   final Map<String, dynamic> widgets;
   final MetacodeProgram program;
+
+  /// app/views/labels/ in the current language.
+  final Map<String, String> labels;
   final StateBloc bloc;
   final Widget Function(String app) embed;
 
   UiRenderer({
     required Map<String, dynamic> ui,
     required this.program,
+    this.labels = const {},
     required this.bloc,
     required this.embed,
   }) : widgets = Map<String, dynamic>.from(ui['widgets'] ?? {});
 
-  // Relations are pure functions of (state, params), so their values are
+  // Values are pure functions of (state, params), so their values are
   // kept until the state changes: rebuilds that don't change the state
-  // (resizing, a parent rebuilding, the same relation used twice) don't run
+  // (resizing, a parent rebuilding, the same value used twice) don't run
   // the interpreter again.
   Map<String, dynamic>? _cachedState;
   final _cache = <String, dynamic>{};
 
-  dynamic relation(String name, Map<String, dynamic> state,
+  dynamic value(String name, Map<String, dynamic> state,
       Map<String, dynamic> params) {
     if (!identical(state, _cachedState)) {
       _cachedState = state;
@@ -90,17 +95,20 @@ class _EngineUi implements Ui {
 
   @override
   dynamic binding(dynamic name) => name is String && _program.bindings.contains(name)
-      ? renderer.relation(name, state, params)
+      ? renderer.value(name, state, params)
       : null;
 
   @override
-  dynamic resolve(dynamic value) =>
-      value is String && _program.bindings.contains(value)
-          ? renderer.relation(value, state, params)
-          : value;
+  dynamic resolve(dynamic value) {
+    if (value is! String) return value;
+    if (_program.bindings.contains(value)) {
+      return renderer.value(value, state, params);
+    }
+    return renderer.labels[value] ?? value;
+  }
 
   @override
-  Widget app(String name) => renderer.embed(name);
+  Widget module(String name) => renderer.embed(name);
 
   @override
   VoidCallback? action(dynamic name) =>

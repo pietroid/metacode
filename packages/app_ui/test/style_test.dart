@@ -41,10 +41,16 @@ void main() {
     expect(style['typography']['bodyLarge']['font'], 'text');
   });
 
-  test("the app's style.yaml is valid and spells out every token", () {
-    // metacode/style/style.yaml documents the template: it may change values, but
-    // it names every key of the Metacode style so nothing is hidden.
-    final yaml = loadYaml(File('../../metacode/style/style.yaml').readAsStringSync()) as Map;
+  test("the app's style files are valid and spell out every token", () {
+    // metacode/app/views/style/*.yaml document the template: values may change, but every
+    // file names its keys so nothing is hidden.
+    final dir = Directory('../../metacode/app/views/style');
+    final yaml = <String, dynamic>{};
+    for (final file in dir.listSync().whereType<File>().where((f) => f.path.endsWith('.yaml')).toList()
+      ..sort((a, b) => a.path.compareTo(b.path))) {
+      final doc = loadYaml(file.readAsStringSync()) as Map;
+      yaml.addAll(doc.cast<String, dynamic>());
+    }
     expect(validateStyle(yaml), isEmpty);
     final missing = <String>[];
     void walk(Map template, Map? app, String path) {

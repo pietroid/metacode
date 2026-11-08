@@ -1,9 +1,0 @@
-# Routes the app can open. Actions open them with
-# core.navigator.push(Routes.<name>) and close the top one with
-# core.navigator.pop().
-
-initial: home
-
-routes:
-  home: homePage
-  waitlist: {bottomSheet: waitlistSheet}

@@ -1,0 +1,28 @@
+# Ticker, how it works and ideas.
+HowItWorks:
+  container:
+    maxWidth: 1120
+    padding:
+      horizontal: 24
+      top: 128
+    child:
+      responsive:
+        breakpoint: 860
+        narrow:
+          column:
+            crossAxisAlignment: stretch
+            spacing: 40
+            children:
+            - HowHeading
+            - HowList
+        wide:
+          row:
+            crossAxisAlignment: start
+            spacing: 72
+            children:
+            - expanded:
+                flex: 10
+                child: HowHeading
+            - expanded:
+                flex: 13
+                child: HowList

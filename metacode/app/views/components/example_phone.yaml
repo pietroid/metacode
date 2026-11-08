@@ -1,0 +1,36 @@
+# Examples: a carousel of four working mini apps. Each slide embeds a
+# sub-app from apps/ (food, music, work, plants) with `app:`.
+ExamplePhone:
+  center:
+    container:
+      maxWidth: 400
+      color: surface
+      borderColor: line
+      radius: 28
+      padding: 12
+      child:
+        column:
+          crossAxisAlignment: stretch
+          spacing: 4
+          children:
+          - image:
+              src: exampleImage
+              height: 150
+              fit: cover
+              radius: 18
+          - padding:
+              horizontal: 8
+              top: 12
+              bottom: 4
+              child:
+                match:
+                  value: exampleKey
+                  cases:
+                    food:
+                      module: food
+                    music:
+                      module: music
+                    work:
+                      module: work
+                    plants:
+                      module: plants

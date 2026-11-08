@@ -6,40 +6,43 @@ A Flutter engine that runs an app described in YAML plus small Dart functions.
 
 | Path | What |
 |---|---|
-| `metacode/` | **The root app** (the my-own.app website). An app is a folder: `app.yaml`, `models/`, `state/`, `ui/`, `navigation/` (routes), `style/` (design tokens), `actions/`, `relations/`, `test/`, and **sub-apps** in `apps/<name>/` with the same layout (recursive). Every `.yaml` in a folder is merged, so folders can be split (`ui/hero.yaml`...). |
-| `metacode/apps/` | Sub-apps: `food`, `music`, `work`, `plants` (the carousel examples), embedded with the `app: <name>` widget. Each has its own state, actions and relations. |
-| `*/generated/` | Output of the tool, per app. Never edit. The root's `generated/bundle.json` is the whole tree; the engine loads only that. |
-| `tool/metacode.dart` | CLI: validate + generate. `tool/reference.dart`: writes REFERENCE.md. `tool/src/`: `project.dart` (app folders, merging, recursion), `models.dart` (models/state), `functions.dart` (action/relation signatures, via analyzer), `ui.dart` (ui/), `codegen.dart` (generated files) |
+| `metacode/` | **The root app** (the my-own.app website). An app is a folder: `app.yaml`, `app/actions/`, `app/models/` (+ `sample.dart` for tests), `app/views/` (`navigation.yaml`, `pages/`, `components/`, `style/` + `style/images/`, `values/`, `labels/en.yaml`), and **modules** in `modules/<name>/` with the same layout (recursive). Every `.yaml` file contains exactly one top-level key, named after the file; files are not merged. Tests live in the file they test: a `main()` below the action or value. Naming: files `this_case.dart`/`this_case.yaml`, keys and functions `thisCase`, pages and components `ThisCase`. |
+| `metacode/modules/` | Modules: `food`, `music`, `work`, `plants` (the carousel examples), embedded with the `module: <name>` widget. Each has its own state, actions and values. |
+| `*/.generated/` | Output of the tool, per app. Never edit. The root's `.generated/bundle.json` is the whole tree; the engine loads only that. |
+| `tool/metacode.dart` | CLI: validate + generate. `tool/reference.dart`: writes REFERENCE.md. `tool/src/`: `project.dart` (app folders, merging, recursion), `models.dart` (app/models/state), `functions.dart` (action/value signatures, via analyzer), `ui.dart` (app/views/ widgets), `codegen.dart` (generated files) |
 | `packages/app_ui/` | **UI catalog.** `lib/spec.dart` (pure-Dart contract the tool validates against), `lib/style.dart` (style tokens + the default Metacode style, pure Dart), `lib/src/theme.dart` (tokens -> ThemeData + `MetacodeTokens`), `lib/src/widgets/*.dart` (one builder each), `lib/src/registry.dart`, `lib/src/parsers.dart`, `fonts/` (bundled type) |
-| `lib/engine/` | Runtime: `app.dart` (MetacodeApp), `app_runtime.dart` (one running app: state, program, renderer, host; creates sub-apps), `program.dart` (loads bytecode, calls actions/relations), `host.dart` + `host_plugin.dart` (bridge from interpreted code to the engine), `core_host.dart` (emit, http, Navigator), `navigation.dart` (navigation/, pure Dart), `ui_renderer.dart` (resolves nodes, caches relation values per state, implements `Ui`), `state_bloc.dart` (state + persistence, per app), `project_config.dart` (loads `bundle.json`) |
+| `lib/engine/` | Runtime: `app.dart` (MetacodeApp), `app_runtime.dart` (one running app: state, program, renderer, host; creates modules), `program.dart` (loads bytecode, calls actions/values), `host.dart` + `host_plugin.dart` (bridge from interpreted code to the engine), `core_host.dart` (emit, http, Navigator), `navigation.dart` (navigation/, pure Dart), `ui_renderer.dart` (resolves nodes, resolves labels, caches values per state, implements `Ui`), `state_bloc.dart` (state + persistence, per app), `project_config.dart` (loads `bundle.json`) |
 | `test/` | Engine tests (renders the bundle and taps) |
 
 ## Flow
 
 ```
-per app (root and each apps/<name>/):
-models/ ──────────┐
-state/ ───────────┼─ tool/metacode.dart ─> generated/state.dart     (typed State, StateDelta, models, enums)
-actions/ ─────────┤   (validate all)       generated/core.dart      (Core: api + navigator, Routes)
-relations/ ───────┤                        generated/main.dart      (JSON bridge, engine-facing)
-ui/ ──────────────┤                        generated/program.evc    (dart_eval bytecode)
-navigation/ ──────┤                        generated/test_app.dart  (typed test harness, fake host)
-style/ ───────────┘
-root only:                                 generated/bundle.json    (the whole tree: ui, state, routes, style, bytecode)
+per app (root and each modules/<name>/):
+app.yaml (state:) ──────────┐
+app/models/ ────────────────┤
+app/actions/ ───────────────┤
+app/views/values/ ──────────┼─ tool/metacode.dart ─> .generated/state.dart     (typed State, StateDelta, models, enums)
+app/views/labels/ ──────────┤   (validate all)       .generated/core.dart      (Core: api + navigator, Routes)
+app/views/pages|components ─┤                        .generated/labels.dart    (Labels: app/views/labels/ as getters)
+app/views/navigation.yaml ──┤                        .generated/main.dart      (JSON bridge, engine-facing)
+app/views/style/ (+images/) ┤                        .generated/program.evc    (dart_eval bytecode)
+main() in each file (tests, host)                    .generated/test_app.dart  (typed test harness, fake host)
+root only:                                           .generated/bundle.json    (the whole tree: ui, state, routes, labels, style, bytecode)
 
-Engine: state (Map) ─> relation ─> app_ui widget ─> tap ─> action(state, emit, core)
-        ─> emit(StateDelta) ─> merged into that app's state ─> its state.yaml
+Engine: state (Map) ─> value / label ─> app_ui widget ─> tap ─> action(state, emit, core)
+        ─> emit(StateDelta) ─> merged into that app's state ─> .state/state.yaml
         core.api / core.navigator ─> hostCall ─> CoreHost (http, Navigator: pages, sheets, dialogs)
-        `app: food` ─> AppRuntime for apps/food (own StateBloc, program, renderer); its changes rebuild only it
+        `module: food` ─> AppRuntime for modules/food (own StateBloc, program, renderer); its changes rebuild only it
 ```
 
-- Actions: `Future<void> name(State state, [void Function(StateDelta) emit], [Core core], [int index], [T value])`; params after State match by name. State changes only via `emit`.
-- Relations (formerly bindings): `T name(State state, [int index])`, return a primitive, model, enum or List of those. Internally (spec `PropKind.binding`, `Ui.binding`, manifest `bindings`) the old name stays.
+- Actions: `Future<void> name(State state, [void Function(StateDelta) emit], [Core core], [Labels labels], [int index], [T value])`; params after State match by name. State changes only via `emit`.
+- Values (formerly relations/bindings): `T name(State state, [Labels labels], [int index])`, return a primitive, model, enum or List of those. Internally (spec `PropKind.binding`, `Ui.binding`, manifest `bindings`) the old name stays.
+- Labels: `app/views/labels/<language>.yaml` (`en:` then `key: text`), pure strings. Widgets reference labels and values the same way, by key (`text: joinTitle`); values join labels with state.
 - User code runs in dart_eval. The tool bundles each app's files into one library before compiling; apps don't share code.
 
 ## Commands (never launch the app to verify)
 
-- `tool/check.sh`: app loop (generate, analyze `metacode/`, every app's `test/`). About 15s.
+- `tool/check.sh`: app loop (generate, analyze `metacode/`, the tests in each action and value file's `main()`). About 15s.
 - `tool/check_engine.sh`: everything (generate, analyze all, all tests).
 
 ## Reference

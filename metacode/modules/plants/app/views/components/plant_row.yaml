@@ -1,0 +1,32 @@
+# Plant watering. Embedded in the landing page's examples carousel
+# (`module: plants`).
+PlantRow:
+  padding:
+    vertical: 2
+    child:
+      row:
+        spacing: 8
+        children:
+        - expanded:
+            column:
+              crossAxisAlignment: start
+              children:
+              - text:
+                  value: plantName
+                  style:
+                    variant: titleSmall
+              - text:
+                  value: plantSchedule
+                  style:
+                    variant: bodySmall
+                    color: ink3
+        - text:
+            value: plantStatus
+            style:
+              variant: labelMedium
+              color: ink2
+        - iconButton:
+            icon: drop
+            tooltip: watered
+            color: primary
+            onPressed: waterPlant

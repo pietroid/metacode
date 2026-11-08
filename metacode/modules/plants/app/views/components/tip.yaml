@@ -1,0 +1,21 @@
+# Plant watering. Embedded in the landing page's examples carousel
+# (`module: plants`).
+Tip:
+  container:
+    color: fill
+    radius: 12
+    padding: 12
+    child:
+      row:
+        spacing: 10
+        crossAxisAlignment: start
+        children:
+        - icon:
+            name: sparkle
+            size: 18
+            color: primary
+        - expanded:
+            text:
+              value: plantTip
+              style:
+                variant: bodySmall

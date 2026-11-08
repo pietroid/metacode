@@ -9,11 +9,11 @@ import 'state_bloc.dart';
 import 'ui_renderer.dart';
 
 /// One running app: its state, program, renderer and host. Apps are
-/// recursive: an `app: <name>` widget embeds the sub-app `apps/<name>/`,
+/// recursive: an `module: <name>` widget embeds the module `modules/<name>/`,
 /// which gets its own [AppRuntime] (created on first use) with its own
-/// state, so a change in a sub-app only rebuilds that sub-app.
+/// state, so a change in a module only rebuilds that module.
 ///
-/// All apps share one [navigatorKey]: a sub-app's routes open on top of
+/// All apps share one [navigatorKey]: a module's routes open on top of
 /// the whole app.
 class AppRuntime {
   final ProjectConfig config;
@@ -24,6 +24,7 @@ class AppRuntime {
   late final UiRenderer renderer = UiRenderer(
     ui: config.ui,
     program: config.program,
+    labels: config.labels,
     bloc: bloc,
     embed: embed,
   );
@@ -54,11 +55,11 @@ class AppRuntime {
   /// The initial route's widget.
   Widget get home => render(config.navigation.initialRoute.widget);
 
-  /// The sub-app [name], themed by its own style/ if it has one.
+  /// The module [name], themed by its own style/ if it has one.
   Widget embed(String name) {
     final child = _child(name);
     if (child == null) {
-      return Text('Unknown app "$name"',
+      return Text('Unknown module "$name"',
           style: const TextStyle(color: Colors.red));
     }
     final home = child.home;
@@ -75,7 +76,7 @@ class AppRuntime {
   AppRuntime? _child(String name) {
     final existing = _children[name];
     if (existing != null) return existing;
-    final config = this.config.apps[name];
+    final config = this.config.modules[name];
     if (config == null) return null;
     return _children[name] = AppRuntime(
       config: config,
@@ -85,7 +86,7 @@ class AppRuntime {
     );
   }
 
-  /// Closes the sub-apps' state (this app's bloc belongs to whoever made it).
+  /// Closes the modules' state (this app's bloc belongs to whoever made it).
   void dispose() {
     for (final child in _children.values) {
       child.dispose();

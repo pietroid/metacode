@@ -9,10 +9,10 @@ import 'navigation.dart';
 import 'program.dart';
 
 /// In-memory representation of a Metacode app and, recursively, its
-/// sub-apps (`apps/<name>/`).
+/// modules (`modules/<name>/`).
 ///
 /// Everything here is produced or validated by `dart run tool/metacode.dart`,
-/// which writes the whole tree to `metacode/generated/bundle.json`.
+/// which writes the whole tree to `metacode/.generated/bundle.json`.
 class ProjectConfig {
   final String projectName;
   final String description;
@@ -20,18 +20,21 @@ class ProjectConfig {
   final Map<String, dynamic> initialState;
   final MetacodeProgram program;
 
-  /// navigation/ (validated by the tool), or a single `homePage`.
+  /// app/views/labels/ in the current language: key -> text.
+  final Map<String, String> labels;
+
+  /// app/views/navigation.yaml (validated by the tool), or a single `MainPage`.
   final Navigation navigation;
 
   /// style/ merged over the Metacode style (see app_ui's style.dart).
   final Map<String, dynamic> style;
 
-  /// Whether the app has its own style/. Sub-apps without one inherit the
+  /// Whether the app has its own style/. Modules without one inherit the
   /// theme of the app that embeds them.
   final bool hasOwnStyle;
 
-  /// Sub-apps by folder name, embedded with the `app:` widget.
-  final Map<String, ProjectConfig> apps;
+  /// Modules by folder name, embedded with the `module:` widget.
+  final Map<String, ProjectConfig> modules;
 
   ProjectConfig({
     required this.projectName,
@@ -39,15 +42,16 @@ class ProjectConfig {
     required this.ui,
     required this.initialState,
     required this.program,
+    this.labels = const {},
     Map<String, dynamic>? style,
     Navigation? navigation,
-    this.apps = const {},
+    this.modules = const {},
   })  : style = style ?? resolveStyle(null),
         hasOwnStyle = style != null,
         navigation = navigation ?? Navigation.fallback;
 
   /// The engine's only project asset.
-  static const bundleAsset = 'metacode/generated/bundle.json';
+  static const bundleAsset = 'metacode/.generated/bundle.json';
 
   static Future<ProjectConfig> load() async => ProjectConfig.fromBundle(
       jsonDecode(await rootBundle.loadString(bundleAsset)) as Map);
@@ -64,14 +68,24 @@ class ProjectConfig {
       ui: Map<String, dynamic>.from(json['ui'] as Map),
       initialState: Map<String, dynamic>.from(json['state'] as Map? ?? {}),
       program: MetacodeProgram(ByteData.sublistView(bytecode), manifest),
+      labels: _labels(json['labels'], json['language']),
       style: style == null ? null : resolveStyle(style),
       navigation: navigation == null ? null : Navigation.parse(navigation),
-      apps: {
-        for (final e in ((json['apps'] as Map?) ?? {}).entries)
+      modules: {
+        for (final e in ((json['modules'] as Map?) ?? {}).entries)
           e.key.toString(): ProjectConfig.fromBundle(e.value as Map),
       },
     );
   }
+}
+
+/// The labels of [language] (the default one), over nothing else yet.
+Map<String, String> _labels(dynamic labels, dynamic language) {
+  if (labels is! Map || labels[language] is! Map) return const {};
+  return {
+    for (final e in (labels[language] as Map).entries)
+      e.key.toString(): e.value.toString(),
+  };
 }
 
 /// Converts parsed YAML nodes into plain Dart maps and lists.

@@ -1,0 +1,22 @@
+name: work
+description: Help me keep track of my freelance jobs. Who paid, who still owes you,
+  and how much to put aside for taxes.
+state:
+  jobs:
+  - client: Lia's Bakery
+    task: Logo and menu board
+    amount: 800
+    paid: true
+  - client: Dr. Ana Costa
+    task: Website updates
+    amount: 450
+    paid: true
+  - client: Orbit Gym
+    task: Social posts for October
+    amount: 300
+    paid: true
+  - client: Café Lumen
+    task: Menu redesign
+    amount: 600
+    paid: false
+  taxRate: 10

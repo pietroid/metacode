@@ -1,0 +1,51 @@
+# Hero: title, the live "make my app" demo and the idea chips.
+TryCard:
+  container:
+    maxWidth: 760
+    color: surface
+    borderColor: line
+    radius: 20
+    child:
+      column:
+        crossAxisAlignment: stretch
+        children:
+        - padding:
+            left: 24
+            right: 16
+            top: 24
+            bottom: 20
+            child:
+              column:
+                crossAxisAlignment: stretch
+                spacing: 14
+                children:
+                - text:
+                    value: whatWouldMakeYour
+                    style:
+                      variant: labelMedium
+                      color: ink3
+                - textField:
+                    value: ideaValue
+                    hint: remindMeToWater
+                    onChanged: updateIdea
+                    onSubmitted: makeApp
+                - filledButton:
+                    text: makeButtonText
+                    onPressed: makeApp
+        - divider:
+            height: 1
+        - padding:
+            horizontal: 24
+            vertical: 24
+            child:
+              column:
+                crossAxisAlignment: stretch
+                spacing: 18
+                children:
+                - Step1
+                - Step2
+                - Step3
+                - Step4
+        - if:
+            condition: buildReady
+            then: ReadyBar

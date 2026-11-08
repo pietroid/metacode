@@ -1,0 +1,13 @@
+# The app's text in English. Pure strings: values in
+# view/values/ join them with the state (they take `Labels labels`).
+en:
+  guitarBasics: Guitar basics
+  addFiveMinutes: '+5 min'
+  of: of
+  chordsLearned: chords learned
+  tipAllSix: 'You know all six. Next week: strumming patterns.'
+  tipFourChords: 'G, C, D and Em: those four chords play hundreds of pop songs. You can start one today.'
+  nextUp: 'Next up:'
+  tipPickChord: Pick a chord to start.
+  minTodayGoalReached: min today. Goal reached
+  ofTenMinToday: of 10 min today
