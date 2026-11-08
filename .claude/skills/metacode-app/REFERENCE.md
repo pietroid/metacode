@@ -34,7 +34,7 @@ Naming: files are `this_case.dart` / `this_case.yaml`; keys, functions, models a
 | `app/actions/*.dart` | `Future<void>` functions that change the state with `emit(StateDelta(...))`. One public action per file. |
 | `app/models/` | Models and enums, one per file. The reserved `state` model lives in `app/models/state.yaml`. |
 | `app/views/navigation.yaml` | `initial:` and `routes:` (pages, bottom sheets, dialogs) actions open with `core.navigator`. Optional. |
-| `app/views/pages/*.yaml` | What routes open (`MainPage:`, `WaitlistSheet:`). Without navigation.yaml, `MainPage` is the app. |
+| `app/views/pages/*.yaml` | What routes open (`MainPage:`, `WaitlistDialog:`). Without navigation.yaml, `MainPage` is the app. |
 | `app/views/components/*.yaml` | One widget per file (`Hero:`, `TaskList:`, ...). |
 | `app/views/style/` | Design tokens, one group per file: `theme`, `fonts`, `icons`, `colors`, `radius`, `spacing`, `sizes`, `typography`. Optional; a module without it inherits the theme. See `reference/style.md`. |
 | `app/views/style/images/` | Image assets. |

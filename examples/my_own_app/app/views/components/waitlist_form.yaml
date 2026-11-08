@@ -1,4 +1,4 @@
-# WaitlistForm: the waitlist sheet's form: idea summary, email field, error
+# WaitlistForm: the waitlist dialog's form: idea summary, email field, error
 # and join button.
 WaitlistForm:
   column:

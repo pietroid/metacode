@@ -62,7 +62,7 @@ void main() {
     ..writeln('| `app/actions/*.dart` | `Future<void>` functions that change the state with `emit(StateDelta(...))`. One public action per file. |')
     ..writeln('| `app/models/` | Models and enums, one per file. The reserved `state` model lives in `app/models/state.yaml`. |')
     ..writeln('| `app/views/navigation.yaml` | `initial:` and `routes:` (pages, bottom sheets, dialogs) actions open with `core.navigator`. Optional. |')
-    ..writeln('| `app/views/pages/*.yaml` | What routes open (`MainPage:`, `WaitlistSheet:`). Without navigation.yaml, `MainPage` is the app. |')
+    ..writeln('| `app/views/pages/*.yaml` | What routes open (`MainPage:`, `WaitlistDialog:`). Without navigation.yaml, `MainPage` is the app. |')
     ..writeln('| `app/views/components/*.yaml` | One widget per file (`Hero:`, `TaskList:`, ...). |')
     ..writeln('| `app/views/style/` | Design tokens, one group per file: `theme`, `fonts`, `icons`, `colors`, `radius`, `spacing`, `sizes`, `typography`. Optional; a module without it inherits the theme. See `reference/style.md`. |')
     ..writeln('| `app/views/style/images/` | Image assets. |')

@@ -1,14 +1,6 @@
-# HeroPhone: ExamplePhone on a soft rounded backdrop, for wide screens.
+# HeroPhone: ExamplePhone, centered in a 420-wide column, for wide screens.
 HeroPhone:
   sizedBox:
     width: 420
     child:
-      stack:
-        alignment: center
-        children:
-        - container:
-            width: 420
-            height: 620
-            radius: 48
-            color: fill
-        - ExamplePhone
+      center: ExamplePhone

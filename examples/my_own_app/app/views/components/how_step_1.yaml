@@ -1,4 +1,5 @@
-# HowStep1: how it works, step 1: "Tell your problem", over a little chat.
+# HowStep1: how it works, step 1: "Tell your problem", over a little chat
+# (the bubbles wrap, keeping a 40px gap on the open side).
 HowStep1:
   container:
     color: surface
@@ -20,10 +21,12 @@ HowStep1:
                 crossAxisAlignment: stretch
                 spacing: 10
                 children:
-                - row:
+                - column:
+                    crossAxisAlignment: end
                     children:
-                    - spacer: {}
                     - container:
+                        margin:
+                          left: 40
                         color: primary
                         radius: 16
                         padding:
@@ -35,9 +38,12 @@ HowStep1:
                             style:
                               variant: bodySmall
                               color: white
-                - row:
+                - column:
+                    crossAxisAlignment: start
                     children:
                     - container:
+                        margin:
+                          right: 40
                         color: surface
                         radius: 16
                         padding:
@@ -48,7 +54,6 @@ HowStep1:
                             value: chatApp
                             style:
                               variant: bodySmall
-                    - spacer: {}
         - padding:
             left: 24
             right: 24

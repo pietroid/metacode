@@ -1,4 +1,4 @@
-// ideaSummary: A shortened version of the current idea for the waitlist sheet.
+// ideaSummary: A shortened version of the current idea for the waitlist dialog.
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../.generated/labels.dart';

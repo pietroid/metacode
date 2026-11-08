@@ -55,6 +55,7 @@ void main() {
     Brightness brightness = Brightness.dark,
     Map<String, dynamic>? style,
     bool selectableText = false,
+    String? waitlistAs,
   }) async {
     tester.view.physicalSize = size * 3;
     tester.view.devicePixelRatio = 3;
@@ -70,6 +71,16 @@ void main() {
       ...bundle,
       'state': state,
       'style': ?style,
+      // The bundle opens `waitlist` as a dialog; tests also open it as the
+      // other route types, so each one is covered.
+      if (waitlistAs != null)
+        'navigation': {
+          ...bundle['navigation'] as Map,
+          'routes': {
+            ...(bundle['navigation'] as Map)['routes'] as Map,
+            'waitlist': {waitlistAs: 'WaitlistDialog'},
+          },
+        },
     });
     final bloc = StateBloc(config: config, initial: state);
     await tester.pumpWidget(BlocProvider.value(
@@ -94,6 +105,14 @@ void main() {
         'waitlistStatus': 'idle',
         'waitlistCount': 1284,
       };
+
+  /// Taps "Make my app" in the studio, below the hero.
+  Future<void> tapMake(WidgetTester tester) async {
+    final make = find.text('Make my app');
+    await tester.ensureVisible(make);
+    await tester.pumpAndSettle();
+    await tester.tap(make);
+  }
 
   testWidgets('a new bundle replaces the running app and keeps the state',
       (tester) async {
@@ -125,7 +144,7 @@ void main() {
     expect(bloc.state['addedField'], 7);
 
     // Actions run on the new version.
-    await tester.tap(find.text('Make my app'));
+    await tapMake(tester);
     await tester.pump();
     expect(bloc.state['buildStep'], 1);
     for (var i = 0; i < 4; i++) {
@@ -167,9 +186,9 @@ void main() {
     final bloc = await pump(tester, state());
     expect(find.text('MY OWN APP'), findsWidgets);
     expect(find.text('Designing your screens'), findsOneWidget);
-    expect(find.text('Your app is ready  in 2 minutes', findRichText: true), findsNothing);
+    expect(find.text('Keep my app'), findsNothing);
 
-    await tester.tap(find.text('Make my app'));
+    await tapMake(tester);
     await tester.pump();
     expect(bloc.state['buildStep'], 1);
     for (var i = 0; i < 4; i++) {
@@ -177,17 +196,18 @@ void main() {
     }
     await tester.pumpAndSettle();
     expect(bloc.state['buildStep'], 5);
-    expect(find.text('Your app is ready  in 2 minutes', findRichText: true), findsOneWidget);
+    expect(find.text('Keep my app'), findsOneWidget);
     expect(find.text('Make it again'), findsOneWidget);
   });
 
   testWidgets('hero: an idea chip fills the idea and builds', (tester) async {
     final bloc = await pump(tester, state());
-    await tester.ensureVisible(find.text('Keep my book list'));
+    await tester.ensureVisible(find.text('Track my daily habits'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Keep my book list'));
+    await tester.tap(find.text('Track my daily habits'));
     await tester.pump();
-    expect(bloc.state['idea'], 'Keep my book list');
+    expect(bloc.state['idea'], 'Track my daily habits');
+    expect(bloc.state['appKind'], 'habits');
     for (var i = 0; i < 4; i++) {
       await tester.pump(const Duration(milliseconds: 700));
     }
@@ -216,40 +236,56 @@ void main() {
     expect(find.text('1,285 people are already on the list'), findsOneWidget);
   });
 
-  testWidgets('waitlist: the app bar button opens a sheet', (tester) async {
-    await pump(tester, state());
-    await tester.tap(find.descendant(of: find.byType(AppBar), matching: find.text('Join waitlist')));
-    await tester.pumpAndSettle();
-    expect(find.byType(BottomSheet), findsOneWidget);
-    expect(find.text('Get early access'), findsOneWidget);
-    await tester.tap(find.text('Not now'));
-    await tester.pumpAndSettle();
-    expect(find.byType(BottomSheet), findsNothing);
-  });
-
-  testWidgets('web/desktop: text is selectable, clicks still click (sheets too)',
+  testWidgets('waitlist: the dialog is 420 wide on desktop, inset on a phone',
       (tester) async {
-    final bloc = await pump(tester, state(), selectableText: true);
-    expect(find.byType(SelectionArea), findsOneWidget);
-    // Plain text is in the selection; a button's label is not, and shows a
-    // pointer.
-    Finder clickableOf(Finder f) =>
-        find.ancestor(of: f, matching: find.byType(Clickable));
-    expect(clickableOf(find.text('Make my app')), findsOneWidget);
-    expect(clickableOf(find.text('Designing your screens')), findsNothing);
-
-    await tester.tap(find.text('Make my app'));
-    await tester.pump();
-    expect(bloc.state['buildStep'], 1);
-
-    await tester.tap(find.descendant(
-        of: find.byType(AppBar), matching: find.text('Join waitlist')));
-    await tester.pumpAndSettle();
-    expect(find.byType(BottomSheet), findsOneWidget);
-    await tester.tap(find.text('Not now'));
-    await tester.pumpAndSettle();
-    expect(find.byType(BottomSheet), findsNothing);
+    for (final (size, width) in [(const Size(1440, 900), 420.0), (const Size(390, 844), 310.0)]) {
+      await pump(tester, state(), size: size);
+      await tester.tap(find.descendant(of: find.byType(AppBar), matching: find.text('Join waitlist')));
+      await tester.pumpAndSettle();
+      final material = find.descendant(of: find.byType(Dialog), matching: find.byType(Material)).first;
+      expect(tester.getSize(material).width, width, reason: '$size');
+      await tester.tap(find.text('Not now'));
+      await tester.pumpAndSettle();
+    }
   });
+
+  for (final (type, widget) in [('dialog', Dialog), ('bottomSheet', BottomSheet)]) {
+    testWidgets('waitlist: the app bar button opens it as a $type', (tester) async {
+      await pump(tester, state(), waitlistAs: type);
+      await tester.tap(find.descendant(of: find.byType(AppBar), matching: find.text('Join waitlist')));
+      await tester.pumpAndSettle();
+      expect(find.byType(widget), findsOneWidget);
+      expect(find.descendant(of: find.byType(widget), matching: find.text('Get early access')),
+          findsOneWidget);
+      await tester.tap(find.text('Not now'));
+      await tester.pumpAndSettle();
+      expect(find.byType(widget), findsNothing);
+    });
+
+    testWidgets('web/desktop: text is selectable, clicks still click (${type}s too)',
+        (tester) async {
+      final bloc = await pump(tester, state(), selectableText: true, waitlistAs: type);
+      expect(find.byType(SelectionArea), findsOneWidget);
+      // Plain text is in the selection; a button's label is not, and shows a
+      // pointer.
+      Finder clickableOf(Finder f) =>
+          find.ancestor(of: f, matching: find.byType(Clickable));
+      expect(clickableOf(find.text('Make my app')), findsOneWidget);
+      expect(clickableOf(find.text('Designing your screens')), findsNothing);
+
+      await tapMake(tester);
+      await tester.pump();
+      expect(bloc.state['buildStep'], 1);
+
+      await tester.tap(find.descendant(
+          of: find.byType(AppBar), matching: find.text('Join waitlist')));
+      await tester.pumpAndSettle();
+      expect(find.byType(widget), findsOneWidget);
+      await tester.tap(find.text('Not now'));
+      await tester.pumpAndSettle();
+      expect(find.byType(widget), findsNothing);
+    });
+  }
 
   testWidgets('phone and desktop layouts render without overflow', (tester) async {
     for (final size in [const Size(360, 780), const Size(390, 844), const Size(820, 1180), const Size(1440, 900)]) {

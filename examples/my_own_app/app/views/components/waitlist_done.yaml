@@ -1,5 +1,5 @@
 # WaitlistDone: the waitlist confirmation: "You're on the list" and a Done
-# button that closes the sheet.
+# button that closes the dialog.
 WaitlistDone:
   column:
     crossAxisAlignment: stretch

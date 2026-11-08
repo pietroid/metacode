@@ -1,0 +1,14 @@
+# WaitlistDialog: the `waitlist` dialog route, 420 wide (narrower on a phone,
+# where the dialog keeps its margins). Shows WaitlistForm, or WaitlistDone
+# once joined.
+WaitlistDialog:
+  sizedBox:
+    width: 420
+    child:
+      padding:
+        all: 24
+        child:
+          if:
+            condition: waitlistJoined
+            then: WaitlistDone
+            else: WaitlistForm

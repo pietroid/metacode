@@ -4,4 +4,4 @@
 initial: home
 routes:
   home: MainPage
-  waitlist: {bottomSheet: WaitlistSheet}
+  waitlist: {dialog: WaitlistDialog}
