@@ -1,12 +1,17 @@
 # Logo: the app bar logo: the full My Own App logo (the mark and the
 # wordmark). Where the app bar is too narrow for it (a phone, with the
-# LanguagePicker and the join button), just the mark.
+# LanguagePicker and the join button), just the mark. Padded in from
+# the top and the left edge.
 Logo:
-  responsive:
-    breakpoint: 150
-    narrow: LogoMark
-    wide:
-      image:
-        src: examples/my_own_app/app/views/style/images/my_own_app_logo.svg
-        width: 139
-        height: 48
+  padding:
+    top: 8
+    left: 16
+    child:
+      responsive:
+        breakpoint: 150
+        narrow: LogoMark
+        wide:
+          image:
+            src: examples/my_own_app/app/views/style/images/my_own_app_logo.svg
+            width: 139
+            height: 48
