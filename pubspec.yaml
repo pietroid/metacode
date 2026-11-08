@@ -38,6 +38,9 @@ dependencies:
   path_provider: ^2.1.5
   collection: ^1.19.1
   http: ^1.6.0
+  # The compiler runs inside the app too (lib/compiler, on lib/files).
+  analyzer: ^8.4.1
+  web: ^1.1.1
   app_ui:
     path: packages/app_ui
 
@@ -52,7 +55,6 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
-  analyzer: ^8.4.1
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -68,8 +70,10 @@ flutter:
   # The tool writes the whole app tree (every app's config, initial state
   # and bytecode, modules included) to one file, so adding an app needs no
   # change here. Images live in examples/my_own_app/app/views/style/images/.
+  # files.json is the project's text files: the web's default project.
   assets:
     - examples/my_own_app/.generated/bundle.json
+    - examples/my_own_app/.generated/files.json
     - examples/my_own_app/app/views/style/images/
 
   # An image asset can refer to one or more resolution-specific "variants", see

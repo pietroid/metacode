@@ -54,6 +54,7 @@ void main() {
     Size size = const Size(390, 844),
     Brightness brightness = Brightness.dark,
     Map<String, dynamic>? style,
+    bool selectableText = false,
   }) async {
     tester.view.physicalSize = size * 3;
     tester.view.devicePixelRatio = 3;
@@ -77,6 +78,7 @@ void main() {
         config: config,
         client: client,
         themeMode: brightness == Brightness.dark ? ThemeMode.dark : ThemeMode.light,
+        selectableText: selectableText,
       ),
     ));
     return bloc;
@@ -192,6 +194,30 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(BottomSheet), findsOneWidget);
     expect(find.text('Get early access'), findsOneWidget);
+    await tester.tap(find.text('Not now'));
+    await tester.pumpAndSettle();
+    expect(find.byType(BottomSheet), findsNothing);
+  });
+
+  testWidgets('web/desktop: text is selectable, clicks still click (sheets too)',
+      (tester) async {
+    final bloc = await pump(tester, state(), selectableText: true);
+    expect(find.byType(SelectionArea), findsOneWidget);
+    // Plain text is in the selection; a button's label is not, and shows a
+    // pointer.
+    Finder clickableOf(Finder f) =>
+        find.ancestor(of: f, matching: find.byType(Clickable));
+    expect(clickableOf(find.text('Make my app')), findsOneWidget);
+    expect(clickableOf(find.text('Designing your screens')), findsNothing);
+
+    await tester.tap(find.text('Make my app'));
+    await tester.pump();
+    expect(bloc.state['buildStep'], 1);
+
+    await tester.tap(find.descendant(
+        of: find.byType(AppBar), matching: find.text('Join waitlist')));
+    await tester.pumpAndSettle();
+    expect(find.byType(BottomSheet), findsOneWidget);
     await tester.tap(find.text('Not now'));
     await tester.pumpAndSettle();
     expect(find.byType(BottomSheet), findsNothing);

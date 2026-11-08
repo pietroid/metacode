@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/widgets.dart';
 
 /// Everything a widget builder needs from the engine.
@@ -35,6 +37,12 @@ abstract class Ui {
   /// A [Ui] whose bindings and actions also receive [params]
   /// (e.g. `{'index': i}` for list items).
   Ui withParams(Map<String, dynamic> params);
+
+  /// The bytes of the app file [path] (`examples/my_own_app/app/views/
+  /// style/images/logo.svg`) when the engine runs from the project's files,
+  /// so an edited image shows without rebuilding the app; null otherwise
+  /// (then it is a bundled asset).
+  Uint8List? file(String path);
 }
 
 /// Builds one catalog widget from its properties.

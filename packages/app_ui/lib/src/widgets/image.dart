@@ -14,21 +14,32 @@ Widget buildImage(Ui ui, Map<String, dynamic> p) {
 
   final network = src.startsWith('http');
   final svg = Uri.tryParse(src)?.path.toLowerCase().endsWith('.svg') ?? false;
+  // An app file from the project's files (live), else a bundled asset.
+  final bytes = network ? null : ui.file(src);
   final Widget image;
   if (svg) {
+    final svgFit = fit ?? BoxFit.contain;
     image = network
         ? SvgPicture.network(src,
-            width: width, height: height, fit: fit ?? BoxFit.contain,
-            errorBuilder: fallback)
-        : SvgPicture.asset(src,
-            width: width, height: height, fit: fit ?? BoxFit.contain,
-            errorBuilder: fallback);
+            width: width, height: height, fit: svgFit, errorBuilder: fallback)
+        : bytes != null
+            ? SvgPicture.memory(bytes,
+                width: width, height: height, fit: svgFit,
+                errorBuilder: fallback)
+            : SvgPicture.asset(src,
+                width: width, height: height, fit: svgFit,
+                errorBuilder: fallback);
   } else {
     image = network
         ? Image.network(src,
             width: width, height: height, fit: fit, errorBuilder: fallback)
-        : Image.asset(src,
-            width: width, height: height, fit: fit, errorBuilder: fallback);
+        : bytes != null
+            ? Image.memory(bytes,
+                width: width, height: height, fit: fit,
+                gaplessPlayback: true, errorBuilder: fallback)
+            : Image.asset(src,
+                width: width, height: height, fit: fit,
+                errorBuilder: fallback);
   }
 
   final radius = parseDouble(p['radius']);

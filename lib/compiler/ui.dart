@@ -1,6 +1,6 @@
 // Validates app/views/ (pages and components) against the widget catalog
 // (packages/app_ui/lib/spec.dart) and the app's names, and records what each
-// widget references for the index (tool/src/index.dart).
+// widget references for the index (lib/compiler/index.dart).
 
 import 'package:app_ui/spec.dart';
 

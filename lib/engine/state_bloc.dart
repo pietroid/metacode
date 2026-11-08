@@ -1,89 +1,69 @@
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:yaml/yaml.dart';
 
 import 'project_config.dart';
+import 'state_store.dart';
 
 /// The state of one app (each module has its own), persisted as YAML.
 ///
-/// [initialize] loads `.state/state.yaml` from the app documents folder
-/// (`<projectName>/.state/state.yaml`, and
-/// `<projectName>/modules/<name>/.state/state.yaml` for modules), starting from
-/// the bundled initial state when there is none, and the file is written back
-/// on every change.
+/// [initialize] loads the app's `state.yaml` from [store] (see
+/// state_store.dart: next to the sources when running from the project's
+/// files, the documents folder otherwise), starting from the bundled
+/// initial state when there is none, and it is written back on every
+/// change. Without a store the state lives in memory.
 class StateBloc extends Cubit<Map<String, dynamic>> {
   ProjectConfig _config;
 
   /// The app version this state belongs to (see [reconfigure]).
   ProjectConfig get config => _config;
 
-  /// Folders under the documents folder: `[metacode]`,
-  /// `[metacode, modules, food]`.
-  final List<String> path;
-  File? _stateFile;
+  /// Where the state is saved; null keeps it in memory.
+  final StateStore? store;
+
+  /// The app's module folders: `[]` for the root, `[food]` for
+  /// `modules/food/`.
+  final List<String> app;
+
+  bool _persistent = false;
 
   StateBloc({
-    required ProjectConfig config,
+    required this._config,
     Map<String, dynamic>? initial,
-    List<String>? path,
-  })  : _config = config,
-        path = path ?? [config.projectName],
-        super(initial ?? {});
+    this.store,
+    this.app = const [],
+  }) : super(initial ?? {});
 
-  /// When set (via `--dart-define=METACODE_STATE_PATH=...`), the root app's
-  /// state is read from and written to this file directly, e.g. the
-  /// project's own `examples/my_own_app/.state/state.yaml` during development.
-  static const _overridePath = String.fromEnvironment('METACODE_STATE_PATH');
+  /// Whether changes are saved (after [initialize]).
+  bool get persistent => _persistent;
 
-  /// Whether changes are written to disk (after [initialize]).
-  bool get persistent => _stateFile != null;
-
-  /// The state of the module [name], persisted next to this one when this
-  /// one is.
+  /// The state of the module [name], saved next to this one when this one
+  /// is.
   StateBloc child(String name, ProjectConfig config) {
     final bloc = StateBloc(
       config: config,
       initial: Map<String, dynamic>.from(config.initialState),
-      path: [...path, 'modules', name],
+      store: store,
+      app: [...app, name],
     );
     if (persistent) bloc.initialize();
     return bloc;
   }
 
   Future<void> initialize() async {
-    if (_overridePath.isNotEmpty && path.length == 1) {
-      _stateFile = File(_overridePath);
-      if (_stateFile!.existsSync()) {
-        await _load();
-        return;
-      }
-    }
-
-    final dir = await getApplicationDocumentsDirectory();
-    final folder = Directory([dir.path, ...path, '.state'].join('/'));
-    if (!folder.existsSync()) {
-      folder.createSync(recursive: true);
-    }
-    _stateFile = File('${folder.path}/state.yaml');
-
-    if (_stateFile!.existsSync()) {
-      await _load();
+    final store = this.store;
+    if (store == null) return;
+    _persistent = true;
+    final saved = await store.read(app);
+    if (saved != null) {
+      final doc = loadYaml(saved);
+      emit(_overInitial(doc is Map ? yamlToDart(doc['state']) : null));
     } else {
       final initial = Map<String, dynamic>.from(config.initialState);
       emit(initial);
       await _writeState(initial);
     }
-  }
-
-  /// Saved values over the bundled initial state, so fields added since the
-  /// file was written get their initial value.
-  Future<void> _load() async {
-    final doc = loadYaml(await _stateFile!.readAsString());
-    final saved = doc is Map ? yamlToDart(doc['state']) : null;
-    emit(_overInitial(saved));
   }
 
   /// Moves this state to a new version of the app (a regenerated or
@@ -107,11 +87,9 @@ class StateBloc extends Cubit<Map<String, dynamic>> {
   }
 
   Future<void> _writeState(Map<String, dynamic> data) async {
-    if (_stateFile == null) return;
-    final yaml = _toYaml(data);
-    await _stateFile!.writeAsString('state:\n$yaml');
+    if (!_persistent) return;
+    await store!.write(app, 'state:\n${_toYaml(data)}');
   }
-
 
   String _toYaml(dynamic value, {int indent = 1}) {
     final prefix = '  ' * indent;

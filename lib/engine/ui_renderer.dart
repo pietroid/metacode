@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:app_ui/app_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -20,12 +22,17 @@ class UiRenderer {
   final StateBloc bloc;
   final Widget Function(String app) embed;
 
+  /// App files by repo-relative path, when running from the project's
+  /// files (see [ProjectConfig.readFile]).
+  final Uint8List? Function(String path)? readFile;
+
   UiRenderer({
     required Map<String, dynamic> ui,
     required this.program,
     this.labels = const {},
     required this.bloc,
     required this.embed,
+    this.readFile,
   }) : widgets = Map<String, dynamic>.from(ui['widgets'] ?? {});
 
   // Values are pure functions of (state, params), so their values are
@@ -144,9 +151,8 @@ class _EngineUi implements Ui {
 
   @override
   Widget widget(String type, Map<String, dynamic> props) {
-    final builder = widgetBuilders[type];
-    if (builder == null) return _error('No builder for "$type"');
-    return builder(this, props);
+    return buildCatalogWidget(this, type, props) ??
+        _error('No builder for "$type"');
   }
 
   @override
@@ -173,6 +179,9 @@ class _EngineUi implements Ui {
   @override
   ValueChanged<T>? actionWithValue<T>(dynamic name) =>
       _isAction(name) ? (T v) => _run(name as String, {'value': v}) : null;
+
+  @override
+  Uint8List? file(String path) => renderer.readFile?.call(path);
 
   @override
   Ui withParams(Map<String, dynamic> extra) =>

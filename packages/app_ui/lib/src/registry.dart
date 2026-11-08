@@ -1,3 +1,6 @@
+import 'package:flutter/widgets.dart';
+
+import 'clickable.dart';
 import 'ui.dart';
 import 'widgets/app_bar.dart';
 import 'widgets/avatar.dart';
@@ -95,3 +98,13 @@ const widgetBuilders = <String, UiWidgetBuilder>{
   'floatingActionButton': buildFloatingActionButton,
   'tappable': buildTappable,
 };
+
+/// Builds the catalog widget [type] (null when there is none); a clickable
+/// one (see [isClickable]) gets a pointer cursor and keeps its text out of
+/// the text selection ([Clickable]). Engines build every widget with this.
+Widget? buildCatalogWidget(Ui ui, String type, Map<String, dynamic> props) {
+  final builder = widgetBuilders[type];
+  if (builder == null) return null;
+  final widget = builder(ui, props);
+  return isClickable(ui, type, props) ? Clickable(child: widget) : widget;
+}

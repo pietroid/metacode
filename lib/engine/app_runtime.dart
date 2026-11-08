@@ -45,6 +45,7 @@ class AppRuntime extends ChangeNotifier {
       labels: config.labels,
       bloc: bloc,
       embed: embed,
+      readFile: config.readFile,
     );
     config.program.host = CoreHost(
       bloc: bloc,

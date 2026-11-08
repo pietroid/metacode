@@ -4,8 +4,8 @@
 // It lists the state, models, routes, every page and component, action and
 // value, each with its header comment (the first comment of its file), what
 // it uses and what uses it. Everything comes from data the tool already
-// validated: WidgetRefs (tool/src/ui.dart) and UserFunction touches
-// (tool/src/functions.dart). Names map to files by convention, so the index
+// validated: WidgetRefs (lib/compiler/ui.dart) and UserFunction touches
+// (lib/compiler/functions.dart). Names map to files by convention, so the index
 // names things, not paths.
 
 import 'dart:convert';

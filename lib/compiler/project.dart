@@ -1,10 +1,9 @@
 // Loads one app folder (and, recursively, its modules) into an [AppProject]:
 // reads every file, validates it, and keeps what codegen and the index need.
 
-import 'dart:io';
-
 import 'package:app_ui/style.dart';
 import 'package:metacode/engine/navigation.dart';
+import 'package:metacode/files/project_files.dart';
 import 'package:yaml/yaml.dart';
 
 import 'functions.dart';
@@ -40,7 +39,11 @@ import 'ui.dart';
 /// pages and components `ThisCase`. Files are not merged; names must not
 /// repeat across files.
 class AppProject {
-  final Directory dir;
+  /// The whole project's files (the root app's folder).
+  final ProjectFiles files;
+
+  /// This app's folder within [files]: `''` for the root, `modules/food`.
+  final String dir;
 
   /// Folder relative to the repo root: `examples/my_own_app`, `examples/my_own_app/modules/food`.
   final String path;
@@ -81,7 +84,10 @@ class AppProject {
   String? defaultLanguage;
   final Map<String, AppProject> modules = {};
 
-  AppProject(this.dir, this.path, this.name, this.prefix);
+  AppProject(this.files, this.dir, this.path, this.name, this.prefix);
+
+  /// [file] (relative to this app) within [files].
+  String at(String file) => dir.isEmpty ? file : '$dir/$file';
 
   /// The label keys every widget and value can use.
   Map<String, String> get defaultLabels => labels[defaultLanguage] ?? const {};
@@ -100,29 +106,32 @@ class AppProject {
 }
 
 /// Reads and validates the app in [dir] and, recursively, its modules.
-AppProject loadApp(Directory dir, String path, Issues root,
-    {String name = 'metacode', String prefix = ''}) {
-  final app = AppProject(dir, path, name, prefix);
+///
+/// [files] holds the root app's folder; [dir] is this app's folder in it
+/// (`''`, `modules/food`) and [path] the same folder relative to the repo
+/// (`examples/my_own_app`), for generated code and messages.
+AppProject loadApp(ProjectFiles files, String path, Issues root,
+    {String dir = '', String name = 'metacode', String prefix = ''}) {
+  final app = AppProject(files, dir, path, name, prefix);
   final issues = root.scoped(prefix);
 
   // Modules first: app/views/ checks `module:` names against them.
-  final modulesDir = Directory('${dir.path}/modules');
-  if (modulesDir.existsSync()) {
-    final children = modulesDir.listSync().whereType<Directory>().toList()
-      ..sort((a, b) => a.path.compareTo(b.path));
-    for (final child in children) {
-      final childName = child.uri.pathSegments.where((s) => s.isNotEmpty).last;
+  {
+    for (final childName in files.directories(app.at('modules'))) {
       if (!isValidName(childName)) {
         issues.error('modules/$childName/', '',
             'module folder name must be a valid identifier');
         continue;
       }
-      app.modules[childName] = loadApp(child, '$path/modules/$childName', root,
-          name: childName, prefix: '${prefix}modules/$childName/');
+      app.modules[childName] = loadApp(
+          files, '$path/modules/$childName', root,
+          dir: app.at('modules/$childName'),
+          name: childName,
+          prefix: '${prefix}modules/$childName/');
     }
   }
 
-  final appYaml = _readYaml(File('${dir.path}/app.yaml'), 'app.yaml', issues);
+  final appYaml = _readYaml(files, app.at('app.yaml'), 'app.yaml', issues);
   if (appYaml is Map) {
     app.title = appYaml['name']?.toString() ?? name;
     app.description = appYaml['description']?.toString() ?? '';
@@ -131,7 +140,7 @@ AppProject loadApp(Directory dir, String path, Issues root,
       app.state = Map<String, dynamic>.from(state);
     }
   } else {
-    if (!File('${dir.path}/app.yaml').existsSync()) {
+    if (!files.exists(app.at('app.yaml'))) {
       issues.error('app.yaml', '', 'file not found');
     } else if (appYaml != null) {
       issues.error('app.yaml', '', 'must be a map with name, description and state');
@@ -139,7 +148,7 @@ AppProject loadApp(Directory dir, String path, Issues root,
     app.title = name;
   }
 
-  final reader = _FolderReader(dir, issues);
+  final reader = _FolderReader(app, issues);
 
   // Models and enums; each file declares exactly one. The reserved `state`
   // model lives in models/state.yaml.
@@ -148,9 +157,9 @@ AppProject loadApp(Directory dir, String path, Issues root,
 
   validateState({'state': app.state}, app.models, issues);
 
-  app.actions = readFunctions(dir, 'app/actions', 'actions', app.models, issues);
+  app.actions = readFunctions(app.files, app.dir, 'app/actions', 'actions', app.models, issues);
   app.bindings =
-      readFunctions(dir, 'app/views/values', 'values', app.models, issues);
+      readFunctions(app.files, app.dir, 'app/views/values', 'values', app.models, issues);
 
   final seen = <String, String>{};
   for (final fn in [...app.actions, ...app.bindings]) {
@@ -198,12 +207,11 @@ AppProject loadApp(Directory dir, String path, Issues root,
   for (final file in {
     'app.yaml',
     ...app.widgetFiles.values,
-    for (final f in _yamlFiles(Directory('${dir.path}/app/models')))
-      f.path.substring(dir.path.length + 1),
+    for (final f in files.list(app.at('app/models')))
+      if (f.endsWith('.yaml')) app.dir.isEmpty ? f : f.substring(app.dir.length + 1),
   }) {
-    final f = File('${dir.path}/$file');
-    if (!f.existsSync()) continue;
-    final source = f.readAsStringSync();
+    final source = files.read(app.at(file));
+    if (source == null) continue;
     // The header starts with the file's key (`Hero:`, `state:`); app.yaml's
     // with the app's folder name.
     final key = file == 'app.yaml'
@@ -345,22 +353,20 @@ _Widgets _readWidgets(_FolderReader reader, String folder, Issues issues) {
 
 /// Reads the `.yaml` files of an app's folders.
 class _FolderReader {
-  final Directory dir;
+  final AppProject app;
   final Issues issues;
 
-  _FolderReader(this.dir, this.issues);
+  _FolderReader(this.app, this.issues);
 
   /// Every `.yaml` in [folder], by file (`app/views/pages/main_page.yaml`),
   /// as plain Dart. When [recursive] is true, sub-folders are scanned too.
   Map<String, dynamic> files(String folder,
       {bool required = true, bool recursive = false}) {
-    final d = Directory('${dir.path}/$folder');
-    final found = <File>[];
-    if (d.existsSync()) {
-      final list = d.listSync(recursive: recursive).whereType<File>();
-      found.addAll(list.where((f) => f.path.endsWith('.yaml')));
-      found.sort((a, b) => a.path.compareTo(b.path));
-    }
+    final skip = app.dir.isEmpty ? 0 : app.dir.length + 1;
+    final found = [
+      for (final f in app.files.list(app.at(folder), recursive: recursive))
+        if (f.endsWith('.yaml')) f.substring(skip),
+    ];
     if (found.isEmpty) {
       if (required) {
         issues.error('$folder/', '', 'missing');
@@ -368,16 +374,14 @@ class _FolderReader {
       return {};
     }
     return {
-      for (final f in found)
-        f.path.substring(dir.path.length + 1):
-            _readYaml(f, f.path.substring(dir.path.length + 1), issues),
+      for (final f in found) f: _readYaml(app.files, app.at(f), f, issues),
     };
   }
 
   /// Reads a single file relative to the app directory, returning null if it
   /// does not exist or cannot be parsed.
   dynamic single(String file) {
-    return _readYaml(File('${dir.path}/$file'), file, issues);
+    return _readYaml(app.files, app.at(file), file, issues);
   }
 
   /// The files of [folder] merged into one map. With [under], each file
@@ -416,15 +420,11 @@ class _FolderReader {
   }
 }
 
-List<File> _yamlFiles(Directory d) => d.existsSync()
-    ? (d.listSync().whereType<File>().where((f) => f.path.endsWith('.yaml')).toList()
-      ..sort((a, b) => a.path.compareTo(b.path)))
-    : [];
-
-dynamic _readYaml(File file, String label, Issues issues) {
-  if (!file.existsSync()) return null;
+dynamic _readYaml(ProjectFiles files, String path, String label, Issues issues) {
+  final source = files.read(path);
+  if (source == null) return null;
   try {
-    return _plain(loadYaml(file.readAsStringSync()));
+    return _plain(loadYaml(source));
   } on YamlException catch (e) {
     issues.error(label, '', e.message);
     return null;

@@ -36,6 +36,11 @@ class ProjectConfig {
   /// Modules by folder name, embedded with the `module:` widget.
   final Map<String, ProjectConfig> modules;
 
+  /// App files (images) by repo-relative path, when the app runs from the
+  /// project's files (lib/engine/live_project.dart); null for bundled
+  /// assets.
+  final Uint8List? Function(String path)? readFile;
+
   ProjectConfig({
     required this.projectName,
     required this.description,
@@ -46,6 +51,7 @@ class ProjectConfig {
     Map<String, dynamic>? style,
     Navigation? navigation,
     this.modules = const {},
+    this.readFile,
   })  : style = style ?? resolveStyle(null),
         hasOwnStyle = style != null,
         navigation = navigation ?? Navigation.fallback;
@@ -57,12 +63,14 @@ class ProjectConfig {
       ProjectConfig.fromBundle(jsonDecode(await loadBundle()) as Map);
 
   /// The raw bundle, read fresh (not cached), so a regenerated one is seen
-  /// after a hot reload.
+  /// after a hot reload (when the app runs without live files).
   static Future<String> loadBundle() =>
       rootBundle.loadString(bundleAsset, cache: false);
 
-  /// Builds the app tree from `generated/bundle.json`.
-  factory ProjectConfig.fromBundle(Map json) {
+  /// Builds the app tree from `generated/bundle.json`. [readFile] (shared by
+  /// every module) serves app files from the project's files.
+  factory ProjectConfig.fromBundle(Map json,
+      {Uint8List? Function(String path)? readFile}) {
     final manifest = Map<String, dynamic>.from(json['manifest'] as Map);
     final bytecode = base64Decode(json['program'] as String);
     final style = json['style'];
@@ -78,8 +86,10 @@ class ProjectConfig {
       navigation: navigation == null ? null : Navigation.parse(navigation),
       modules: {
         for (final e in ((json['modules'] as Map?) ?? {}).entries)
-          e.key.toString(): ProjectConfig.fromBundle(e.value as Map),
+          e.key.toString():
+              ProjectConfig.fromBundle(e.value as Map, readFile: readFile),
       },
+      readFile: readFile,
     );
   }
 }

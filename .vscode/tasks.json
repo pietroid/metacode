@@ -10,7 +10,7 @@
     },
     {
       "label": "metacode: watch",
-      "detail": "Regenerates on every save; hot reload (not restart) shows the change.",
+      "detail": "Regenerates .generated/ on every save, for the IDE and tests (the running app recompiles by itself).",
       "type": "shell",
       "command": "dart run tool/metacode.dart watch",
       "isBackground": true,

@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:flutter/material.dart';
@@ -11,9 +13,10 @@ class FakeUi implements Ui {
   final Set<String> actions;
   final List<(String, Map<String, dynamic>)> calls;
   final Map<String, dynamic> params;
+  final Map<String, Uint8List> files;
 
   FakeUi(this.context, this.bindings, this.actions, this.calls,
-      [this.params = const {}]);
+      [this.params = const {}, this.files = const {}]);
 
   @override
   Widget node(dynamic node) {
@@ -30,7 +33,7 @@ class FakeUi implements Ui {
 
   @override
   Widget widget(String type, Map<String, dynamic> props) =>
-      widgetBuilders[type]!(this, props);
+      buildCatalogWidget(this, type, props)!;
 
   @override
   dynamic binding(dynamic name) => bindings[name];
@@ -52,8 +55,11 @@ class FakeUi implements Ui {
   Widget module(String name) => Text('module $name');
 
   @override
+  Uint8List? file(String path) => files[path];
+
+  @override
   Ui withParams(Map<String, dynamic> extra) =>
-      FakeUi(context, bindings, actions, calls, {...params, ...extra});
+      FakeUi(context, bindings, actions, calls, {...params, ...extra}, files);
 }
 
 /// Renders [yaml] (a single widget node) and returns the recorded actions.
@@ -62,12 +68,13 @@ Future<List<(String, Map<String, dynamic>)>> render(
   Map<String, dynamic> yaml, {
   Map<String, dynamic> bindings = const {},
   Set<String> actions = const {},
+  Map<String, Uint8List> files = const {},
 }) async {
   final calls = <(String, Map<String, dynamic>)>[];
   await tester.pumpWidget(MaterialApp(
     home: Scaffold(
       body: Builder(
-        builder: (context) => FakeUi(context, bindings, actions, calls).node(yaml),
+        builder: (context) => FakeUi(context, bindings, actions, calls, const {}, files).node(yaml),
       ),
     ),
   ));
@@ -254,5 +261,44 @@ void main() {
     });
     expect(find.byType(SvgPicture), findsOneWidget);
     expect(tester.getSize(find.byType(SvgPicture)), const Size(20, 30));
+  });
+
+  testWidgets('widgets that run an action on a click are Clickable',
+      (tester) async {
+    await render(tester, {
+      'column': {
+        'children': [
+          {'filledButton': {'text': 'Go', 'onPressed': 'go'}},
+          {'filledButton': {'text': 'Off', 'onPressed': 'missing'}},
+          {'textField': {'onChanged': 'go'}},
+        ],
+      },
+    }, actions: {'go'});
+    expect(
+        find.ancestor(of: find.text('Go'), matching: find.byType(Clickable)),
+        findsOneWidget);
+    final region = tester.widget<MouseRegion>(find
+        .descendant(of: find.byType(Clickable), matching: find.byType(MouseRegion))
+        .first);
+    expect(region.cursor, SystemMouseCursors.click);
+    // Disabled (not an action) and typed-into widgets are not.
+    expect(
+        find.ancestor(of: find.text('Off'), matching: find.byType(Clickable)),
+        findsNothing);
+    expect(
+        find.ancestor(
+            of: find.byType(TextField), matching: find.byType(Clickable)),
+        findsNothing);
+  });
+
+  testWidgets('image reads app files from Ui.file when the engine has them',
+      (tester) async {
+    const png = 'examples/my_own_app/app/views/style/images/a.png';
+    final bytes = Uint8List.fromList([137, 80, 78, 71]);
+    await render(tester, {
+      'image': {'src': png, 'width': 20, 'height': 30},
+    }, files: {png: bytes});
+    final image = tester.widget<Image>(find.byType(Image));
+    expect((image.image as MemoryImage).bytes, bytes);
   });
 }

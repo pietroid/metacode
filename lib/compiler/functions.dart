@@ -2,12 +2,11 @@
 // signatures with the analyzer (syntax only, no type resolution) and records
 // what each one touches (state fields, labels, routes) for the index.
 
-import 'dart:io';
-
 import 'package:analyzer/dart/analysis/utilities.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:app_ui/spec.dart';
+import 'package:metacode/files/project_files.dart';
 
 import 'issues.dart';
 import 'models.dart';
@@ -137,7 +136,8 @@ const sharedParamTypes = {'labels': 'Labels'};
 
 const _actionKinds = {'actions'};
 
-/// Reads every `.dart` file in `$appDir/$folder` (recursively) and returns
+/// Reads every `.dart` file in `$appDir/$folder` of [files] (recursively;
+/// [appDir] is `''` for the root app) and returns
 /// its public functions.
 ///
 /// Every function must take the `State` as its first parameter; further
@@ -146,31 +146,25 @@ const _actionKinds = {'actions'};
 /// `Future<void>` and change the state only through `emit`; values return
 /// something the engine can hand to the UI.
 List<UserFunction> readFunctions(
-  Directory appDir,
+  ProjectFiles files,
+  String appDir,
   String folder, // 'app/actions' or 'app/views/values'
   String kind, // 'actions' or 'values'
   Map<String, Model> models,
   Issues issues,
 ) {
-  final dir = Directory('${appDir.path}/$folder');
   final functions = <UserFunction>[];
-  if (!dir.existsSync()) return functions;
-
-  final files = dir
-      .listSync(recursive: true)
-      .whereType<File>()
-      .where((f) => isUserCode(f.path))
-      .toList()
-    ..sort((a, b) => a.path.compareTo(b.path));
-
-  for (final file in files) {
-    final name = file.uri.pathSegments.last;
-    if (name.startsWith('_')) continue;
-    final rel = file.path.substring(appDir.path.length + 1);
-    final source = file.readAsStringSync();
+  final skip = appDir.isEmpty ? 0 : appDir.length + 1;
+  for (final path in files.list(
+      appDir.isEmpty ? folder : '$appDir/$folder',
+      recursive: true)) {
+    if (!isUserCode(path)) continue;
+    if (path.split('/').last.startsWith('_')) continue;
+    final rel = path.substring(skip);
+    final source = files.read(path)!;
     final result = parseString(
       content: source,
-      path: file.path,
+      path: '/$path',
       throwIfDiagnostics: false,
     );
     for (final d in result.errors) {

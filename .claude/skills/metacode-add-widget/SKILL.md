@@ -80,7 +80,9 @@ Literal parsers are in `src/parsers.dart`:
 
 Style: never hard-code colors, radii or fonts. Read tokens with `MetacodeTokens.of(ui.context)` (`src/theme.dart`): `t.ink`, `t.color('danger')`, `t.corners('sm')`, `t.spacing['s4']`, `t.displayFamily`, `t.raised` (card shadow). Never use Material `Icons.*`: icons are Phosphor (`src/icons.dart`); a new icon name goes in `iconNames` (spec.dart) and every weight map in `src/icons.dart` (code points from the Phosphor font). Prefer Material widgets whose look comes from the component themes in `MetacodeTheme.build`; if a new Material widget needs a component theme, add it there. Defaults to fallback colors (`?? Colors.amber`) should be tokens too.
 
-New icon, color or text variant names go both in `spec.dart` (`iconNames`, `colorNames`, `textVariants`) and in parsers.dart's maps. If an input passes a value of a new type, add the type to `contextParamTypes` in `tool/src/functions.dart`.
+New icon, color or text variant names go both in `spec.dart` (`iconNames`, `colorNames`, `textVariants`) and in parsers.dart's maps. If an input passes a value of a new type, add the type to `contextParamTypes` in `lib/compiler/functions.dart`.
+
+Clicks and text selection: all text is selectable on web and desktop (`SelectionArea` in `lib/engine/app.dart`). A widget with an action prop that names a real action is wrapped in `Clickable` (`src/clickable.dart`: pointer cursor, its text out of the selection) by `buildCatalogWidget`, so don't add cursors or `SelectionContainer` yourself. A widget people type into goes in `_typedInto` there.
 
 ## 3. Register: `src/registry.dart`
 
