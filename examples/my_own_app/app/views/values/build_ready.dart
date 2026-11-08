@@ -1,4 +1,4 @@
-// buildReady: Whether the hero demo has reached the ready step.
+// buildReady: Whether the studio demo has finished making the app.
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../.generated/state.dart';

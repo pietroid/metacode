@@ -1,0 +1,25 @@
+# StudioHeading: the "Try it" eyebrow, headline and intro, centered.
+StudioHeading:
+  column:
+    spacing: 16
+    children:
+    - text:
+        value: tryIt
+        style:
+          variant: labelSmall
+          color: accent
+        align: center
+    - text:
+        value: makeItThenMakeItYours
+        style:
+          variant: displaySmall
+        align: center
+    - container:
+        maxWidth: 600
+        child:
+          text:
+            value: studioIntro
+            style:
+              variant: bodyLarge
+              color: ink2
+            align: center

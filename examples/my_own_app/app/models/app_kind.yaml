@@ -1,0 +1,9 @@
+# appKind: what the studio demo app is about, picked by an idea chip (custom
+# when the visitor types their own idea). Picks the preview's title, rows and
+# photo.
+appKind:
+- plants
+- habits
+- meals
+- bills
+- custom

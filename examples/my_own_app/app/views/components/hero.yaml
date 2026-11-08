@@ -1,27 +1,27 @@
-# Hero: the top section: HeroTitle, subtitle, TryCard (the live demo) and
-# IdeaChips.
+# Hero: the top section: HeroCopy (headline, call to action and the example
+# carousel) beside HeroPhone (the live example). Stacked, phone below, under
+# 900 wide.
 Hero:
   container:
     maxWidth: 1120
     padding:
       horizontal: 24
-      top: 96
-      bottom: 8
+      top: 64
+      bottom: 16
     child:
-      column:
-        spacing: 28
-        children:
-        - HeroTitle
-        - container:
-            maxWidth: 560
-            child:
-              text:
-                value: myOwnAppUses
-                style:
-                  variant: bodyLarge
-                  color: ink2
-                align: center
-        - sizedBox:
-            height: 20
-        - TryCard
-        - IdeaChips
+      responsive:
+        breakpoint: 900
+        narrow:
+          column:
+            crossAxisAlignment: stretch
+            spacing: 56
+            children:
+            - HeroCopy
+            - ExamplePhone
+        wide:
+          row:
+            crossAxisAlignment: center
+            spacing: 72
+            children:
+            - expanded: HeroCopy
+            - HeroPhone

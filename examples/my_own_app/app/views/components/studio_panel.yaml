@@ -1,0 +1,117 @@
+# StudioPanel: the studio's three steps, between dividers: 1 describe it
+# (idea field, IdeaChips, make button), 2 watch it get made (Step1-4), 3 make
+# it yours (TweakPanel once the app is made).
+StudioPanel:
+  container:
+    color: surface
+    borderColor: line
+    radius: 24
+    child:
+      column:
+        crossAxisAlignment: stretch
+        children:
+        - padding:
+            all: 24
+            child:
+              column:
+                crossAxisAlignment: stretch
+                spacing: 16
+                children:
+                - row:
+                    spacing: 12
+                    children:
+                    - container:
+                        width: 26
+                        height: 26
+                        radius: 13
+                        color: fill
+                        child:
+                          center:
+                            text:
+                              value: '1'
+                              style:
+                                variant: labelMedium
+                                color: ink2
+                    - text:
+                        value: describeIt
+                        style:
+                          variant: titleMedium
+                - textField:
+                    value: ideaValue
+                    hint: remindMeToWater
+                    onChanged: updateIdea
+                    onSubmitted: makeApp
+                - IdeaChips
+                - filledButton:
+                    text: makeButtonText
+                    icon: sparkle
+                    onPressed: makeApp
+        - divider:
+            height: 1
+        - padding:
+            all: 24
+            child:
+              column:
+                crossAxisAlignment: stretch
+                spacing: 16
+                children:
+                - row:
+                    spacing: 12
+                    children:
+                    - container:
+                        width: 26
+                        height: 26
+                        radius: 13
+                        color: fill
+                        child:
+                          center:
+                            text:
+                              value: '2'
+                              style:
+                                variant: labelMedium
+                                color: ink2
+                    - text:
+                        value: watchItGetMade
+                        style:
+                          variant: titleMedium
+                - Step1
+                - Step2
+                - Step3
+                - Step4
+        - divider:
+            height: 1
+        - padding:
+            all: 24
+            child:
+              column:
+                crossAxisAlignment: stretch
+                spacing: 16
+                children:
+                - row:
+                    spacing: 12
+                    children:
+                    - container:
+                        width: 26
+                        height: 26
+                        radius: 13
+                        color: fill
+                        child:
+                          center:
+                            text:
+                              value: '3'
+                              style:
+                                variant: labelMedium
+                                color: ink2
+                    - text:
+                        value: makeItYours
+                        style:
+                          variant: titleMedium
+                - if:
+                    condition: buildReady
+                    then: TweakPanel
+                    else:
+                      text:
+                        value: makeItFirst
+                        style:
+                          variant: bodyMedium
+                          color: ink3

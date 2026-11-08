@@ -1,4 +1,4 @@
-// makeButtonText: The label for the main call-to-action button.
+// makeButtonText: The label of the studio's make button (make, making, make again).
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../.generated/labels.dart';

@@ -1,27 +1,23 @@
-# IdeaChips: preset idea chips under the demo; tapping one fills the idea
-# and runs the demo.
+# IdeaChips: preset idea chips in StudioPanel; tapping one fills the idea
+# and makes the app.
 IdeaChips:
-  container:
-    maxWidth: 760
-    child:
-      wrap:
-        alignment: center
-        spacing: 10
-        runSpacing: 10
-        children:
-        - choiceChip:
-            label: trackMyDailyHabits
-            selected: ideaIsHabits
-            onSelected: pickHabits
-        - choiceChip:
-            label: planMealsForThe
-            selected: ideaIsMeals
-            onSelected: pickMeals
-        - choiceChip:
-            label: splitBillsWithRoommates
-            selected: ideaIsBills
-            onSelected: pickBills
-        - choiceChip:
-            label: keepMyBookList
-            selected: ideaIsBooks
-            onSelected: pickBooks
+  wrap:
+    spacing: 8
+    runSpacing: 8
+    children:
+    - choiceChip:
+        label: waterMyPlants
+        selected: ideaIsPlants
+        onSelected: pickPlants
+    - choiceChip:
+        label: trackMyDailyHabits
+        selected: ideaIsHabits
+        onSelected: pickHabits
+    - choiceChip:
+        label: planMealsForThe
+        selected: ideaIsMeals
+        onSelected: pickMeals
+    - choiceChip:
+        label: splitBillsWithRoommates
+        selected: ideaIsBills
+        onSelected: pickBills

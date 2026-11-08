@@ -1,0 +1,41 @@
+# PreviewApp: the app made in the studio: its title, a photo (when photos
+# are on), PreviewHero in the picked color, PreviewStreak (when on) and the
+# list (PreviewRow).
+PreviewApp:
+  padding:
+    horizontal: 20
+    top: 8
+    bottom: 20
+    child:
+      column:
+        crossAxisAlignment: stretch
+        spacing: 16
+        children:
+        - column:
+            crossAxisAlignment: start
+            spacing: 2
+            children:
+            - text:
+                value: today
+                style:
+                  variant: labelSmall
+                  color: ink3
+            - text:
+                value: previewTitle
+                style:
+                  variant: headlineSmall
+        - if:
+            condition: previewHasPhotos
+            then:
+              image:
+                src: previewPhoto
+                height: 150
+                fit: cover
+                radius: 20
+        - PreviewHero
+        - if:
+            condition: previewHasStreak
+            then: PreviewStreak
+        - listView:
+            data: previewItems
+            itemBuilder: PreviewRow

@@ -1,0 +1,37 @@
+# PreviewHeroContent: inside PreviewHero, in white: today's progress, a
+# cheer and a three-part progress bar.
+PreviewHeroContent:
+  column:
+    crossAxisAlignment: stretch
+    spacing: 6
+    children:
+    - text:
+        value: previewProgress
+        style:
+          variant: titleLarge
+          color: white
+    - text:
+        value: keepGoing
+        style:
+          variant: bodySmall
+          color: white
+    - sizedBox:
+        height: 8
+    - row:
+        spacing: 6
+        children:
+        - expanded:
+            container:
+              height: 6
+              radius: 3
+              color: '#FFFFFFFF'
+        - expanded:
+            container:
+              height: 6
+              radius: 3
+              color: '#FFFFFFFF'
+        - expanded:
+            container:
+              height: 6
+              radius: 3
+              color: '#59FFFFFF'

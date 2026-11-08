@@ -1,0 +1,34 @@
+# PromptCard: the sentence the example in the phone started from, and its
+# blurb.
+PromptCard:
+  container:
+    color: surface
+    borderColor: line
+    radius: 20
+    padding: 24
+    child:
+      column:
+        crossAxisAlignment: start
+        spacing: 10
+        children:
+        - row:
+            spacing: 8
+            children:
+            - icon:
+                name: chat
+                size: 16
+                color: primary
+            - text:
+                value: itStartedWith
+                style:
+                  variant: labelMedium
+                  color: ink3
+        - text:
+            value: examplePrompt
+            style:
+              variant: headlineSmall
+        - text:
+            value: exampleBlurb
+            style:
+              variant: bodyMedium
+              color: ink2

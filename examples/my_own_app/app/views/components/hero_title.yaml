@@ -12,17 +12,12 @@ HeroTitle:
             color: primary
         style:
           variant: displayMedium
-        align: center
     wide:
-      container:
-        maxWidth: 820
-        child:
-          text:
-            spans:
-            - sayWhatYouNeed
-            - value: ownApp
-              style:
-                color: primary
-            style:
-              variant: displayLarge
-            align: center
+      text:
+        spans:
+        - sayWhatYouNeed
+        - value: ownApp
+          style:
+            color: primary
+        style:
+          variant: displayLarge

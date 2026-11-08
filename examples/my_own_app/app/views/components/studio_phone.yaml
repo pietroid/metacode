@@ -1,0 +1,30 @@
+# StudioPhone: the phone in the studio, showing StudioScreen (the app being
+# made): a dark bezel around a rounded screen with PhoneStatusBar and a home
+# indicator. 340 wide at most, centered.
+StudioPhone:
+  container:
+    maxWidth: 340
+    height: 680
+    color: '#161616'
+    radius: 54
+    padding: 10
+    child:
+      container:
+        color: surface
+        radius: 44
+        child:
+          column:
+            crossAxisAlignment: stretch
+            children:
+            - PhoneStatusBar
+            - expanded:
+                scroll: StudioScreen
+            - sizedBox:
+                height: 28
+                child:
+                  center:
+                    container:
+                      width: 120
+                      height: 5
+                      radius: 3
+                      color: ink

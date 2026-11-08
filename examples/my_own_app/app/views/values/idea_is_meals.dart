@@ -1,13 +1,14 @@
-// ideaIsMeals: Whether the current idea is the meal-planner prompt.
+// ideaIsMeals: Whether the studio idea is the meals chip.
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../.generated/state.dart';
 import '../../models/sample.dart';
 
-bool ideaIsMeals(State state) => state.idea == 'Plan meals for the week';
+bool ideaIsMeals(State state) => state.appKind == AppKind.meals;
 
 void main() {
   test('ideaIsMeals', () {
-    expect(app.ideaIsMeals(sample(idea: 'Plan meals for the week')), isTrue);
+    expect(app.ideaIsMeals(sample(appKind: AppKind.meals)), isTrue);
+    expect(app.ideaIsMeals(sample()), isFalse);
   });
 }

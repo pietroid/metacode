@@ -1,0 +1,23 @@
+# PreviewRow: one row of PreviewApp's list: a check (done) or an empty
+# circle, the item, and a divider below.
+PreviewRow:
+  column:
+    crossAxisAlignment: stretch
+    children:
+    - padding:
+        vertical: 12
+        child:
+          row:
+            spacing: 12
+            children:
+            - if:
+                condition: previewItemDone
+                then: StepDone
+                else: StepTodo
+            - expanded:
+                text:
+                  value: previewItemText
+                  style:
+                    variant: bodyMedium
+    - divider:
+        height: 1

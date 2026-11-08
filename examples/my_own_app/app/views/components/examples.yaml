@@ -1,9 +1,0 @@
-# Examples: the examples section: ExampleSlide (the copy and chips beside the
-# phone with the live example).
-Examples:
-  container:
-    maxWidth: 1120
-    padding:
-      horizontal: 24
-      top: 144
-    child: ExampleSlide

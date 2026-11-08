@@ -1,0 +1,32 @@
+# StudioEmpty: the studio phone before anything is made: a sparkle and "Your
+# app shows up here".
+StudioEmpty:
+  padding:
+    horizontal: 32
+    top: 190
+    child:
+      column:
+        spacing: 14
+        children:
+        - container:
+            width: 56
+            height: 56
+            radius: 16
+            color: fill
+            child:
+              center:
+                icon:
+                  name: sparkle
+                  size: 26
+                  color: ink3
+        - text:
+            value: yourAppShowsUpHere
+            style:
+              variant: titleMedium
+            align: center
+        - text:
+            value: describeItAndTap
+            style:
+              variant: bodySmall
+              color: ink3
+            align: center

@@ -1,29 +1,32 @@
-# HowItWorks: the "How it works" section: HowHeading beside HowList (stacked
-# under 860 wide).
+# HowItWorks: the "How it works" section: HowHeading over three cards
+# (HowStep1-3) in a row (stacked under 860 wide).
 HowItWorks:
   container:
     maxWidth: 1120
     padding:
       horizontal: 24
-      top: 128
+      top: 144
     child:
-      responsive:
-        breakpoint: 860
-        narrow:
-          column:
-            crossAxisAlignment: stretch
-            spacing: 40
-            children:
-            - HowHeading
-            - HowList
-        wide:
-          row:
-            crossAxisAlignment: start
-            spacing: 72
-            children:
-            - expanded:
-                flex: 10
-                child: HowHeading
-            - expanded:
-                flex: 13
-                child: HowList
+      column:
+        crossAxisAlignment: stretch
+        spacing: 56
+        children:
+        - HowHeading
+        - responsive:
+            breakpoint: 860
+            narrow:
+              column:
+                crossAxisAlignment: stretch
+                spacing: 16
+                children:
+                - HowStep1
+                - HowStep2
+                - HowStep3
+            wide:
+              row:
+                crossAxisAlignment: start
+                spacing: 16
+                children:
+                - expanded: HowStep1
+                - expanded: HowStep2
+                - expanded: HowStep3

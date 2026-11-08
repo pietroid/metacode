@@ -7,47 +7,21 @@ pt_br:
   work: Trabalho
   plants: Plantas
   next: Próximo
-  makeOneLikeThis: Fazer um assim
-  examples: EXEMPLOS
-  oneSentenceOneApp: Uma frase. Um app.
-  eachOfTheseStarted: Cada um destes começou com alguém dizendo do que precisava. Vá em frente e toque, eles funcionam.
   myOwnApp: MY OWN APP
   copyright: '© 2026 My Own App'
-  myOwnAppUses: O My Own App usa IA para criar um app feito só para você, em poucos minutos. Sem precisar saber de tecnologia. Se quiser diferente, é só pedir.
   sayWhatYouNeed: 'Diga do que precisa. Tenha o seu '
   ownApp: próprio app.
   howItWorks: COMO FUNCIONA
-  asEasyAsSending: Tão fácil quanto mandar uma mensagem.
-  tellItWhatYou: Diga do que você precisa
-  inYourOwnWords: Com suas palavras, do jeito que você explicaria para um amigo.
-  watchItComeTogether: Veja tudo se encaixar
-  inAFewMinutes: Em poucos minutos seu app fica pronto, com as telas e listas que combinam com a sua vida.
   useItEveryDay: Use todo dia
-  itsARealApp: É um app de verdade no seu celular, não uma demonstração.
-  changeItAnytime: Mude quando quiser
-  wantAPhotoFor: Quer uma foto para cada planta, ou um visual diferente? É só pedir e ele se atualiza.
   trackMyDailyHabits: Acompanhar meus hábitos diários
   planMealsForThe: Planejar as refeições da semana
   splitBillsWithRoommates: Dividir as contas com quem mora comigo
-  keepMyBookList: Manter minha lista de livros
-  ideas: IDEIAS
-  whateverYouNeedIt: Seja o que for, pode virar um app.
-  yourAppIsReady: Seu app está pronto
-  in2Minutes: '  em 2 minutos'
   getEarlyAccess: Garantir acesso antecipado
   understandingWhatYouNeed: Entendendo do que você precisa
   designingYourScreens: Desenhando suas telas
   settingUpYourLists: Preparando suas listas e lembretes
   puttingItOnYour: Colocando no seu celular
-  whatWouldMakeYour: O que deixaria o seu dia mais fácil?
   remindMeToWater: Me lembre de regar minhas plantas
-  health: Saúde
-  habitsWorkoutsWaterSleep: Hábitos, treinos, água, sono. Do seu jeito.
-  hobbies: Hobbies
-  readingListsRecipesGig: Listas de leitura, receitas, agenda de shows, coleções.
-  home: Casa
-  choresBillsGroceriesThe: Tarefas, contas, mercado, as plantas que ninguém rega.
-  clientListsSmallShop: Listas de clientes, pedidos da lojinha, reuniões da equipe.
   youreOnTheList: Você está na lista
   done: Pronto
   email: E-mail
@@ -76,3 +50,60 @@ pt_br:
   peopleOnTheList: pessoas já estão na lista
   languageEnglish: EN
   languagePortuguese: PT-BR
+  heroSubtitle: "Conte o que deixaria o seu dia mais fácil. Criamos um app exatamente para isso, feito só para você, e mudamos sempre que você pedir."
+  madeWithOneSentence: "CADA UM COMEÇOU COM UMA FRASE"
+  itStartedWith: "Começou com"
+  tryIt: "EXPERIMENTE"
+  makeItThenMakeItYours: "Crie. Depois deixe do seu jeito."
+  studioIntro: "Descreva do que precisa e veja o app ser criado. Depois mude o que quiser: as cores, as fotos, o que ele mostra. Cada mudança leva segundos."
+  describeIt: "Descreva"
+  watchItGetMade: "Veja ser criado"
+  makeItYours: "Deixe do seu jeito"
+  makeItFirst: "Crie seu app primeiro. Depois mude o que quiser."
+  waterMyPlants: "Regar minhas plantas"
+  colorText: "Cor"
+  addPhotos: "Adicionar fotos"
+  showMyStreak: "Mostrar minha sequência da semana"
+  updatingYourApp: "Atualizando seu app…"
+  applyingYourChange: "Aplicando sua mudança"
+  changesTakeSeconds: "Cada mudança leva segundos. É só pedir."
+  keepMyApp: "Quero meu app"
+  yourAppShowsUpHere: "Seu app aparece aqui"
+  describeItAndTap: "Descreva do que precisa e toque em Criar meu app."
+  today: "HOJE"
+  myPlants: "Minhas plantas"
+  myHabits: "Meus hábitos"
+  thisWeeksMeals: "Refeições da semana"
+  ourBills: "Nossas contas"
+  myApp: "Meu app"
+  plantsItem1: "Regar a samambaia"
+  plantsItem2: "Borrifar a orquídea"
+  plantsItem3: "Virar a costela-de-adão para a luz"
+  habitsItem1: "Beber 8 copos de água"
+  habitsItem2: "Ler por 20 minutos"
+  habitsItem3: "Caminhar 6.000 passos"
+  mealsItem1: "Sopa de lentilha"
+  mealsItem2: "Salmão com arroz"
+  mealsItem3: "Tacos de legumes"
+  billsItem1: "Aluguel, dividido por três"
+  billsItem2: "Internet, Ana pagou"
+  billsItem3: "Conta de luz, vence sexta"
+  customItem1: "Primeira coisa de hoje"
+  customItem2: "Depois esta"
+  customItem3: "E esta, mais tarde"
+  previewProgress: "2 de 3 feitos hoje"
+  keepGoing: "Você está indo bem. Continue."
+  fiveDayStreak: "5 dias seguidos"
+  threeSteps: "Três passos. Só isso."
+  tellYourProblem: "Conte seu problema"
+  tellYourProblemBody: "Diga o que está atrapalhando, com suas palavras. Sem formulários, sem termos técnicos."
+  weTailorIt: "Ajustamos para você"
+  weTailorItBody: "Seu app ganha as telas, listas e lembretes que combinam com a sua vida. As cores e fotos também."
+  useItEveryDayBody: "É um app de verdade no seu celular. Quando sua vida mudar, é só pedir e ele muda junto."
+  chatYou: "Minhas plantas vivem morrendo. Socorro!"
+  chatApp: "Deixa comigo. Quais plantas você tem?"
+  tailorWater: "Regar a cada 3 dias"
+  tailorPhoto: "Uma foto para cada planta"
+  notifyApp: "MINHAS PLANTAS · AGORA"
+  notifyText: "Hora de regar a samambaia"
+  notifyText2: "5 dias seguidos. Boa!"

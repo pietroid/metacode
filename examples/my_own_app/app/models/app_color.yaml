@@ -1,0 +1,6 @@
+# appColor: the studio demo app's main color, changed from the color swatches.
+appColor:
+- orange
+- green
+- blue
+- purple

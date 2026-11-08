@@ -5,8 +5,13 @@ description: My Own App website, an AI-driven app where you build and use your o
   customized app in minutes.
 version: 0.1.0
 state:
-  idea: Help me eat better without counting everything
+  idea: ''
+  appKind: custom
   buildStep: 0
+  appColor: orange
+  appPhotos: false
+  appStreak: false
+  tweaking: false
   email: ''
   waitlistStatus: invalid
   waitlistCount: 1284

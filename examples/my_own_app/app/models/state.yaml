@@ -4,7 +4,12 @@
 # Optional fields end with `?`. A list of values declares an enum.
 state:
   idea: string
+  appKind: appKind
   buildStep: number
+  appColor: appColor
+  appPhotos: boolean
+  appStreak: boolean
+  tweaking: boolean
   email: string
   waitlistStatus: waitlistStatus
   waitlistCount: number

@@ -1,7 +1,6 @@
-# HowHeading: the "How it works" eyebrow and headline.
+# HowHeading: the "How it works" eyebrow and headline, centered.
 HowHeading:
   column:
-    crossAxisAlignment: start
     spacing: 16
     children:
     - text:
@@ -9,7 +8,9 @@ HowHeading:
         style:
           variant: labelSmall
           color: accent
+        align: center
     - text:
-        value: asEasyAsSending
+        value: threeSteps
         style:
-          variant: headlineLarge
+          variant: displaySmall
+        align: center

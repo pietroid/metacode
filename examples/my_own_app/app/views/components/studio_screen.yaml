@@ -1,0 +1,10 @@
+# StudioScreen: what StudioPhone shows, by studioScreen: StudioEmpty,
+# StudioMaking, StudioUpdating or PreviewApp.
+StudioScreen:
+  match:
+    value: studioScreen
+    cases:
+      empty: StudioEmpty
+      making: StudioMaking
+      updating: StudioUpdating
+      ready: PreviewApp

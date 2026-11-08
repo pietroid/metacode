@@ -1,0 +1,61 @@
+# TweakPanel: the changes the visitor can ask for once the studio app is
+# made: ColorSwatches, photos and streak toggles, a status line ("Updating
+# your app…" while a change lands) and a keep my app button.
+TweakPanel:
+  column:
+    crossAxisAlignment: stretch
+    spacing: 12
+    children:
+    - row:
+        children:
+        - expanded:
+            text:
+              value: colorText
+              style:
+                variant: bodyMedium
+        - ColorSwatches
+    - toggle:
+        value: previewHasPhotos
+        label: addPhotos
+        onChanged: togglePhotos
+    - toggle:
+        value: previewHasStreak
+        label: showMyStreak
+        onChanged: toggleStreak
+    - container:
+        color: fill
+        radius: 12
+        padding:
+          horizontal: 14
+          vertical: 12
+        child:
+          if:
+            condition: isTweaking
+            then:
+              row:
+                spacing: 10
+                children:
+                - StepDoing
+                - expanded:
+                    text:
+                      value: updatingYourApp
+                      style:
+                        variant: bodySmall
+                        color: ink2
+            else:
+              row:
+                spacing: 10
+                children:
+                - icon:
+                    name: checkCircle
+                    size: 20
+                    color: success
+                - expanded:
+                    text:
+                      value: changesTakeSeconds
+                      style:
+                        variant: bodySmall
+                        color: ink2
+    - outlinedButton:
+        text: keepMyApp
+        onPressed: openWaitlist

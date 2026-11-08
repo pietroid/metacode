@@ -1,0 +1,22 @@
+# StudioUpdating: the studio phone while a change lands: a spinner and
+# "Updating your app…".
+StudioUpdating:
+  padding:
+    horizontal: 32
+    top: 210
+    child:
+      column:
+        spacing: 14
+        children:
+        - StepDoing
+        - text:
+            value: updatingYourApp
+            style:
+              variant: titleSmall
+            align: center
+        - text:
+            value: applyingYourChange
+            style:
+              variant: bodySmall
+              color: ink3
+            align: center

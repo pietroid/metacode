@@ -1,0 +1,34 @@
+# HeroCopy: the text side of the hero, left-aligned: HeroTitle, the
+# subtitle, the get early access button, then CarouselNav and PromptCard (the
+# sentence the example in the phone started from).
+HeroCopy:
+  column:
+    crossAxisAlignment: start
+    children:
+    - HeroTitle
+    - sizedBox:
+        height: 20
+    - text:
+        value: heroSubtitle
+        style:
+          variant: bodyLarge
+          color: ink2
+    - sizedBox:
+        height: 28
+    - filledButton:
+        text: getEarlyAccess
+        icon: arrowForward
+        onPressed: openWaitlist
+    - sizedBox:
+        height: 56
+    - text:
+        value: madeWithOneSentence
+        style:
+          variant: labelSmall
+          color: ink3
+    - sizedBox:
+        height: 12
+    - CarouselNav
+    - sizedBox:
+        height: 16
+    - PromptCard

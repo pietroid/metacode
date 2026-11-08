@@ -1,0 +1,33 @@
+# Studio: the "try it" section: StudioHeading over StudioPhone (the app being
+# made) beside StudioPanel (describe it, watch it get made, make it yours).
+# Stacked, panel first, under 900 wide.
+Studio:
+  container:
+    maxWidth: 1120
+    padding:
+      horizontal: 24
+      top: 144
+    child:
+      column:
+        crossAxisAlignment: stretch
+        spacing: 56
+        children:
+        - StudioHeading
+        - responsive:
+            breakpoint: 900
+            narrow:
+              column:
+                crossAxisAlignment: stretch
+                spacing: 40
+                children:
+                - StudioPanel
+                - StudioPhone
+            wide:
+              row:
+                crossAxisAlignment: center
+                spacing: 72
+                children:
+                - sizedBox:
+                    width: 360
+                    child: StudioPhone
+                - expanded: StudioPanel

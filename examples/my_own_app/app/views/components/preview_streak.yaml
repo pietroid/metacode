@@ -1,0 +1,61 @@
+# PreviewStreak: the weekly streak card in PreviewApp (on with the streak
+# toggle): "5-day streak" and seven day blocks, five filled.
+PreviewStreak:
+  container:
+    color: fill
+    radius: 16
+    padding: 16
+    child:
+      column:
+        crossAxisAlignment: stretch
+        spacing: 12
+        children:
+        - row:
+            spacing: 8
+            children:
+            - icon:
+                name: confetti
+                size: 18
+                color: primary
+            - text:
+                value: fiveDayStreak
+                style:
+                  variant: titleSmall
+        - row:
+            spacing: 6
+            children:
+            - expanded:
+                container:
+                  height: 26
+                  radius: 8
+                  color: ink
+            - expanded:
+                container:
+                  height: 26
+                  radius: 8
+                  color: ink
+            - expanded:
+                container:
+                  height: 26
+                  radius: 8
+                  color: ink
+            - expanded:
+                container:
+                  height: 26
+                  radius: 8
+                  color: ink
+            - expanded:
+                container:
+                  height: 26
+                  radius: 8
+                  color: ink
+            - expanded:
+                container:
+                  height: 26
+                  radius: 8
+                  color: fillStrong
+            - expanded:
+                container:
+                  height: 26
+                  radius: 8
+                  color: fillStrong

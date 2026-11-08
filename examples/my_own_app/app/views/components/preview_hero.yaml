@@ -1,0 +1,30 @@
+# PreviewHero: the colored card at the top of PreviewApp, in the color picked
+# with ColorSwatches, holding PreviewHeroContent.
+PreviewHero:
+  match:
+    value: appColorKey
+    cases:
+      green:
+        container:
+          color: '#16A36A'
+          radius: 20
+          padding: 20
+          child: PreviewHeroContent
+      blue:
+        container:
+          color: '#3157D5'
+          radius: 20
+          padding: 20
+          child: PreviewHeroContent
+      purple:
+        container:
+          color: '#7C4DDB'
+          radius: 20
+          padding: 20
+          child: PreviewHeroContent
+    default:
+      container:
+        color: primary
+        radius: 20
+        padding: 20
+        child: PreviewHeroContent

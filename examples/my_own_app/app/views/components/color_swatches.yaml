@@ -1,0 +1,102 @@
+# ColorSwatches: four round color swatches (orange, green, blue, purple) for
+# the studio app; the current one shows a check.
+ColorSwatches:
+  row:
+    spacing: 10
+    children:
+    - tappable:
+        onTap: colorOrange
+        child:
+          match:
+            value: appColorKey
+            cases:
+              orange:
+                container:
+                  width: 30
+                  height: 30
+                  radius: 15
+                  color: primary
+                  child:
+                    center:
+                      icon:
+                        name: check
+                        size: 15
+                        color: white
+            default:
+              container:
+                width: 30
+                height: 30
+                radius: 15
+                color: primary
+    - tappable:
+        onTap: colorGreen
+        child:
+          match:
+            value: appColorKey
+            cases:
+              green:
+                container:
+                  width: 30
+                  height: 30
+                  radius: 15
+                  color: '#16A36A'
+                  child:
+                    center:
+                      icon:
+                        name: check
+                        size: 15
+                        color: white
+            default:
+              container:
+                width: 30
+                height: 30
+                radius: 15
+                color: '#16A36A'
+    - tappable:
+        onTap: colorBlue
+        child:
+          match:
+            value: appColorKey
+            cases:
+              blue:
+                container:
+                  width: 30
+                  height: 30
+                  radius: 15
+                  color: '#3157D5'
+                  child:
+                    center:
+                      icon:
+                        name: check
+                        size: 15
+                        color: white
+            default:
+              container:
+                width: 30
+                height: 30
+                radius: 15
+                color: '#3157D5'
+    - tappable:
+        onTap: colorPurple
+        child:
+          match:
+            value: appColorKey
+            cases:
+              purple:
+                container:
+                  width: 30
+                  height: 30
+                  radius: 15
+                  color: '#7C4DDB'
+                  child:
+                    center:
+                      icon:
+                        name: check
+                        size: 15
+                        color: white
+            default:
+              container:
+                width: 30
+                height: 30
+                radius: 15
+                color: '#7C4DDB'

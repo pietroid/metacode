@@ -7,47 +7,21 @@ en:
   work: Work
   plants: Plants
   next: Next
-  makeOneLikeThis: Make one like this
-  examples: EXAMPLES
-  oneSentenceOneApp: One sentence. One app.
-  eachOfTheseStarted: Each of these started with someone saying what they needed. Go ahead and tap around, they work.
   myOwnApp: MY OWN APP
   copyright: '© 2026 My Own App'
-  myOwnAppUses: My Own App uses AI to build an app made just for you, in a few minutes. No tech skills needed. If you want it different, just ask.
   sayWhatYouNeed: 'Say what you need. Get your '
   ownApp: own app.
   howItWorks: HOW IT WORKS
-  asEasyAsSending: As easy as sending a message.
-  tellItWhatYou: Tell it what you need
-  inYourOwnWords: In your own words, the way you'd explain it to a friend.
-  watchItComeTogether: Watch it come together
-  inAFewMinutes: In a few minutes, your app is ready, with the screens and lists that fit your life.
   useItEveryDay: Use it every day
-  itsARealApp: It's a real app on your phone, not a demo.
-  changeItAnytime: Change it anytime
-  wantAPhotoFor: Want a photo for each plant, or a different look? Just ask and it updates.
   trackMyDailyHabits: Track my daily habits
   planMealsForThe: Plan meals for the week
   splitBillsWithRoommates: Split bills with roommates
-  keepMyBookList: Keep my book list
-  ideas: IDEAS
-  whateverYouNeedIt: Whatever you need, it can be an app.
-  yourAppIsReady: Your app is ready
-  in2Minutes: '  in 2 minutes'
   getEarlyAccess: Get early access
   understandingWhatYouNeed: Understanding what you need
   designingYourScreens: Designing your screens
   settingUpYourLists: Setting up your lists and reminders
   puttingItOnYour: Putting it on your phone
-  whatWouldMakeYour: What would make your day easier?
   remindMeToWater: Remind me to water my plants
-  health: Health
-  habitsWorkoutsWaterSleep: Habits, workouts, water, sleep. Tracked your way.
-  hobbies: Hobbies
-  readingListsRecipesGig: Reading lists, recipes, gig calendars, collections.
-  home: Home
-  choresBillsGroceriesThe: Chores, bills, groceries, the plants nobody waters.
-  clientListsSmallShop: Client lists, small shop orders, team check-ins.
   youreOnTheList: You're on the list
   done: Done
   email: Email
@@ -76,3 +50,60 @@ en:
   peopleOnTheList: people are already on the list
   languageEnglish: EN
   languagePortuguese: PT-BR
+  heroSubtitle: "Tell us what would make your day easier. We build an app for exactly that, made only for you, and change it whenever you ask."
+  madeWithOneSentence: "EACH ONE STARTED WITH A SENTENCE"
+  itStartedWith: "It started with"
+  tryIt: "TRY IT"
+  makeItThenMakeItYours: "Make it. Then make it yours."
+  studioIntro: "Describe what you need and watch it get made. Then change anything: the colors, the photos, what it shows. Every change takes seconds."
+  describeIt: "Describe it"
+  watchItGetMade: "Watch it get made"
+  makeItYours: "Make it yours"
+  makeItFirst: "Make your app first. Then change anything you like."
+  waterMyPlants: "Water my plants"
+  colorText: "Color"
+  addPhotos: "Add photos"
+  showMyStreak: "Show my weekly streak"
+  updatingYourApp: "Updating your app…"
+  applyingYourChange: "Applying your change"
+  changesTakeSeconds: "Every change takes seconds. Just ask."
+  keepMyApp: "Keep my app"
+  yourAppShowsUpHere: "Your app shows up here"
+  describeItAndTap: "Describe what you need and tap Make my app."
+  today: "TODAY"
+  myPlants: "My plants"
+  myHabits: "My habits"
+  thisWeeksMeals: "This week's meals"
+  ourBills: "Our bills"
+  myApp: "My app"
+  plantsItem1: "Water the fern"
+  plantsItem2: "Mist the orchid"
+  plantsItem3: "Turn the monstera to the light"
+  habitsItem1: "Drink 8 glasses of water"
+  habitsItem2: "Read for 20 minutes"
+  habitsItem3: "Walk 6,000 steps"
+  mealsItem1: "Lentil soup"
+  mealsItem2: "Salmon and rice"
+  mealsItem3: "Veggie tacos"
+  billsItem1: "Rent, split three ways"
+  billsItem2: "Internet, Ana paid"
+  billsItem3: "Power bill, due Friday"
+  customItem1: "First thing today"
+  customItem2: "Then this one"
+  customItem3: "And this, later"
+  previewProgress: "2 of 3 done today"
+  keepGoing: "You're on a roll. Keep going."
+  fiveDayStreak: "5-day streak"
+  threeSteps: "Three steps. That's all."
+  tellYourProblem: "Tell your problem"
+  tellYourProblemBody: "Say what's getting in the way, in your own words. No forms, no tech talk."
+  weTailorIt: "We tailor it for your needs"
+  weTailorItBody: "Your app gets the screens, lists and reminders that fit how you live. The colors and photos too."
+  useItEveryDayBody: "It's a real app on your phone. When your life changes, just ask and it changes with you."
+  chatYou: "My plants keep dying. Help!"
+  chatApp: "On it. Which plants do you have?"
+  tailorWater: "Water every 3 days"
+  tailorPhoto: "A photo for each plant"
+  notifyApp: "MY PLANTS · NOW"
+  notifyText: "Time to water the fern"
+  notifyText2: "5-day streak. Nice!"
