@@ -13,7 +13,7 @@ description: Change the Metacode app (models, state, view, actions, values, labe
 tool/check.sh
 ```
 
-It validates every app, regenerates, type-checks and runs every app's tests (the `main()` in each action and value file). Repeat until it prints `OK`. Do not launch the app, and do not touch `lib/`, `tool/` or `packages/`. If the change needs a new widget, use the `metacode-add-widget` skill. If it needs engine work, use `metacode-engine`.
+It validates every app, regenerates, type-checks and runs every app's tests (the `main()` in each action and value file). Repeat until it prints `OK`. Do not launch the app, and do not touch `lib/`, `tool/` or `packages/`. Build new UI as components out of the catalog's widgets (see Components first, below); reach for the `metacode-add-widget` skill only when no composition can do it. If it needs engine work, use `metacode-engine`.
 
 ## Find what to change: read the index first
 
@@ -103,7 +103,11 @@ en:
 - Don't interpolate ints from `DateTime` getters. Use `toIso8601String()`.
 - `dart:` imports only. Private helpers need unique names across files.
 
-If the catalog lacks something, use the `metacode-add-widget` skill. Don't fake it in the app.
+## Components first
+
+Anything that can be drawn by composing catalog widgets is a **component** in `app/views/components/`, not a new widget: a phone frame (sized `container` + `column` + `scroll`), a status bar, a badge, a stat tile, a step indicator. Before deciding something is missing, check REFERENCE.md's widget table: `container` (size, color, radius, clip, maxWidth), `stack`, `row`/`column`/`expanded`, `scroll`, `sizedBox`, `text`, `icon`, `image` cover most visuals. A hex color is fine for a physical object (a phone's bezel).
+
+Use `metacode-add-widget` only for a missing **capability**, something no arrangement of existing widgets can do: a new Material input, a gesture, an animation, a shadow, scaling, a new icon or prop. Even then, add the smallest primitive (e.g. a `shadow` prop on `container`) and keep the composition in the app.
 
 ## Example: add a "priority" to tasks
 

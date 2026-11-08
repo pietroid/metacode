@@ -1,9 +1,6 @@
-# MainPage: the guitar practice page, framed in a surface container. Embedded in
-# the carousel's phone, so it is a plain column (Content), not a scaffold.
+# MainPage: the guitar practice page (Content), with no frame of its own: it is
+# embedded in the carousel's phone, which sets the margins.
 MainPage:
-  container:
-    color: surface
-    borderColor: line
-    radius: 18
-    padding: 14
+  padding:
+    vertical: 0
     child: Content

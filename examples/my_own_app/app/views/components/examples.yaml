@@ -1,32 +1,9 @@
-# Examples: the examples section: heading, CarouselNav and ExampleSlide.
+# Examples: the examples section: ExampleSlide (the copy and chips beside the
+# phone with the live example).
 Examples:
   container:
     maxWidth: 1120
     padding:
       horizontal: 24
-      top: 128
-    child:
-      column:
-        crossAxisAlignment: stretch
-        spacing: 16
-        children:
-        - text:
-            value: examples
-            style:
-              variant: labelSmall
-              color: accent
-        - text:
-            value: oneSentenceOneApp
-            style:
-              variant: headlineLarge
-        - text:
-            value: eachOfTheseStarted
-            style:
-              variant: bodyMedium
-              color: ink2
-        - sizedBox:
-            height: 16
-        - CarouselNav
-        - sizedBox:
-            height: 24
-        - ExampleSlide
+      top: 144
+    child: ExampleSlide

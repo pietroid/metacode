@@ -1,21 +1,21 @@
-# ExampleSlide: one carousel slide: ExampleCopy beside ExamplePhone (stacked
-# under 860 wide).
+# ExampleSlide: the examples layout: ExampleCopy on the left, ExamplePhone on
+# the right (stacked, phone below, under 860 wide).
 ExampleSlide:
   responsive:
     breakpoint: 860
     narrow:
       column:
         crossAxisAlignment: stretch
-        spacing: 32
+        spacing: 56
         children:
         - ExampleCopy
         - ExamplePhone
     wide:
       row:
         crossAxisAlignment: center
-        spacing: 64
+        spacing: 96
         children:
         - expanded: ExampleCopy
         - sizedBox:
-            width: 400
+            width: 360
             child: ExamplePhone

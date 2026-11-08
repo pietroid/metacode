@@ -1,9 +1,6 @@
-# MainPage: the food tracker page, framed in a surface container. Embedded in
-# the carousel's phone, so it is a plain column (Content), not a scaffold.
+# MainPage: the food tracker page (Content), with no frame of its own: it is
+# embedded in the carousel's phone, which sets the margins.
 MainPage:
-  container:
-    color: surface
-    borderColor: line
-    radius: 28
-    padding: 16
+  padding:
+    vertical: 0
     child: Content

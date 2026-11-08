@@ -1,36 +1,30 @@
-# ExamplePhone: a phone frame with the current example's photo and its live
-# module (`module: food|music|work|plants`, picked by exampleKey).
+# ExamplePhone: a phone with the current example living inside: a dark bezel
+# (no border) around a rounded screen with PhoneStatusBar, ExampleScreen
+# (scrolls) and a home indicator. 340 wide at most, centered.
 ExamplePhone:
-  center:
-    container:
-      maxWidth: 400
-      color: surface
-      borderColor: line
-      radius: 28
-      padding: 12
-      child:
-        column:
-          crossAxisAlignment: stretch
-          spacing: 4
-          children:
-          - image:
-              src: exampleImage
-              height: 150
-              fit: cover
-              radius: 18
-          - padding:
-              horizontal: 8
-              top: 12
-              bottom: 4
-              child:
-                match:
-                  value: exampleKey
-                  cases:
-                    food:
-                      module: food
-                    music:
-                      module: music
-                    work:
-                      module: work
-                    plants:
-                      module: plants
+  container:
+    maxWidth: 340
+    height: 720
+    color: '#161616'
+    radius: 54
+    padding: 10
+    child:
+      container:
+        color: surface
+        radius: 44
+        child:
+          column:
+            crossAxisAlignment: stretch
+            children:
+            - PhoneStatusBar
+            - expanded:
+                scroll: ExampleScreen
+            - sizedBox:
+                height: 28
+                child:
+                  center:
+                    container:
+                      width: 120
+                      height: 5
+                      radius: 3
+                      color: ink

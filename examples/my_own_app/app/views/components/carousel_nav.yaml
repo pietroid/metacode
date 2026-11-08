@@ -1,16 +1,11 @@
-# CarouselNav: previous/next arrows and one chip per example (food, music,
-# work, plants) that steer the examples carousel.
+# CarouselNav: one chip per example (food, music, work, plants) that picks
+# the example shown in the phone, with previous/next arrows at the end.
 CarouselNav:
   row:
-    spacing: 8
+    crossAxisAlignment: center
     children:
-    - iconButton:
-        icon: chevronLeft
-        tooltip: previous
-        onPressed: previousExample
     - expanded:
         wrap:
-          alignment: center
           spacing: 8
           runSpacing: 8
           children:
@@ -30,6 +25,10 @@ CarouselNav:
               label: plants
               selected: exampleIsPlants
               onSelected: showPlants
+    - iconButton:
+        icon: chevronLeft
+        tooltip: previous
+        onPressed: previousExample
     - iconButton:
         icon: chevronRight
         tooltip: next

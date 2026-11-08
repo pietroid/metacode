@@ -1,0 +1,45 @@
+# PhoneStatusBar: the top of ExamplePhone's screen: the clock, the island,
+# the signal bars and the battery.
+PhoneStatusBar:
+  sizedBox:
+    height: 50
+    child:
+      stack:
+        alignment: center
+        children:
+        - container:
+            width: 104
+            height: 30
+            radius: 15
+            color: '#000000'
+        - padding:
+            horizontal: 30
+            child:
+              row:
+                crossAxisAlignment: center
+                children:
+                - text:
+                    value: '9:41'
+                    style:
+                      variant: labelLarge
+                - spacer: {}
+                - row:
+                    crossAxisAlignment: end
+                    spacing: 1.5
+                    children:
+                    - container: {width: 3, height: 4, radius: 1, color: ink}
+                    - container: {width: 3, height: 6, radius: 1, color: ink}
+                    - container: {width: 3, height: 8, radius: 1, color: ink}
+                    - container: {width: 3, height: 10, radius: 1, color: ink}
+                - sizedBox:
+                    width: 6
+                - container:
+                    width: 22
+                    height: 11
+                    radius: 3
+                    padding: 1.5
+                    color: fillStrong
+                    child:
+                      row:
+                        children:
+                        - container: {width: 15, radius: 2, color: ink}

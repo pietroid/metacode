@@ -1,9 +1,11 @@
 ---
 name: metacode-add-widget
-description: Add a new widget (or a new property on an existing widget) to the Metacode UI catalog in packages/app_ui so ui/ can use it. Use when the app needs a widget, icon, or prop the catalog lacks.
+description: Add a new primitive widget (or a property on an existing one) to the Metacode UI catalog in packages/app_ui. Use only for a capability no composition of existing widgets can provide (a new input, gesture, animation, shadow, icon or prop). Not for things buildable as an app component from existing widgets (frames, cards, bars, tiles) - those go in app/views/components/ via metacode-app.
 ---
 
 # Add a widget to the catalog
+
+**First, make sure it can't be a component.** If the thing can be drawn by arranging existing widgets (`container`, `stack`, `row`, `column`, `scroll`, `text`, `image`...), build it as an app component instead (metacode-app skill) and stop here. The catalog holds primitives; compositions (a phone frame, a status bar, a stat tile) belong to the app. If only one piece is missing (a shadow, a fit mode), add just that prop to an existing widget, not a whole new widget.
 
 Three edits in `packages/app_ui/lib/`, then the check.
 

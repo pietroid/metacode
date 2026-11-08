@@ -1,34 +1,45 @@
-# ExampleCopy: the text side of an example slide: tag, prompt, blurb and the
-# "make one like this" button.
+# ExampleCopy: the text side of the examples: heading, CarouselNav chips, the
+# current prompt and blurb, and the "make one like this" button.
 ExampleCopy:
   column:
     crossAxisAlignment: start
-    spacing: 14
     children:
     - text:
-        value: exampleTag
+        value: examples
         style:
           variant: labelSmall
-          color: ink3
+          color: accent
+    - sizedBox:
+        height: 16
+    - text:
+        value: oneSentenceOneApp
+        style:
+          variant: headlineLarge
+    - sizedBox:
+        height: 16
+    - text:
+        value: eachOfTheseStarted
+        style:
+          variant: bodyLarge
+          color: ink2
+    - sizedBox:
+        height: 40
+    - CarouselNav
+    - sizedBox:
+        height: 40
     - text:
         value: examplePrompt
         style:
           variant: headlineMedium
+    - sizedBox:
+        height: 12
     - text:
         value: exampleBlurb
         style:
           variant: bodyLarge
           color: ink2
     - sizedBox:
-        height: 8
-    - row:
-        spacing: 16
-        children:
-        - filledButton:
-            text: makeOneLikeThis
-            onPressed: makeLikeThis
-        - text:
-            value: examplePosition
-            style:
-              variant: bodySmall
-              color: ink3
+        height: 32
+    - filledButton:
+        text: makeOneLikeThis
+        onPressed: makeLikeThis
