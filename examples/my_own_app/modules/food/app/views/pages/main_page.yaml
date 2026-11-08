@@ -1,14 +1,10 @@
-# MainPage: Forkcast's only page: the screen for the current stage
-# (onboarding steps, Building, PlanScreen, SwipeScreen, ShoppingScreen), each
-# laid out by ScreenFrame. Embedded `contained`.
+# MainPage: Forkcast's home (the `home` route): BudgetStep while onboarding,
+# Building during the fake processing, then PlanScreen. Embedded `contained`,
+# so the other routes open inside the phone frame.
 MainPage:
   match:
     value: screen
     cases:
-      budget: BudgetStep
-      prefs: PrefsStep
-      goal: GoalStep
+      onboarding: BudgetStep
       building: Building
       plan: PlanScreen
-      swipe: SwipeScreen
-      shopping: ShoppingScreen

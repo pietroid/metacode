@@ -1,10 +1,11 @@
-// makeList: Builds the shopping list from the accepted recipes (the same ingredient merges into one line) and opens it.
+// makeList: Builds the shopping list from the accepted recipes (the same ingredient merges into one line) and opens it in place of the swipe.
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../.generated/core.dart';
 import '../../.generated/state.dart';
 import '../models/sample.dart';
 
-Future<void> makeList(State state, void Function(StateDelta) emit) async {
+Future<void> makeList(State state, void Function(StateDelta) emit, Core core) async {
   final items = <Item>[];
   for (final p in state.picked) {
     for (final g in state.recipes[p.toInt()].ingredients) {
@@ -22,13 +23,17 @@ Future<void> makeList(State state, void Function(StateDelta) emit) async {
       }
     }
   }
-  emit(StateDelta(shopping: items, stage: Stage.shopping));
+  emit(StateDelta(shopping: items));
+  await core.navigator.pop();
+  // Let the pop land before pushing, or the navigator drops it.
+  await Future.delayed(Duration(milliseconds: 1));
+  core.navigator.push(Routes.shopping);
 }
 
 void main() {
   test('makeList', () async {
     final s = await app.makeList(sample(goal: Goal.weightLoss, program: 8).copyWith(picked: [12, 3]));
-    expect(s.stage, Stage.shopping);
+    expect(app.navigation, ['pop', 'push shopping']);
     expect(s.shopping.length, 9); // olive oil appears in both
     final oil = s.shopping.firstWhere((Item i) => i.name == 'Olive oil');
     expect(oil.count, 2);

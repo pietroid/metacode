@@ -5,5 +5,5 @@ NavButtons:
     children:
     - textButton:
         text: back
-        onPressed: backStep
+        onPressed: goBack
     - expanded: .next

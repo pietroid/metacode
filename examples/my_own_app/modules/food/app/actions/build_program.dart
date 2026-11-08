@@ -1,6 +1,7 @@
-// buildProgram: Matches the answers against the program matrix (same goal, honoring the base prefs, closest diet first), shows a short fake processing, then the plan with the best match.
+// buildProgram: Matches the answers against the program matrix (same goal, honoring the base prefs, closest diet first), closes the goal and prefs pages, shows a short fake processing on the home page, then the plan with the best match.
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../.generated/core.dart';
 import '../../.generated/state.dart';
 import '../models/sample.dart';
 
@@ -23,10 +24,14 @@ List<num> _buildProgramMatches(State s) {
   return out;
 }
 
-Future<void> buildProgram(State state, void Function(StateDelta) emit) async {
+Future<void> buildProgram(State state, void Function(StateDelta) emit, Core core) async {
   if (state.goal == Goal.none) return;
   final matches = _buildProgramMatches(state);
   emit(StateDelta(stage: Stage.building, buildStep: 0, matches: matches));
+  await core.navigator.pop();
+  // Let the first pop land, or the navigator drops the second.
+  await Future.delayed(Duration(milliseconds: 1));
+  await core.navigator.pop();
   for (var step = 1; step <= 3; step++) {
     await Future.delayed(Duration(milliseconds: 650));
     emit(StateDelta(buildStep: step));
@@ -46,6 +51,7 @@ void main() {
   test('buildProgram', () async {
     final omni = await app.buildProgram(sample(goal: Goal.hypertrophy));
     expect(omni.stage, Stage.plan);
+    expect(app.navigation, ['pop', 'pop']);
     expect(omni.matches, [4, 5, 6, 7]);
     expect(omni.program, 4);
     final vegan = await app.buildProgram(sample(goal: Goal.lowCarb, prefs: ['vegan', 'glutenFree']));

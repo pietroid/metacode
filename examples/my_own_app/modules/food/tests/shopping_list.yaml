@@ -1,8 +1,9 @@
 # shoppingList: the list with a merged line (×2), a long name, one item
 # in the cart, and Shopping done pinned at the bottom.
 shoppingList:
+  route: shopping
   state:
-    stage: shopping
+    stage: plan
     goal: weightLoss
     program: 8
     shopping:

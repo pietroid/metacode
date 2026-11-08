@@ -8,7 +8,7 @@ name: food
 description: Forkcast plans what you eat and what you spend. Tell it your budget,
   diet and goal; it builds a program, suggests recipes and a shopping list.
 state:
-  stage: budget
+  stage: onboarding
   budget: 300
   goal: none
   program: -1

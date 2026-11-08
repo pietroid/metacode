@@ -11,7 +11,7 @@ ShoppingScreen:
         - row:
             spacing: 4
             children:
-            - iconButton: {icon: arrowBack, tooltip: backToPlan, onPressed: showPlan}
+            - iconButton: {icon: arrowBack, tooltip: backToPlan, onPressed: goBack}
             - expanded:
                 text: {value: shoppingList, style: {variant: titleLarge}}
         - column:

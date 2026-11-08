@@ -12,7 +12,7 @@ SwipeScreen:
             children:
             - expanded:
                 text: {value: pickRecipes, style: {variant: titleLarge}}
-            - iconButton: {icon: close, tooltip: close, onPressed: showPlan}
+            - iconButton: {icon: close, tooltip: close, onPressed: goBack}
         - row:
             spacing: 12
             children:

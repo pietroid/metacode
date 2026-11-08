@@ -6,4 +6,4 @@ PickedDoneActions:
     then:
       filledButton: {text: makeListCta, icon: shoppingCart, onPressed: makeList}
     else:
-      filledButton: {text: shuffle, icon: refresh, onPressed: suggestRecipes}
+      filledButton: {text: shuffle, icon: refresh, onPressed: shuffleRecipes}

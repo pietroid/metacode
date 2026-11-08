@@ -52,4 +52,4 @@ BudgetStep:
       filledButton:
         text: next
         icon: arrowForward
-        onPressed: nextStep
+        onPressed: openPrefs

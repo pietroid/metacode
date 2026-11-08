@@ -1,0 +1,4 @@
+# ShoppingPage: the `shopping` route, the shopping list, over the plan: ShoppingScreen on a page.
+ShoppingPage:
+  scaffold:
+    body: ShoppingScreen

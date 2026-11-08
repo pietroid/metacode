@@ -1,0 +1,4 @@
+# GoalPage: the `goal` route, onboarding step 3, over the prefs step: GoalStep on a page.
+GoalPage:
+  scaffold:
+    body: GoalStep

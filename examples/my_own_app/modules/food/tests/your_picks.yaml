@@ -1,7 +1,8 @@
 # yourPicks: the end of the swipe: the accepted recipes and Make my shopping list.
 yourPicks:
+  route: swipe
   state:
-    stage: swipe
+    stage: plan
     goal: weightLoss
     program: 8
     days: 2

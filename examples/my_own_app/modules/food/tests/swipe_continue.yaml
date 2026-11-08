@@ -1,8 +1,9 @@
 # swipeContinue: the swipe after one recipe was added: the progress bar
 # started and Continue with my picks under Skip / Add.
 swipeContinue:
+  route: swipe
   state:
-    stage: swipe
+    stage: plan
     goal: weightLoss
     program: 8
     deck: [3, 12, 0]

@@ -1,3 +1,4 @@
-# stage: which screen Forkcast shows: the three onboarding steps, the fake
-# processing, the plan summary, the recipe swipe and the shopping list.
-stage: [budget, prefs, goal, building, plan, swipe, shopping]
+# stage: what Forkcast's home page (MainPage) shows: the first onboarding
+# step, the fake processing, or the plan. The other screens are routes
+# opened on top of it (see navigation.yaml).
+stage: [onboarding, building, plan]

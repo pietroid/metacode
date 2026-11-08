@@ -5,11 +5,11 @@ import '../../.generated/state.dart';
 import '../models/sample.dart';
 
 Future<void> startOver(State state, void Function(StateDelta) emit) async {
-  emit(StateDelta(stage: Stage.budget));
+  emit(StateDelta(stage: Stage.onboarding));
 }
 
 void main() {
   test('startOver', () async {
-    expect((await app.startOver(sample(goal: Goal.weightLoss, program: 8))).stage, Stage.budget);
+    expect((await app.startOver(sample(goal: Goal.weightLoss, program: 8))).stage, Stage.onboarding);
   });
 }

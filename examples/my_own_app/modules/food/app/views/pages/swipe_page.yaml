@@ -1,0 +1,4 @@
+# SwipePage: the `swipe` route, the recipe swipe, over the plan: SwipeScreen on a page.
+SwipePage:
+  scaffold:
+    body: SwipeScreen

@@ -1,4 +1,4 @@
-// screen: Which screen MainPage shows (the stage).
+// screen: Which screen MainPage shows (the stage: onboarding, building or plan).
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../.generated/state.dart';

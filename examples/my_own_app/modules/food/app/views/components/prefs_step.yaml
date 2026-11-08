@@ -21,4 +21,4 @@ PrefsStep:
           filledButton:
             text: next
             icon: arrowForward
-            onPressed: nextStep
+            onPressed: openGoal

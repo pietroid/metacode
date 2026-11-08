@@ -1,0 +1,10 @@
+# navigation: Forkcast's routes. `home` (MainPage) shows the stage: the first
+# onboarding step, the fake processing or the plan. The rest open on top:
+# prefs and goal over the budget step, swipe and shopping over the plan.
+initial: home
+routes:
+  home: MainPage
+  prefs: PrefsPage
+  goal: GoalPage
+  swipe: SwipePage
+  shopping: ShoppingPage

@@ -14,7 +14,7 @@ State sample({
   Goal goal = Goal.none,
   int program = -1,
   num budget = 300,
-  Stage stage = Stage.budget,
+  Stage stage = Stage.onboarding,
 }) {
   final s = app.initialState;
   for (final p in s.prefs) {

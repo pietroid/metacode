@@ -1,0 +1,4 @@
+# PrefsPage: the `prefs` route, onboarding step 2, over the budget step: PrefsStep on a page.
+PrefsPage:
+  scaffold:
+    body: PrefsStep
