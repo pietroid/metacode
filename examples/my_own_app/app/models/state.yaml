@@ -1,18 +1,28 @@
-# state: the app's state (the reserved model); initial values in app.yaml.
+# state: the app's state (the reserved model) by scope; initial values in
+# app.yaml. ephemeral: gone on reload. local: this device. remote: the
+# user's, on the backend. system: backend only. shared: one copy everyone
+# sees, changed only by remote actions.
 #
 # Primitives: string, boolean, number, datetime. Lists: list(type).
 # Optional fields end with `?`. A list of values declares an enum.
 state:
-  idea: string
-  appKind: appKind
-  buildStep: number
-  appColor: appColor
-  appPhotos: boolean
-  appStreak: boolean
-  tweaking: boolean
-  email: string
-  waitlistStatus: waitlistStatus
-  waitlistCount: number
-  exampleIndex: number
-  chatStage: number
-  config: config
+  ephemeral:
+    email: string
+    waitlistStatus: waitlistStatus
+    chatStage: number
+    buildStep: number
+    tweaking: boolean
+    exampleIndex: number
+  local:
+    idea: string
+    appKind: appKind
+    appColor: appColor
+    appPhotos: boolean
+    appStreak: boolean
+  remote:
+    waitlistEmail: string
+  system:
+    waitlist: list(string)
+  shared:
+    waitlistCount: number
+    config: config

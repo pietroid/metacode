@@ -12,10 +12,10 @@ Future<void> setLanguage(State state, Core core, String value) async {
 
 void main() {
   test('setLanguage switches the labels', () async {
+    addTearDown(() => app.locale = null);
     await app.setLanguage(sample(), 'pt_br');
     expect(app.locale, 'pt_br');
-    expect(app.joinedText(sample(email: 'a@b.co')),
+    expect(app.joinedText(sample(waitlistEmail: 'a@b.co')),
         'Vamos avisar a@b.co quando sua vaga abrir.');
-    app.locale = null;
   });
 }

@@ -136,17 +136,23 @@ const contextParamTypes = {
 };
 
 /// Params only actions take, with their Dart type: `emit` applies a
-/// StateDelta to the state, `core` reaches the api and the navigator.
+/// StateDelta to the state, `core` reaches the api and the navigator,
+/// `remote` calls the remote actions (app/actions/remote/).
 const actionParamTypes = {
   'emit': 'void Function(StateDelta)',
   'core': 'Core',
+  'remote': 'Remote',
 };
+
+/// The sub-folder of app/actions/ holding the remote actions: they run on
+/// the backend, one endpoint each.
+const remoteFolder = 'remote';
 
 /// Params every function can take: `labels` reads app/views/labels/ (the
 /// current language).
 const sharedParamTypes = {'labels': 'Labels'};
 
-const _actionKinds = {'actions'};
+const _actionKinds = {'actions', 'remote'};
 
 /// Reads every `.dart` file in `$appDir/$folder` of [files] (recursively;
 /// [appDir] is `''` for the root app) and returns
@@ -174,6 +180,7 @@ List<UserFunction> readFunctions(
     if (path.split('/').last.startsWith('_')) continue;
     final rel = path.substring(skip);
     if (rel.startsWith('$folder/$sharedFolder/')) continue;
+    if (kind == 'actions' && rel.startsWith('$folder/$remoteFolder/')) continue;
     final source = files.read(path)!;
     final result = parseString(
       content: source,
@@ -234,6 +241,31 @@ UserFunction? _readFunction(
     if (i == 0) {
       if (type != 'State') {
         fail('first parameter must be the State, got "$type $paramName"');
+        return null;
+      }
+      continue;
+    }
+
+    if (kind == 'remote') {
+      // A remote action takes `emit` and one `value`, the input its local
+      // action sends (untrusted: validate it).
+      if (paramName == 'emit') {
+        final normalized = type.replaceAll(RegExp(r'\s+\w+\)$'), ')');
+        if (normalized != actionParamTypes['emit']) {
+          fail('"emit" must be ${actionParamTypes['emit']}, got $type');
+          return null;
+        }
+        params.add(Param('emit', actionParamTypes['emit']!));
+      } else if (paramName == 'value') {
+        if (!isEncodable(type, models)) {
+          fail('"value" must be a primitive, model, enum or List of those, '
+              'got $type');
+          return null;
+        }
+        params.add(Param('value', type));
+      } else {
+        fail('remote actions take (State state, [emit], [value]), '
+            'got "$paramName"');
         return null;
       }
       continue;

@@ -1,6 +1,8 @@
 # waitlistStatus: the waitlist form's status: idle while typing, invalid if
-# the email fails validation, joined after a successful sign-up.
+# the email fails validation, sending while the backend adds it, failed when
+# it couldn't (offline: "try again"). Being joined is `waitlistEmail` set.
 waitlistStatus:
 - idle
 - invalid
-- joined
+- sending
+- failed

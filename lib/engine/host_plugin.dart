@@ -16,6 +16,18 @@ abstract class MetacodeHost {
   Future<Object?> call(String op, Map<String, dynamic> args);
 }
 
+/// A host for remote actions: keeps their deltas (applied only if the
+/// action doesn't refuse). They have no `core`.
+class CollectHost implements MetacodeHost {
+  final deltas = <Map<String, dynamic>>[];
+
+  @override
+  void emit(Map<String, dynamic> delta) => deltas.add(delta);
+
+  @override
+  Future<Object?> call(String op, Map<String, dynamic> args) async => null;
+}
+
 /// Bridges `package:metacode/engine/host.dart` (see host.dart) into dart_eval.
 ///
 /// The tool adds it to the compiler (declarations only); the engine adds it

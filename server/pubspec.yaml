@@ -1,0 +1,15 @@
+name: metacode_server
+description: "The Metacode backend (docs/STATE_ARCHITECTURE.md) on Dart Frog."
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.12.1
+
+dependencies:
+  dart_frog: ^1.2.6
+  # The backend itself (lib/backend/) and the compiler it runs. metacode is
+  # a Flutter package, so fetch with `flutter pub get`; the server code is
+  # pure Dart and runs on the Dart VM.
+  metacode:
+    path: ..

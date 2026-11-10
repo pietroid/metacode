@@ -1,12 +1,11 @@
-import 'dart:convert';
-
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:yaml/yaml.dart';
 
 import 'project_config.dart';
 import 'state_store.dart';
+import 'yaml_writer.dart';
 
-/// The state of one app (each module has its own), persisted as YAML.
+/// The state of one app (each module has its own), persisted as YAML by
+/// scope (see [_writeState]; the backend's sync is `lib/engine/sync/`).
 ///
 /// [initialize] loads the app's `state.yaml` from [store] (see
 /// state_store.dart: next to the sources when running from the project's
@@ -55,15 +54,22 @@ class StateBloc extends Cubit<Map<String, dynamic>> {
     final store = this.store;
     if (store == null) return;
     _persistent = true;
-    final saved = await store.read(app);
-    if (saved != null) {
-      final doc = loadYaml(saved);
-      emit(_overInitial(doc is Map ? yamlToDart(doc['state']) : null));
-    } else {
-      final initial = Map<String, dynamic>.from(config.initialState);
-      emit(initial);
-      await _writeState(initial);
+    final scopes = config.scopes;
+    final saved = <String, dynamic>{};
+    for (final file in const ['state', 'remote', 'shared']) {
+      final fields =
+          readYamlDocument(await store.read(app, file: file), 'state') ?? {};
+      for (final e in fields.entries) {
+        // A field saved under another scope before (it moved): dropped.
+        final scope = scopes[e.key] ?? 'local';
+        if (file == 'state' ? scope == 'local' : scope == file) {
+          saved[e.key] = e.value;
+        }
+      }
     }
+    final state = _overInitial(saved);
+    emit(state);
+    await _writeState(state);
   }
 
   /// Moves this state to a new version of the app (a regenerated or
@@ -86,56 +92,32 @@ class StateBloc extends Cubit<Map<String, dynamic>> {
     await _writeState(newState);
   }
 
+  /// Saves [data] by scope: `local` fields (and fields with no scope) in
+  /// `.state/state.yaml`, `remote` and `shared` in `remote.yaml` and
+  /// `shared.yaml` (the last known values, so the app opens offline with
+  /// them). `ephemeral` fields are never saved. Unchanged files are not
+  /// rewritten.
   Future<void> _writeState(Map<String, dynamic> data) async {
     if (!_persistent) return;
-    await store!.write(app, 'state:\n${_toYaml(data)}');
-  }
-
-  /// [value] as block YAML at [indent], nested lists and maps at any depth
-  /// (a list of models whose fields are lists, like a recipe's tags).
-  /// Empty lists and maps are written inline (`[]`, `{}`), never as a bare
-  /// `key:`, which would read back as null.
-  String _toYaml(dynamic value, {int indent = 1}) {
-    final prefix = '  ' * indent;
-    bool isBlock(dynamic v) =>
-        (v is Map && v.isNotEmpty) || (v is List && v.isNotEmpty);
-    if (value is Map) {
-      return value.entries.map((e) {
-        final v = e.value;
-        if (isBlock(v)) {
-          return '$prefix${e.key}:\n${_toYaml(v, indent: indent + 1)}';
-        }
-        return '$prefix${e.key}: ${_scalarYaml(v)}';
-      }).join('\n');
+    final scopes = config.scopes;
+    final byFile = <String, Map<String, dynamic>>{'state': {}};
+    for (final e in data.entries) {
+      final file = switch (scopes[e.key] ?? 'local') {
+        'ephemeral' || 'system' => null,
+        'remote' => 'remote',
+        'shared' => 'shared',
+        _ => 'state',
+      };
+      if (file != null) (byFile[file] ??= {})[e.key] = e.value;
     }
-    if (value is List) {
-      return value.map((item) {
-        if (isBlock(item)) {
-          // The item's own block one level deeper, its first line after
-          // the dash: `- name: x` then `  tags:` aligned under `name`.
-          final block = _toYaml(item, indent: indent + 1);
-          return '$prefix- ${block.substring(prefix.length + 2)}';
-        }
-        return '$prefix- ${_scalarYaml(item)}';
-      }).join('\n');
+    for (final MapEntry(key: file, value: fields) in byFile.entries) {
+      final yaml = yamlDocument('state', fields);
+      if (_written[file] == yaml) continue;
+      _written[file] = yaml;
+      await store!.write(app, yaml, file: file);
     }
-    return '$prefix${_scalarYaml(value)}';
   }
 
-  /// A value written on one line: an empty list or map, or a scalar.
-  String _scalarYaml(dynamic value) {
-    if (value is List) return '[]';
-    if (value is Map) return '{}';
-    return _escapeYaml(value);
-  }
-
-  /// Strings are always written as JSON strings (valid YAML), so a string
-  /// that looks like a number, a bool or a date ("10", "true") reads back as
-  /// a string.
-  String _escapeYaml(dynamic value) {
-    if (value == null) return 'null';
-    if (value is bool) return value ? 'true' : 'false';
-    if (value is num) return value.toString();
-    return jsonEncode(value.toString());
-  }
+  /// What each `.state/` file last had (see [_writeState]).
+  final _written = <String, String>{};
 }

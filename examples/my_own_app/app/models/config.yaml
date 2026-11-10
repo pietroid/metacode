@@ -1,4 +1,5 @@
-# config: feature toggles for the site, set in app.yaml's `state:`.
+# config: feature toggles for the site: shared state, seeded in app.yaml
+# and turned on on the backend (its .state/shared.yaml), no deploy.
 # `astrology`: shows the astrology (astral) example in the carousel.
 config:
   astrology: boolean

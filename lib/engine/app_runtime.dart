@@ -6,7 +6,22 @@ import 'core_host.dart';
 import 'locale.dart';
 import 'project_config.dart';
 import 'state_bloc.dart';
+import 'sync/http_backend.dart';
+import 'sync/remote_backend.dart';
+import 'sync/user_id.dart';
 import 'ui_renderer.dart';
+
+/// The backend every app of the tree syncs with (docs/STATE_ARCHITECTURE.md),
+/// and the anonymous user id they share.
+class SyncLink {
+  /// The backend's URL.
+  final String url;
+
+  /// The user id (`.state/user.yaml`, created on first launch).
+  final Future<String> userId;
+
+  const SyncLink(this.url, this.userId);
+}
 
 /// One running app: its state, program, renderer and host. Apps are
 /// recursive: an `module: <name>` widget embeds the module `modules/<name>/`,
@@ -45,9 +60,46 @@ class AppRuntime extends ChangeNotifier {
     this.client,
     this.isModule = false,
     this.runStart = true,
+    SyncLink? link,
   }) {
+    _link = link ?? _rootLink();
+    _startRemote();
     _start();
     _runStartAction();
+  }
+
+  /// `--dart-define=METACODE_BACKEND=<url>` overrides app.yaml's `backend:`
+  /// (local development); `none` runs without one.
+  static const _backendOverride = String.fromEnvironment('METACODE_BACKEND');
+
+  /// The backend, shared with the modules; null runs every app's remote
+  /// actions on the device ([LocalBackend]).
+  late final SyncLink? _link;
+
+  SyncLink? _rootLink() {
+    final url =
+        _backendOverride.isNotEmpty ? _backendOverride : _config.backend;
+    if (url == null || url.isEmpty || url == 'none') return null;
+    return SyncLink(url, loadUserId(bloc.store));
+  }
+
+  /// This app's [RemoteBackend], when it has `remote` or `shared` state or
+  /// remote actions.
+  RemoteBackend? _remote;
+
+  void _startRemote() {
+    if (_remote != null) return _remote!.reconfigure(_config);
+    if (!_config.syncs) return;
+    final link = _link;
+    _remote = link == null
+        ? LocalBackend(bloc, _config)
+        : HttpBackend(
+            url: link.url,
+            bloc: bloc,
+            userId: link.userId,
+            app: bloc.app,
+            client: client);
+    _remote!.start();
   }
 
   /// Whether app.yaml's `start:` action runs (off in the layout check, which
@@ -95,6 +147,7 @@ class AppRuntime extends ChangeNotifier {
       client: client,
       render: render,
       resetModule: _resetModule,
+      remote: _remote,
     );
   }
 
@@ -112,8 +165,15 @@ class AppRuntime extends ChangeNotifier {
   }
 
   /// This app's state back to its initial one (saved), and its modules'.
+  /// Its `remote` and `shared` fields stay: they're the backend's.
   void _reset() {
-    bloc.setState(Map<String, dynamic>.from(config.initialState));
+    final scopes = config.scopes;
+    bloc.setState({
+      ...config.initialState,
+      for (final e in bloc.state.entries)
+        if (scopes[e.key] == 'remote' || scopes[e.key] == 'shared')
+          e.key: e.value,
+    });
     for (final child in _children.values) {
       child._reset();
     }
@@ -128,6 +188,7 @@ class AppRuntime extends ChangeNotifier {
   void reload(ProjectConfig config) {
     _config = config;
     bloc.reconfigure(config);
+    _startRemote();
     _start();
     for (final name in _children.keys.toList()) {
       final childConfig = config.modules[name];
@@ -205,12 +266,14 @@ class AppRuntime extends ChangeNotifier {
       client: client,
       isModule: true,
       runStart: runStart,
+      link: _link,
     );
   }
 
   /// Closes the modules' state (this app's bloc belongs to whoever made it).
   @override
   void dispose() {
+    _remote?.dispose();
     for (final child in _children.values) {
       child._close();
     }

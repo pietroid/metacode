@@ -17,6 +17,9 @@ class MetacodeProgram {
   final Set<String> actions;
   final Set<String> bindings;
 
+  /// Remote actions (the backend's program, app/actions/remote/).
+  final Set<String> remoteActions;
+
   /// Values marked `@Animated`: name -> `{ms, curve}`.
   final Map<String, Map<String, dynamic>> animated;
 
@@ -27,8 +30,9 @@ class MetacodeProgram {
   static const _library = 'package:metacode/main.dart';
 
   MetacodeProgram(ByteData bytecode, Map<String, dynamic> manifest)
-      : actions = Set<String>.from(manifest['actions'] as List),
-        bindings = Set<String>.from(manifest['bindings'] as List),
+      : actions = Set<String>.from((manifest['actions'] as List?) ?? const []),
+        bindings = Set<String>.from((manifest['bindings'] as List?) ?? const []),
+        remoteActions = Set<String>.from((manifest['remote'] as List?) ?? const []),
         animated = {
           for (final e in ((manifest['animated'] as Map?) ?? const {}).entries)
             e.key as String: Map<String, dynamic>.from(e.value as Map),
@@ -46,6 +50,42 @@ class MetacodeProgram {
     var result = _execute('\$action_$name', state, params);
     if (result is $Value) result = result.$value;
     await (result as Future);
+  }
+
+  /// Runs a remote action (`$remote_<name>` in the backend's program):
+  /// returns '' when it finished, else the code of the `RemoteError` it
+  /// threw, or `failed` when it crashed. Its deltas go to [host]'s `emit`
+  /// (the caller drops them unless it returned '').
+  Future<String> remote(
+    String name,
+    Map<String, dynamic> state, [
+    Map<String, dynamic> params = const {},
+  ]) async {
+    if (!remoteActions.contains(name)) return 'unknownAction';
+    try {
+      var result = _execute('\$remote_$name', state, params);
+      if (result is $Value) result = result.$value;
+      final out = await (result as Future);
+      return (out is $Value ? out.$value : out) as String;
+    } catch (e) {
+      final code = _remoteErrorCode(e);
+      if (code != null) return code;
+      // ignore: avoid_print
+      print('metacode: remote action "$name" failed: $e');
+      return 'failed';
+    }
+  }
+
+  /// The code of a thrown interpreted `RemoteError`, else null.
+  String? _remoteErrorCode(Object error) {
+    if (error is! $Instance) return null;
+    try {
+      final code = error.$getProperty(_runtime, 'code');
+      final value = code is $Value ? code.$value : code;
+      return value is String ? value : null;
+    } catch (_) {
+      return null;
+    }
   }
 
   /// Evaluates a binding. [context] carries e.g. the list `index`.

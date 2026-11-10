@@ -84,6 +84,19 @@ void main() {
     expect(bloc.state['count'], 1);
   });
 
+  testWidgets('remote.<name>() without a backend runs the remote action on '
+      'the device; shared and remote fields show at once', (tester) async {
+    final bloc = await pump(tester);
+    expect(find.text('Votes: 0 '), findsOneWidget);
+    await tap(tester, find.text('Vote'));
+    expect(bloc.state['votes'], 1, reason: '${bloc.state}');
+    expect(find.text('Votes: 1 ada'), findsOneWidget);
+    expect(bloc.state.containsKey('voters'), isFalse); // system: not here
+    // A local action emitting a remote field: applied at once.
+    await tap(tester, find.text('Rename'));
+    expect(find.text('Votes: 1 grace'), findsOneWidget);
+  });
+
   testWidgets('components take parameters, passed on through components',
       (tester) async {
     final bloc = await pump(tester);
@@ -297,7 +310,14 @@ void main() {
     });
     test('an unquoted comma in a flow map gets a hint', () {
       expect(
-          buildWith({'app.yaml': 'name: fixture\nstate: {count: 1, started: false, a b}\n'})
+          buildWith({
+            'app.yaml': 'name: fixture\nstate:\n'
+                '  ephemeral: {voteError: ""}\n'
+                '  local: {count: 1, started: false, a b}\n'
+                '  remote: {nickname: ""}\n'
+                '  system: {voters: []}\n'
+                '  shared: {votes: 0}\n',
+          })
               .issues
               .errors,
           [contains('an unquoted comma')]);

@@ -17,6 +17,14 @@ WaitlistInline:
             style:
               variant: bodySmall
               color: danger
+    - if:
+        condition: waitlistFailed
+        then:
+          text:
+            value: couldNotJoin
+            style:
+              variant: bodySmall
+              color: danger
     - filledButton:
-        text: joinWaitlistText
+        text: joinButtonText
         onPressed: joinWaitlist

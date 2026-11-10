@@ -39,8 +39,9 @@ An app is a folder; `examples/my_own_app/` is the root app. **Modules** live in 
 
 | Path (inside an app) | Holds |
 |---|---|
-| `app.yaml` | `name`, `description`, `state:` initial values. |
-| `app/actions/*.dart` | `Future<void> name(State state, [void Function(StateDelta) emit], [Core core], [Labels labels], [int index], [String/bool value]) async`. Change state only with `emit(StateDelta(field: ...))`. One public action per file. |
+| `app.yaml` | `name`, `description`, `state:` initial values, optionally split by scope (`ephemeral`, `local`, `remote`, `system`, `shared`: where a field lives and who writes it; see "State scopes" in REFERENCE.md). The root may set `backend:` (a URL). |
+| `app/actions/*.dart` | `Future<void> name(State state, [void Function(StateDelta) emit], [Core core], [Remote remote], [Labels labels], [int index], [String/bool value]) async`. Change state only with `emit(StateDelta(field: ...))`. One public action per file. Local actions never write `shared` or see `system`: that's a remote action's job. |
+| `app/actions/remote/*.dart` | Remote actions, run on the backend: `Future<void> name(State state, [emit], [T value])` on `.generated/remote_state.dart` (the caller's `remote`, `shared`, `system`). Called from a local action with `final error = await remote.name(value);` (null when done; its changes already in the state). Validate `value`; refuse with `throw RemoteError('code')`. |
 | `app/models/*.yaml` | Types, one parent per file. `string`, `boolean`, `number`, `datetime`, `list(x)`, `x?`, enums as a list. The reserved `state` model lives in `app/models/state.yaml`. |
 | `app/views/navigation.yaml` | `initial: name` and `routes: {name: PageId}` (page), `{bottomSheet: PageId}`, `{dialog: PageId}`. Opened with `core.navigator.push(Routes.name)`. Optional; without it the app is `MainPage`. |
 | `app/views/pages/*.yaml` | What routes open: `MainPage:`, sheets, dialogs. |

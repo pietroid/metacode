@@ -27,6 +27,7 @@ import 'codegen.dart';
 import 'functions.dart';
 import 'index.dart';
 import 'issues.dart';
+import 'models.dart';
 import 'project.dart';
 
 /// The outcome of [build].
@@ -133,17 +134,28 @@ Map<String, dynamic>? _generate(
     for (final fn in [...app.actions, ...app.bindings]) fn.file,
   }.toList()
     ..sort();
+  final remoteFiles = [for (final fn in app.remoteActions) fn.file]..sort();
 
+  final clientModels = app.clientModels;
+  final remoteModels = app.remoteModels;
   final generated = {
-    '.generated/state.dart': generateState(app.models),
+    '.generated/state.dart': generateState(clientModels,
+        deltaFields: app.fieldsIn(clientDeltaScopes)),
+    '.generated/remote_state.dart': generateState(remoteModels),
     '.generated/core.dart': generateCore(app.navigation.routes.keys),
+    '.generated/remote.dart': generateRemote(app.remoteActions, clientModels),
     '.generated/labels.dart':
         generateLabels(app.labels, app.defaultLanguage),
     '.generated/main.dart':
-        generateMain(app.actions, app.bindings, userFiles, app.models,
+        generateMain(app.actions, app.bindings, userFiles, clientModels,
             defaultLanguage: app.defaultLanguage),
-    '.generated/test_app.dart':
-        generateTestApp(app.actions, app.bindings, app.models, app.path),
+    '.generated/remote_main.dart':
+        generateRemoteMain(app.remoteActions, remoteFiles, remoteModels),
+    '.generated/test_app.dart': generateTestApp(
+        app.actions, app.bindings, clientModels, app.path,
+        remoteActions: app.remoteActions,
+        scopes: app.scopes,
+        scoped: app.scopes.values.any((s) => s != 'local')),
     // The app's map for agents and people; not part of the bundle.
     '.generated/INDEX.md': generateIndex(app),
   };
@@ -151,33 +163,69 @@ Map<String, dynamic>? _generate(
 
   // The engine runs one bundled library per app. dart_eval mis-resolves some
   // calls across libraries (e.g. an action calling a value), so user files
-  // stay separate for editing and are merged here for execution.
+  // stay separate for editing and are merged here for execution. Remote
+  // actions are not in it: they are the backend's program (below).
+  final remotePrefix = app.at('app/actions/$remoteFolder/');
   final source = _bundle([
     generated['.generated/state.dart']!,
     generated['.generated/core.dart']!,
+    generated['.generated/remote.dart']!,
     generated['.generated/labels.dart']!,
     for (final folder in ['app/actions', 'app/views/values'])
       for (final f in app.files.list(app.at(folder), recursive: true))
-        if (isUserCode(f)) stripTests(app.files.read(f)!),
+        if (isUserCode(f) && !f.startsWith(remotePrefix))
+          stripTests(app.files.read(f)!),
     generated['.generated/main.dart']!,
   ]);
   // (test_app.dart runs on the host, not in the interpreter.)
 
-  final Uint8List bytecode;
-  try {
-    final program = (Compiler()..addPlugin(const HostPlugin())).compile({
-      'metacode': {'main.dart': source},
-    });
-    bytecode = program.write();
-  } catch (e) {
-    issues.scoped(app.prefix).error('actions/values', '',
-        'could not compile for the engine (dart_eval): $e');
-    return null;
+  Uint8List? compile(String source, String what) {
+    try {
+      final program = (Compiler()..addPlugin(const HostPlugin())).compile({
+        'metacode': {'main.dart': source},
+      });
+      return program.write();
+    } catch (e) {
+      issues.scoped(app.prefix).error(what, '',
+          'could not compile for the engine (dart_eval): $e');
+      return null;
+    }
+  }
+
+  final bytecode = compile(source, 'actions/values');
+  if (bytecode == null) return null;
+
+  // The backend's program: the remote actions, with the shared helpers
+  // they call (app/actions/shared/, transitively), on the backend's State.
+  Uint8List? remoteBytecode;
+  if (app.remoteActions.isNotEmpty) {
+    final shared = {for (final fn in app.shared) fn.name: fn};
+    final used = <String>{};
+    void visit(Iterable<String> calls) {
+      for (final c in calls) {
+        final fn = shared[c];
+        if (fn != null && used.add(c)) visit(fn.calls);
+      }
+    }
+    for (final fn in app.remoteActions) {
+      visit(fn.calls);
+    }
+    remoteBytecode = compile(
+        _bundle([
+          generated['.generated/remote_state.dart']!,
+          for (final name in used) stripTests(app.files.read(app.at(shared[name]!.file))!),
+          for (final f in remoteFiles) stripTests(app.files.read(app.at(f))!),
+          generated['.generated/remote_main.dart']!,
+        ]),
+        'app/actions/$remoteFolder');
+    if (remoteBytecode == null) return null;
+    outputs[app.at('.generated/remote_program.evc')] = remoteBytecode;
   }
   outputs[app.at('.generated/program.evc')] = bytecode;
 
   final manifest = {
     'actions': [for (final f in app.actions) f.name],
+    'remote': [for (final f in app.remoteActions) f.name],
     'bindings': [for (final f in app.bindings) f.name],
     'animated': {
       for (final f in app.bindings)
@@ -192,7 +240,17 @@ Map<String, dynamic>? _generate(
     'description': app.description,
     'start': ?app.start,
     'ui': {'widgets': app.widgets},
-    'state': app.state,
+    'state': app.clientState,
+    // Each client field's scope (ephemeral, local, remote, shared).
+    'scopes': {for (final f in app.fieldsIn(clientScopes)) f: app.scopes[f]},
+    'backend': ?app.backend,
+    // The remote actions, run on the device when there is no backend.
+    if (remoteBytecode != null)
+      'remote': {
+        'program': base64Encode(remoteBytecode),
+        'system': app.systemState,
+        'fields': app.fieldsIn(remoteScopes),
+      },
     'navigation': app.navigationDoc,
     'labels': app.labels,
     'language': app.defaultLanguage,

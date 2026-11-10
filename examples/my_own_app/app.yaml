@@ -1,23 +1,32 @@
-# metacode: the root app, the my-own.app landing page. `state:` holds the initial
-# state; its types are in app/models/state.yaml. `start:` runs when the app
-# opens: the example chat plays (types the question, then the answer).
+# metacode: the root app, the my-own.app landing page. `state:` holds the
+# initial state by scope (docs/STATE_ARCHITECTURE.md); its types are in
+# app/models/state.yaml. `start:` runs when the app opens: the example chat
+# plays (types the question, then the answer). The waitlist runs on the
+# backend: `joinWaitlist` calls the remote action of the same name.
 name: metacode
 start: playExample
 description: My Own App website, an AI-driven app where you build and use your own
   customized app in minutes.
 version: 0.1.0
 state:
-  idea: ''
-  appKind: custom
-  buildStep: 0
-  appColor: orange
-  appPhotos: false
-  appStreak: false
-  tweaking: false
-  email: ''
-  waitlistStatus: invalid
-  waitlistCount: 1284
-  exampleIndex: 0
-  chatStage: 0
-  config:
-    astrology: false
+  ephemeral:
+    email: ''
+    waitlistStatus: idle
+    chatStage: 0
+    buildStep: 0
+    tweaking: false
+    exampleIndex: 0
+  local:
+    idea: ''
+    appKind: custom
+    appColor: orange
+    appPhotos: false
+    appStreak: false
+  remote:
+    waitlistEmail: ''
+  system:
+    waitlist: []
+  shared:
+    waitlistCount: 1284
+    config:
+      astrology: false

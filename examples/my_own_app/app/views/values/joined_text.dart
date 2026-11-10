@@ -3,4 +3,4 @@ import '../../../.generated/labels.dart';
 import '../../../.generated/state.dart';
 
 String joinedText(State state, Labels labels) =>
-    '${labels.weWillEmail} ${state.email} ${labels.whenYourSpotOpens}';
+    '${labels.weWillEmail} ${state.waitlistEmail} ${labels.whenYourSpotOpens}';

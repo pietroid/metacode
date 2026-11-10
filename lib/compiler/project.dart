@@ -66,7 +66,46 @@ class AppProject {
   /// first shown, and when `core.modules.reset` starts it over).
   String? start;
   Map<String, Model> models = {};
+
+  /// app.yaml `state:`, every scope's fields flattened into one map (field
+  /// names are unique across scopes). See [scopes].
   Map<String, dynamic> state = {};
+
+  /// Each state field's scope (`ephemeral`, `local`, `remote`, `system`,
+  /// `shared`; see `stateScopes`). A flat `state:` (no scopes) is all
+  /// `local`.
+  Map<String, String> scopes = {};
+
+  /// app.yaml `backend:` (root only): the backend's URL, if any.
+  String? backend;
+
+  /// Remote actions (`app/actions/remote/`): run on the backend, called by
+  /// local actions through `Remote`.
+  List<UserFunction> remoteActions = [];
+
+  /// The fields of [scopeNames], in declaration order.
+  List<String> fieldsIn(Set<String> scopeNames) => [
+        for (final f in state.keys)
+          if (scopeNames.contains(scopes[f] ?? 'local')) f,
+      ];
+
+  /// The initial state the client starts from: every field but `system`.
+  Map<String, dynamic> get clientState => {
+        for (final f in fieldsIn(clientScopes)) f: state[f],
+      };
+
+  /// The `system` fields' seeds.
+  Map<String, dynamic> get systemState => {
+        for (final f in fieldsIn(const {'system'})) f: state[f],
+      };
+
+  /// Models with the client's `State` (no `system` fields).
+  Map<String, Model> get clientModels =>
+      stateModelsFor(models, scopes, clientScopes);
+
+  /// Models with the backend's `State` (`remote`, `shared`, `system`).
+  Map<String, Model> get remoteModels =>
+      stateModelsFor(models, scopes, remoteScopes);
   Map<String, dynamic> widgets = {};
 
   /// Widget id -> its file (`app/views/components/hero.yaml`).
@@ -154,9 +193,18 @@ AppProject loadApp(ProjectFiles files, String path, Issues root,
     app.description = appYaml['description']?.toString() ?? '';
     final start = appYaml['start'];
     if (start != null) app.start = start.toString();
+    final backend = appYaml['backend'];
+    if (backend != null) {
+      if (prefix.isNotEmpty) {
+        issues.error('app.yaml', 'backend',
+            'only the root app sets the backend; modules use it too');
+      } else {
+        app.backend = backend.toString();
+      }
+    }
     final state = appYaml['state'];
     if (state is Map) {
-      app.state = Map<String, dynamic>.from(state);
+      app.state = flattenState(state, app.scopes, issues, 'app.yaml');
     }
   } else {
     if (!files.exists(app.at('app.yaml'))) {
@@ -172,11 +220,34 @@ AppProject loadApp(ProjectFiles files, String path, Issues root,
   // Models and enums; each file declares exactly one. The reserved `state`
   // model lives in models/state.yaml.
   final models = _readSingleParents(reader, 'app/models', issues, camelCase);
+  final stateDoc = models[stateModelName];
+  if (stateDoc is Map) {
+    // state.yaml has the same shape as app.yaml's `state:` (by scope, or
+    // flat); its scopes must match.
+    final modelScopes = <String, String>{};
+    models[stateModelName] = flattenState(
+        stateDoc, modelScopes, issues, 'app/models/state.yaml');
+    if (isScopedState(stateDoc) != isScopedState(appYaml is Map && appYaml['state'] is Map ? appYaml['state'] as Map : const {})) {
+      issues.error('app/models/state.yaml', 'state',
+          'app.yaml\'s state: and state.yaml must both be split by scope '
+          '(${stateScopes.join(', ')}) or both be flat');
+    } else {
+      for (final e in modelScopes.entries) {
+        final scope = app.scopes[e.key];
+        if (scope != null && scope != e.value) {
+          issues.error('app/models/state.yaml', 'state.${e.value}.${e.key}',
+              'is in ${e.value} here but in $scope in app.yaml');
+        }
+      }
+    }
+  }
   app.models = parseModels(models, issues, file: 'app/models/');
 
   validateState({'state': app.state}, app.models, issues);
 
   app.actions = readFunctions(app.files, app.dir, 'app/actions', 'actions', app.models, issues);
+  app.remoteActions = readFunctions(app.files, app.dir, 'app/actions/$remoteFolder',
+      'remote', app.models, issues);
   app.bindings =
       readFunctions(app.files, app.dir, 'app/views/values', 'values', app.models, issues);
   app.shared = [
@@ -209,6 +280,22 @@ AppProject loadApp(ProjectFiles files, String path, Issues root,
           'the file must be named after its function: ${snakeCase(fn.name)}.dart');
     }
   }
+
+  final remoteSeen = <String, String>{
+    for (final fn in app.shared) fn.name: fn.file,
+  };
+  for (final fn in app.remoteActions) {
+    final other = remoteSeen[fn.name];
+    if (other != null) {
+      issues.error(fn.file, fn.name, 'also defined in $other; names must be unique');
+    }
+    remoteSeen[fn.name] = fn.file;
+    if (baseName(fn.file) != snakeCase(fn.name)) {
+      issues.error(fn.file, fn.name,
+          'the file must be named after its function: ${snakeCase(fn.name)}.dart');
+    }
+  }
+  _checkScopes(app, issues);
 
   _readLabels(app, reader, issues);
   for (final key in app.defaultLabels.keys) {
@@ -293,6 +380,38 @@ AppProject loadApp(ProjectFiles files, String path, Issues root,
   }
 
   return app;
+}
+
+/// What each kind of code may touch, by the fields' scopes: local code
+/// never sees `system` and never emits `shared`; remote actions never see
+/// `ephemeral` or `local` (pass what they need as their argument).
+void _checkScopes(AppProject app, Issues issues) {
+  String scopeOf(String field) => app.scopes[field] ?? 'local';
+  bool isField(String f) => app.scopes.containsKey(f);
+  for (final fn in [...app.actions, ...app.bindings]) {
+    for (final f in fn.reads.where(isField)) {
+      if (scopeOf(f) == 'system') {
+        issues.error(fn.file, fn.name, '"$f" is system state: only remote '
+            'actions (app/actions/$remoteFolder/) read it');
+      }
+    }
+    for (final f in fn.writes.where(isField)) {
+      final scope = scopeOf(f);
+      if (scope == 'system' || scope == 'shared') {
+        issues.error(fn.file, fn.name, '"$f" is $scope state: only remote '
+            'actions (app/actions/$remoteFolder/) change it');
+      }
+    }
+  }
+  for (final fn in app.remoteActions) {
+    for (final f in {...fn.reads, ...fn.writes}.where(isField)) {
+      final scope = scopeOf(f);
+      if (!remoteScopes.contains(scope)) {
+        issues.error(fn.file, fn.name, '"$f" is $scope state, which stays on '
+            'the device; pass what a remote action needs as its value');
+      }
+    }
+  }
 }
 
 /// Reads `tests/<name>.yaml`: `name: {state: {stage: plan, ...}, route: x}`.

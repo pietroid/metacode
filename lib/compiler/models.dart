@@ -229,3 +229,81 @@ void _validateValue(dynamic value, TypeRef type, Map<String, Model> models,
       }
   }
 }
+
+/// The five state scopes, in order (docs/STATE_ARCHITECTURE.md): where a
+/// field lives and who can read and write it.
+///
+/// - `ephemeral`: client memory, gone on reload.
+/// - `local`: saved on the device (`.state/state.yaml`).
+/// - `remote`: the user's own, saved on the backend and mirrored on the
+///   client; local actions write it (synced up).
+/// - `system`: backend only; only remote actions read or write it.
+/// - `shared`: one copy on the backend, mirrored on every client; only
+///   remote actions write it.
+const stateScopes = ['ephemeral', 'local', 'remote', 'system', 'shared'];
+
+/// The scopes the client's `State` has (no `system`).
+const clientScopes = {'ephemeral', 'local', 'remote', 'shared'};
+
+/// The scopes local actions emit (`StateDelta`).
+const clientDeltaScopes = {'ephemeral', 'local', 'remote'};
+
+/// The scopes remote actions read and emit.
+const remoteScopes = {'remote', 'shared', 'system'};
+
+/// Whether a `state:` map (app.yaml's, or state.yaml's) is split by scope:
+/// every key is a scope and every value a map (or empty).
+bool isScopedState(Map map) =>
+    map.isNotEmpty &&
+    map.keys.every((k) => stateScopes.contains(k.toString())) &&
+    map.values.every((v) => v == null || v is Map);
+
+/// A scoped `state:` map flattened into one map of fields, with each field's
+/// scope in [scopes]. A field in two scopes is reported in [issues]. An
+/// unscoped (flat) map is all `local`.
+Map<String, dynamic> flattenState(Map map, Map<String, String> scopes,
+    Issues issues, String file) {
+  if (!isScopedState(map)) {
+    for (final k in map.keys) {
+      scopes[k.toString()] = 'local';
+    }
+    return {for (final e in map.entries) e.key.toString(): e.value};
+  }
+  final out = <String, dynamic>{};
+  for (final scope in stateScopes) {
+    final fields = map[scope];
+    if (fields is! Map) continue;
+    for (final e in fields.entries) {
+      final key = e.key.toString();
+      final other = scopes[key];
+      if (other != null) {
+        issues.error(file, 'state.$scope.$key',
+            'is also in $other; field names are unique across scopes');
+        continue;
+      }
+      scopes[key] = scope;
+      out[key] = e.value;
+    }
+  }
+  return out;
+}
+
+/// [models] with the `state` model reduced to the fields of [scopes]
+/// (by [fieldScopes]).
+Map<String, Model> stateModelsFor(Map<String, Model> models,
+    Map<String, String> fieldScopes, Set<String> scopes) {
+  final state = models[stateModelName];
+  if (state is! ClassModel) return models;
+  return {
+    ...models,
+    stateModelName: ClassModel(stateModelName, {
+      for (final e in state.fields.entries)
+        if (scopes.contains(fieldScopes[e.key] ?? 'local')) e.key: e.value,
+    }),
+  };
+}
+
+/// Validates one value against [type] (a remote field sent by a client).
+void validateValue(dynamic value, TypeRef type, Map<String, Model> models,
+        Issues issues, String path, {String file = 'value'}) =>
+    _validateValue(value, type, models, issues, path, file);

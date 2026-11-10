@@ -1,0 +1,7 @@
+.dart_frog/
+.dart_tool/
+build/
+# The state documents (system, shared, users), when run with the default
+# METACODE_DATA.
+.backend/
+.backend.log

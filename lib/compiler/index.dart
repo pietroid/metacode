@@ -77,6 +77,8 @@ String generateIndex(AppProject app) {
       final writers = [
         for (final fn in app.actions)
           if (fn.writes.contains(field)) fn.name,
+        for (final fn in app.remoteActions)
+          if (fn.writes.contains(field)) 'remote ${fn.name}',
       ];
       final readers = [
         for (final fn in functions)
@@ -86,7 +88,9 @@ String generateIndex(AppProject app) {
         if (writers.isNotEmpty) 'w: ${list(writers)}',
         if (readers.isNotEmpty) 'r: ${list(readers)}',
       ];
+      final scope = app.scopes[field];
       line('- $field: $type = ${_initial(app.state[field])}'
+          '${scope == null || scope == 'local' ? '' : ' ($scope)'}'
           '${parts.isEmpty ? '' : ' · ${parts.join(' · ')}'}');
     }
   }
@@ -176,6 +180,8 @@ String generateIndex(AppProject app) {
   }
 
   fns('Actions', app.actions, true);
+  fns('Remote actions (app/actions/remote/, on the backend)',
+      app.remoteActions, true);
   fns('Values', app.bindings, false);
   fns('Shared', app.shared, false, shared: true);
 

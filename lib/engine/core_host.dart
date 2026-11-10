@@ -7,6 +7,7 @@ import 'host_plugin.dart';
 import 'locale.dart';
 import 'navigation.dart';
 import 'state_bloc.dart';
+import 'sync/remote_backend.dart';
 
 /// What actions reach through `Core` and `emit`, in the running app.
 ///
@@ -19,6 +20,8 @@ import 'state_bloc.dart';
 /// - `core.locale.set` picks the language of the whole app ([locale]).
 /// - `core.modules.reset` starts one of this app's modules over
 ///   ([resetModule]).
+/// - `remote.<name>()` runs a remote action on [remote] (the backend, or
+///   the device without one); `remote` fields emitted go up to it.
 class CoreHost implements MetacodeHost {
   final StateBloc bloc;
   final Navigation navigation;
@@ -32,6 +35,10 @@ class CoreHost implements MetacodeHost {
   /// Starts this app's module [name] over (`core.modules.reset`).
   final void Function(String name) resetModule;
 
+  /// Where `remote` and `shared` state lives and remote actions run; null
+  /// when the app has none.
+  final RemoteBackend? remote;
+
   CoreHost({
     required this.resetModule,
     required this.bloc,
@@ -39,6 +46,7 @@ class CoreHost implements MetacodeHost {
     required this.navigatorKey,
     required this.locale,
     required this.render,
+    this.remote,
     http.Client? client,
   }) : client = client ?? http.Client();
 
@@ -56,9 +64,24 @@ class CoreHost implements MetacodeHost {
         : navigatorKey.currentState;
   }
 
+  /// Applies [delta] at once; its `remote` fields also go up to [remote]
+  /// (offline first: the device's copy is the one the app runs on).
   @override
-  void emit(Map<String, dynamic> delta) =>
-      bloc.setState({...bloc.state, ...delta});
+  void emit(Map<String, dynamic> delta) {
+    final scopes = bloc.config.scopes;
+    // The client can't change shared state (StateDelta has no such field;
+    // this keeps a hand-made delta out too).
+    final allowed = {
+      for (final e in delta.entries)
+        if (scopes[e.key] != 'shared') e.key: e.value,
+    };
+    bloc.setState({...bloc.state, ...allowed});
+    final up = {
+      for (final e in allowed.entries)
+        if (scopes[e.key] == 'remote') e.key: e.value,
+    };
+    if (up.isNotEmpty) remote?.changed(up);
+  }
 
   @override
   Future<Object?> call(String op, Map<String, dynamic> args) async {
@@ -77,6 +100,11 @@ class CoreHost implements MetacodeHost {
       case 'modules.reset':
         resetModule(args['name'] as String);
         return null;
+      case 'remote.call':
+        final backend = remote;
+        if (backend == null) return 'failed';
+        return backend.call(args['name'] as String, args['value'],
+            locale: locale.language);
     }
     debugPrint('metacode: unknown host operation "$op"');
     return null;

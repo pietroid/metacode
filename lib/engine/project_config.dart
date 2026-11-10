@@ -17,8 +17,27 @@ class ProjectConfig {
   final String projectName;
   final String description;
   final Map<String, dynamic> ui;
+  /// The client's initial state: every field but `system`'s.
   final Map<String, dynamic> initialState;
   final MetacodeProgram program;
+
+  /// Each client field's scope: `ephemeral`, `local`, `remote`, `shared`
+  /// (docs/STATE_ARCHITECTURE.md). Empty for an app whose state isn't
+  /// split: every field is then `local`.
+  final Map<String, String> scopes;
+
+  /// The remote actions' program (app/actions/remote/), run on the device
+  /// when there is no backend; null when the app has none.
+  final MetacodeProgram? remoteProgram;
+
+  /// The `system` fields' seeds (app.yaml), for running without a backend.
+  final Map<String, dynamic> systemSeed;
+
+  /// The fields remote actions see: `remote`, `shared` and `system`.
+  final List<String> remoteFields;
+
+  /// The backend's URL (root app.yaml `backend:`), if any.
+  final String? backend;
 
   /// app.yaml `start:`: the action run when the app starts, if any.
   final String? start;
@@ -40,6 +59,12 @@ class ProjectConfig {
   /// theme of the app that embeds them.
   final bool hasOwnStyle;
 
+  /// Whether the app has state on the backend (`remote` or `shared` fields)
+  /// or remote actions, so it syncs.
+  bool get syncs =>
+      remoteProgram != null ||
+      scopes.values.any((s) => s == 'remote' || s == 'shared');
+
   /// Modules by folder name, embedded with the `module:` widget.
   final Map<String, ProjectConfig> modules;
 
@@ -54,6 +79,11 @@ class ProjectConfig {
     required this.ui,
     required this.initialState,
     required this.program,
+    this.scopes = const {},
+    this.remoteProgram,
+    this.systemSeed = const {},
+    this.remoteFields = const [],
+    this.backend,
     this.start,
     this.labels = const {},
     this.defaultLanguage,
@@ -84,12 +114,27 @@ class ProjectConfig {
     final bytecode = base64Decode(json['program'] as String);
     final style = json['style'];
     final navigation = json['navigation'];
+    final remote = json['remote'] as Map?;
     return ProjectConfig(
       projectName: json['name'] as String? ?? 'metacode',
       description: json['description'] as String? ?? '',
       ui: Map<String, dynamic>.from(json['ui'] as Map),
       initialState: Map<String, dynamic>.from(json['state'] as Map? ?? {}),
       program: MetacodeProgram(ByteData.sublistView(bytecode), manifest),
+      scopes: {
+        for (final e in ((json['scopes'] as Map?) ?? const {}).entries)
+          e.key.toString(): e.value.toString(),
+      },
+      remoteProgram: remote == null
+          ? null
+          : MetacodeProgram(
+              ByteData.sublistView(base64Decode(remote['program'] as String)),
+              {'remote': manifest['remote']}),
+      systemSeed: Map<String, dynamic>.from((remote?['system'] as Map?) ?? {}),
+      remoteFields: [
+        for (final f in (remote?['fields'] as List?) ?? const []) f.toString(),
+      ],
+      backend: json['backend'] as String?,
       start: json['start'] as String?,
       labels: _labels(json['labels']),
       defaultLanguage: json['language'] as String?,

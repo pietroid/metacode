@@ -30,6 +30,34 @@
       "type": "shell",
       "command": "dart run tool/metacode.dart check",
       "problemMatcher": []
+    },
+    {
+      "label": "metacode: backend",
+      "detail": "Starts the Dart Frog backend (server/) on http://localhost:8080 in the background, for examples/my_own_app (data in server/.backend/), and returns once it answers. Keeps running; stop it with the task \"metacode: backend stop\", logs with \"metacode: backend logs\".",
+      "type": "shell",
+      "command": "tool/backend.sh",
+      "problemMatcher": [],
+      "presentation": { "reveal": "silent", "revealProblems": "onProblem" }
+    },
+    {
+      "label": "metacode: backend stop",
+      "type": "shell",
+      "command": "tool/backend.sh stop",
+      "problemMatcher": []
+    },
+    {
+      "label": "metacode: backend logs",
+      "type": "shell",
+      "command": "tool/backend.sh logs",
+      "isBackground": true,
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "metacode: generate + backend",
+      "dependsOn": ["metacode: generate", "metacode: backend"],
+      "dependsOrder": "sequence",
+      "problemMatcher": []
     }
   ]
 }

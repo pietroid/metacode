@@ -1,8 +1,19 @@
 # fixture: the engine's test app (test/engine_test.dart): one of each engine
 # feature, nothing else. Not a real app; change it only with the engine.
+# One field of each state scope; `vote` (app/actions/remote/) is the remote
+# action.
 name: fixture
 description: The engine's test app.
 start: markStarted
 state:
-  count: 0
-  started: false
+  ephemeral:
+    voteError: ''
+  local:
+    count: 0
+    started: false
+  remote:
+    nickname: ''
+  system:
+    voters: []
+  shared:
+    votes: 0

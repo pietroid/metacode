@@ -9,10 +9,11 @@ Contents: [Files](#files) · [Types](#types) · [Actions and values](#actions-an
 An app is a folder. The root app is `examples/my_own_app/`; modules live in `modules/<name>/` and have the same layout (recursive). Never edit `.generated/`; it is hidden.
 
 ```
-app.yaml                         name, description, version, state: initial values, start: an action
+app.yaml                         name, description, version, state: initial values by scope, start: an action, backend: a URL (root)
 app/
   actions/*.dart                 actions, one per file, its tests in main() below it
   actions/shared/*.dart          helpers any action or value can call, one function per file
+  actions/remote/*.dart          remote actions: run on the backend, called with remote.<name>()
   models/*.yaml                  models and enums, one per file (state.yaml: the state)
   models/sample.dart             sample states for tests: sample()
   views/
@@ -83,12 +84,36 @@ state:                # reserved -> class State
   filter: filter
 ```
 
+### State scopes
+
+`state:` (in app.yaml and state.yaml, the same shape) can be split by scope: where each field lives and who writes it. Field names are unique across scopes; code still sees one flat `State`. A flat `state:` (no scopes) is all `local`.
+
+| scope | lives in | local actions & values | remote actions |
+|---|---|---|---|
+| `ephemeral` | memory, gone on reload (form input, loading flags, animation steps) | read, write | no |
+| `local` | this device (`.state/state.yaml`) | read, write | no |
+| `remote` | the user's, on the backend, mirrored here | read, write (applied at once, synced up) | read, write (the caller's) |
+| `system` | the backend only | **no** (not in `State`) | read, write |
+| `shared` | one copy on the backend, mirrored on every client | read only (not in `StateDelta`) | read, write |
+
+```yaml
+# app.yaml
+state:
+  ephemeral: {email: '', waitlistStatus: idle}
+  local: {idea: ''}
+  remote: {waitlistEmail: ''}
+  system: {waitlist: []}
+  shared: {waitlistCount: 0}
+```
+
+For `remote`, `system` and `shared` the app.yaml values are seeds (a new user, an empty backend). The rule: the client writes what is its own; anything trusted or seen by others is written only by a remote action. Syncing is the engine's job: no fetch, push or cache code in the app. Without `backend:` (or in tests and the layout check) remote actions run on the device. After changing the state's shape, run `tool/reset_state.sh`.
+
 Generated classes have mutable fields, a named-parameter constructor (`Task(title: ..., tags: [...])`) and `copyWith(...)`. Import them with `import '../../.generated/state.dart';` from app/actions/ (`../../../.generated/` from app/views/values/).
 
 ## Actions and values
 
 ```dart
-Future<void> actionName(State state, [void Function(StateDelta) emit], [Core core], [Labels labels], [int index], [<type> value])
+Future<void> actionName(State state, [void Function(StateDelta) emit], [Core core], [Remote remote], [Labels labels], [int index], [<type> value])
 T valueName(State state, [Labels labels], [int index])   // returns a value for the UI
 ```
 
@@ -102,6 +127,7 @@ Future<void> addTask(State state, void Function(StateDelta) emit) async {
 - The first parameter is always `State`. Others are matched **by name**:
   - `emit` (`void Function(StateDelta)`, actions only): applies a `StateDelta`. Call it as often as needed (loading, then result).
   - `core` (`Core`, actions only): `core.api` and `core.navigator`, see below.
+  - `remote` (`Remote`, actions only): the remote actions, see [Remote actions](#remote-actions). Import `.generated/remote.dart`.
   - `labels` (`Labels`): the text from app/views/labels/ as getters (`labels.peopleOnTheList`), in the language shown; `labels.locale` is that language (`pt_br`), `labels.locales` all of them. Import `.generated/labels.dart` relative to the file.
   - `index` (int): position of the item inside a `listView`/`gridView` `itemBuilder`, or the `index:` a component is called with (`ExampleChip: {index: 0}`)
   - `value` (String | bool | num | int | double): the new value from an input (see each widget's notes for its type)
@@ -109,6 +135,28 @@ Future<void> addTask(State state, void Function(StateDelta) emit) async {
 - `state` is a fresh copy taken when the action starts; it does not see its own emits.
 - Values return a primitive, a model, an enum, or a `List` of those (nullable allowed).
 - A color prop (`color`, `borderColor`, `style: {color: ...}`) takes a value returning a color name or hex, as it takes a label: `color: chipFill`.
+
+### Remote actions
+
+`app/actions/remote/<name>.dart`: one action, one backend endpoint. It sees the caller's `remote` fields, `shared` and `system` (import `.generated/remote_state.dart`, not `state.dart`), runs one at a time per app (so `count + 1` can't race) and takes one optional `value`, the input from the client: untrusted, validate it. `throw RemoteError('code')` refuses: nothing it emitted is kept. Its `system` changes are saved and never sent; `shared` ones reach every client, `remote` ones the caller's devices. A local and a remote action may share a name; helpers in `app/actions/shared/` are bundled with both.
+
+```dart
+Future<void> name(State state, [void Function(StateDelta) emit], [<type> value])   // app/actions/remote/
+Future<RemoteError?> remote.name(value)   // in a local action: null when done, its changes already in state
+```
+
+```dart
+// app/actions/join_waitlist.dart (local)
+emit(StateDelta(waitlistStatus: WaitlistStatus.sending));
+final error = await remote.joinWaitlist(email);   // error.code: the refusal, offline, failed
+emit(StateDelta(waitlistStatus: error == null ? WaitlistStatus.idle : WaitlistStatus.failed));
+
+// app/actions/remote/join_waitlist.dart
+if (!looksLikeEmail(value)) throw RemoteError('invalidEmail');
+emit(StateDelta(waitlist: [...state.waitlist, value], waitlistCount: state.waitlistCount + 1, waitlistEmail: value));
+```
+
+Offline, `remote.<name>()` returns `RemoteError('offline')` at once (not queued); what must happen even offline belongs in `remote` fields, which sync later. Tests: `app.<action>(state)` runs the remote action in-process too; `app.remoteCalls` lists the calls, `app.system` is the backend's `system` (seeded from app.yaml), `app.offline = true` makes calls fail.
 - **Animation**: mark a value `@Animated(ms: 240, curve: 'easeOutCubic', reverseMs: 0)` (all optional; defaults 220, easeOut; `reverseMs` is the duration when a number goes down, 0 = at once) and, when its result changes, every color or number it feeds eases from the old result to the new one on the screen. The value stays pure (it returns the target; test it as usual) and the state switches at once: only the drawing eases. It returns a `String` (a color) or a number (`opacity`, `reveal`). It snaps when the device asks for reduced motion. Curves: linear, easeIn, easeOut, easeInOut, easeOutCubic, easeInOutCubic, fastOutSlowIn, decelerate, easeOutBack, elasticOut. One value per animated prop: a chip that fills in when selected is `chipFill`, `chipBorder`, `chipInk`, each `@Animated`. Sequences are state: a `chatStage` number stepped by an action (`emit`, `await Future.delayed(...)`, `emit`), each stage's values animating what it shows (`container.opacity`, `text.reveal` to type text out).
 - Text that depends on state is a value that joins labels: `'${state.count} ${labels.peopleOnTheList}'`. Labels stay pure strings (no placeholders).
 - Names must be unique across the app's actions, values and labels (each module is separate). Private helpers start with `_`.
@@ -279,7 +327,8 @@ Actions, values and shared helpers run in dart_eval, an interpreter that covers 
 | untyped closure parameters (`(t) => t.done`) | typed: `tasks.where((Task t) => t.done)` |
 | interpolating ints from `DateTime` getters (`'${d.month}'`) | `toIso8601String()` |
 | imports other than `dart:` and the app's own files (a module can't import its parent's) | |
+| `try`/`catch` around an `await` (crashes when nothing is thrown) | check a returned value (`remote.<name>()` returns its error) |
 
-Known to work: `for`/`for in`/`while`/`do`, `break`, `switch` statements, `try`/`catch`, records, `sort` with a typed comparator, `where`/`map`/`firstWhere`/`fold`/`join`/`removeWhere`, collection `if`/`for`, `Set`, `Map` entries, `??`/`??=`, cascades, `~/`, `abs`/`clamp`/`round`, `toStringAsFixed`, `int.parse`/`double.parse`, `padLeft`/`split`/`trim`/`replaceAll`, `Future.delayed`, classes with getters and `static const`.
+Known to work: `for`/`for in`/`while`/`do`, `break`, `switch` statements, `try`/`catch` without an `await` inside, records, `sort` with a typed comparator, `where`/`map`/`firstWhere`/`fold`/`join`/`removeWhere`, collection `if`/`for`, `Set`, `Map` entries, `??`/`??=`, cascades, `~/`, `abs`/`clamp`/`round`, `toStringAsFixed`, `int.parse`/`double.parse`, `padLeft`/`split`/`trim`/`replaceAll`, `Future.delayed`, classes with getters and `static const`.
 
 An app's files are bundled into one library, so every name, private helpers included, must be unique across its files; put a helper two files need in `shared/` instead of copying it.

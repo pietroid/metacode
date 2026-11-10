@@ -1,6 +1,6 @@
 # State architecture
 
-Status: draft. Scope: where each piece of an app's state lives, who can read
+Status: built (sections 1-7; see "Implementation notes" at the end). Scope: where each piece of an app's state lives, who can read
 and write it, and how the engine keeps the client and the backend in sync.
 First use case: the my-own.app waitlist (section 6).
 
@@ -215,11 +215,14 @@ to a list) can't race.
 
 ### Calling one
 
-`remote.<name>(value)` returns a `Future<void>` that completes once the
-backend has run the action **and its changes are applied to this client's
-state**. So after `await remote.joinWaitlist(email)`, `state` already has the
-new `waitlistCount`: no fetch, no polling. If the action throws, the future
-throws a `RemoteError` the local action can catch.
+`remote.<name>(value)` returns a `Future<RemoteError?>` that completes once
+the backend has run the action **and its changes are applied to this
+client's state**, with null. So after `await remote.joinWaitlist(email)`,
+`state` already has the new `waitlistCount`: no fetch, no polling. If the
+action refuses (`throw RemoteError('code')`), the backend can't be reached
+(`offline`) or the action crashed (`failed`), it completes with that
+`RemoteError`. It's returned, not thrown: dart_eval breaks `try`/`catch`
+around an `await` that doesn't throw.
 
 ### Compiler bundles
 
@@ -236,7 +239,8 @@ action it calls, and the result shows both.
 ## 5. Sync (engine only; part 2)
 
 None of this is visible to the app. It lives in the engine
-(`lib/engine/sync/`) and a backend (`bin/server.dart`).
+(`lib/engine/sync/`) and a backend (`lib/backend/`, served by the Dart Frog
+project in `server/`).
 
 ### Offline first
 
@@ -260,8 +264,7 @@ never waits for anything. That stays true for every scope:
   depends on `shared` and `system` at the moment they run, and the UI is
   waiting on them (the loading state). Offline, `remote.<name>()` throws
   `RemoteError('offline')` at once, and the local action handles it like any
-  other error (the waitlist goes back to `idle` and can show a "try again"
-  message). Anything that must happen even offline belongs in `remote`
+  other error (the waitlist shows `failed`: a "try again" message). Anything that must happen even offline belongs in `remote`
   fields, which do sync later.
 - **No backend at all** (no `backend:` in `app.yaml`, which is how apps run
   today, in the layout check and in the editor): the engine runs everything
@@ -373,12 +376,10 @@ Future<void> joinWaitlist(State state, void Function(StateDelta) emit, Remote re
   final email = state.email.trim();
   if (!looksLikeEmail(email)) return emit(StateDelta(waitlistStatus: WaitlistStatus.invalid));
   emit(StateDelta(waitlistStatus: WaitlistStatus.sending));
-  try {
-    await remote.joinWaitlist(email);
-    emit(StateDelta(waitlistStatus: WaitlistStatus.idle));
-  } on RemoteError {
-    emit(StateDelta(waitlistStatus: WaitlistStatus.failed)); // offline or rejected: "try again"
-  }
+  final error = await remote.joinWaitlist(email);
+  emit(StateDelta(
+    waitlistStatus: error == null ? WaitlistStatus.idle : WaitlistStatus.failed, // offline or rejected: "try again"
+  ));
 }
 ```
 
@@ -406,8 +407,11 @@ remote action may share a name; they're in different bundles.
 ### Views
 
 - `waitlistJoined`: `state.waitlistEmail.isNotEmpty`.
-- `waitlistSending`: `state.waitlistStatus == WaitlistStatus.sending`, used
-  by the join button's loading state.
+- `waitlistSending`: `state.waitlistStatus == WaitlistStatus.sending`.
+- `joinButtonText`: "Joining…" while sending, else "Join waitlist" (the
+  button has no loading prop).
+- `waitlistFailed`: shows "Couldn't reach the list... try again"; typing
+  again clears it (`updateEmail`).
 - `waitlistCountText` and `joinedText` don't change, other than `joinedText`
   reading `waitlistEmail`.
 
@@ -432,7 +436,7 @@ remote action may share a name; they're in different bundles.
    `test_app` running remote calls in-process.
 2. **Client state:** `StateBloc` split by scope (ephemeral not saved, local
    as today, remote and shared cached), and the outbox.
-3. **Backend (`bin/server.dart`, shelf):** the global state documents, the
+3. **Backend (`lib/backend/`, served by Dart Frog in `server/`):** the global state documents, the
    per-app call queue, `/call`, `/state`, `/sync` (SSE), the anonymous id,
    and the file watcher.
 4. **Client sync:** SSE connection and reconnect, applying snapshots and
@@ -440,3 +444,53 @@ remote action may share a name; they're in different bundles.
 5. **Fixture app:** one field of each scope and one remote action, plus
    engine tests.
 6. **my_own_app:** the waitlist as in section 6.
+
+## Implementation notes
+
+What was built, and where it differs from the design above.
+
+- **Compiler** (`lib/compiler/`): `stateScopes`, `flattenState` and
+  `stateModelsFor` in `models.dart`; `AppProject.scopes`, `remoteActions`,
+  `clientModels`/`remoteModels` and the scope checks (`_checkScopes`: no
+  `system` read and no `shared`/`system` write from local code; no
+  `ephemeral`/`local` in remote actions) in `project.dart`. A flat
+  `state:` still works: every field is `local`. Generated per app:
+  `state.dart` (client), `remote_state.dart` (backend), `remote.dart`
+  (`Remote`), `remote_main.dart`, and `remote_program.evc` when the app has
+  remote actions. The backend program holds only the shared helpers the
+  remote actions call. The bundle has `scopes`, `backend` and `remote:
+  {program, system, fields}`.
+- **Remote calls return their error** (`Future<RemoteError?>`), see
+  "Calling one". Remote actions still refuse with `throw RemoteError(...)`;
+  the engine reads its `code` from the interpreter.
+- **Client** (`lib/engine/`): `StateBloc` saves by scope (`state.yaml`,
+  `remote.yaml`, `shared.yaml`; never `ephemeral`). `AppRuntime` gives each
+  app with `remote`/`shared` state or remote actions a `RemoteBackend`:
+  `LocalBackend` without `backend:` (also tests, the editor, the layout
+  check), else `HttpBackend` (`lib/engine/sync/`).
+  `--dart-define=METACODE_BACKEND=<url>` overrides `backend:` (`none`: no
+  backend). `core.modules.reset` keeps a module's `remote` and `shared`
+  fields.
+- **Ordering**: instead of one version per client, the client keeps the
+  version each field was last set at, so a delta that arrives after a
+  newer call response (or twice) changes nothing.
+- **Backend**: `lib/backend/backend.dart` (`MetacodeBackend`, pure Dart),
+  `api.dart` (the HTTP API, framework-free), `handler.dart` (a shelf
+  handler, for the engine's tests), `io_backend.dart` (watched folders).
+  The server is the Dart Frog project in `server/`:
+  `cd server && flutter pub get && dart_frog dev` (port 8080;
+  `METACODE_CODE`, default `../examples/my_own_app`; `METACODE_DATA`,
+  default `.backend`). Versions start from the clock, so they keep growing
+  across restarts. User ids must look like the engine's UUIDs (they name
+  files).
+- **Not done yet**: `dart_frog build` can't bundle the `path: ..`
+  dependency on the Flutter `metacode` package (it copies path
+  dependencies into `build/`). Deploying needs the pure-Dart parts
+  (`lib/compiler`, `lib/backend`, `lib/files`, the pure engine files) in
+  their own package. There's no `PUT /files` and no git webhook: the
+  server watches its code folder, so a `git pull` there is the deploy.
+  Login is not built (section 3).
+- **Tests**: `test/sync_test.dart` (scopes, `LocalBackend`, a real backend
+  on localhost with several clients, offline and the outbox, hand-edited
+  `shared.yaml`, new code without a restart), `engine_test.dart` (the
+  fixture's Vote button), the fixture's own `vote` tests.

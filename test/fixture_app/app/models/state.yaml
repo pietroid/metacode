@@ -1,4 +1,15 @@
-# state: a counter, and whether the start action ran.
+# state: a counter, whether the start action ran, and one field of each
+# other scope: the last vote's error (ephemeral), the user's nickname
+# (remote), who voted (system) and the vote count (shared).
 state:
-  count: number
-  started: boolean
+  ephemeral:
+    voteError: string
+  local:
+    count: number
+    started: boolean
+  remote:
+    nickname: string
+  system:
+    voters: list(string)
+  shared:
+    votes: number

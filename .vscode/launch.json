@@ -3,7 +3,8 @@
   "configurations": [
     {
       // Runs the project from examples/my_own_app (watched): every save
-      // recompiles inside the app, no hot reload needed.
+      // recompiles inside the app, no hot reload needed. No backend:
+      // remote actions run on the device.
       "name": "metacode (macOS)",
       "type": "dart",
       "request": "launch",
@@ -17,7 +18,8 @@
     {
       // Runs the project from localStorage, reset on every launch to the
       // files of examples/my_own_app (.generated/files.json, written by the
-      // pre-launch task). Edits in storage recompile inside the app.
+      // pre-launch task). Edits in storage recompile inside the app. No
+      // backend: remote actions run in the browser.
       "name": "metacode (web)",
       "type": "dart",
       "request": "launch",
@@ -37,6 +39,71 @@
         "--dart-define=METACODE_PROJECT_DIR=${workspaceFolder}/examples/my_own_app"
       ],
       "preLaunchTask": "metacode: generate"
+    },
+    {
+      // Starts the Dart Frog backend (server/, http://localhost:8080, the
+      // task "metacode: backend") and the app synced with it: remote
+      // actions run there, `shared` reaches every client. The backend
+      // keeps running after the app stops; its data is server/.backend/.
+      "name": "metacode + backend (macOS)",
+      "type": "dart",
+      "request": "launch",
+      "program": "lib/main.dart",
+      "deviceId": "macos",
+      "args": [
+        "--dart-define=METACODE_PROJECT_DIR=${workspaceFolder}/examples/my_own_app",
+        "--dart-define=METACODE_BACKEND=http://localhost:8080"
+      ],
+      "preLaunchTask": "metacode: generate + backend"
+    },
+    {
+      // Same, in Chrome.
+      "name": "metacode + backend (web)",
+      "type": "dart",
+      "request": "launch",
+      "program": "lib/main.dart",
+      "deviceId": "chrome",
+      "args": [
+        "--dart-define=METACODE_RESET_FILES=true",
+        "--dart-define=METACODE_BACKEND=http://localhost:8080"
+      ],
+      "preLaunchTask": "metacode: generate + backend"
+    },
+    {
+      // A client of the backend that's already running (start it with a
+      // "+ backend" config or the "metacode: backend" task). Each Chrome
+      // launch is a fresh profile: a new anonymous user. Join the waitlist
+      // in one client, watch the count change in the other.
+      "name": "metacode client (web)",
+      "type": "dart",
+      "request": "launch",
+      "program": "lib/main.dart",
+      "deviceId": "chrome",
+      "args": [
+        "--dart-define=METACODE_RESET_FILES=true",
+        "--dart-define=METACODE_BACKEND=http://localhost:8080"
+      ]
+    },
+    {
+      // A macOS client of the backend that's already running.
+      "name": "metacode client (macOS)",
+      "type": "dart",
+      "request": "launch",
+      "program": "lib/main.dart",
+      "deviceId": "macos",
+      "args": [
+        "--dart-define=METACODE_PROJECT_DIR=${workspaceFolder}/examples/my_own_app",
+        "--dart-define=METACODE_BACKEND=http://localhost:8080"
+      ]
+    }
+  ],
+  "compounds": [
+    {
+      // The backend, the macOS app and a web client, side by side.
+      "name": "metacode: backend + 2 clients",
+      "configurations": ["metacode client (macOS)", "metacode client (web)"],
+      "preLaunchTask": "metacode: generate + backend",
+      "stopAll": true
     }
   ]
 }
