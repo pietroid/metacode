@@ -1,0 +1,3 @@
+# splitMode: one of equal, shares, exact.
+# (Written from plan.yaml by the scaffold: change the plan, then scaffold again.)
+splitMode: [equal, shares, exact]

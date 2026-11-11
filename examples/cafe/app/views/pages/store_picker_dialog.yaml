@@ -1,0 +1,12 @@
+# StorePickerDialog: a dialog listing the stores to pick the pickup store, with a close button.
+StorePickerDialog:
+  padding:
+    all: 16
+    child:
+      column:
+        crossAxisAlignment: stretch
+        spacing: 12
+        children:
+          - text: {value: chooseStore, style: {variant: titleLarge}}
+          - listView: {data: storesList, itemBuilder: StorePickerRow}
+          - textButton: {text: close, onPressed: closeSheet}

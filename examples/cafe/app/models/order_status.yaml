@@ -1,0 +1,3 @@
+# orderStatus: one of placed, preparing, ready.
+# (Written from plan.yaml by the scaffold: change the plan, then scaffold again.)
+orderStatus: [placed, preparing, ready]

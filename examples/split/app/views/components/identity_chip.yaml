@@ -1,0 +1,3 @@
+# IdentityChip: a member chip, selected when it is me.
+IdentityChip:
+  choiceChip: {label: memberName, selected: memberIsMe, onSelected: setWhoAmI}

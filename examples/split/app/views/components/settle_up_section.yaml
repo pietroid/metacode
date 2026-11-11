@@ -1,0 +1,15 @@
+# SettleUpSection: the fewest transfers that zero everyone, or an all-settled message.
+SettleUpSection:
+  column:
+    spacing: 8
+    crossAxisAlignment: stretch
+    children:
+      - text: {value: settleUpTitle, style: {variant: titleMedium}}
+      - if:
+          condition: allSettledVisible
+          then: {text: {value: allSettled, style: {variant: bodyMedium, color: ink2}}}
+          else:
+            card:
+              padding: 8
+              child:
+                listView: {data: suggestedTransfers, itemBuilder: SuggestionRow}

@@ -1,0 +1,3 @@
+# PaidByChip: a member chip, selected when that member paid.
+PaidByChip:
+  choiceChip: {label: memberName, selected: paidByChipSelected, onSelected: selectPaidBy}

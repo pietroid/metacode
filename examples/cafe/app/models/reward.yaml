@@ -1,0 +1,6 @@
+# reward: a reward that can be redeemed with stars.
+# (Written from plan.yaml by the scaffold: change the plan, then scaffold again.)
+reward:
+  name: string
+  stars: number
+  icon: string

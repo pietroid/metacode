@@ -1,0 +1,11 @@
+# CategoryChip: a pill with the category name, filled when selected; tap selects it.
+CategoryChip:
+  tappable:
+    onTap: selectCategory
+    child:
+      container:
+        color: chipFill
+        radius: 999
+        padding: {horizontal: 16, vertical: 10}
+        child:
+          text: {value: categoryLabel, style: {variant: labelLarge, color: chipInk}, maxLines: 1}

@@ -1,0 +1,3 @@
+# ThemeChip: a pill with the theme icon and label, filled when selected; tap picks the theme.
+ThemeChip:
+  choiceChip: {label: themeLabel, selected: themeSelected, onSelected: selectTheme}

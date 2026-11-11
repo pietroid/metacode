@@ -1,0 +1,40 @@
+# GroupPage: balance header, identity, balances, settle up, undo, expenses and recorded transfers, with an add button.
+GroupPage:
+  scaffold:
+    appBar: {title: currentGroupName}
+    floatingActionButton:
+      floatingActionButton: {icon: add, onPressed: openAddExpense}
+    body:
+      scroll:
+        center:
+          container:
+            maxWidth: 720
+            child:
+              padding:
+                all: 16
+                child:
+                  column:
+                    spacing: 24
+                    crossAxisAlignment: stretch
+                    children:
+                      - if:
+                          condition: syncErrorVisible
+                          then:
+                            container:
+                              padding: 12
+                              radius: 12
+                              color: fill
+                              child:
+                                row:
+                                  spacing: 8
+                                  children:
+                                    - icon: {name: warning, color: danger}
+                                    - expanded: {text: {value: syncErrorText, style: {variant: bodyMedium, color: danger}}}
+                      - MyBalanceHeader
+                      - IdentityPicker
+                      - BalancesSection
+                      - SettleUpSection
+                      - UndoBar
+                      - ExpensesSection
+                      - TransfersSection
+                      - sizedBox: {height: 64}

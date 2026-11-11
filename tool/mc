@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# Metacode agent tools (tool/mcp.dart), from a kernel snapshot rebuilt when
+# its sources change, so a call starts in ~1s and stdout stays clean for MCP.
+#   tool/mc serve                        the MCP server (.mcp.json runs this)
+#   tool/mc validate examples/travel --files app/actions/a.dart,app/views/pages/main_page.yaml
+set -euo pipefail
+cd "$(dirname "$0")/.."
+snap=.dart_tool/metacode_mcp.dill
+if [ ! -f "$snap" ] || [ -n "$(find tool/mcp.dart tool/mcp lib/compiler lib/files lib/engine/host_plugin.dart packages/app_ui/lib -name '*.dart' -newer "$snap" 2>/dev/null | head -1)" ]; then
+  tmp="$snap.$$"
+  dart compile kernel tool/mcp.dart -o "$tmp" >&2 && mv "$tmp" "$snap"
+fi
+exec dart "$snap" "$@"

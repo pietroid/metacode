@@ -1,0 +1,3 @@
+# FilterCategoryChip: a chip to filter expenses by category.
+FilterCategoryChip:
+  choiceChip: {label: filterCategoryOptionText, selected: filterCategoryOptionSelected, onSelected: selectFilterCategory}

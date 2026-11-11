@@ -1,0 +1,20 @@
+# StarsCard: a primary card with the stars balance, a big count with a star, progress to the next free drink.
+StarsCard:
+  container:
+    color: primary
+    radius: 28
+    padding: 24
+    child:
+      column:
+        crossAxisAlignment: stretch
+        spacing: 12
+        children:
+          - text: {value: starsBalance, style: {variant: labelLarge, color: onPrimary}}
+          - row:
+              spacing: 8
+              crossAxisAlignment: center
+              children:
+                - text: {value: starsText, style: {variant: displayMedium, color: onPrimary}}
+                - icon: {name: star, size: 32, color: accent}
+          - progress: {value: starsProgress, circular: false, color: accent}
+          - text: {value: starsToGoText, style: {variant: bodyMedium, color: onPrimary}}

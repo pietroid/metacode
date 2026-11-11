@@ -1,0 +1,2 @@
+# groupUndo: a layout check state from the plan.
+groupUndo: {"state":{"lastDeleted":[{"id":"e9","groupId":"g1","description":"Pastéis de nata","amount":12,"originalAmount":12,"currency":"usd","category":"food","paidBy":"Dev","splitMode":"equal","owed":[{"member":"Dev","amount":6},{"member":"Ana","amount":6}]}],"syncError":"You're offline. Nothing was lost; try again."},"route":"group"}

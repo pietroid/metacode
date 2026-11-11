@@ -1,0 +1,20 @@
+# HomePage: the app bar, a heading and the list of my groups with my balance in each.
+HomePage:
+  scaffold:
+    appBar: {title: appTitle}
+    body:
+      scroll:
+        center:
+          container:
+            maxWidth: 720
+            child:
+              column:
+                crossAxisAlignment: start
+                children:
+                  - padding:
+                      left: 16
+                      right: 16
+                      top: 16
+                      bottom: 8
+                      child: {text: {value: myGroups, style: {variant: titleLarge}}}
+                  - listView: {data: groupList, itemBuilder: GroupCard}

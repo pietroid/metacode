@@ -1,0 +1,20 @@
+# SplitEditor: split mode, a hint, one row per member and the exact-amount remainder.
+SplitEditor:
+  column:
+    spacing: 8
+    crossAxisAlignment: stretch
+    children:
+      - text: {value: splitTitle, style: {variant: labelMedium, color: ink2}}
+      - dropdown:
+          value: modeValue
+          hint: splitTitle
+          options:
+            - {value: equal, text: splitEqual}
+            - {value: shares, text: splitShares}
+            - {value: exact, text: splitExact}
+          onChanged: setDraftMode
+      - text: {value: splitHintText, style: {variant: bodySmall, color: ink2}}
+      - listView: {data: currentMembers, itemBuilder: SplitMemberRow}
+      - if:
+          condition: exactRemainingVisible
+          then: {text: {value: exactRemainingText, style: {variant: bodySmall, color: danger}}}

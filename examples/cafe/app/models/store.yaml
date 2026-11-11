@@ -1,0 +1,7 @@
+# store: a shop location for pickup.
+# (Written from plan.yaml by the scaffold: change the plan, then scaffold again.)
+store:
+  name: string
+  address: string
+  distance: string
+  hours: string

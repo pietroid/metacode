@@ -1,0 +1,3 @@
+# MilkChip: a pill with the milk name, filled when selected; tap picks it.
+MilkChip:
+  choiceChip: {label: milkLabel, selected: milkSelected, onSelected: selectMilk}

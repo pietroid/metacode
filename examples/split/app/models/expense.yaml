@@ -1,0 +1,13 @@
+# expense: one expense of a group; amount and owed are in USD, originalAmount in currency.
+# (Written from plan.yaml by the scaffold: change the plan, then scaffold again.)
+expense:
+  id: string
+  groupId: string
+  description: string
+  amount: number
+  originalAmount: number
+  currency: currency
+  category: category
+  paidBy: string
+  splitMode: splitMode
+  owed: list(share)

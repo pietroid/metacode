@@ -1,0 +1,22 @@
+# FavoriteStoreRow: a store (name, address, distance) with a check icon; tap makes it the favorite.
+FavoriteStoreRow:
+  padding:
+    bottom: 8
+    child:
+      card:
+        onTap: chooseFavorite
+        padding: 16
+        child:
+          row:
+            spacing: 12
+            crossAxisAlignment: center
+            children:
+              - expanded:
+                  column:
+                    crossAxisAlignment: start
+                    spacing: 2
+                    children:
+                      - text: {value: storeName, style: {variant: titleMedium}}
+                      - text: {value: storeAddress, style: {variant: bodySmall, color: ink2}}
+                      - text: {value: storeDistance, style: {variant: bodySmall, color: ink3}}
+              - icon: {name: favoriteStoreIcon, color: favoriteStoreColor, size: 28}

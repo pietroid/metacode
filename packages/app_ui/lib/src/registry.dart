@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 
+import '../spec.dart';
 import 'clickable.dart';
 import 'ui.dart';
 import 'widgets/app_bar.dart';
@@ -105,6 +106,15 @@ const widgetBuilders = <String, UiWidgetBuilder>{
 Widget? buildCatalogWidget(Ui ui, String type, Map<String, dynamic> props) {
   final builder = widgetBuilders[type];
   if (builder == null) return null;
+  // `enabled: false` (a button's): built without its actions, so it shows
+  // disabled, runs nothing and gets no pointer cursor.
+  if (props.containsKey('enabled') && ui.resolve(props['enabled']) == false) {
+    final spec = widgetCatalog[type];
+    props = {
+      for (final e in props.entries)
+        if (spec?.props[e.key] != PropKind.action) e.key: e.value,
+    };
+  }
   final widget = builder(ui, props);
   return isClickable(ui, type, props) ? Clickable(child: widget) : widget;
 }

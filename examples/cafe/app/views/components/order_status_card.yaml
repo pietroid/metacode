@@ -1,0 +1,34 @@
+# OrderStatusCard: a hero card with a status icon in a colored circle, title, body, progress and three step dots.
+OrderStatusCard:
+  card:
+    padding: 24
+    child:
+      column:
+        crossAxisAlignment: stretch
+        spacing: 12
+        children:
+          - row:
+              spacing: 16
+              crossAxisAlignment: center
+              children:
+                - container:
+                    width: 56
+                    height: 56
+                    radius: 28
+                    color: statusColor
+                    child:
+                      center:
+                        icon: {name: statusIcon, size: 28, color: white}
+                - expanded:
+                    column:
+                      crossAxisAlignment: start
+                      spacing: 4
+                      children:
+                        - text: {value: statusTitle, style: {variant: titleLarge}}
+                        - text: {value: statusBody, style: {variant: bodyMedium, color: ink2}}
+          - progress: {value: orderProgress, circular: false, color: statusColor}
+          - row:
+              children:
+                - expanded: {child: {OrderStep: {index: 0}}}
+                - expanded: {child: {OrderStep: {index: 1}}}
+                - expanded: {child: {OrderStep: {index: 2}}}

@@ -1,0 +1,16 @@
+# OrderLineRow: an order line with its name and options on the left and its total on the right.
+OrderLineRow:
+  padding:
+    vertical: 4
+    child:
+      row:
+        spacing: 12
+        crossAxisAlignment: start
+        children:
+          - expanded:
+              column:
+                crossAxisAlignment: start
+                children:
+                  - text: {value: orderLineName, style: {variant: bodyMedium}}
+                  - text: {value: orderLineDetails, style: {variant: bodySmall, color: ink2}}
+          - text: {value: orderLineTotal, style: {variant: bodyMedium}}

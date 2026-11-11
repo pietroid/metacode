@@ -1,0 +1,2 @@
+# orderPreparing: a layout check state from the plan.
+orderPreparing: {"state":{"onboarded":true,"orders":[{"number":1043,"lines":[{"itemId":"latte","size":"large","milk":"oat","shots":1,"quantity":1}],"total":6.7,"store":0,"pickup":"now","payment":"card","status":"preparing","placedAt":"Just now"}]},"route":"order"}

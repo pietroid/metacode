@@ -1,0 +1,11 @@
+# order: a placed order and its progress.
+# (Written from plan.yaml by the scaffold: change the plan, then scaffold again.)
+order:
+  number: number
+  lines: list(cartLine)
+  total: number
+  store: number
+  pickup: pickupTime
+  payment: payment
+  status: orderStatus
+  placedAt: string

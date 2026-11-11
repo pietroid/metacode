@@ -255,8 +255,12 @@ class _UiValidator {
           node(entry.value, '$path.${entry.key}');
         }
       case PropKind.icon:
-        if (!iconNames.contains(value)) {
-          error(path, 'unknown icon "$value"; see Icons in REFERENCE.md');
+        // A value returning an icon name (`icon: tripIcon`), like a color.
+        if (bindings.contains(value)) {
+          refs.values.add(value);
+        } else if (!iconNames.contains(value)) {
+          error(path, 'unknown icon "$value"; use a name from Icons in '
+              'REFERENCE.md, or a value that returns one');
         }
       case PropKind.color:
         // A value returning a color name or hex (`color: chipFill`).

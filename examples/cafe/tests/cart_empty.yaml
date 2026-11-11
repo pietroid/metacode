@@ -1,0 +1,2 @@
+# cartEmpty: a layout check state from the plan.
+cartEmpty: {"state":{"onboarded":true,"cart":[]},"route":"cart"}

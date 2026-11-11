@@ -143,6 +143,7 @@ class Core {
       : api = Api(),
         navigator = AppNavigator(),
         locale = AppLocale(),
+        theme = AppTheme(),
         modules = AppModules();
 
   /// HTTP requests.
@@ -153,6 +154,9 @@ class Core {
 
   /// The language the whole app shows. Read it with `labels.locale`.
   final AppLocale locale;
+
+  /// Light or dark for the whole app.
+  final AppTheme theme;
 
   /// This app's modules (modules/<name>/).
   final AppModules modules;
@@ -175,6 +179,16 @@ class AppLocale {
   /// back to the device's language.
   Future<void> set(String? language) async {
     await hostCall('locale.set', jsonEncode({'locale': language}));
+  }
+}
+
+/// Light or dark for the whole app (every module too). By default it is
+/// what app/views/style/theme.yaml says (`system`: the device's).
+class AppTheme {
+  /// Shows the app `light` or `dark` from now on and on the next launches.
+  /// Null goes back to the style's (`system`: the device's).
+  Future<void> set(String? mode) async {
+    await hostCall('theme.set', jsonEncode({'theme': mode}));
   }
 }
 
@@ -243,6 +257,13 @@ void _writeEnum(StringBuffer out, EnumModel model) {
   out.writeln('  return $c.${model.values.last};');
   out.writeln('}');
   out.writeln();
+  // For an optional field: dart_eval can't unify null and an enum in a
+  // `?:`, so an `if` decides.
+  out.writeln('$c? \$${model.name}FromJsonOrNull(Object? value) {');
+  out.writeln('  if (value == null) return null;');
+  out.writeln('  return \$${model.name}FromJson(value as String);');
+  out.writeln('}');
+  out.writeln();
   out.writeln('String \$${model.name}ToJson($c value) {');
   for (final v in model.values.take(model.values.length - 1)) {
     out.writeln("  if (value == $c.$v) return '$v';");
@@ -287,6 +308,14 @@ void _writeClass(StringBuffer out, ClassModel model, Map<String, Model> models) 
     out.writeln('    );');
     out.writeln('  }');
   }
+  out.writeln();
+
+  // An optional field of this model: dart_eval can't box a class to unify
+  // it with null in a `?:` ("Cannot box"), so an `if` decides.
+  out.writeln('  static $c? fromJsonOrNull(Object? json) {');
+  out.writeln('    if (json == null) return null;');
+  out.writeln('    return $c.fromJson(json as Map);');
+  out.writeln('  }');
   out.writeln();
 
   // fromJson
@@ -336,6 +365,11 @@ String _fromJson(TypeRef t, String expr, Map<String, Model> models) {
           ClassModel m => '${m.className}.fromJson($expr as Map)',
         },
     };
+    if (t.optional) {
+      final model = models[t.name];
+      if (model is ClassModel) return '${model.className}.fromJsonOrNull($expr)';
+      if (model is EnumModel) return '\$${model.name}FromJsonOrNull($expr)';
+    }
   }
   return t.optional ? '$expr == null ? null : $inner' : inner;
 }
@@ -765,6 +799,9 @@ const _testAppHead = r'''
   /// default one. `core.locale.set` changes it.
   String? locale;
 
+  /// The theme `core.theme.set` picked (`light`, `dark`); null is the style's.
+  String? theme;
+
   Map<String, dynamic> _state = {};
 
   Future<State> _run(String name, State state,
@@ -823,6 +860,8 @@ const _testAppHead = r'''
         navigation.add('pop');
       case 'locale.set':
         locale = args['locale'] as String?;
+      case 'theme.set':
+        theme = args['theme'] as String?;
       case 'modules.reset':
         modulesReset.add(args['name'] as String);
       case 'remote.call':

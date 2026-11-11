@@ -74,7 +74,9 @@ class _MetacodeAppState extends State<MetacodeApp> {
   void initState() {
     super.initState();
     final bloc = context.read<StateBloc>();
-    _locale = AppLocale(store: bloc.store)..load();
+    _locale = AppLocale(store: bloc.store)
+      ..load()
+      ..loadTheme();
     _runtime = AppRuntime(
       config: widget.config,
       bloc: bloc,
@@ -126,7 +128,10 @@ class _MetacodeAppState extends State<MetacodeApp> {
       localizationsDelegates: GlobalMaterialLocalizations.delegates,
       theme: MetacodeTheme.build(config.style, Brightness.light),
       darkTheme: MetacodeTheme.build(config.style, Brightness.dark),
-      themeMode: widget.themeMode ?? MetacodeTheme.mode(config.style),
+      // The user's pick (core.theme.set) wins over the host's default.
+      themeMode: _locale.themeMode ??
+          widget.themeMode ??
+          MetacodeTheme.mode(config.style),
       builder: widget.selectableText ?? MetacodeApp._mousePlatform
           ? (context, navigator) => _SelectableApp(child: navigator!)
           : null,

@@ -1,0 +1,3 @@
+# FilterMemberChip: a chip to filter expenses by member.
+FilterMemberChip:
+  choiceChip: {label: filterMemberOptionText, selected: filterMemberOptionSelected, onSelected: selectFilterMember}

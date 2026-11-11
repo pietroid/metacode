@@ -1,0 +1,8 @@
+# cartLine: one configured item in the cart or in an order.
+# (Written from plan.yaml by the scaffold: change the plan, then scaffold again.)
+cartLine:
+  itemId: string
+  size: drinkSize
+  milk: milk
+  shots: number
+  quantity: number

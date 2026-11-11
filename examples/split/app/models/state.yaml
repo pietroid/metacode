@@ -1,0 +1,28 @@
+# state: the app's state, by scope (initial values in app.yaml).
+# (Written from plan.yaml by the scaffold: change the plan, then scaffold again.)
+state:
+  ephemeral:
+    draftDescription: string
+    draftAmount: string
+    draftCurrency: currency
+    draftCategory: category
+    draftPaidBy: string
+    draftMode: splitMode
+    draftChosen: list(boolean)
+    draftShares: list(string)
+    draftExact: list(string)
+    rateStatus: rateStatus
+    rate: number
+    formError: string
+    saveStatus: saveStatus
+    syncError: string
+    filterMember: string
+    filterCategory: string
+  local:
+    selectedGroup: string
+    identities: list(identity)
+    lastDeleted: list(expense)
+  shared:
+    groups: list(group)
+    expenses: list(expense)
+    transfers: list(transfer)

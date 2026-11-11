@@ -189,6 +189,71 @@ void main() {
     expect(find.byIcon(phosphorIcons['regular']!['check']!), findsOneWidget);
   });
 
+  testWidgets('enabled: false shows a button disabled and runs nothing', (tester) async {
+    final calls = await render(tester, {
+      'column': [
+        {'filledButton': {'text': 'Save', 'onPressed': 'save', 'enabled': 'canSave'}},
+        {'outlinedButton': {'text': 'Share', 'onPressed': 'share', 'enabled': 'canShare'}},
+        {'iconButton': {'icon': 'add', 'onPressed': 'add', 'enabled': false}},
+      ],
+    }, bindings: {'canSave': false, 'canShare': true}, actions: {'save', 'share', 'add'});
+    await tester.tap(find.text('Save'));
+    await tester.tap(find.text('Share'));
+    await tester.tap(find.byType(IconButton));
+    expect(calls.map((c) => c.$1), ['share']);
+    expect(tester.widget<FilledButton>(find.byType(FilledButton)).onPressed, isNull);
+  });
+
+  testWidgets('textField keyboard and progress color', (tester) async {
+    await render(tester, {
+      'column': [
+        {'textField': {'keyboard': 'decimal', 'onChanged': 'edit'}},
+        {'progress': {'value': 0.5, 'color': 'danger'}},
+      ],
+    }, actions: {'edit'});
+    final field = tester.widget<TextField>(find.byType(TextField));
+    expect(field.keyboardType, const TextInputType.numberWithOptions(decimal: true));
+    expect(tester.widget<LinearProgressIndicator>(find.byType(LinearProgressIndicator)).color, isNotNull);
+  });
+
+  testWidgets('listView horizontal: one row scrolling sideways, items get index', (tester) async {
+    await render(tester, {
+      'listView': {'data': 'chips', 'itemBuilder': {'text': 'chipName'}, 'horizontal': true},
+    }, bindings: {'chips': ['a', 'b', 'c'], 'chipName': 'Chip'});
+    expect(find.text('Chip'), findsNWidgets(3));
+    final scroll = tester.widget<SingleChildScrollView>(find.byType(SingleChildScrollView));
+    expect(scroll.scrollDirection, Axis.horizontal);
+  });
+
+  testWidgets('a scaffold shows its navigationBar as a rail on wide screens', (tester) async {
+    final nav = {
+      'scaffold': {
+        'body': 'Body',
+        'bottomBar': {
+          'navigationBar': {
+            'destinations': [{'icon': 'home', 'label': 'Home'}, {'icon': 'coffee', 'label': 'Menu'}],
+            'selected': 'tab',
+            'onSelected': 'pick',
+          },
+        },
+      },
+    };
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    tester.view.physicalSize = const Size(1200, 800);
+    var calls = await render(tester, nav, bindings: {'tab': 0}, actions: {'pick'});
+    expect(find.byType(NavigationRail), findsOneWidget);
+    expect(find.byType(NavigationBar), findsNothing);
+    expect(find.byIcon(phosphorIcons['regular']!['coffee']!), findsOneWidget);
+    await tester.tap(find.text('Menu'));
+    expect(calls.map(fmt), ['pick {value: 1}']);
+
+    tester.view.physicalSize = const Size(390, 800);
+    calls = await render(tester, nav, bindings: {'tab': 0}, actions: {'pick'});
+    expect(find.byType(NavigationRail), findsNothing);
+    expect(find.byType(NavigationBar), findsOneWidget);
+  });
+
   testWidgets('content and layout widgets render', (tester) async {
     await render(tester, {
       'scroll': {

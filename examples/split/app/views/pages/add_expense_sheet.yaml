@@ -1,0 +1,53 @@
+# AddExpenseSheet: the add expense form, scrollable, with description, amount, currency, category, payer, split and save.
+AddExpenseSheet:
+  scroll:
+    padding:
+      all: 16
+      child:
+        column:
+          spacing: 16
+          crossAxisAlignment: stretch
+          children:
+            - text: {value: addExpense, style: {variant: titleLarge}}
+            - textField: {label: description, hint: descriptionHint, onChanged: setDraftDescription}
+            - row:
+                spacing: 12
+                crossAxisAlignment: start
+                children:
+                  - expanded: {textField: {label: amount, keyboard: decimal, onChanged: setDraftAmount}}
+                  - sizedBox:
+                      width: 120
+                      child:
+                        dropdown:
+                          value: currencyValue
+                          hint: currency
+                          options:
+                            - {value: USD, text: USD}
+                            - {value: EUR, text: EUR}
+                            - {value: BRL, text: BRL}
+                          onChanged: setDraftCurrency
+            - RateLine
+            - column:
+                spacing: 8
+                crossAxisAlignment: start
+                children:
+                  - text: {value: category, style: {variant: labelMedium, color: ink2}}
+                  - dropdown:
+                      value: categoryValue
+                      hint: category
+                      options:
+                        - {value: food, text: food}
+                        - {value: travel, text: travel}
+                        - {value: home, text: home}
+                        - {value: other, text: other}
+                      onChanged: setDraftCategory
+            - PaidByPicker
+            - SplitEditor
+            - if:
+                condition: formErrorVisible
+                then: {text: {value: formErrorText, style: {variant: bodyMedium, color: danger}}}
+            - row:
+                spacing: 12
+                children:
+                  - expanded: {filledButton: {text: saveButtonText, onPressed: saveExpense, enabled: saveEnabled}}
+                  - textButton: {text: cancel, onPressed: closeSheet}

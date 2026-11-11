@@ -1,0 +1,14 @@
+# navigation: the routes; home opens first.
+# (Written from plan.yaml by the scaffold: change the plan, then scaffold again.)
+initial: home
+routes:
+  home: MainPage
+  item: ItemPage
+  cart:
+    bottomSheet: CartSheet
+  checkout: CheckoutPage
+  storePicker:
+    dialog: StorePickerDialog
+  favoritePicker:
+    dialog: FavoriteStoreDialog
+  order: OrderPage

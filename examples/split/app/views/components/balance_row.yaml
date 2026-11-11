@@ -1,0 +1,15 @@
+# BalanceRow: one member with avatar, name and signed balance with caption.
+BalanceRow:
+  padding:
+    all: 8
+    child:
+      row:
+        spacing: 12
+        children:
+          - avatar: {text: memberInitial, radius: 18}
+          - expanded: {text: {value: memberName, maxLines: 1, style: {variant: bodyMedium}}}
+          - column:
+              crossAxisAlignment: end
+              children:
+                - text: {value: memberBalanceText, style: {variant: labelLarge, color: memberBalanceColor}}
+                - text: {value: memberBalanceCaption, style: {variant: bodySmall, color: ink2}}

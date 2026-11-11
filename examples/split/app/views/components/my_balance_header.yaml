@@ -1,0 +1,11 @@
+# MyBalanceHeader: my overall position in the current group, large, with the members line below.
+MyBalanceHeader:
+  card:
+    padding: 24
+    child:
+      column:
+        spacing: 8
+        crossAxisAlignment: start
+        children:
+          - text: {value: currentMyBalanceText, style: {variant: headlineSmall, color: currentMyBalanceColor}}
+          - text: {value: currentMembersText, style: {variant: bodySmall, color: ink2}}

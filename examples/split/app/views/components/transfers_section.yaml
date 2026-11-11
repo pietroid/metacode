@@ -1,0 +1,11 @@
+# TransfersSection: the recorded transfers of the group, when there are any.
+TransfersSection:
+  if:
+    condition: transfersVisible
+    then:
+      column:
+        spacing: 8
+        crossAxisAlignment: stretch
+        children:
+          - text: {value: transfersTitle, style: {variant: titleMedium}}
+          - listView: {data: groupTransfers, itemBuilder: TransferRow}

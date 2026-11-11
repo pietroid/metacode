@@ -1,5 +1,6 @@
-# Parity: Odd or Even (the `parity` value), in both branches of MainPage's
-# fading `if`: it reads the state that flips the `if`, so the leaving branch
-# must keep showing the old parity while it fades out.
+# Parity: Odd or Even (the `parity` value) after an icon picked by a value
+# (parityIcon), in both branches of MainPage's fading `if`: it reads the
+# state that flips the `if`, so the leaving branch must keep showing the old
+# parity while it fades out.
 Parity:
-  text: parity
+  row: [{icon: {name: parityIcon}}, {text: parity}]

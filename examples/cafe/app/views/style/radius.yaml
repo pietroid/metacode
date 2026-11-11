@@ -1,0 +1,2 @@
+# radius: generous round corners, cards 20, pill chips.
+radius: {xs: 6, sm: 14, md: 20, lg: 28, pill: 999}

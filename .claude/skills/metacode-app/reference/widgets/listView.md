@@ -9,5 +9,7 @@ A list. `itemBuilder` is built once per item of `data`. Inside `scroll` it moves
 | `data` | value | value returning a list |
 | `itemBuilder` | node | values and actions inside get `index` |
 | `empty` | node |  |
+| `horizontal` | literal | true: one row that scrolls sideways (chips, cards), as tall as its tallest item |
+| `spacing` | literal | gap between items when horizontal, default 8 |
 
 Kinds are explained in REFERENCE.md (Widgets). Icons, colors and text variants: style.md.

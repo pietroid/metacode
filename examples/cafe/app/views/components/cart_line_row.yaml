@@ -1,0 +1,40 @@
+# CartLineRow: a cart line with a small tile, name and options, total, a quantity stepper and a remove button.
+CartLineRow:
+  column:
+    crossAxisAlignment: stretch
+    children:
+      - divider: {}
+      - padding:
+          vertical: 12
+          child:
+            column:
+              crossAxisAlignment: stretch
+              spacing: 8
+              children:
+                - row:
+                    spacing: 12
+                    crossAxisAlignment: center
+                    children:
+                      - container:
+                          width: 48
+                          height: 48
+                          radius: 14
+                          color: lineColor
+                          child:
+                            center:
+                              icon: {name: lineIcon, color: white}
+                      - expanded:
+                          column:
+                            crossAxisAlignment: start
+                            children:
+                              - text: {value: lineName, style: {variant: titleMedium}, maxLines: 1}
+                              - text: {value: lineDetails, style: {variant: bodySmall, color: ink2}, maxLines: 2}
+                      - text: {value: lineTotalText, style: {variant: titleMedium}}
+                - row:
+                    crossAxisAlignment: center
+                    children:
+                      - iconButton: {icon: remove, onPressed: decLine}
+                      - text: {value: lineQuantityText, style: {variant: bodyMedium}}
+                      - iconButton: {icon: add, onPressed: incLine}
+                      - spacer: {}
+                      - iconButton: {icon: delete, color: danger, onPressed: removeLine}

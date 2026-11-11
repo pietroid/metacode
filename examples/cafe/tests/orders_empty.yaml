@@ -1,0 +1,2 @@
+# ordersEmpty: a layout check state from the plan.
+ordersEmpty: {"state":{"onboarded":true,"currentTab":"orders","orders":[]}}

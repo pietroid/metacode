@@ -1,0 +1,2 @@
+# sheetExactError: a layout check state from the plan.
+sheetExactError: {"state":{"draftAmount":"50","draftMode":"exact","draftExact":["20","26","",""],"formError":"Exact amounts must add up to the total."},"route":"addExpense"}

@@ -1,0 +1,32 @@
+# ExpenseRow: one expense in a card with category icon, title, payer, amounts and a delete button.
+ExpenseRow:
+  padding:
+    vertical: 4
+    child:
+      card:
+        padding: 12
+        child:
+          row:
+            spacing: 12
+            children:
+              - container:
+                  width: 40
+                  height: 40
+                  radius: 20
+                  color: fill
+                  child:
+                    center: {icon: {name: expenseIcon, size: 20, color: primary}}
+              - expanded:
+                  column:
+                    crossAxisAlignment: start
+                    spacing: 2
+                    children:
+                      - text: {value: expenseTitle, maxLines: 1, style: {variant: titleSmall}}
+                      - text: {value: expenseSubtitle, maxLines: 1, style: {variant: bodySmall, color: ink2}}
+              - column:
+                  crossAxisAlignment: end
+                  spacing: 2
+                  children:
+                    - text: {value: expenseAmountText, style: {variant: labelLarge}}
+                    - text: {value: expenseOriginalText, style: {variant: bodySmall, color: ink3}}
+              - iconButton: {icon: delete, color: ink3, onPressed: deleteExpenseAt}

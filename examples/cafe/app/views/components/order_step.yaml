@@ -1,0 +1,8 @@
+# OrderStep: a small dot colored by progress with the step label under it.
+OrderStep:
+  column:
+    crossAxisAlignment: center
+    spacing: 4
+    children:
+      - container: {width: 12, height: 12, radius: 6, color: stepColor}
+      - text: {value: stepLabel, style: {variant: labelSmall, color: ink2}, align: center}

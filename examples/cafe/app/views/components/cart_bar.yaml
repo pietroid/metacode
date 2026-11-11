@@ -1,0 +1,22 @@
+# CartBar: a rounded primary bar with the cart icon, item count, "view cart" and the subtotal; tap opens the cart.
+CartBar:
+  tappable:
+    onTap: openCart
+    child:
+      container:
+        color: primary
+        radius: 28
+        padding: {horizontal: 20, vertical: 16}
+        child:
+          row:
+            spacing: 12
+            crossAxisAlignment: center
+            children:
+              - icon: {name: shoppingCart, color: onPrimary}
+              - expanded:
+                  column:
+                    crossAxisAlignment: start
+                    children:
+                      - text: {value: cartCountText, style: {variant: labelLarge, color: onPrimary}}
+                      - text: {value: viewCart, style: {variant: bodySmall, color: onPrimary}}
+              - text: {value: cartSubtotalShort, style: {variant: titleMedium, color: onPrimary}}

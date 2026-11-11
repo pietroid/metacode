@@ -1,0 +1,29 @@
+# SizeChip: a size choice with its label and price difference, filled when selected; tap picks it.
+SizeChip:
+  tappable:
+    onTap: selectSize
+    child:
+      if:
+        condition: sizeSelected
+        then:
+          container:
+            color: primary
+            radius: 20
+            padding: {vertical: 12}
+            child:
+              column:
+                crossAxisAlignment: center
+                children:
+                  - text: {value: sizeLabel, style: {variant: labelLarge, color: onPrimary}}
+                  - text: {value: sizeExtraText, style: {variant: bodySmall, color: onPrimary}}
+        else:
+          container:
+            color: fill
+            radius: 20
+            padding: {vertical: 12}
+            child:
+              column:
+                crossAxisAlignment: center
+                children:
+                  - text: {value: sizeLabel, style: {variant: labelLarge}}
+                  - text: {value: sizeExtraText, style: {variant: bodySmall, color: ink2}}

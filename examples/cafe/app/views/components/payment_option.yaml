@@ -1,0 +1,21 @@
+# PaymentOption: a payment row with icon, label and a check when selected; tap picks it.
+PaymentOption:
+  tappable:
+    onTap: selectPayment
+    child:
+      padding:
+        vertical: 10
+        child:
+          row:
+            spacing: 12
+            crossAxisAlignment: center
+            children:
+              - icon: {name: paymentIcon, color: ink2}
+              - expanded:
+                  text: {value: paymentLabel, style: {variant: bodyMedium}}
+              - if:
+                  condition: paymentSelected
+                  then:
+                    icon: {name: checkCircle, color: primary}
+                  else:
+                    icon: {name: radioUnchecked, color: ink3}

@@ -1,0 +1,16 @@
+# SuggestionRow: one suggested transfer with its amount and a record button.
+SuggestionRow:
+  padding:
+    all: 8
+    child:
+      row:
+        spacing: 12
+        children:
+          - expanded:
+              column:
+                crossAxisAlignment: start
+                spacing: 2
+                children:
+                  - text: {value: suggestionText, maxLines: 2, style: {variant: bodyMedium}}
+                  - text: {value: suggestionAmountText, style: {variant: labelLarge, fontWeight: bold}}
+          - outlinedButton: {text: record, onPressed: recordSuggestion}

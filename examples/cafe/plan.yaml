@@ -1,0 +1,1297 @@
+plan:
+  summary: >-
+    Ember & Oak, a neighborhood coffee shop ordering app. A short onboarding on
+    first launch (welcome, pick a favorite store, turn on rewards; skippable),
+    then four bottom tabs: Menu (category chips over a grid of colorful item
+    tiles, search by name, a floating cart bar), Rewards (a stars card, 1 star
+    per dollar, 150 stars = a free drink, and the rewards to redeem), Orders
+    (history) and Profile. Tapping an item opens a detail page to pick size,
+    milk, extra shots and quantity with a live price, then add it to the cart
+    (a bottom sheet with steppers). Checkout picks the pickup store (a dialog),
+    time and payment, and placing an order opens its status page, which
+    advances placed -> preparing -> ready on its own. Local state only, no
+    backend, no real payments. Warm, cozy and premium; must look good on a
+    phone and on desktop (wide layouts center content with a max width, the
+    menu grid gets more columns, the item page becomes two columns).
+  style: >-
+    Warm cream page (#F7F1E8), white cards, espresso brown ink (#2B1D14),
+    deep coffee primary (#6B4226), caramel accent (#D08C4A), sage success.
+    Display face a soft serif, text a friendly sans; generous round corners
+    (cards 20, chips pill), soft shadows. Dark mode: roasted dark brown page.
+
+  models:
+    category: [coffee, tea, coldDrinks, bakery]
+    drinkSize: [small, medium, large]
+    milk: [whole, oat, almond, none]
+    pickupTime: [now, in15, in30]
+    payment: [card, wallet, giftCard]
+    orderStatus: [placed, preparing, ready]
+    tab: [menu, rewards, orders, profile]
+    themeChoice: [system, light, dark]
+    menuItem:
+      purpose: one item on the menu; color and icon draw its photo-like tile
+      fields: {id: string, name: string, description: string, category: category, price: number, color: string, icon: string, customizable: boolean}
+    store:
+      purpose: a shop location for pickup
+      fields: {name: string, address: string, distance: string, hours: string}
+    cartLine:
+      purpose: one configured item in the cart or in an order
+      fields: {itemId: string, size: drinkSize, milk: milk, shots: number, quantity: number}
+    order:
+      purpose: a placed order and its progress
+      fields: {number: number, lines: list(cartLine), total: number, store: number, pickup: pickupTime, payment: payment, status: orderStatus, placedAt: string}
+    reward:
+      purpose: a reward that can be redeemed with stars
+      fields: {name: string, stars: number, icon: string}
+
+  state:
+    ephemeral:
+      search: string = ''
+    local:
+      onboarded: boolean = false
+      onboardingStep: number = 0
+      favoriteStore: number = 0
+      rewardsOn: boolean = false
+      currentTab: tab
+      category: category
+      selectedItem: number = 0
+      draftSize: drinkSize = medium
+      draftMilk: milk = whole
+      draftShots: number = 0
+      draftQuantity: number = 1
+      checkoutStore: number = 0
+      pickup: pickupTime
+      paymentMethod: payment
+      selectedOrder: number = 0
+      nextOrderNumber: number = 1043
+      stars: number = 112
+      lastRedeemed: string = ''
+      userName: string = Alex Rivera
+      notificationsOn: boolean = true
+      themeChoice: themeChoice
+      menu:
+        type: list(menuItem)
+        initial:
+        - {id: latte, name: Caffè Latte, description: "Rich espresso with steamed milk and a thin layer of foam.", category: coffee, price: 4.5, color: '#C89F7A', icon: drop, customizable: true}
+        - {id: cappuccino, name: Cappuccino, description: "Espresso under a deep cap of velvety foam.", category: coffee, price: 4.25, color: '#A9754F', icon: drop, customizable: true}
+        - {id: flatWhite, name: Flat White, description: "Two ristretto shots with silky microfoam.", category: coffee, price: 4.75, color: '#8C5A3C', icon: sparkle, customizable: true}
+        - {id: mocha, name: Mocha, description: "Espresso, dark chocolate and steamed milk.", category: coffee, price: 5.25, color: '#5C3A28', icon: favorite, customizable: true}
+        - {id: matcha, name: Matcha Latte, description: "Ceremonial matcha whisked with steamed milk.", category: tea, price: 5.0, color: '#8DA86B', icon: leaf, customizable: true}
+        - {id: chai, name: Chai Latte, description: "Spiced black tea with cinnamon and cardamom.", category: tea, price: 4.75, color: '#C27C4A', icon: leaf, customizable: true}
+        - {id: earlGrey, name: Earl Grey, description: "Black tea with bergamot, served hot.", category: tea, price: 3.25, color: '#7D6B91', icon: leaf, customizable: true}
+        - {id: coldBrew, name: Cold Brew, description: "Slow-steeped for 18 hours, smooth and bold.", category: coldDrinks, price: 4.95, color: '#3E2A20', icon: drop, customizable: true}
+        - {id: icedLatte, name: Iced Latte, description: "Espresso and cold milk over ice.", category: coldDrinks, price: 4.95, color: '#B98E6A', icon: drop, customizable: true}
+        - {id: lemonade, name: Berry Lemonade, description: "Fresh lemonade with crushed berries.", category: coldDrinks, price: 3.95, color: '#D9607A', icon: sparkle, customizable: false}
+        - {id: croissant, name: Butter Croissant, description: "Flaky, golden and baked every morning.", category: bakery, price: 3.5, color: '#E0A85A', icon: restaurant, customizable: false}
+        - {id: muffin, name: Blueberry Muffin, description: "Bursting with blueberries and a crumb top.", category: bakery, price: 3.25, color: '#6A6FB0', icon: gift, customizable: false}
+      stores:
+        type: list(store)
+        initial:
+        - {name: Downtown, address: 120 Market St, distance: 0.4 mi, hours: 6am - 8pm}
+        - {name: Riverside, address: 48 Harbor Way, distance: 1.2 mi, hours: 7am - 7pm}
+        - {name: Old Town, address: 9 Chapel Lane, distance: 2.5 mi, hours: 7am - 6pm}
+      rewards:
+        type: list(reward)
+        initial:
+        - {name: Extra shot or syrup, stars: 25, icon: plusCircle}
+        - {name: Bakery treat, stars: 100, icon: restaurant}
+        - {name: Free drink, stars: 150, icon: gift}
+        - {name: Drink and a pastry, stars: 250, icon: confetti}
+      cart:
+        type: list(cartLine)
+        initial:
+        - {itemId: latte, size: large, milk: oat, shots: 1, quantity: 1}
+        - {itemId: croissant, size: medium, milk: none, shots: 0, quantity: 2}
+      orders:
+        type: list(order)
+        initial:
+        - {number: 1042, lines: [{itemId: flatWhite, size: medium, milk: whole, shots: 0, quantity: 1}, {itemId: muffin, size: medium, milk: none, shots: 0, quantity: 1}], total: 8.0, store: 0, pickup: now, payment: card, status: ready, placedAt: 'Nov 10, 8:42 AM'}
+        - {number: 1038, lines: [{itemId: coldBrew, size: large, milk: none, shots: 1, quantity: 2}], total: 13.5, store: 1, pickup: in15, payment: wallet, status: ready, placedAt: 'Nov 7, 3:15 PM'}
+  labels:
+    appTitle: Ember & Oak
+    skip: Skip
+    next: Next
+    getStarted: Get started
+    welcomeTitle: Welcome to Ember & Oak
+    welcomeBody: Order ahead, skip the line and pick up your coffee warm and ready.
+    storeStepTitle: Pick your favorite store
+    storeStepBody: We'll use it for your pickups. You can change it anytime.
+    rewardsStepTitle: Turn on rewards
+    rewardsStepBody: Earn 1 star for every dollar. 150 stars is a free drink.
+    rewardsToggle: Collect stars on every order
+    tabMenu: Menu
+    tabRewards: Rewards
+    tabOrders: Orders
+    tabProfile: Profile
+    menuTitle: What are you craving?
+    searchHint: Search the menu
+    noResults: Nothing matches your search.
+    catCoffee: Coffee
+    catTea: Tea
+    catColdDrinks: Cold drinks
+    catBakery: Bakery
+    size: Size
+    sizeSmall: Small
+    sizeMedium: Medium
+    sizeLarge: Large
+    milkTitle: Milk
+    milkWhole: Whole
+    milkOat: Oat
+    milkAlmond: Almond
+    milkNone: No milk
+    extraShots: Extra shots
+    quantity: Quantity
+    addToCartLabel: Add to cart
+    shot: shot
+    shots: shots
+    item: item
+    items: items
+    viewCart: View cart
+    cartTitle: Your order
+    cartEmpty: Your cart is empty. Add something tasty.
+    subtotal: Subtotal
+    checkout: Checkout
+    checkoutTitle: Checkout
+    pickupStore: Pickup store
+    change: Change
+    pickupTimeTitle: Pickup time
+    pickupNow: As soon as possible
+    pickupIn15: In 15 minutes
+    pickupIn30: In 30 minutes
+    paymentTitle: Payment
+    payCard: Visa •••• 4242
+    payWallet: Mobile wallet
+    payGiftCard: Ember & Oak gift card
+    placeOrderLabel: Place order
+    youllEarn: You'll earn
+    starsWord: stars
+    chooseStore: Choose a store
+    orderTitle: Order
+    statusPlaced: Order placed
+    statusPreparing: Preparing
+    statusReady: Ready for pickup
+    statusPlacedBody: We got your order and sent it to the baristas.
+    statusPreparingBody: Your drinks are being made right now.
+    statusReadyBody: Grab it at the pickup counter. Enjoy!
+    orderDetails: Order details
+    total: Total
+    pickupAt: Pickup at
+    paidWith: Paid with
+    backToMenu: Back to menu
+    rewardsTitle: Rewards
+    starsBalance: Stars balance
+    toFreeDrink: stars to your next free drink
+    freeDrinkReady: You have a free drink waiting!
+    redeem: Redeem
+    redeemableTitle: Rewards you can redeem
+    redeemed: Redeemed. Show this at pickup.
+    rewardsOffTitle: Rewards are off
+    rewardsOffBody: Turn them on to earn 1 star for every dollar you spend.
+    turnOnRewards: Turn on rewards
+    ordersTitle: Your orders
+    noOrders: No orders yet. Your first coffee is waiting.
+    profileTitle: Profile
+    nameLabel: Your name
+    favoriteStoreTitle: Favorite store
+    notificationsTitle: Order notifications
+    notificationsBody: Tell me when my order is ready
+    appearance: Appearance
+    themeSystem: System
+    themeLight: Light
+    themeDark: Dark
+    replayOnboarding: Show the welcome tour again
+    close: Close
+  routes:
+    home: MainPage
+    item: ItemPage
+    cart: {bottomSheet: CartSheet}
+    checkout: CheckoutPage
+    storePicker: {dialog: StorePickerDialog}
+    favoritePicker: {dialog: FavoriteStoreDialog}
+    order: OrderPage
+
+  pages:
+    MainPage:
+      purpose: >-
+        If showOnboarding, the full-screen OnboardingFlow. Otherwise a
+        navigationBar with four tabs (tabMenu, tabRewards, tabOrders,
+        tabProfile; icons restaurant, star, receipt, person), selected tabIndex,
+        selectTab on tap, showing MenuTab, RewardsTab, OrdersTab or ProfileTab.
+        On wide screens the bar may become a side rail.
+      uses: [OnboardingFlow, MenuTab, RewardsTab, OrdersTab, ProfileTab, showOnboarding, tabIndex, selectTab, tabMenu, tabRewards, tabOrders, tabProfile]
+    ItemPage:
+      purpose: >-
+        The selected item. App bar with back. Phone: the big ItemHero tile on
+        top, then ItemOptions, then a bottom bar with the addToCartText button
+        running addToCart. Desktop/wide: two columns, ItemHero left, ItemOptions
+        and the button right, centered with a max width.
+      uses: [ItemHero, ItemOptions, addToCartText, addToCart]
+    CartSheet:
+      purpose: >-
+        Bottom sheet titled cartTitle with a close button: the list of CartLineRow
+        over cartLines, or cartEmpty text when cartIsEmpty; then subtotal with
+        subtotalText and a full-width checkout button (goToCheckout), disabled or
+        hidden when cartIsEmpty.
+      uses: [CartLineRow, cartLines, cartIsEmpty, subtotalText, goToCheckout, closeSheet, cartTitle, cartEmpty, subtotal, checkout, close]
+    CheckoutPage:
+      purpose: >-
+        App bar checkoutTitle with back. Sections in cards, centered max width
+        on desktop: pickupStore (checkoutStoreName, checkoutStoreAddress, a
+        change button running openStorePicker); pickupTimeTitle with
+        PickupOption rows over pickupOptions; paymentTitle with PaymentOption
+        rows over paymentOptions; a summary card (subtotal + subtotalText,
+        earnStarsText when rewardsEnabled); a full-width placeOrderLabel button running placeOrder.
+      uses: [PickupOption, PaymentOption, checkoutStoreName, checkoutStoreAddress, openStorePicker, pickupOptions, paymentOptions, subtotalText, earnStarsText, rewardsEnabled, placeOrder, placeOrderLabel, checkoutTitle, pickupStore, change, pickupTimeTitle, paymentTitle, subtotal]
+    StorePickerDialog:
+      purpose: Dialog titled chooseStore listing StorePickerRow over storesList, and a close button.
+      uses: [StorePickerRow, storesList, closeSheet, chooseStore, close]
+    FavoriteStoreDialog:
+      purpose: Dialog titled favoriteStoreTitle listing FavoritePickerRow over storesList, and a close button.
+      uses: [FavoritePickerRow, storesList, closeSheet, favoriteStoreTitle, close]
+    OrderPage:
+      purpose: >-
+        The selected order. App bar orderNumberText with back. OrderStatusCard on
+        top, then orderDetails card: OrderLineRow over orderLines, total with
+        orderTotalText, pickupAt orderStoreText and orderPickupText, paidWith
+        orderPaymentText, orderPlacedText. A backToMenu button (goToMenu).
+        Centered max width on desktop; two columns allowed when wide.
+      uses: [OrderStatusCard, OrderLineRow, orderNumberText, orderLines, orderTotalText, orderStoreText, orderPickupText, orderPaymentText, orderPlacedText, goToMenu, orderDetails, total, pickupAt, paidWith, backToMenu]
+
+  components:
+    OnboardingFlow:
+      purpose: >-
+        Full screen onboarding: a skip text button top right (skipOnboarding),
+        a big icon in a soft circle (onboardingIcon), onboardingTitle,
+        onboardingBody; on step 1 (showStoreStep) a list of FavoriteStoreRow
+        over storesList; on step 2 (showRewardsStep) a card with a toggle
+        rewardsToggle bound to rewardsEnabled running setRewards; a progress
+        indicator (onboardingProgress) and a full-width onboardingNextText
+        button running nextStep. Centered with a max width on desktop.
+      uses: [FavoriteStoreRow, onboardingIcon, onboardingTitle, onboardingBody, showStoreStep, showRewardsStep, storesList, rewardsEnabled, setRewards, onboardingProgress, onboardingNextText, nextStep, skipOnboarding, skip, rewardsToggle]
+    FavoriteStoreRow:
+      purpose: Store `index` (storeName, storeAddress, storeDistance) with a check icon favoriteStoreIcon colored favoriteStoreColor; tap runs chooseFavorite.
+      uses: [storeName, storeAddress, storeDistance, favoriteStoreIcon, favoriteStoreColor, chooseFavorite]
+    FavoritePickerRow:
+      purpose: Store `index` (storeName, storeAddress, storeDistance) with favoriteStoreIcon colored favoriteStoreColor; tap runs pickFavorite.
+      uses: [storeName, storeAddress, storeDistance, favoriteStoreIcon, favoriteStoreColor, pickFavorite]
+    StorePickerRow:
+      purpose: Store `index` (storeName, storeAddress, storeDistance) with checkoutStoreIcon colored checkoutStoreColor; tap runs pickStore.
+      uses: [storeName, storeAddress, storeDistance, checkoutStoreIcon, checkoutStoreColor, pickStore]
+    MenuTab:
+      purpose: >-
+        Header (appTitle small, menuTitle large), a search textField (searchHint,
+        search icon) running updateSearch, a horizontal row of CategoryChip over
+        categoryList (hidden while searching, isSearching), then a responsive
+        grid of MenuItemCard over visibleItems (2 columns phone, 3-4 wide) or
+        noResults text when noItems; a floating CartBar at the bottom when
+        cartHasItems.
+      uses: [CategoryChip, MenuItemCard, CartBar, updateSearch, categoryList, isSearching, visibleItems, noItems, cartHasItems, appTitle, menuTitle, searchHint, noResults]
+    CategoryChip:
+      purpose: Category `index` pill with categoryLabel, filled when categorySelected (chipFill, chipInk); tap runs selectCategory.
+      uses: [categoryLabel, categorySelected, chipFill, chipInk, selectCategory]
+    MenuItemCard:
+      purpose: Visible item `index` card - a rounded photo-like tile in itemColor with a big white itemIcon, then itemName and itemPriceText; tap runs openItem.
+      uses: [itemColor, itemIcon, itemName, itemPriceText, openItem]
+    CartBar:
+      purpose: A rounded primary bar - cart icon, cartCountText, viewCart and cartSubtotalShort on the right; tap runs openCart.
+      uses: [cartCountText, cartSubtotalShort, openCart, viewCart]
+    ItemHero:
+      purpose: A tall rounded tile in selectedColor with a big white selectedIcon, then selectedName, selectedPriceText and selectedDescription.
+      uses: [selectedColor, selectedIcon, selectedName, selectedPriceText, selectedDescription]
+    ItemOptions:
+      purpose: >-
+        When selectedCustomizable - size title and a row of
+        SizeChip over sizeOptions; milkTitle + MilkChip over milkOptions;
+        extraShots stepper (removeShot, shotsText, addShot). Always - quantity
+        stepper (decQuantity, quantityText, incQuantity).
+      uses: [SizeChip, MilkChip, selectedCustomizable, sizeOptions, milkOptions, shotsText, addShot, removeShot, quantityText, incQuantity, decQuantity, size, milkTitle, extraShots, quantity]
+    SizeChip:
+      purpose: Size `index` choice - sizeLabel and sizeExtraText under it, filled when sizeSelected; tap runs selectSize.
+      uses: [sizeLabel, sizeExtraText, sizeSelected, selectSize]
+    MilkChip:
+      purpose: Milk `index` pill - milkLabel, filled when milkSelected; tap runs selectMilk.
+      uses: [milkLabel, milkSelected, selectMilk]
+    CartLineRow:
+      purpose: Cart line `index` - a small tile (lineColor, lineIcon), lineName over lineDetails, lineTotalText, a stepper (decLine, lineQuantityText, incLine) and a remove icon button (removeLine).
+      uses: [lineColor, lineIcon, lineName, lineDetails, lineTotalText, lineQuantityText, incLine, decLine, removeLine]
+    PickupOption:
+      purpose: Pickup option `index` row - schedule icon, pickupLabel, a radio-like check when pickupSelected; tap runs selectPickup.
+      uses: [pickupLabel, pickupSelected, selectPickup]
+    PaymentOption:
+      purpose: Payment option `index` row - paymentIcon, paymentLabel, a check when paymentSelected; tap runs selectPayment.
+      uses: [paymentIcon, paymentLabel, paymentSelected, selectPayment]
+    OrderStatusCard:
+      purpose: >-
+        A hero card - statusIcon in a circle colored statusColor, statusTitle,
+        statusBody, a linear progress (orderProgress), and three step labels in
+        a row (OrderStep over orderSteps).
+      uses: [OrderStep, statusIcon, statusColor, statusTitle, statusBody, orderProgress, orderSteps]
+    OrderStep:
+      purpose: Step `index` - a small dot colored stepColor and stepLabel under it.
+      uses: [stepColor, stepLabel]
+    OrderLineRow:
+      purpose: Order line `index` - orderLineName over orderLineDetails, orderLineTotal on the right.
+      uses: [orderLineName, orderLineDetails, orderLineTotal]
+    RewardsTab:
+      purpose: >-
+        Title rewardsTitle. When rewardsEnabled - StarsCard, lastRedeemedText
+        banner when hasRedeemed, redeemableTitle and RewardRow over rewardsList.
+        Otherwise a card with rewardsOffTitle, rewardsOffBody and a
+        turnOnRewards button (enableRewards). Centered max width on desktop.
+      uses: [StarsCard, RewardRow, rewardsEnabled, hasRedeemed, lastRedeemedText, rewardsList, enableRewards, rewardsTitle, redeemableTitle, rewardsOffTitle, rewardsOffBody, turnOnRewards]
+    StarsCard:
+      purpose: A rich primary card - starsBalance label, big starsText with a star icon, a progress bar (starsProgress), starsToGoText.
+      uses: [starsText, starsProgress, starsToGoText, starsBalance]
+    RewardRow:
+      purpose: Reward `index` - rewardIcon in a circle, rewardName, rewardStarsText, a redeem button (redeemReward) enabled when rewardAvailable.
+      uses: [rewardIcon, rewardName, rewardStarsText, rewardAvailable, redeemReward, redeem]
+    OrdersTab:
+      purpose: Title ordersTitle, then OrderHistoryRow over orderHistory, or noOrders text when ordersEmpty. Centered max width on desktop.
+      uses: [OrderHistoryRow, orderHistory, ordersEmpty, ordersTitle, noOrders]
+    OrderHistoryRow:
+      purpose: Order `index` card - receipt icon, historyTitle over historySubtitle, historyTotal and a status pill (historyStatus, historyStatusColor); tap runs openOrder.
+      uses: [historyTitle, historySubtitle, historyTotal, historyStatus, historyStatusColor, openOrder]
+    ProfileTab:
+      purpose: >-
+        Title profileTitle; an avatar with profileInitials and profileName; a
+        nameLabel textField running updateName; a favoriteStoreTitle row with
+        favoriteStoreName and change (openFavoritePicker); a notificationsTitle
+        toggle (notificationsBody) bound to notificationsEnabled running
+        setNotifications; appearance with ThemeChip over themeOptions; a
+        replayOnboarding text button (restartOnboarding). Centered max width.
+      uses: [ThemeChip, profileInitials, profileName, updateName, favoriteStoreName, openFavoritePicker, notificationsEnabled, setNotifications, themeOptions, restartOnboarding, profileTitle, nameLabel, favoriteStoreTitle, change, notificationsTitle, notificationsBody, appearance, replayOnboarding]
+    ThemeChip:
+      purpose: Theme choice `index` pill - themeIcon and themeLabel, filled when themeSelected; tap runs selectTheme.
+      uses: [themeIcon, themeLabel, themeSelected, selectTheme]
+
+  actions:
+    nextStep:
+      purpose: Advances onboardingStep; on the last step (2) finishes - onboarded true, checkoutStore = favoriteStore.
+      params: [emit]
+      test: step 0 -> 1; step 2 -> onboarded true and checkoutStore equals favoriteStore.
+    skipOnboarding:
+      purpose: Sets onboarded true and checkoutStore = favoriteStore.
+      params: [emit]
+      test: onboarded becomes true.
+    restartOnboarding:
+      purpose: Sets onboarded false and onboardingStep 0.
+      params: [emit]
+      test: onboarded false and step 0.
+    chooseFavorite:
+      purpose: Sets favoriteStore to index.
+      params: [emit, index]
+      test: index 2 -> favoriteStore 2.
+    pickFavorite:
+      purpose: Sets favoriteStore to index and pops the dialog.
+      params: [emit, core, index]
+      test: favoriteStore 1 and navigation is ['pop'].
+    setRewards:
+      purpose: Sets rewardsOn to the value.
+      params: [emit]
+      value: bool
+      test: true -> rewardsOn true.
+    enableRewards:
+      purpose: Sets rewardsOn true.
+      params: [emit]
+      test: rewardsOn true.
+    selectTab:
+      purpose: Sets currentTab to Tab.values[index].
+      params: [emit, index]
+      test: index 2 -> currentTab orders.
+    selectCategory:
+      purpose: Sets category to Category.values[index].
+      params: [emit, index]
+      test: index 3 -> category bakery.
+    updateSearch:
+      purpose: Keeps the typed search text.
+      params: [emit]
+      value: String
+      test: search becomes the value.
+    openItem:
+      purpose: >-
+        Maps visible item index (same filter as visibleItems - category, or name
+        search across all when search is non-empty) to its menu index, sets
+        selectedItem, resets the draft (medium, whole milk or none when not
+        customizable, 0 shots, quantity 1) and pushes item.
+      params: [emit, core, index]
+      test: category tea, index 1 -> selectedItem 5 and navigation ['push item'].
+    selectSize:
+      purpose: Sets draftSize to DrinkSize.values[index].
+      params: [emit, index]
+      test: index 2 -> large.
+    selectMilk:
+      purpose: Sets draftMilk to Milk.values[index].
+      params: [emit, index]
+      test: index 1 -> oat.
+    addShot:
+      purpose: draftShots + 1, at most 3.
+      params: [emit]
+      test: 3 stays 3; 0 -> 1.
+    removeShot:
+      purpose: draftShots - 1, at least 0.
+      params: [emit]
+      test: 0 stays 0.
+    incQuantity:
+      purpose: draftQuantity + 1, at most 20.
+      params: [emit]
+      test: 1 -> 2.
+    decQuantity:
+      purpose: draftQuantity - 1, at least 1.
+      params: [emit]
+      test: 1 stays 1.
+    addToCart:
+      purpose: >-
+        Adds the draft as a cart line for the selected item (merging quantity
+        into an identical line) and pops the item page.
+      params: [emit, core]
+      test: a new item adds a line; adding the same config again merges quantity; navigation ['pop'].
+    openCart:
+      purpose: Pushes the cart sheet.
+      params: [core]
+      test: navigation ['push cart'].
+    closeSheet:
+      purpose: Pops the current sheet or dialog.
+      params: [core]
+      test: navigation ['pop'].
+    incLine:
+      purpose: Cart line index quantity + 1.
+      params: [emit, index]
+      test: line 0 quantity 1 -> 2.
+    decLine:
+      purpose: Cart line index quantity - 1; at 1 the line is removed.
+      params: [emit, index]
+      test: line 1 quantity 2 -> 1; line 0 quantity 1 -> removed.
+    removeLine:
+      purpose: Removes cart line index.
+      params: [emit, index]
+      test: cart length 2 -> 1.
+    goToCheckout:
+      purpose: Pops the cart sheet, sets checkoutStore to favoriteStore, and pushes checkout.
+      params: [emit, core]
+      test: navigation ['pop', 'push checkout'].
+    openStorePicker:
+      purpose: Pushes the storePicker dialog.
+      params: [core]
+      test: navigation ['push storePicker'].
+    pickStore:
+      purpose: Sets checkoutStore to index and pops the dialog.
+      params: [emit, core, index]
+      test: checkoutStore 2 and navigation ['pop'].
+    openFavoritePicker:
+      purpose: Pushes the favoritePicker dialog.
+      params: [core]
+      test: navigation ['push favoritePicker'].
+    selectPickup:
+      purpose: Sets pickup to PickupTime.values[index].
+      params: [emit, index]
+      test: index 2 -> in30.
+    selectPayment:
+      purpose: Sets paymentMethod to Payment.values[index].
+      params: [emit, index]
+      test: index 1 -> wallet.
+    placeOrder:
+      purpose: >-
+        Builds an order (number nextOrderNumber, the cart lines, total from
+        linePrice, checkoutStore, pickup, paymentMethod, status placed, placedAt
+        'Just now'), prepends it to orders, clears the cart, increments
+        nextOrderNumber, adds floor(total) stars when rewardsOn, selects order 0,
+        pops checkout and pushes order. Then after Future.delayed 3s emits the
+        order (still first in the list built here) as preparing, and after 5s
+        more as ready.
+      params: [emit, core]
+      uses: [linePrice]
+      test: orders grows by one with status placed then ends ready; cart empty; stars +floor(total) when rewardsOn; navigation ['pop', 'push order'].
+    openOrder:
+      purpose: Sets selectedOrder to index and pushes order.
+      params: [emit, core, index]
+      test: selectedOrder 1 and navigation ['push order'].
+    goToMenu:
+      purpose: Sets currentTab menu and pops to the first route (pop the order page).
+      params: [emit, core]
+      test: currentTab menu and navigation ends with a pop.
+    redeemReward:
+      purpose: When stars >= reward index stars, subtracts them and sets lastRedeemed to the reward name.
+      params: [emit, index]
+      test: stars 112, index 0 -> stars 87 and lastRedeemed 'Extra shot or syrup'; index 2 -> unchanged.
+    updateName:
+      purpose: Sets userName to the value.
+      params: [emit]
+      value: String
+      test: userName becomes the value.
+    setNotifications:
+      purpose: Sets notificationsOn to the value.
+      params: [emit]
+      value: bool
+      test: false -> notificationsOn false.
+    selectTheme:
+      purpose: Sets themeChoice to ThemeChoice.values[index].
+      params: [emit, index]
+      test: index 2 -> dark.
+
+  values:
+    showOnboarding:
+      purpose: >-
+        True while onboarded is false.
+      returns: bool
+      test: >-
+        initial -> true.
+    onboardingIcon:
+      purpose: >-
+        Step icon - 0 sparkle, 1 location, 2 star.
+      returns: String
+      test: >-
+        step 1 -> location.
+    onboardingTitle:
+      purpose: >-
+        welcomeTitle, storeStepTitle or rewardsStepTitle by onboardingStep.
+      returns: String
+      params: [labels]
+      test: >-
+        step 0 -> welcomeTitle text.
+    onboardingBody:
+      purpose: >-
+        welcomeBody, storeStepBody or rewardsStepBody by onboardingStep.
+      returns: String
+      params: [labels]
+      test: >-
+        step 2 -> rewardsStepBody text.
+    showStoreStep:
+      purpose: >-
+        onboardingStep is 1.
+      returns: bool
+      test: >-
+        step 1 -> true.
+    showRewardsStep:
+      purpose: >-
+        onboardingStep is 2.
+      returns: bool
+      test: >-
+        step 2 -> true.
+    onboardingProgress:
+      purpose: >-
+        (onboardingStep + 1) / 3.
+      returns: num
+      test: >-
+        step 0 -> 1/3.
+    onboardingNextText:
+      purpose: >-
+        next label, or getStarted on step 2.
+      returns: String
+      params: [labels]
+      test: >-
+        step 2 -> Get started.
+    rewardsEnabled:
+      purpose: >-
+        rewardsOn.
+      returns: bool
+      test: >-
+        initial false.
+    storesList:
+      purpose: >-
+        The stores.
+      returns: List<Store>
+      test: >-
+        3 stores.
+    storeName:
+      purpose: >-
+        Store index name.
+      returns: String
+      params: [index]
+      test: >-
+        index 1 -> Riverside.
+    storeAddress:
+      purpose: >-
+        Store index address.
+      returns: String
+      params: [index]
+      test: >-
+        index 0 -> 120 Market St.
+    storeDistance:
+      purpose: >-
+        Store index 'distance · hours'.
+      returns: String
+      params: [index]
+      test: >-
+        index 0 -> '0.4 mi · 6am - 8pm'.
+    favoriteStoreIcon:
+      purpose: >-
+        checkCircle when index is favoriteStore, else radioUnchecked.
+      returns: String
+      params: [index]
+      test: >-
+        index 0 -> checkCircle.
+    favoriteStoreColor:
+      purpose: >-
+        primary when index is favoriteStore, else ink3.
+      returns: String
+      params: [index]
+      test: >-
+        index 1 -> ink3.
+    checkoutStoreIcon:
+      purpose: >-
+        checkCircle when index is checkoutStore, else radioUnchecked.
+      returns: String
+      params: [index]
+      test: >-
+        index 0 -> checkCircle.
+    checkoutStoreColor:
+      purpose: >-
+        primary when index is checkoutStore, else ink3.
+      returns: String
+      params: [index]
+      test: >-
+        index 2 -> ink3.
+    tabIndex:
+      purpose: >-
+        currentTab index.
+      returns: num
+      test: >-
+        initial 0.
+    categoryList:
+      purpose: >-
+        Category.values.
+      returns: List<Category>
+      test: >-
+        4 categories.
+    categoryLabel:
+      purpose: >-
+        catCoffee, catTea, catColdDrinks, catBakery for category index.
+      returns: String
+      params: [labels, index]
+      test: >-
+        index 2 -> Cold drinks.
+    categorySelected:
+      purpose: >-
+        Category index is the selected category.
+      returns: bool
+      params: [index]
+      test: >-
+        initial index 0 -> true.
+    chipFill:
+      purpose: >-
+        Category index chip fill - primary when selected, else fill. @Animated.
+      returns: String
+      params: [index]
+      test: >-
+        index 0 -> primary.
+    chipInk:
+      purpose: >-
+        Category index chip text - onPrimary when selected, else ink. @Animated.
+      returns: String
+      params: [index]
+      test: >-
+        index 1 -> ink.
+    isSearching:
+      purpose: >-
+        search is not blank.
+      returns: bool
+      test: >-
+        initial false.
+    visibleItems:
+      purpose: >-
+        Menu items in category; when search is non-empty, items whose name contains it (case-insensitive) across all categories.
+      returns: List<MenuItem>
+      test: >-
+        initial 4 coffees; search 'latte' -> 4.
+    noItems:
+      purpose: >-
+        visibleItems is empty.
+      returns: bool
+      test: >-
+        search 'zzz' -> true.
+    itemName:
+      purpose: >-
+        Visible item index name.
+      returns: String
+      params: [index]
+      test: >-
+        index 0 -> Caffè Latte.
+    itemPriceText:
+      purpose: >-
+        Visible item index price via formatMoney.
+      returns: String
+      params: [index]
+      uses: [formatMoney]
+      test: >-
+        index 0 -> $4.50.
+    itemColor:
+      purpose: >-
+        Visible item index color.
+      returns: String
+      params: [index]
+      test: >-
+        index 0 -> '#C89F7A'.
+    itemIcon:
+      purpose: >-
+        Visible item index icon.
+      returns: String
+      params: [index]
+      test: >-
+        index 0 -> drop.
+    cartHasItems:
+      purpose: >-
+        cart is not empty.
+      returns: bool
+      test: >-
+        initial true.
+    cartIsEmpty:
+      purpose: >-
+        cart is empty.
+      returns: bool
+      test: >-
+        initial false.
+    cartCountText:
+      purpose: >-
+        Total quantity with item/items label - '3 items'.
+      returns: String
+      params: [labels]
+      test: >-
+        initial -> 3 items.
+    cartSubtotalShort:
+      purpose: >-
+        Cart subtotal via formatMoney.
+      returns: String
+      uses: [linePrice, formatMoney]
+      test: >-
+        initial -> $13.70.
+    subtotalText:
+      purpose: >-
+        Cart subtotal via formatMoney (same as cartSubtotalShort).
+      returns: String
+      uses: [linePrice, formatMoney]
+      test: >-
+        initial -> $13.70.
+    earnStarsText:
+      purpose: >-
+        'You'll earn 13 stars' - floor(subtotal) with youllEarn and starsWord.
+      returns: String
+      params: [labels]
+      uses: [linePrice]
+      test: >-
+        initial -> You'll earn 13 stars.
+    selectedName:
+      purpose: >-
+        Selected menu item name.
+      returns: String
+      test: >-
+        initial -> Caffè Latte.
+    selectedDescription:
+      purpose: >-
+        Selected item description.
+      returns: String
+      test: >-
+        initial non-empty.
+    selectedColor:
+      purpose: >-
+        Selected item color.
+      returns: String
+      test: >-
+        initial -> '#C89F7A'.
+    selectedIcon:
+      purpose: >-
+        Selected item icon.
+      returns: String
+      test: >-
+        initial -> drop.
+    selectedPriceText:
+      purpose: >-
+        Selected item base price via formatMoney.
+      returns: String
+      uses: [formatMoney]
+      test: >-
+        initial -> $4.50.
+    selectedCustomizable:
+      purpose: >-
+        Selected item customizable.
+      returns: bool
+      test: >-
+        initial true.
+    sizeOptions:
+      purpose: >-
+        DrinkSize.values.
+      returns: List<DrinkSize>
+      test: >-
+        3 sizes.
+    sizeLabel:
+      purpose: >-
+        sizeSmall, sizeMedium, sizeLarge for index.
+      returns: String
+      params: [labels, index]
+      test: >-
+        index 0 -> Small.
+    sizeExtraText:
+      purpose: >-
+        Price difference - '-$0.50', '+$0.00'... small -0.50, medium +0, large +0.70; show '' for medium.
+      returns: String
+      params: [index]
+      test: >-
+        index 2 -> +$0.70.
+    sizeSelected:
+      purpose: >-
+        Size index is draftSize.
+      returns: bool
+      params: [index]
+      test: >-
+        initial index 1 -> true.
+    milkOptions:
+      purpose: >-
+        Milk.values.
+      returns: List<Milk>
+      test: >-
+        4 milks.
+    milkLabel:
+      purpose: >-
+        milkWhole, milkOat, milkAlmond, milkNone for index.
+      returns: String
+      params: [labels, index]
+      test: >-
+        index 3 -> No milk.
+    milkSelected:
+      purpose: >-
+        Milk index is draftMilk.
+      returns: bool
+      params: [index]
+      test: >-
+        initial index 0 -> true.
+    shotsText:
+      purpose: >-
+        draftShots with shot/shots label - '0 shots', '1 shot'.
+      returns: String
+      params: [labels]
+      test: >-
+        initial -> 0 shots.
+    quantityText:
+      purpose: >-
+        draftQuantity as text.
+      returns: String
+      test: >-
+        initial -> '1'.
+    addToCartText:
+      purpose: >-
+        'Add to cart · $4.50' - addToCartLabel and the draft price (linePrice of the draft) via formatMoney.
+      returns: String
+      params: [labels]
+      uses: [linePrice, formatMoney]
+      test: >-
+        initial -> Add to cart · $4.50.
+    cartLines:
+      purpose: >-
+        The cart.
+      returns: List<CartLine>
+      test: >-
+        initial 2 lines.
+    lineName:
+      purpose: >-
+        Cart line index item name.
+      returns: String
+      params: [index]
+      test: >-
+        index 0 -> Caffè Latte.
+    lineDetails:
+      purpose: >-
+        Cart line index options joined with ' · ' - size label, milk label unless none, 'N shots' when > 0; '' when the item is not customizable.
+      returns: String
+      params: [labels, index]
+      test: >-
+        index 0 -> Large · Oat · 1 shot.
+    lineTotalText:
+      purpose: >-
+        Cart line index linePrice via formatMoney.
+      returns: String
+      params: [index]
+      uses: [linePrice, formatMoney]
+      test: >-
+        index 0 -> $6.70.
+    lineQuantityText:
+      purpose: >-
+        Cart line index quantity as text.
+      returns: String
+      params: [index]
+      test: >-
+        index 1 -> '2'.
+    lineColor:
+      purpose: >-
+        Cart line index item color.
+      returns: String
+      params: [index]
+      test: >-
+        index 1 -> '#E0A85A'.
+    lineIcon:
+      purpose: >-
+        Cart line index item icon.
+      returns: String
+      params: [index]
+      test: >-
+        index 1 -> restaurant.
+    checkoutStoreName:
+      purpose: >-
+        Store checkoutStore name.
+      returns: String
+      test: >-
+        initial Downtown.
+    checkoutStoreAddress:
+      purpose: >-
+        Store checkoutStore 'address · distance'.
+      returns: String
+      test: >-
+        initial 120 Market St · 0.4 mi.
+    pickupOptions:
+      purpose: >-
+        PickupTime.values.
+      returns: List<PickupTime>
+      test: >-
+        3.
+    pickupLabel:
+      purpose: >-
+        pickupNow, pickupIn15, pickupIn30 for index.
+      returns: String
+      params: [labels, index]
+      test: >-
+        index 1 -> In 15 minutes.
+    pickupSelected:
+      purpose: >-
+        Pickup index is pickup.
+      returns: bool
+      params: [index]
+      test: >-
+        initial index 0 -> true.
+    paymentOptions:
+      purpose: >-
+        Payment.values.
+      returns: List<Payment>
+      test: >-
+        3.
+    paymentLabel:
+      purpose: >-
+        payCard, payWallet, payGiftCard for index.
+      returns: String
+      params: [labels, index]
+      test: >-
+        index 0 -> Visa •••• 4242.
+    paymentIcon:
+      purpose: >-
+        payment, wallet, gift for index.
+      returns: String
+      params: [index]
+      test: >-
+        index 1 -> wallet.
+    paymentSelected:
+      purpose: >-
+        Payment index is paymentMethod.
+      returns: bool
+      params: [index]
+      test: >-
+        initial index 0 -> true.
+    orderNumberText:
+      purpose: >-
+        'Order #1042' for the selected order (orderTitle label).
+      returns: String
+      params: [labels]
+      test: >-
+        initial -> Order #1042.
+    statusTitle:
+      purpose: >-
+        statusPlaced, statusPreparing or statusReady for the selected order status.
+      returns: String
+      params: [labels]
+      test: >-
+        initial -> Ready for pickup.
+    statusBody:
+      purpose: >-
+        The matching status body label.
+      returns: String
+      params: [labels]
+      test: >-
+        initial -> statusReadyBody text.
+    statusIcon:
+      purpose: >-
+        receipt, timer, checkCircle by status.
+      returns: String
+      test: >-
+        initial -> checkCircle.
+    statusColor:
+      purpose: >-
+        accent, warning, success by status. @Animated.
+      returns: String
+      test: >-
+        initial -> success.
+    orderProgress:
+      purpose: >-
+        placed 0.15, preparing 0.55, ready 1.0. @Animated(ms: 600).
+      returns: num
+      test: >-
+        initial -> 1.0.
+    orderSteps:
+      purpose: >-
+        OrderStatus.values.
+      returns: List<OrderStatus>
+      test: >-
+        3.
+    stepLabel:
+      purpose: >-
+        statusPlaced, statusPreparing, statusReady for index.
+      returns: String
+      params: [labels, index]
+      test: >-
+        index 1 -> Preparing.
+    stepColor:
+      purpose: >-
+        primary when step index <= selected order status index, else fillStrong. @Animated.
+      returns: String
+      params: [index]
+      test: >-
+        initial index 2 -> primary.
+    orderLines:
+      purpose: >-
+        Selected order lines.
+      returns: List<CartLine>
+      test: >-
+        initial 2.
+    orderLineName:
+      purpose: >-
+        '1 × Flat White' for selected order line index.
+      returns: String
+      params: [index]
+      test: >-
+        index 0 -> 1 × Flat White.
+    orderLineDetails:
+      purpose: >-
+        Selected order line index options like lineDetails.
+      returns: String
+      params: [labels, index]
+      test: >-
+        index 0 -> Medium · Whole.
+    orderLineTotal:
+      purpose: >-
+        Selected order line index linePrice via formatMoney.
+      returns: String
+      params: [index]
+      uses: [linePrice, formatMoney]
+      test: >-
+        index 0 -> $4.75.
+    orderTotalText:
+      purpose: >-
+        Selected order total via formatMoney.
+      returns: String
+      uses: [formatMoney]
+      test: >-
+        initial -> $8.00.
+    orderStoreText:
+      purpose: >-
+        Selected order store name and address.
+      returns: String
+      test: >-
+        initial -> Downtown · 120 Market St.
+    orderPickupText:
+      purpose: >-
+        Selected order pickup label.
+      returns: String
+      params: [labels]
+      test: >-
+        initial -> As soon as possible.
+    orderPaymentText:
+      purpose: >-
+        Selected order payment label.
+      returns: String
+      params: [labels]
+      test: >-
+        initial -> Visa •••• 4242.
+    orderPlacedText:
+      purpose: >-
+        Selected order placedAt.
+      returns: String
+      test: >-
+        initial -> 'Nov 10, 8:42 AM'.
+    starsText:
+      purpose: >-
+        stars as text.
+      returns: String
+      test: >-
+        initial -> '112'.
+    starsProgress:
+      purpose: >-
+        (stars % 150) / 150, or 1 when stars >= 150.
+      returns: num
+      test: >-
+        initial -> 112/150.
+    starsToGoText:
+      purpose: >-
+        '38 stars to your next free drink' (toFreeDrink), or freeDrinkReady when stars >= 150.
+      returns: String
+      params: [labels]
+      test: >-
+        initial -> 38 stars to your next free drink.
+    hasRedeemed:
+      purpose: >-
+        lastRedeemed is not empty.
+      returns: bool
+      test: >-
+        initial false.
+    lastRedeemedText:
+      purpose: >-
+        'Free drink - Redeemed. Show this at pickup.' (lastRedeemed + redeemed label).
+      returns: String
+      params: [labels]
+      test: >-
+        lastRedeemed 'Free drink' -> starts with Free drink.
+    rewardsList:
+      purpose: >-
+        The rewards.
+      returns: List<Reward>
+      test: >-
+        4.
+    rewardName:
+      purpose: >-
+        Reward index name.
+      returns: String
+      params: [index]
+      test: >-
+        index 2 -> Free drink.
+    rewardStarsText:
+      purpose: >-
+        '150 stars' for reward index.
+      returns: String
+      params: [labels, index]
+      test: >-
+        index 2 -> 150 stars.
+    rewardIcon:
+      purpose: >-
+        Reward index icon.
+      returns: String
+      params: [index]
+      test: >-
+        index 2 -> gift.
+    rewardAvailable:
+      purpose: >-
+        stars >= reward index stars.
+      returns: bool
+      params: [index]
+      test: >-
+        initial index 1 -> true; index 2 -> false.
+    orderHistory:
+      purpose: >-
+        The orders (newest first as stored).
+      returns: List<Order>
+      test: >-
+        2.
+    ordersEmpty:
+      purpose: >-
+        orders is empty.
+      returns: bool
+      test: >-
+        initial false.
+    historyTitle:
+      purpose: >-
+        'Order #1042' for order index.
+      returns: String
+      params: [labels, index]
+      test: >-
+        index 1 -> Order #1038.
+    historySubtitle:
+      purpose: >-
+        'Nov 10, 8:42 AM · Downtown · 2 items'.
+      returns: String
+      params: [labels, index]
+      test: >-
+        index 0 -> Nov 10, 8:42 AM · Downtown · 2 items.
+    historyTotal:
+      purpose: >-
+        Order index total via formatMoney.
+      returns: String
+      params: [index]
+      uses: [formatMoney]
+      test: >-
+        index 1 -> $13.50.
+    historyStatus:
+      purpose: >-
+        Order index status label.
+      returns: String
+      params: [labels, index]
+      test: >-
+        index 0 -> Ready for pickup.
+    historyStatusColor:
+      purpose: >-
+        accent, warning, success by order index status.
+      returns: String
+      params: [index]
+      test: >-
+        index 0 -> success.
+    profileName:
+      purpose: >-
+        userName, or 'Guest' when blank.
+      returns: String
+      test: >-
+        initial Alex Rivera.
+    profileInitials:
+      purpose: >-
+        Initials of userName (up to 2) or '?'.
+      returns: String
+      test: >-
+        initial AR.
+    favoriteStoreName:
+      purpose: >-
+        Store favoriteStore 'name · address'.
+      returns: String
+      test: >-
+        initial Downtown · 120 Market St.
+    notificationsEnabled:
+      purpose: >-
+        notificationsOn.
+      returns: bool
+      test: >-
+        initial true.
+    themeOptions:
+      purpose: >-
+        ThemeChoice.values.
+      returns: List<ThemeChoice>
+      test: >-
+        3.
+    themeLabel:
+      purpose: >-
+        themeSystem, themeLight, themeDark for index.
+      returns: String
+      params: [labels, index]
+      test: >-
+        index 2 -> Dark.
+    themeIcon:
+      purpose: >-
+        settings, lightMode, darkMode for index.
+      returns: String
+      params: [index]
+      test: >-
+        index 1 -> lightMode.
+    themeSelected:
+      purpose: >-
+        Theme index is themeChoice.
+      returns: bool
+      params: [index]
+      test: >-
+        initial index 0 -> true.
+
+  shared:
+    formatMoney:
+      purpose: 4.5 -> "$4.50" (two decimals, no thousands separator needed).
+      signature: String formatMoney(num amount)
+      in: values
+    linePrice:
+      purpose: >-
+        The price of a cart line - (item price + size delta (small -0.50,
+        medium 0, large +0.70) + 0.70 for oat or almond + 0.80 per shot) x
+        quantity; non-customizable items are price x quantity. The item is
+        found by id in the menu.
+      signature: num linePrice(List<MenuItem> menu, CartLine line)
+      in: values
+
+  tests:
+    menuTab: {state: {onboarded: true}}
+    menuSearchEmpty: {state: {onboarded: true, search: zzz}}
+    onboardingStore: {state: {onboardingStep: 1}}
+    onboardingRewards: {state: {onboardingStep: 2, rewardsOn: true}}
+    rewardsTab: {state: {onboarded: true, currentTab: rewards, rewardsOn: true, lastRedeemed: Free drink}}
+    rewardsOff: {state: {onboarded: true, currentTab: rewards}}
+    ordersTab: {state: {onboarded: true, currentTab: orders}}
+    ordersEmpty: {state: {onboarded: true, currentTab: orders, orders: []}}
+    profileTab: {state: {onboarded: true, currentTab: profile}}
+    itemBakery: {state: {onboarded: true, selectedItem: 10}, route: item}
+    cartEmpty: {state: {onboarded: true, cart: []}, route: cart}
+    orderPreparing: {state: {onboarded: true, orders: [{number: 1043, lines: [{itemId: latte, size: large, milk: oat, shots: 1, quantity: 1}], total: 6.7, store: 0, pickup: now, payment: card, status: preparing, placedAt: Just now}]}, route: order}

@@ -1,0 +1,32 @@
+# state: the app's state, by scope (initial values in app.yaml).
+# (Written from plan.yaml by the scaffold: change the plan, then scaffold again.)
+state:
+  ephemeral:
+    search: string
+  local:
+    onboarded: boolean
+    onboardingStep: number
+    favoriteStore: number
+    rewardsOn: boolean
+    currentTab: tab
+    category: category
+    selectedItem: number
+    draftSize: drinkSize
+    draftMilk: milk
+    draftShots: number
+    draftQuantity: number
+    checkoutStore: number
+    pickup: pickupTime
+    paymentMethod: payment
+    selectedOrder: number
+    nextOrderNumber: number
+    stars: number
+    lastRedeemed: string
+    userName: string
+    notificationsOn: boolean
+    themeChoice: themeChoice
+    menu: list(menuItem)
+    stores: list(store)
+    rewards: list(reward)
+    cart: list(cartLine)
+    orders: list(order)

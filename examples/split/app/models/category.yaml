@@ -1,0 +1,3 @@
+# category: one of food, travel, home, other.
+# (Written from plan.yaml by the scaffold: change the plan, then scaffold again.)
+category: [food, travel, home, other]

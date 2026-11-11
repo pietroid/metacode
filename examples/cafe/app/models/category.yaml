@@ -1,0 +1,3 @@
+# category: one of coffee, tea, coldDrinks, bakery.
+# (Written from plan.yaml by the scaffold: change the plan, then scaffold again.)
+category: [coffee, tea, coldDrinks, bakery]

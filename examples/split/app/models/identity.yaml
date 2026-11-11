@@ -1,0 +1,5 @@
+# identity: which member I am in a group.
+# (Written from plan.yaml by the scaffold: change the plan, then scaffold again.)
+identity:
+  groupId: string
+  member: string

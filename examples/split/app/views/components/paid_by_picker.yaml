@@ -1,0 +1,11 @@
+# PaidByPicker: who paid, as a grid of member chips.
+PaidByPicker:
+  column:
+    spacing: 8
+    crossAxisAlignment: start
+    children:
+      - text: {value: paidBy, style: {variant: labelMedium, color: ink2}}
+      - responsive:
+          breakpoint: 600
+          narrow: {gridView: {data: currentMembers, itemBuilder: PaidByChip, columns: 2, spacing: 8, aspectRatio: 3.6}}
+          wide: {gridView: {data: currentMembers, itemBuilder: PaidByChip, columns: 4, spacing: 8, aspectRatio: 3.6}}

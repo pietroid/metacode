@@ -1,0 +1,10 @@
+# TransferRow: one recorded transfer with a swap-like arrow icon and its text.
+TransferRow:
+  padding:
+    vertical: 8
+    child:
+      row:
+        spacing: 12
+        children:
+          - icon: {name: arrowUpRight, size: 20, color: ink2}
+          - expanded: {text: {value: transferHistoryText, maxLines: 2, style: {variant: bodyMedium, color: ink2}}}

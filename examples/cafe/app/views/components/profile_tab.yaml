@@ -1,0 +1,52 @@
+# ProfileTab: avatar and name, name field, favorite store, notifications toggle, appearance chips and a replay-tour button.
+ProfileTab:
+  scroll:
+    container:
+      maxWidth: 720
+      child:
+        padding:
+          all: 16
+          child:
+            column:
+              crossAxisAlignment: stretch
+              spacing: 16
+              children:
+                - sizedBox: {height: 8}
+                - text: {value: profileTitle, style: {variant: headlineMedium}}
+                - row:
+                    spacing: 16
+                    children:
+                      - avatar: {text: profileInitials, radius: 32}
+                      - expanded:
+                          text: {value: profileName, style: {variant: titleLarge}, maxLines: 1}
+                - textField: {label: nameLabel, onChanged: updateName}
+                - divider: {}
+                - row:
+                    spacing: 12
+                    children:
+                      - expanded:
+                          column:
+                            crossAxisAlignment: start
+                            spacing: 4
+                            children:
+                              - text: {value: favoriteStoreTitle, style: {variant: titleMedium}}
+                              - text: {value: favoriteStoreName, style: {variant: bodySmall, color: ink2}}
+                      - textButton: {text: change, onPressed: openFavoritePicker}
+                - divider: {}
+                - column:
+                    crossAxisAlignment: start
+                    spacing: 4
+                    children:
+                      - text: {value: notificationsTitle, style: {variant: titleMedium}}
+                      - toggle: {value: notificationsEnabled, label: notificationsBody, onChanged: setNotifications}
+                - divider: {}
+                - text: {value: appearance, style: {variant: titleMedium}}
+                - wrap:
+                    spacing: 8
+                    runSpacing: 8
+                    children:
+                      - ThemeChip: {index: 0}
+                      - ThemeChip: {index: 1}
+                      - ThemeChip: {index: 2}
+                - divider: {}
+                - textButton: {text: replayOnboarding, onPressed: restartOnboarding}

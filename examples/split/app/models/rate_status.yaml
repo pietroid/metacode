@@ -1,0 +1,3 @@
+# rateStatus: one of ready, loading, failed.
+# (Written from plan.yaml by the scaffold: change the plan, then scaffold again.)
+rateStatus: [ready, loading, failed]

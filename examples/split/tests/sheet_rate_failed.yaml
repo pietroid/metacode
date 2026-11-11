@@ -1,0 +1,2 @@
+# sheetRateFailed: a layout check state from the plan.
+sheetRateFailed: {"state":{"draftAmount":"45","draftCurrency":"brl","rateStatus":"failed"},"route":"addExpense"}

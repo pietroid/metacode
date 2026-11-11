@@ -1,0 +1,67 @@
+# CheckoutPage: pickup store, pickup time, payment, a summary and the place-order button, centered on wide screens.
+CheckoutPage:
+  scaffold:
+    appBar: {title: checkoutTitle}
+    body:
+      scroll:
+        container:
+          maxWidth: 720
+          child:
+            padding:
+              all: 16
+              child:
+                column:
+                  crossAxisAlignment: stretch
+                  spacing: 16
+                  children:
+                    - card:
+                        padding: 20
+                        child:
+                          row:
+                            spacing: 12
+                            crossAxisAlignment: center
+                            children:
+                              - expanded:
+                                  column:
+                                    crossAxisAlignment: start
+                                    spacing: 4
+                                    children:
+                                      - text: {value: pickupStore, style: {variant: labelLarge, color: ink2}}
+                                      - text: {value: checkoutStoreName, style: {variant: titleMedium}}
+                                      - text: {value: checkoutStoreAddress, style: {variant: bodySmall, color: ink2}}
+                              - outlinedButton: {text: change, onPressed: openStorePicker}
+                    - card:
+                        padding: 20
+                        child:
+                          column:
+                            crossAxisAlignment: stretch
+                            spacing: 8
+                            children:
+                              - text: {value: pickupTimeTitle, style: {variant: titleMedium}}
+                              - listView: {data: pickupOptions, itemBuilder: PickupOption}
+                    - card:
+                        padding: 20
+                        child:
+                          column:
+                            crossAxisAlignment: stretch
+                            spacing: 8
+                            children:
+                              - text: {value: paymentTitle, style: {variant: titleMedium}}
+                              - listView: {data: paymentOptions, itemBuilder: PaymentOption}
+                    - card:
+                        padding: 20
+                        child:
+                          column:
+                            crossAxisAlignment: stretch
+                            spacing: 8
+                            children:
+                              - row:
+                                  children:
+                                    - expanded:
+                                        text: {value: subtotal, style: {variant: titleMedium}}
+                                    - text: {value: subtotalText, style: {variant: titleMedium}}
+                              - if:
+                                  condition: rewardsEnabled
+                                  then:
+                                    text: {value: earnStarsText, style: {variant: bodySmall, color: success}}
+                    - filledButton: {text: placeOrderLabel, onPressed: placeOrder}

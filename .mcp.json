@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "metacode": {
+      "command": "tool/mc",
+      "args": ["serve"]
+    }
+  }
+}

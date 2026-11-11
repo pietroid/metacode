@@ -1,0 +1,2 @@
+# Split radius: 16px cards, round chips and avatars.
+radius: {xs: 4, sm: 10, md: 16, lg: 20, pill: 999}

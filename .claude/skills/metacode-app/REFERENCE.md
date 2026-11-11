@@ -174,6 +174,7 @@ Future<void> core.navigator.push(Routes.settings)   // completes when the route 
 Future<void> core.navigator.pop()                   // closes the page, sheet or dialog on top
 
 Future<void> core.locale.set('pt_br')   // the whole app (modules too) in pt_br.yaml, saved; null: the device's language again
+Future<void> core.theme.set('dark')     // the whole app light or dark, saved; null: back to style/theme.yaml (system: the device's)
 Future<void> core.modules.reset('food') // starts this app's module modules/food/ over: its state back to its app.yaml's, its contained routes closed
 ```
 
@@ -255,7 +256,7 @@ Prop kinds:
 | `value` | name of a value (a function in app/views/values/) |
 | `text` | a value, a label or a literal |
 | `literal` | a literal (number, text, list, map) |
-| `icon` | an icon name (see Icons) |
+| `icon` | an icon name (see Icons), or a value returning one |
 | `color` | a color (see Colors), or a value returning one |
 | `number` | a number, or a value returning one (an `@Animated` value eases it) |
 | `inline` | another widget's properties, written inline |
@@ -285,29 +286,29 @@ One line per widget: what it is and its props. Details (prop kinds, notes, short
 | `divider` | A thin line. Write `divider: {}`. | height, color |
 | `module` | Embeds a module from `modules/<name>/`: its initial page, with its own state, actions and values. It inherits the theme unless it has a style/ folder. Its routes (pages, sheets, dialogs) open over the whole app, unless `contained: true`: then it gets its own navigator and they open inside its box (a phone frame), which must have a bounded size (e.g. inside `expanded`, not `scroll`). | name, contained (shorthand `module: food`) |
 | `match` | Shows the case matching a value (e.g. the current page). Falls back to `default`. | value, cases, default, fade |
-| `navigationBar` | Bottom navigation. Put it in `scaffold.bottomBar`. | destinations, selected, onSelected |
+| `navigationBar` | Bottom navigation. Put it in `scaffold.bottomBar`; on wide screens the scaffold shows it as a side rail instead. | destinations, selected, onSelected, rail |
 | `text` | Text. | value, spans, style, align, maxLines, reveal (shorthand `text: "Hello"`) |
 | `icon` | An icon. | name, size, color |
 | `image` | An image (PNG, JPG, GIF, WebP or SVG) from a URL (http...) or an app file. Put app files in `examples/my_own_app/app/views/style/images/` and use the path: `src: examples/my_own_app/app/views/style/images/logo.svg`. | src, width, height, fit, radius |
 | `avatar` | A round avatar with an image or short text (initials). | text, image, radius, color |
 | `marquee` | A row of children that scrolls sideways in a loop, like a news ticker. Still (and scrollable) when the device asks for reduced motion. | children, spacing, speed (shorthand `marquee: [a, b]`) |
-| `progress` | Progress indicator. Without `value` it spins forever. | value, circular |
-| `listView` | A list. `itemBuilder` is built once per item of `data`. Inside `scroll` it moves with the page; on its own (in `expanded`) it scrolls itself. | data, itemBuilder, empty |
+| `progress` | Progress indicator. Without `value` it spins forever (still, under reduced motion and in the layout check). | value, circular, color |
+| `listView` | A list. `itemBuilder` is built once per item of `data`. Inside `scroll` it moves with the page; on its own (in `expanded`) it scrolls itself. | data, itemBuilder, empty, horizontal, spacing |
 | `gridView` | A grid. `itemBuilder` is built once per item of `data`. Inside `scroll` it moves with the page; on its own (in `expanded`) it scrolls itself. | data, itemBuilder, empty, columns, spacing, aspectRatio |
 | `listTile` | A list row. | title, subtitle, leading, trailing, onTap |
 | `if` | Shows `then` when the value is true, else `else`. | condition, then, else, fade |
-| `textField` | Text input. | value, hint, label, multiline, onChanged, onSubmitted |
+| `textField` | Text input. | value, hint, label, multiline, keyboard, onChanged, onSubmitted |
 | `checkbox` | Checkbox. | value, onChanged |
 | `toggle` | On/off switch, optionally with a label. | value, label, onChanged |
 | `slider` | Pick a number in a range. | value, min, max, divisions, onChanged |
 | `dropdown` | Pick one option from a list. | value, options, hint, compact, onChanged |
 | `choiceChip` | Selectable chip. | label, selected, onSelected |
-| `iconButton` | Icon that runs an action. | icon, tooltip, color, onPressed |
-| `filledButton` | Primary button. | text, icon, onPressed |
-| `outlinedButton` | Secondary button. | text, icon, onPressed |
-| `textButton` | Low-emphasis button. | text, icon, onPressed |
-| `elevatedButton` | Raised button. | child, onPressed |
-| `floatingActionButton` | Floating action button. | icon, child, onPressed |
+| `iconButton` | Icon that runs an action. | icon, tooltip, color, onPressed, enabled |
+| `filledButton` | Primary button. | text, icon, onPressed, enabled |
+| `outlinedButton` | Secondary button. | text, icon, onPressed, enabled |
+| `textButton` | Low-emphasis button. | text, icon, onPressed, enabled |
+| `elevatedButton` | Raised button. | child, onPressed, enabled |
+| `floatingActionButton` | Floating action button. | icon, child, onPressed, enabled |
 | `tappable` | Makes any child tappable. | child, onTap |
 
 ## dart_eval limitations
@@ -328,7 +329,11 @@ Actions, values and shared helpers run in dart_eval, an interpreter that covers 
 | interpolating ints from `DateTime` getters (`'${d.month}'`) | `toIso8601String()` |
 | imports other than `dart:` and the app's own files (a module can't import its parent's) | |
 | `try`/`catch` around an `await` (crashes when nothing is thrown) | check a returned value (`remote.<name>()` returns its error) |
+| `break` inside a `for` or `for in` loop in an action (any `async` function): crashes at runtime | `return` from inside the loop, or a guard flag (`var done = false; for (...) { if (!done) ... }`); `break` in `while`, and in values (sync), works |
+| a `?:` with a `null` branch over a dynamic map read (`m == null ? null : m['k']`): crashes at runtime | cast in one chain, then one check: `final rate = r.ok ? ((r.json as Map)['rates'] as Map)['EUR'] : null; if (rate is num) ...` |
+| `List.of(x)..add(y)` then an index assignment (`list[i] = ...`); `indexWhere` with a closure: compile errors | spreads (`[...state.trips]`, `[...items, item]`) and `copyWith`, or change `state`'s copy in place and emit it; a `for` loop with a counter for an index |
+| `is` checks on values read from a map literal written in the code (`{'a': 0.9}['a'] is num` is false) | typed literals (`final Map<String, num> m = ...`); values from `r.json` check fine |
 
-Known to work: `for`/`for in`/`while`/`do`, `break`, `switch` statements, `try`/`catch` without an `await` inside, records, `sort` with a typed comparator, `where`/`map`/`firstWhere`/`fold`/`join`/`removeWhere`, collection `if`/`for`, `Set`, `Map` entries, `??`/`??=`, cascades, `~/`, `abs`/`clamp`/`round`, `toStringAsFixed`, `int.parse`/`double.parse`, `padLeft`/`split`/`trim`/`replaceAll`, `Future.delayed`, classes with getters and `static const`.
+Known to work: `for`/`for in`/`while`/`do`, `break` (not in a `for` of an action: see above), `return` inside loops, `switch` statements, `try`/`catch` without an `await` inside, records, `sort` with a typed comparator, `where`/`map`/`firstWhere`/`fold`/`join`/`removeWhere`, spreads into new lists with `copyWith`, indexing strings char by char (`s[i]`), `codeUnits`, `double.tryParse`, collection `if`/`for`, `Set`, `Map` entries, `??`/`??=`, cascades, `~/`, `abs`/`clamp`/`round`, `toStringAsFixed`, `int.parse`/`double.parse`, `padLeft`/`split`/`trim`/`replaceAll`, `Future.delayed`, classes with getters and `static const`.
 
 An app's files are bundled into one library, so every name, private helpers included, must be unique across its files; put a helper two files need in `shared/` instead of copying it.

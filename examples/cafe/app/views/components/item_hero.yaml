@@ -1,0 +1,16 @@
+# ItemHero: a tall rounded tile in the item color with a big white icon, then name, price and description.
+ItemHero:
+  column:
+    crossAxisAlignment: stretch
+    spacing: 12
+    children:
+      - container:
+          color: selectedColor
+          radius: 28
+          height: 260
+          child:
+            center:
+              icon: {name: selectedIcon, size: 96, color: white}
+      - text: {value: selectedName, style: {variant: headlineMedium}}
+      - text: {value: selectedPriceText, style: {variant: titleMedium, color: accent}}
+      - text: {value: selectedDescription, style: {variant: bodyMedium, color: ink2}}

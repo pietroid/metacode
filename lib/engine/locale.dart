@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart' show ThemeMode;
 import 'package:flutter/widgets.dart';
 import 'package:yaml/yaml.dart';
 
@@ -57,6 +58,40 @@ class AppLocale extends ChangeNotifier {
       _language = language;
       notifyListeners();
     }
+  }
+
+  String? _theme;
+
+  /// The theme picked with `core.theme.set` (`light`, `dark`); null follows
+  /// the style (app/views/style/theme.yaml).
+  String? get theme => _theme;
+
+  /// For `MaterialApp.themeMode`: null when nothing was picked.
+  ThemeMode? get themeMode => switch (_theme) {
+        'light' => ThemeMode.light,
+        'dark' => ThemeMode.dark,
+        _ => null,
+      };
+
+  /// Reads the saved theme (`.state/theme.yaml`).
+  Future<void> loadTheme() async {
+    final saved = await store?.read(const [], file: 'theme');
+    if (saved == null) return;
+    final doc = loadYaml(saved);
+    final theme = doc is Map ? doc['theme'] : null;
+    if (theme is String && theme != _theme) {
+      _theme = theme;
+      notifyListeners();
+    }
+  }
+
+  /// Shows the whole app [theme] (`light`, `dark`) from now on; null follows
+  /// the style again.
+  Future<void> setTheme(String? theme) async {
+    if (theme == _theme) return;
+    _theme = theme;
+    notifyListeners();
+    await store?.write(const [], 'theme: ${theme ?? 'null'}\n', file: 'theme');
   }
 
   /// Shows [language] from now on; null follows the device again.

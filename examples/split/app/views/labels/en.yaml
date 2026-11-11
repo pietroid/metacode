@@ -1,0 +1,61 @@
+# en: every text the app shows, in English.
+# (Written from plan.yaml by the scaffold: change the plan, then scaffold again.)
+en:
+  appTitle: Split
+  myGroups: Your groups
+  whoAmI: "Who are you?"
+  balancesTitle: Balances
+  settleUpTitle: Settle up
+  allSettled: Everyone is settled up.
+  record: Record
+  expensesTitle: Expenses
+  transfersTitle: Recorded transfers
+  noExpenses: No expenses match.
+  addExpense: Add expense
+  everyone: Everyone
+  allCategories: All
+  food: Food
+  travel: Travel
+  home: Home
+  other: Other
+  youOwe: You owe
+  youAreOwed: You are owed
+  settledUp: Settled up
+  owes: owes
+  getsBack: gets back
+  settled: settled
+  pays: pays
+  paid: paid
+  paidBy: Paid by
+  undo: Undo
+  deleted: Deleted
+  description: Description
+  descriptionHint: e.g. Dinner
+  amount: Amount
+  currency: Currency
+  category: Category
+  splitTitle: Split
+  splitEqual: Equally
+  splitShares: By shares
+  splitExact: Exact amounts
+  splitEqualHint: Split evenly among the chosen members.
+  splitSharesHint: "Give each member a number of shares, e.g. 2:1:1."
+  splitExactHint: "Enter what each member owes; it must add up to the total."
+  sharesHint: Shares
+  exactHint: Amount
+  left: left to assign
+  over: over the total
+  rateLoading: "Loading exchange rate…"
+  rateFailed: "Couldn't load the exchange rate."
+  retry: Retry
+  save: Save expense
+  saving: "Saving…"
+  cancel: Cancel
+  errorAmount: Enter an amount greater than 0.
+  errorExactSum: Exact amounts must add up to the total.
+  errorNoMembers: Choose at least one member.
+  errorRate: The exchange rate is needed before saving.
+  errorOffline: "You're offline. Nothing was lost; try again."
+  defaultDescription: Expense
+  members: members
+  youAre: "you are"

@@ -1,0 +1,27 @@
+# OrderHistoryRow: a card with receipt icon, order title and subtitle, total and a status pill; tap opens the order.
+OrderHistoryRow:
+  padding:
+    bottom: 8
+    child:
+      card:
+        onTap: openOrder
+        padding: 16
+        child:
+          row:
+            spacing: 12
+            crossAxisAlignment: center
+            children:
+              - icon: {name: receipt, color: ink2}
+              - expanded:
+                  column:
+                    crossAxisAlignment: start
+                    spacing: 2
+                    children:
+                      - text: {value: historyTitle, style: {variant: titleMedium}, maxLines: 1}
+                      - text: {value: historySubtitle, style: {variant: bodySmall, color: ink2}, maxLines: 2}
+              - column:
+                  crossAxisAlignment: end
+                  spacing: 4
+                  children:
+                    - text: {value: historyTotal, style: {variant: titleMedium}}
+                    - text: {value: historyStatus, style: {variant: labelMedium, color: historyStatusColor}}

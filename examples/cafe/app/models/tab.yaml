@@ -1,0 +1,3 @@
+# tab: one of menu, rewards, orders, profile.
+# (Written from plan.yaml by the scaffold: change the plan, then scaffold again.)
+tab: [menu, rewards, orders, profile]

@@ -1,0 +1,8 @@
+# transfer: a settlement payment from one member to another, in USD.
+# (Written from plan.yaml by the scaffold: change the plan, then scaffold again.)
+transfer:
+  id: string
+  groupId: string
+  from: string
+  to: string
+  amount: number

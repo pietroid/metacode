@@ -197,6 +197,21 @@ void main() {
     expect(find.text('Odd'), findsOneWidget);
   });
 
+  testWidgets('an icon prop takes a value returning an icon name',
+      (tester) async {
+    await pump(tester);
+    bool shows(String name) => find
+        .byWidgetPredicate((w) =>
+            w is Icon && phosphorIcons.values.any((m) => m[name] == w.icon))
+        .evaluate()
+        .isNotEmpty;
+    expect(shows('close'), isTrue);
+    await tester.tap(find.text('Add'));
+    await tester.pumpAndSettle();
+    expect(shows('check'), isTrue);
+    expect(shows('close'), isFalse);
+  });
+
   testWidgets("app.yaml's start action runs when the app starts",
       (tester) async {
     final bloc = await pump(tester);
@@ -370,6 +385,16 @@ void main() {
     final context = tester.element(find.byType(AppBar));
     expect(Localizations.localeOf(context), const Locale('pt', 'BR'));
     expect(MaterialLocalizations.of(context).okButtonLabel, 'OK');
+  });
+
+  testWidgets('core.theme.set switches the whole app to dark', (tester) async {
+    await pump(tester);
+    Brightness brightness() =>
+        Theme.of(tester.element(find.byType(AppBar))).brightness;
+    expect(brightness(), Brightness.light);
+    await tap(tester, find.text('Dark'));
+    await tester.pumpAndSettle();
+    expect(brightness(), Brightness.dark);
   });
 
   for (final (button, type) in [

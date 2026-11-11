@@ -47,6 +47,8 @@ app.*.map.json
 # Metacode generated output and runtime state
 **/.generated/
 **/.state/
+# Agent work orders (tool/mc briefs), rebuilt from plan.yaml
+**/.plan/
 
 # Browser test fixture (tool/web_fixture.dart)
 test/web/fixture.g.dart

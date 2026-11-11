@@ -1,0 +1,2 @@
+# Split fonts: Inter for everything, a calm precise sans.
+fonts: {display: Inter, text: Inter}

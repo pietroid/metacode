@@ -1,0 +1,11 @@
+# menuItem: one item on the menu; color and icon draw its photo-like tile.
+# (Written from plan.yaml by the scaffold: change the plan, then scaffold again.)
+menuItem:
+  id: string
+  name: string
+  description: string
+  category: category
+  price: number
+  color: string
+  icon: string
+  customizable: boolean

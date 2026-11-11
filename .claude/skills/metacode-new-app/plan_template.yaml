@@ -1,0 +1,26 @@
+# plan: the whole app, decided before any of it is written (format:
+# .claude/skills/metacode-new-app/PLAN.md). The scaffold writes the contract
+# files (app.yaml, app/models/, labels, navigation) and one stub per unit
+# from it; agents fill the stubs.
+plan:
+  summary: >-
+    TODO one paragraph, what the app is for and how it feels.
+  style: ''
+  models: {}
+  state:
+    ephemeral: {}
+    local: {}
+  labels:
+    appTitle: TODO
+  routes:
+    home: MainPage
+  pages:
+    MainPage:
+      purpose: TODO
+      uses: [appTitle]
+  components: {}
+  actions: {}
+  remote: {}
+  values: {}
+  shared: {}
+  tests: {}

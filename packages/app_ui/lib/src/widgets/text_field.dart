@@ -7,6 +7,7 @@ Widget buildTextField(Ui ui, Map<String, dynamic> p) => _TextField(
       hint: ui.resolve(p['hint'])?.toString(),
       label: ui.resolve(p['label'])?.toString(),
       multiline: p['multiline'] == true,
+      keyboard: p['keyboard']?.toString(),
       onChanged: ui.actionWithValue<String>(p['onChanged']),
       onSubmitted: ui.actionWithValue<String>(p['onSubmitted']),
     );
@@ -18,6 +19,7 @@ class _TextField extends StatefulWidget {
   final String? hint;
   final String? label;
   final bool multiline;
+  final String? keyboard;
   final ValueChanged<String>? onChanged;
   final ValueChanged<String>? onSubmitted;
 
@@ -26,6 +28,7 @@ class _TextField extends StatefulWidget {
     this.hint,
     this.label,
     this.multiline = false,
+    this.keyboard,
     this.onChanged,
     this.onSubmitted,
   });
@@ -57,6 +60,14 @@ class _TextFieldState extends State<_TextField> {
       onSubmitted: widget.onSubmitted,
       minLines: widget.multiline ? 3 : 1,
       maxLines: widget.multiline ? null : 1,
+      keyboardType: switch (widget.keyboard) {
+        'number' => TextInputType.number,
+        'decimal' => const TextInputType.numberWithOptions(decimal: true),
+        'email' => TextInputType.emailAddress,
+        'phone' => TextInputType.phone,
+        'url' => TextInputType.url,
+        _ => widget.multiline ? TextInputType.multiline : TextInputType.text,
+      },
       decoration: InputDecoration(hintText: widget.hint),
     );
     if (widget.label == null) return field;

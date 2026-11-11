@@ -10,5 +10,6 @@ Icon that runs an action.
 | `tooltip` | text |  |
 | `color` | color |  |
 | `onPressed` | action |  |
+| `enabled` | text | a value returning a bool (or true/false): when false the button shows disabled and its action does not run. Default true |
 
 Kinds are explained in REFERENCE.md (Widgets). Icons, colors and text variants: style.md.

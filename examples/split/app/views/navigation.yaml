@@ -1,0 +1,8 @@
+# navigation: the routes; home opens first.
+# (Written from plan.yaml by the scaffold: change the plan, then scaffold again.)
+initial: home
+routes:
+  home: HomePage
+  group: GroupPage
+  addExpense:
+    bottomSheet: AddExpenseSheet

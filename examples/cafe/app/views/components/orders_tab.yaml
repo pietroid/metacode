@@ -1,0 +1,21 @@
+# OrdersTab: the order history, or an empty message.
+OrdersTab:
+  scroll:
+    container:
+      maxWidth: 720
+      child:
+        padding:
+          all: 16
+          child:
+            column:
+              crossAxisAlignment: stretch
+              spacing: 16
+              children:
+                - sizedBox: {height: 8}
+                - text: {value: ordersTitle, style: {variant: headlineMedium}}
+                - if:
+                    condition: ordersEmpty
+                    then:
+                      text: {value: noOrders, style: {variant: bodyMedium, color: ink2}}
+                    else:
+                      listView: {data: orderHistory, itemBuilder: OrderHistoryRow}

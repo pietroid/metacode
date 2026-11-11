@@ -1,0 +1,21 @@
+# PickupOption: a pickup time row with a clock icon, label and a check when selected; tap picks it.
+PickupOption:
+  tappable:
+    onTap: selectPickup
+    child:
+      padding:
+        vertical: 10
+        child:
+          row:
+            spacing: 12
+            crossAxisAlignment: center
+            children:
+              - icon: {name: schedule, color: ink2}
+              - expanded:
+                  text: {value: pickupLabel, style: {variant: bodyMedium}}
+              - if:
+                  condition: pickupSelected
+                  then:
+                    icon: {name: checkCircle, color: primary}
+                  else:
+                    icon: {name: radioUnchecked, color: ink3}

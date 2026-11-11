@@ -10,6 +10,7 @@ MainPage:
       title: {text: title}
       actions:
       - textButton: {text: portuguese, onPressed: usePortuguese}
+      - textButton: {text: dark, onPressed: useDark}
     body:
       column:
         children:

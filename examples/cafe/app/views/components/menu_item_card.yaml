@@ -1,0 +1,18 @@
+# MenuItemCard: a rounded colored tile with a big white icon, then name and price; tap opens the item.
+MenuItemCard:
+  tappable:
+    onTap: openItem
+    child:
+      column:
+        crossAxisAlignment: stretch
+        spacing: 8
+        children:
+          - expanded:
+              container:
+                color: itemColor
+                radius: 20
+                child:
+                  center:
+                    icon: {name: itemIcon, size: 56, color: white}
+          - text: {value: itemName, style: {variant: titleMedium}, maxLines: 1}
+          - text: {value: itemPriceText, style: {variant: bodySmall, color: ink2}}

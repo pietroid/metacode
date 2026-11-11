@@ -18,7 +18,7 @@ enum PropKind {
   binding('value', 'name of a value (a function in app/views/values/)'),
   bindingOrLiteral('text', 'a value, a label or a literal'),
   literal('literal', 'a literal (number, text, list, map)'),
-  icon('icon', 'an icon name (see Icons)'),
+  icon('icon', 'an icon name (see Icons), or a value returning one'),
   color('color', 'a color (see Colors), or a value returning one'),
   number('number', 'a number, or a value returning one (an `@Animated` value eases it)'),
   inline('inline', "another widget's properties, written inline"),
@@ -101,6 +101,11 @@ const _boxNotes = {
   'padding': 'a number (all sides) or {all|horizontal|vertical|left|right|top|bottom}',
   'margin': 'same as padding',
   'radius': 'corner radius',
+};
+
+/// The `enabled` prop every button shares (see buildCatalogWidget).
+const _enabledNote = {
+  'enabled': 'a value returning a bool (or true/false): when false the button shows disabled and its action does not run. Default true',
 };
 
 const widgetCatalog = <String, WidgetSpec>{
@@ -271,16 +276,18 @@ const widgetCatalog = <String, WidgetSpec>{
   ),
   'navigationBar': WidgetSpec(
     _navigation,
-    'Bottom navigation. Put it in `scaffold.bottomBar`.',
+    'Bottom navigation. Put it in `scaffold.bottomBar`; on wide screens the scaffold shows it as a side rail instead.',
     {
       'destinations': PropKind.literal,
       'selected': PropKind.binding,
       'onSelected': PropKind.action,
+      'rail': PropKind.literal,
     },
     notes: {
       'destinations': 'list of {icon, label}',
       'selected': 'value returning the selected index (int)',
       'onSelected': 'gets `value` (int): the tapped index',
+      'rail': 'the width from which a scaffold shows it as a side rail (default 840), or false to keep it at the bottom; only when written inline in `scaffold.bottomBar`',
     },
   ),
 
@@ -342,9 +349,9 @@ const widgetCatalog = <String, WidgetSpec>{
   ),
   'progress': WidgetSpec(
     _content,
-    'Progress indicator. Without `value` it spins forever.',
-    {'value': PropKind.bindingOrLiteral, 'circular': PropKind.literal},
-    notes: {'value': 'a number from 0 to 1', 'circular': 'true for a circle'},
+    'Progress indicator. Without `value` it spins forever (still, under reduced motion and in the layout check).',
+    {'value': PropKind.bindingOrLiteral, 'circular': PropKind.literal, 'color': PropKind.color},
+    notes: {'value': 'a number from 0 to 1', 'circular': 'true for a circle', 'color': 'the bar, e.g. a value returning success or danger (default primary)'},
   ),
   'listView': WidgetSpec(
     _content,
@@ -353,10 +360,14 @@ const widgetCatalog = <String, WidgetSpec>{
       'data': PropKind.binding,
       'itemBuilder': PropKind.node,
       'empty': PropKind.node,
+      'horizontal': PropKind.literal,
+      'spacing': PropKind.literal,
     },
     notes: {
       'data': 'value returning a list',
       'itemBuilder': 'values and actions inside get `index`',
+      'horizontal': 'true: one row that scrolls sideways (chips, cards), as tall as its tallest item',
+      'spacing': 'gap between items when horizontal, default 8',
     },
   ),
   'gridView': WidgetSpec(
@@ -406,10 +417,15 @@ const widgetCatalog = <String, WidgetSpec>{
       'hint': PropKind.bindingOrLiteral,
       'label': PropKind.bindingOrLiteral,
       'multiline': PropKind.literal,
+      'keyboard': PropKind.literal,
       'onChanged': PropKind.action,
       'onSubmitted': PropKind.action,
     },
-    notes: {'onChanged': 'gets `value` (String)', 'onSubmitted': 'gets `value` (String)'},
+    notes: {
+      'onChanged': 'gets `value` (String)',
+      'onSubmitted': 'gets `value` (String)',
+      'keyboard': 'text (default), number, decimal, email, phone, url: the on-screen keyboard; `value` is still a String (parse it in the action)',
+    },
   ),
   'checkbox': WidgetSpec(
     _input,
@@ -465,31 +481,37 @@ const widgetCatalog = <String, WidgetSpec>{
     'tooltip': PropKind.bindingOrLiteral,
     'color': PropKind.color,
     'onPressed': PropKind.action,
-  }),
+    'enabled': PropKind.bindingOrLiteral,
+  }, notes: _enabledNote),
   'filledButton': WidgetSpec(
     _input,
     'Primary button.',
-    {'text': PropKind.node, 'icon': PropKind.icon, 'onPressed': PropKind.action},
+    {'text': PropKind.node, 'icon': PropKind.icon, 'onPressed': PropKind.action, 'enabled': PropKind.bindingOrLiteral},
+    notes: _enabledNote,
   ),
   'outlinedButton': WidgetSpec(
     _input,
     'Secondary button.',
-    {'text': PropKind.node, 'icon': PropKind.icon, 'onPressed': PropKind.action},
+    {'text': PropKind.node, 'icon': PropKind.icon, 'onPressed': PropKind.action, 'enabled': PropKind.bindingOrLiteral},
+    notes: _enabledNote,
   ),
   'textButton': WidgetSpec(
     _input,
     'Low-emphasis button.',
-    {'text': PropKind.node, 'icon': PropKind.icon, 'onPressed': PropKind.action},
+    {'text': PropKind.node, 'icon': PropKind.icon, 'onPressed': PropKind.action, 'enabled': PropKind.bindingOrLiteral},
+    notes: _enabledNote,
   ),
   'elevatedButton': WidgetSpec(_input, 'Raised button.', {
     'child': PropKind.node,
     'onPressed': PropKind.action,
-  }),
+    'enabled': PropKind.bindingOrLiteral,
+  }, notes: _enabledNote),
   'floatingActionButton': WidgetSpec(_input, 'Floating action button.', {
     'icon': PropKind.icon,
     'child': PropKind.node,
     'onPressed': PropKind.action,
-  }),
+    'enabled': PropKind.bindingOrLiteral,
+  }, notes: _enabledNote),
   'tappable': WidgetSpec(
     _input,
     'Makes any child tappable.',
@@ -522,7 +544,7 @@ const iconNames = [
   'trendingDown', 'arrowUp', 'arrowDown', 'arrowUpRight', 'arrowDownLeft',
   'piggyBank', 'target', 'receipt', 'coins', 'chartLine', 'bank', 'gift',
   'sparkle', 'plusCircle', 'user', 'drop', 'book', 'plant', 'pottedPlant',
-  'cactus', 'leaf', 'lightbulb', 'palette', 'yoga', 'confetti',
+  'cactus', 'leaf', 'lightbulb', 'palette', 'yoga', 'confetti', 'coffee',
 ];
 
 /// Color names usable in [PropKind.color] props, besides `#RRGGBB` and

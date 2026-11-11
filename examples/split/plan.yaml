@@ -1,0 +1,816 @@
+plan:
+  summary: >-
+    Split is a group expense splitter. Home lists my groups with my balance in
+    each; a group screen shows who I am (picked from the members), the balances,
+    a "Settle up" list of the fewest transfers that zero everyone, and the
+    expenses with filters by member and category and an undo for the last
+    delete. Expenses are added from a bottom sheet (description, amount,
+    currency converted to USD with a live rate, category, who paid, and an
+    equal / shares / exact split). The ledger (groups, expenses, transfers)
+    lives on the backend in shared state so every member sees the same one;
+    the selected group and who I am are local to the device. Calm, precise,
+    money-app feel.
+  style: >-
+    Off-white page (#F6F7F4), deep green primary (#1F6F50), coral for debts
+    (#D9534F), green for credits (#2E8B57), muted grey text, white cards with
+    hairline borders and 16px radius, Inter-like sans, tabular numbers feel.
+
+  models:
+    currency: [usd, eur, brl]
+    category: [food, travel, home, other]
+    splitMode: [equal, shares, exact]
+    rateStatus: [ready, loading, failed]
+    saveStatus: [idle, saving, failed]
+    share:
+      purpose: what one member owes for an expense, in USD
+      fields: {member: string, amount: number}
+    expense:
+      purpose: one expense of a group; amount and owed are in USD, originalAmount in currency
+      fields:
+        id: string
+        groupId: string
+        description: string
+        amount: number
+        originalAmount: number
+        currency: currency
+        category: category
+        paidBy: string
+        splitMode: splitMode
+        owed: list(share)
+    transfer:
+      purpose: a settlement payment from one member to another, in USD
+      fields: {id: string, groupId: string, from: string, to: string, amount: number}
+    group:
+      purpose: a group of people sharing expenses
+      fields: {id: string, name: string, members: list(string)}
+    identity:
+      purpose: which member I am in a group
+      fields: {groupId: string, member: string}
+
+  state:
+    ephemeral:
+      draftDescription: string = ''
+      draftAmount: string = ''
+      draftCurrency: currency
+      draftCategory: category
+      draftPaidBy: string = 'Ana'
+      draftMode: splitMode
+      draftChosen:
+        type: list(boolean)
+        initial: [true, true, true, true]
+      draftShares:
+        type: list(string)
+        initial: ['1', '1', '1', '1']
+      draftExact:
+        type: list(string)
+        initial: ['', '', '', '']
+      rateStatus: rateStatus
+      rate: number = 1
+      formError: string = ''
+      saveStatus: saveStatus
+      syncError: string = ''
+      filterMember: string = ''
+      filterCategory: string = ''
+    local:
+      selectedGroup: string = 'g1'
+      identities:
+        type: list(identity)
+        initial:
+        - {groupId: g1, member: Ana}
+        - {groupId: g2, member: Ana}
+        - {groupId: g3, member: Ana}
+      lastDeleted: list(expense)
+    shared:
+      groups:
+        type: list(group)
+        initial:
+        - {id: g1, name: Lisbon trip, members: [Ana, Ben, Carla, Dev]}
+        - {id: g2, name: Flat 3B, members: [Ana, Eli, Fran]}
+        - {id: g3, name: Ski weekend, members: [Ana, Ben, Gus]}
+      expenses:
+        type: list(expense)
+        initial:
+        - {id: e1, groupId: g1, description: Dinner at Ramiro, amount: 120, originalAmount: 120, currency: usd, category: food, paidBy: Ana, splitMode: equal, owed: [{member: Ana, amount: 30}, {member: Ben, amount: 30}, {member: Carla, amount: 30}, {member: Dev, amount: 30}]}
+        - {id: e2, groupId: g1, description: Alfama apartment, amount: 400, originalAmount: 400, currency: usd, category: travel, paidBy: Ben, splitMode: shares, owed: [{member: Ana, amount: 200}, {member: Ben, amount: 100}, {member: Carla, amount: 100}]}
+        - {id: e3, groupId: g1, description: Tram 28 tickets, amount: 50.34, originalAmount: 45, currency: eur, category: travel, paidBy: Carla, splitMode: exact, owed: [{member: Ana, amount: 10}, {member: Ben, amount: 15.34}, {member: Carla, amount: 10}, {member: Dev, amount: 15}]}
+        - {id: e4, groupId: g2, description: Groceries, amount: 86.4, originalAmount: 86.4, currency: usd, category: home, paidBy: Eli, splitMode: equal, owed: [{member: Ana, amount: 28.8}, {member: Eli, amount: 28.8}, {member: Fran, amount: 28.8}]}
+        - {id: e5, groupId: g2, description: Internet bill, amount: 60, originalAmount: 60, currency: usd, category: home, paidBy: Ana, splitMode: equal, owed: [{member: Ana, amount: 20}, {member: Eli, amount: 20}, {member: Fran, amount: 20}]}
+      transfers:
+        type: list(transfer)
+        initial:
+        - {id: t1, groupId: g1, from: Dev, to: Ana, amount: 20}
+
+  labels:
+    appTitle: Split
+    myGroups: Your groups
+    whoAmI: Who are you?
+    balancesTitle: Balances
+    settleUpTitle: Settle up
+    allSettled: Everyone is settled up.
+    record: Record
+    expensesTitle: Expenses
+    transfersTitle: Recorded transfers
+    noExpenses: No expenses match.
+    addExpense: Add expense
+    everyone: Everyone
+    allCategories: All
+    food: Food
+    travel: Travel
+    home: Home
+    other: Other
+    youOwe: You owe
+    youAreOwed: You are owed
+    settledUp: Settled up
+    owes: owes
+    getsBack: gets back
+    settled: settled
+    pays: pays
+    paid: paid
+    paidBy: Paid by
+    undo: Undo
+    deleted: Deleted
+    description: Description
+    descriptionHint: e.g. Dinner
+    amount: Amount
+    currency: Currency
+    category: Category
+    splitTitle: Split
+    splitEqual: Equally
+    splitShares: By shares
+    splitExact: Exact amounts
+    splitEqualHint: Split evenly among the chosen members.
+    splitSharesHint: Give each member a number of shares, e.g. 2:1:1.
+    splitExactHint: Enter what each member owes; it must add up to the total.
+    sharesHint: Shares
+    exactHint: Amount
+    left: left to assign
+    over: over the total
+    rateLoading: Loading exchange rate…
+    rateFailed: Couldn't load the exchange rate.
+    retry: Retry
+    save: Save expense
+    saving: Saving…
+    cancel: Cancel
+    errorAmount: Enter an amount greater than 0.
+    errorExactSum: Exact amounts must add up to the total.
+    errorNoMembers: Choose at least one member.
+    errorRate: The exchange rate is needed before saving.
+    errorOffline: You're offline. Nothing was lost; try again.
+    defaultDescription: Expense
+    members: members
+    youAre: you are
+
+  routes:
+    home: HomePage
+    group: GroupPage
+    addExpense: {bottomSheet: AddExpenseSheet}
+
+  # --- views -----------------------------------------------------------------
+  pages:
+    HomePage:
+      purpose: >-
+        App bar with appTitle, a myGroups heading, and a listView of GroupCard
+        over groupList.
+      uses: [GroupCard, groupList, appTitle, myGroups]
+    GroupPage:
+      purpose: >-
+        App bar with currentGroupName (back arrow). Scrollable column, max width
+        ~720: a sync error banner (syncErrorVisible, syncErrorText), the
+        MyBalanceHeader, the IdentityPicker, BalancesSection, SettleUpSection,
+        UndoBar, ExpensesSection, TransfersSection. A floating action button
+        with addExpense runs openAddExpense.
+      uses: [MyBalanceHeader, IdentityPicker, BalancesSection, SettleUpSection, UndoBar, ExpensesSection, TransfersSection, currentGroupName, syncErrorVisible, syncErrorText, openAddExpense, addExpense]
+    AddExpenseSheet:
+      purpose: >-
+        The add form, scrollable: description textField (setDraftDescription,
+        descriptionHint), a row with the amount textField (setDraftAmount,
+        numeric) and a currency dropdown (options USD, EUR, BRL; value
+        currencyValue; setDraftCurrency), the RateLine, a category dropdown
+        (options food, travel, home, other with their labels; value
+        categoryValue; setDraftCategory), the PaidByPicker, the SplitEditor, the
+        error text (formErrorVisible, formErrorText, coral), and a full-width
+        save button (saveButtonText, saveExpense, enabled saveEnabled) next to
+        a cancel text button (closeSheet).
+      uses: [RateLine, PaidByPicker, SplitEditor, setDraftDescription, setDraftAmount, setDraftCurrency, setDraftCategory, currencyValue, categoryValue, formErrorVisible, formErrorText, saveButtonText, saveEnabled, saveExpense, closeSheet, addExpense, description, descriptionHint, amount, currency, category, food, travel, home, other, cancel]
+
+  components:
+    GroupCard:
+      purpose: >-
+        One group (index) as a tappable card running openGroup: an avatar with
+        groupInitials, groupName over groupMembersText, and on the right
+        groupMyBalanceText in groupMyBalanceColor.
+      uses: [groupInitials, groupName, groupMembersText, groupMyBalanceText, groupMyBalanceColor, openGroup]
+    MyBalanceHeader:
+      purpose: >-
+        A card with my overall position in the current group:
+        currentMyBalanceText (large) in currentMyBalanceColor, and
+        currentMembersText below.
+      uses: [currentMyBalanceText, currentMyBalanceColor, currentMembersText]
+    IdentityPicker:
+      purpose: >-
+        The whoAmI caption over a horizontal listView of IdentityChip over
+        currentMembers.
+      uses: [IdentityChip, currentMembers, whoAmI]
+    IdentityChip:
+      purpose: A choiceChip with memberName (index), selected memberIsMe, onSelected setWhoAmI.
+      uses: [memberName, memberIsMe, setWhoAmI]
+    BalancesSection:
+      purpose: The balancesTitle heading and a card with a non-scrolling listView of BalanceRow over currentMembers.
+      uses: [BalanceRow, currentMembers, balancesTitle]
+    BalanceRow:
+      purpose: >-
+        One member (index): avatar initial (memberInitial), memberName, and on
+        the right memberBalanceText in memberBalanceColor over
+        memberBalanceCaption.
+      uses: [memberInitial, memberName, memberBalanceText, memberBalanceColor, memberBalanceCaption]
+    SettleUpSection:
+      purpose: >-
+        The settleUpTitle heading; allSettled text when allSettledVisible; else
+        a card with a non-scrolling listView of SuggestionRow over
+        suggestedTransfers.
+      uses: [SuggestionRow, suggestedTransfers, allSettledVisible, settleUpTitle, allSettled]
+    SuggestionRow:
+      purpose: >-
+        One suggested transfer (index): suggestionText, suggestionAmountText
+        bold, and a small outlined record button running recordSuggestion.
+      uses: [suggestionText, suggestionAmountText, recordSuggestion, record]
+    UndoBar:
+      purpose: >-
+        Shown when undoVisible: a dark rounded bar with undoText and an undo
+        text button running undoDelete.
+      uses: [undoVisible, undoText, undoDelete, undo]
+    ExpensesSection:
+      purpose: >-
+        The expensesTitle heading, a horizontal listView of FilterMemberChip
+        over filterMemberOptions, a horizontal listView of FilterCategoryChip
+        over filterCategoryOptions, then a non-scrolling listView of ExpenseRow
+        over filteredExpenses, or noExpenses when noExpensesVisible.
+      uses: [FilterMemberChip, FilterCategoryChip, ExpenseRow, filterMemberOptions, filterCategoryOptions, filteredExpenses, noExpensesVisible, expensesTitle, noExpenses]
+    FilterMemberChip:
+      purpose: A choiceChip with filterMemberOptionText (index), selected filterMemberOptionSelected, onSelected selectFilterMember.
+      uses: [filterMemberOptionText, filterMemberOptionSelected, selectFilterMember]
+    FilterCategoryChip:
+      purpose: A choiceChip with filterCategoryOptionText (index), selected filterCategoryOptionSelected, onSelected selectFilterCategory.
+      uses: [filterCategoryOptionText, filterCategoryOptionSelected, selectFilterCategory]
+    ExpenseRow:
+      purpose: >-
+        One expense (index) in a card: an icon (expenseIcon) in a tinted
+        circle, expenseTitle over expenseSubtitle, on the right
+        expenseAmountText over expenseOriginalText (small, grey), and a delete
+        iconButton running deleteExpenseAt.
+      uses: [expenseIcon, expenseTitle, expenseSubtitle, expenseAmountText, expenseOriginalText, deleteExpenseAt]
+    TransfersSection:
+      purpose: >-
+        When transfersVisible: the transfersTitle heading and a non-scrolling
+        listView of TransferRow over groupTransfers.
+      uses: [TransferRow, transfersVisible, groupTransfers, transfersTitle]
+    TransferRow:
+      purpose: One recorded transfer (index), a swap icon and transferHistoryText.
+      uses: [transferHistoryText]
+    RateLine:
+      purpose: >-
+        Under the amount: a small spinner with rateLoading when
+        rateLoadingVisible; rateFailed in coral with a retry text button
+        (retryRate) when rateFailedVisible; else convertedText (grey) when
+        convertedVisible.
+      uses: [rateLoadingVisible, rateFailedVisible, convertedVisible, convertedText, retryRate, rateLoading, rateFailed, retry]
+    PaidByPicker:
+      purpose: The paidBy caption over a horizontal listView of PaidByChip over currentMembers.
+      uses: [PaidByChip, currentMembers, paidBy]
+    PaidByChip:
+      purpose: A choiceChip with memberName (index), selected paidByChipSelected, onSelected selectPaidBy.
+      uses: [memberName, paidByChipSelected, selectPaidBy]
+    SplitEditor:
+      purpose: >-
+        The splitTitle caption, a mode dropdown (options equal, shares, exact
+        with splitEqual, splitShares, splitExact; value modeValue;
+        setDraftMode), splitHintText (grey), a non-scrolling listView of
+        SplitMemberRow over currentMembers, and exactRemainingText when
+        exactRemainingVisible.
+      uses: [SplitMemberRow, currentMembers, modeValue, setDraftMode, splitHintText, exactRemainingText, exactRemainingVisible, splitTitle, splitEqual, splitShares, splitExact]
+    SplitMemberRow:
+      purpose: >-
+        One member (index): a checkbox (draftMemberChosen, toggleDraftMember)
+        when draftCheckVisible, memberName, then a small textField when
+        draftInputVisible with hint draftInputHint running setDraftMemberInput,
+        and on the right draftMemberOwesText (grey).
+      uses: [draftMemberChosen, toggleDraftMember, draftCheckVisible, memberName, draftInputVisible, draftInputHint, setDraftMemberInput, draftMemberOwesText]
+
+  # --- actions ---------------------------------------------------------------
+  actions:
+    openGroup:
+      purpose: Sets selectedGroup to groups[index].id, clears filterMember, filterCategory and syncError, and pushes the group route.
+      params: [emit, core, index]
+      test: index 1 -> selectedGroup g2 and navigation ['push group'].
+    setWhoAmI:
+      purpose: Sets my identity in the selected group to currentMembers[index] (replacing or adding the identity for selectedGroup).
+      params: [emit, index]
+      test: In g1 index 1 -> identities has {g1, Ben} and still {g2, Ana}.
+    openAddExpense:
+      purpose: >-
+        Resets the draft for the selected group (description and amount empty,
+        usd, other, mode equal, paidBy = me via myMember, draftChosen all true,
+        draftShares all '1', draftExact all '' sized to the members, rate 1,
+        rateStatus ready, formError '', saveStatus idle) and pushes the
+        addExpense route.
+      params: [emit, core]
+      uses: [myMember, currentGroup]
+      test: In g2 -> draftChosen [true, true, true], draftPaidBy Ana and navigation ['push addExpense'].
+    closeSheet:
+      purpose: Pops the sheet.
+      params: [core]
+      test: navigation is ['pop'].
+    setDraftDescription:
+      purpose: Keeps the typed description.
+      params: [emit]
+      value: String
+      test: draftDescription is the value.
+    setDraftAmount:
+      purpose: Keeps the typed amount text and clears formError.
+      params: [emit]
+      value: String
+      test: '12.5 -> draftAmount 12.5 and formError empty.'
+    setDraftCurrency:
+      purpose: >-
+        Sets draftCurrency from 'USD'/'EUR'/'BRL'. USD -> rate 1, rateStatus
+        ready. Otherwise runs fetchRate.
+      params: [emit, core]
+      value: String
+      uses: [fetchRate]
+      test: USD -> draftCurrency usd, rate 1, rateStatus ready.
+    retryRate:
+      purpose: Runs fetchRate again for draftCurrency.
+      params: [emit, core]
+      uses: [fetchRate]
+      test: With draftCurrency eur and a fake rate response, rateStatus becomes ready.
+    setDraftCategory:
+      purpose: Sets draftCategory from its name (food, travel, home, other).
+      params: [emit]
+      value: String
+      test: travel -> draftCategory travel.
+    selectPaidBy:
+      purpose: Sets draftPaidBy to currentMembers[index].
+      params: [emit, index]
+      test: In g1 index 2 -> draftPaidBy Carla.
+    setDraftMode:
+      purpose: Sets draftMode from its name (equal, shares, exact) and clears formError.
+      params: [emit]
+      value: String
+      test: exact -> draftMode exact.
+    toggleDraftMember:
+      purpose: Flips draftChosen[index] and clears formError.
+      params: [emit, index]
+      test: index 0 from all true -> draftChosen [false, true, true, true].
+    setDraftMemberInput:
+      purpose: Writes the text into draftShares[index] in shares mode or draftExact[index] in exact mode; clears formError.
+      params: [emit, index]
+      value: String
+      test: In exact mode index 1 value 20 -> draftExact[1] is 20.
+    saveExpense:
+      purpose: >-
+        Validates with validateDraft (error -> formError, stop). Else builds
+        the Expense (id 'e' + millisecondsSinceEpoch, groupId selectedGroup,
+        description or defaultDescription, amount = original * rate rounded to
+        cents, owed from draftOwed), sets saveStatus saving, calls
+        remote.addExpense. Error -> saveStatus failed, formError errorOffline,
+        sheet stays. Success -> saveStatus idle and pop.
+      params: [emit, core, remote, labels]
+      uses: [addExpense, validateDraft, draftOwed, parseAmount]
+      test: With draftAmount '' -> formError is errorAmount and no navigation.
+    deleteExpenseAt:
+      purpose: >-
+        Takes filteredExpenses' item index (via visibleExpenses), calls
+        remote.deleteExpense with its id. Success -> lastDeleted is [it] (a list of 0 or 1),
+        syncError ''. Error -> syncError errorOffline.
+      params: [emit, remote, labels, index]
+      uses: [deleteExpense, visibleExpenses]
+      test: With the fake remote, index 0 in g1 -> lastDeleted first id e3.
+    undoDelete:
+      purpose: Calls remote.addExpense with lastDeleted.first (nothing when empty). Success -> lastDeleted []. Error -> syncError errorOffline.
+      params: [emit, remote, labels]
+      uses: [addExpense]
+      test: With lastDeleted [one] and the fake remote -> lastDeleted empty.
+    recordSuggestion:
+      purpose: >-
+        Takes suggested transfer index (minTransfers over memberBalances for
+        the current group), gives it id 't' + millisecondsSinceEpoch, and calls
+        remote.recordSettlement. Error -> syncError errorOffline; success ->
+        syncError ''.
+      params: [emit, remote, labels, index]
+      uses: [recordSettlement, minTransfers, memberBalances, currentGroup]
+      test: With the fake remote index 0 in g1 -> no syncError.
+    selectFilterMember:
+      purpose: Option index 0 (everyone) -> filterMember ''; else filterMember = currentMembers[index - 1].
+      params: [emit, index]
+      test: In g1 index 2 -> filterMember Ben.
+    selectFilterCategory:
+      purpose: Index 0 -> filterCategory ''; else the category name (food, travel, home, other) at index - 1.
+      params: [emit, index]
+      test: index 2 -> filterCategory travel.
+
+  remote:
+    addExpense:
+      purpose: >-
+        Appends the expense to shared expenses (replacing one with the same
+        id). Refuses (no change) amount <= 0, empty owed, or an unknown
+        groupId.
+      value: Expense
+    deleteExpense:
+      purpose: Removes the expense with this id from shared expenses; no change when missing.
+      value: String
+    recordSettlement:
+      purpose: Appends the transfer to shared transfers. Refuses amount <= 0 or from == to.
+      value: Transfer
+
+  # --- values ----------------------------------------------------------------
+  values:
+    groupList:
+      purpose: The shared groups.
+      returns: List<Group>
+      test: Three groups, first Lisbon trip.
+    groupInitials:
+      purpose: First letters of group index's first two words, uppercase.
+      returns: String
+      params: [index]
+      test: index 0 -> LT.
+    groupName:
+      purpose: Group index's name.
+      returns: String
+      params: [index]
+      test: index 1 -> Flat 3B.
+    groupMembersText:
+      purpose: Group index's members joined with ', '.
+      returns: String
+      params: [index]
+      test: index 1 -> Ana, Eli, Fran.
+    groupMyBalanceText:
+      purpose: >-
+        My balance (myMember) in group index: '<youAreOwed> $11.20',
+        '<youOwe> $140.00', or settledUp within half a cent.
+      returns: String
+      params: [labels, index]
+      uses: [memberBalances, myMember, formatUsd]
+      test: index 0 -> You owe $140.00; index 1 -> You are owed $11.20; index 2 -> Settled up.
+    groupMyBalanceColor:
+      purpose: Green '#2E8B57' when owed, coral '#D9534F' when I owe, grey '#7A7F7C' when settled, for group index.
+      returns: String
+      params: [index]
+      uses: [memberBalances, myMember]
+      test: index 0 -> '#D9534F'.
+    currentGroupName:
+      purpose: The selected group's name.
+      returns: String
+      uses: [currentGroup]
+      test: Lisbon trip.
+    currentMembers:
+      purpose: The selected group's members.
+      returns: List<String>
+      uses: [currentGroup]
+      test: '[Ana, Ben, Carla, Dev].'
+    currentMembersText:
+      purpose: "'4 members · you are Ana' style: count, members label, then the me name."
+      returns: String
+      params: [labels]
+      uses: [currentGroup, myMember]
+      test: Contains 4 and Ana.
+    currentMyBalanceText:
+      purpose: Same as groupMyBalanceText for the selected group.
+      returns: String
+      params: [labels]
+      uses: [memberBalances, myMember, currentGroup, formatUsd]
+      test: You owe $140.00.
+    currentMyBalanceColor:
+      purpose: Same colors as groupMyBalanceColor for the selected group.
+      returns: String
+      uses: [memberBalances, myMember, currentGroup]
+      test: '#D9534F.'
+    memberName:
+      purpose: currentMembers[index].
+      returns: String
+      params: [index]
+      uses: [currentGroup]
+      test: index 3 -> Dev.
+    memberInitial:
+      purpose: First letter of currentMembers[index].
+      returns: String
+      params: [index]
+      uses: [currentGroup]
+      test: index 1 -> B.
+    memberIsMe:
+      purpose: Whether currentMembers[index] is myMember for the selected group.
+      returns: bool
+      params: [index]
+      uses: [currentGroup, myMember]
+      test: index 0 -> true, index 1 -> false.
+    memberBalanceText:
+      purpose: "Member index's balance signed: '+$254.66', '−$140.00' (U+2212), '$0.00'."
+      returns: String
+      params: [index]
+      uses: [memberBalances, currentGroup, formatUsd]
+      test: index 1 -> +$254.66; index 0 -> −$140.00.
+    memberBalanceColor:
+      purpose: Green, coral or grey (as groupMyBalanceColor) for member index's balance.
+      returns: String
+      params: [index]
+      uses: [memberBalances, currentGroup]
+      test: index 1 -> '#2E8B57'.
+    memberBalanceCaption:
+      purpose: getsBack, owes or settled for member index's balance.
+      returns: String
+      params: [labels, index]
+      uses: [memberBalances, currentGroup]
+      test: index 0 -> owes.
+    suggestedTransfers:
+      purpose: minTransfers for the selected group's balances.
+      returns: List<Transfer>
+      uses: [minTransfers, memberBalances, currentGroup]
+      test: 'g1 -> 3 transfers, first Ana to Ben 140.'
+    allSettledVisible:
+      purpose: suggestedTransfers is empty.
+      returns: bool
+      uses: [minTransfers, memberBalances, currentGroup]
+      test: g1 -> false; g3 -> true.
+    suggestionText:
+      purpose: "Suggested transfer index as '<from> <pays> <to>'."
+      returns: String
+      params: [labels, index]
+      uses: [minTransfers, memberBalances, currentGroup]
+      test: index 0 -> Ana pays Ben.
+    suggestionAmountText:
+      purpose: Suggested transfer index's amount via formatUsd.
+      returns: String
+      params: [index]
+      uses: [minTransfers, memberBalances, currentGroup, formatUsd]
+      test: index 0 -> $140.00.
+    undoVisible:
+      purpose: lastDeleted is not empty and its first belongs to the selected group.
+      returns: bool
+      test: Initial -> false.
+    undoText:
+      purpose: "'<deleted> \"<description>\"' for lastDeleted.first, '' when empty."
+      returns: String
+      params: [labels]
+      test: Initial -> empty.
+    syncErrorVisible:
+      purpose: syncError is not empty.
+      returns: bool
+      test: Initial -> false.
+    syncErrorText:
+      purpose: The syncError text.
+      returns: String
+      test: Initial -> empty.
+    filterMemberOptions:
+      purpose: everyone label followed by currentMembers.
+      returns: List<String>
+      params: [labels]
+      uses: [currentGroup]
+      test: g1 -> 5 options, first Everyone.
+    filterMemberOptionText:
+      purpose: Option index of filterMemberOptions.
+      returns: String
+      params: [labels, index]
+      uses: [currentGroup]
+      test: index 0 -> Everyone; index 1 -> Ana.
+    filterMemberOptionSelected:
+      purpose: Index 0 when filterMember is empty, else the option equal to filterMember.
+      returns: bool
+      params: [index]
+      uses: [currentGroup]
+      test: Initial index 0 -> true.
+    filterCategoryOptions:
+      purpose: allCategories, food, travel, home, other labels.
+      returns: List<String>
+      params: [labels]
+      test: 5 options, first All.
+    filterCategoryOptionText:
+      purpose: Option index of filterCategoryOptions.
+      returns: String
+      params: [labels, index]
+      test: index 2 -> Travel.
+    filterCategoryOptionSelected:
+      purpose: Index 0 when filterCategory is empty, else the category name at index - 1 equals filterCategory.
+      returns: bool
+      params: [index]
+      test: Initial index 0 -> true.
+    filteredExpenses:
+      purpose: visibleExpenses (selected group, filters, newest first).
+      returns: List<Expense>
+      uses: [visibleExpenses]
+      test: g1 -> 3, first e3; with filterCategory food -> 1.
+    noExpensesVisible:
+      purpose: filteredExpenses is empty.
+      returns: bool
+      uses: [visibleExpenses]
+      test: Initial -> false.
+    expenseTitle:
+      purpose: Description of filtered expense index.
+      returns: String
+      params: [index]
+      uses: [visibleExpenses]
+      test: index 0 -> Tram 28 tickets.
+    expenseSubtitle:
+      purpose: "'<paidBy> <paid> · <category label>' for filtered expense index."
+      returns: String
+      params: [labels, index]
+      uses: [visibleExpenses]
+      test: index 0 -> Carla paid · Travel.
+    expenseAmountText:
+      purpose: USD amount of filtered expense index via formatUsd.
+      returns: String
+      params: [index]
+      uses: [visibleExpenses, formatUsd]
+      test: index 0 -> $50.34.
+    expenseOriginalText:
+      purpose: "Original amount with code when not USD ('45.00 EUR'), else ''."
+      returns: String
+      params: [index]
+      uses: [visibleExpenses]
+      test: index 0 -> 45.00 EUR; index 1 -> empty.
+    expenseIcon:
+      purpose: Icon name per category of filtered expense index (food restaurant, travel flight, home home, other receipt).
+      returns: String
+      params: [index]
+      uses: [visibleExpenses]
+      test: index 0 -> flight.
+    transfersVisible:
+      purpose: The selected group has recorded transfers.
+      returns: bool
+      test: g1 -> true.
+    groupTransfers:
+      purpose: The selected group's transfers, newest first.
+      returns: List<Transfer>
+      test: g1 -> 1.
+    transferHistoryText:
+      purpose: "'<from> <paid> <to> $20.00' for groupTransfers index."
+      returns: String
+      params: [labels, index]
+      uses: [formatUsd]
+      test: index 0 -> Dev paid Ana $20.00.
+    currencyValue:
+      purpose: draftCurrency as 'USD', 'EUR' or 'BRL'.
+      returns: String
+      test: Initial -> USD.
+    categoryValue:
+      purpose: draftCategory's name.
+      returns: String
+      test: Initial -> food.
+    modeValue:
+      purpose: draftMode's name.
+      returns: String
+      test: Initial -> equal.
+    rateLoadingVisible:
+      purpose: rateStatus is loading.
+      returns: bool
+      test: Initial -> false.
+    rateFailedVisible:
+      purpose: rateStatus is failed.
+      returns: bool
+      test: Initial -> false.
+    convertedVisible:
+      purpose: rateStatus ready, draftCurrency not usd and the amount parses above 0.
+      returns: bool
+      uses: [parseAmount]
+      test: Initial -> false.
+    convertedText:
+      purpose: "'1 EUR = 1.1187 USD · ≈ $50.34' from rate and parseAmount(draftAmount)."
+      returns: String
+      uses: [parseAmount, formatUsd]
+      test: With eur, rate 1.1187, amount 45 -> contains $50.34.
+    paidByChipSelected:
+      purpose: currentMembers[index] equals draftPaidBy.
+      returns: bool
+      params: [index]
+      uses: [currentGroup]
+      test: Initial index 0 -> true.
+    splitHintText:
+      purpose: splitEqualHint, splitSharesHint or splitExactHint by draftMode.
+      returns: String
+      params: [labels]
+      test: Initial -> splitEqualHint.
+    draftCheckVisible:
+      purpose: draftMode is equal.
+      returns: bool
+      test: Initial -> true.
+    draftInputVisible:
+      purpose: draftMode is shares or exact.
+      returns: bool
+      test: Initial -> false.
+    draftInputHint:
+      purpose: sharesHint in shares mode, exactHint in exact mode.
+      returns: String
+      params: [labels]
+      test: shares -> Shares.
+    draftMemberChosen:
+      purpose: draftChosen[index], false when out of range.
+      returns: bool
+      params: [index]
+      test: Initial index 0 -> true.
+    draftMemberOwesText:
+      purpose: >-
+        What member index would owe in USD (draftOwed with the amount times
+        rate) via formatUsd, '' when they owe nothing or the amount is empty.
+      returns: String
+      params: [index]
+      uses: [draftOwed, parseAmount, formatUsd]
+      test: Amount 84, equal, all chosen -> $21.00.
+    exactRemainingVisible:
+      purpose: draftMode is exact and the exact amounts differ from the amount by more than half a cent.
+      returns: bool
+      uses: [parseAmount]
+      test: Initial -> false.
+    exactRemainingText:
+      purpose: "'$4.00 <left>' or '$4.00 <over>' in the draft currency's amount (parseAmount of draftAmount minus the sum of draftExact)."
+      returns: String
+      params: [labels]
+      uses: [parseAmount, formatUsd]
+      test: Amount 50, exact 20 and 26 -> $4.00 left to assign.
+    formErrorVisible:
+      purpose: formError is not empty.
+      returns: bool
+      test: Initial -> false.
+    formErrorText:
+      purpose: The formError text.
+      returns: String
+      test: Initial -> empty.
+    saveEnabled:
+      purpose: rateStatus is ready and saveStatus is not saving.
+      returns: bool
+      test: Initial -> true; rateStatus failed -> false.
+    saveButtonText:
+      purpose: saving label while saveStatus is saving, else save.
+      returns: String
+      params: [labels]
+      test: Initial -> Save expense.
+
+  shared:
+    formatUsd:
+      purpose: "Rounds to cents with a comma thousands separator, no sign: 1234.5 -> '$1,234.50'; uses the absolute value."
+      signature: String formatUsd(num amount)
+      in: values
+    parseAmount:
+      purpose: "Parses typed money text ('12,50' or '12.50' or ' 7 ') to a number; 0 when invalid."
+      signature: num parseAmount(String text)
+      in: values
+    currentGroup:
+      purpose: The group whose id is state.selectedGroup (the first group when missing).
+      signature: Group currentGroup(State state)
+      in: values
+    myMember:
+      purpose: My member name in group groupId from state.identities, else that group's first member.
+      signature: String myMember(State state, String groupId)
+      in: values
+    memberBalances:
+      purpose: >-
+        Balance per member (same order) for group groupId: paid expenses minus
+        owed shares, plus transfers sent minus transfers received, rounded to
+        cents.
+      signature: List<num> memberBalances(State state, String groupId, List<String> members)
+      in: values
+    minTransfers:
+      purpose: >-
+        Greedy settle-up: repeatedly the largest debtor pays the largest
+        creditor the smaller of the two amounts, until all are within half a
+        cent. Transfers have id '' and the groupId.
+      signature: List<Transfer> minTransfers(String groupId, List<String> members, List<num> balances)
+      in: values
+    visibleExpenses:
+      purpose: Expenses of the selected group, filtered by filterMember (paid by or owes a share) and filterCategory, newest first (reverse list order).
+      signature: List<Expense> visibleExpenses(State state)
+      in: values
+    draftOwed:
+      purpose: >-
+        Shares owed (USD, rounded to cents, last chosen member takes the
+        rounding remainder) for totalUsd from the draft: equal among
+        draftChosen members; shares by the parsed draftShares weights (members
+        with weight > 0); exact from draftExact times state.rate (members with
+        amount > 0).
+      signature: List<Share> draftOwed(State state, num totalUsd)
+      in: actions
+    validateDraft:
+      purpose: >-
+        The first error text or '': errorRate unless rateStatus ready,
+        errorAmount unless parseAmount(draftAmount) > 0, errorNoMembers when no
+        member is chosen (equal) or has a share/amount > 0, errorExactSum when
+        exact amounts differ from the amount by more than half a cent.
+      signature: String validateDraft(State state, Labels labels)
+      in: actions
+    fetchRate:
+      purpose: >-
+        Sets rateStatus loading, then GET
+        https://open.er-api.com/v6/latest/<CODE> (CODE of draftCurrency, e.g.
+        EUR); json rates.USD is the rate -> rate, rateStatus ready. Non-200 or
+        missing -> rateStatus failed.
+      signature: Future<void> fetchRate(State state, void Function(StateDelta) emit, Core core)
+      in: actions
+
+  tests:
+    groupOpen: {state: {selectedGroup: g1}, route: group}
+    groupFiltered: {state: {filterMember: Ben, filterCategory: travel}, route: group}
+    groupSettled: {state: {selectedGroup: g3}, route: group}
+    groupUndo: {state: {lastDeleted: [{id: e9, groupId: g1, description: Pastéis de nata, amount: 12, originalAmount: 12, currency: usd, category: food, paidBy: Dev, splitMode: equal, owed: [{member: Dev, amount: 6}, {member: Ana, amount: 6}]}], syncError: "You're offline. Nothing was lost; try again."}, route: group}
+    sheetEqual: {state: {draftDescription: Lunch, draftAmount: '84'}, route: addExpense}
+    sheetShares: {state: {draftAmount: '120', draftMode: shares, draftShares: ['2', '1', '1', '0']}, route: addExpense}
+    sheetExactError: {state: {draftAmount: '50', draftMode: exact, draftExact: ['20', '26', '', ''], formError: Exact amounts must add up to the total.}, route: addExpense}
+    sheetRateLoading: {state: {draftAmount: '45', draftCurrency: eur, rateStatus: loading}, route: addExpense}
+    sheetRateFailed: {state: {draftAmount: '45', draftCurrency: brl, rateStatus: failed}, route: addExpense}
+    sheetConverted: {state: {draftAmount: '45', draftCurrency: eur, rate: 1.1187}, route: addExpense}

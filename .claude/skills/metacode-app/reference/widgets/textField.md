@@ -10,6 +10,7 @@ Text input.
 | `hint` | text |  |
 | `label` | text |  |
 | `multiline` | literal |  |
+| `keyboard` | literal | text (default), number, decimal, email, phone, url: the on-screen keyboard; `value` is still a String (parse it in the action) |
 | `onChanged` | action | gets `value` (String) |
 | `onSubmitted` | action | gets `value` (String) |
 

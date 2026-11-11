@@ -1,0 +1,39 @@
+# OrderPage: the selected order - status card, details (lines, total, store, pickup, payment, time) and a back-to-menu button.
+OrderPage:
+  scaffold:
+    appBar: {title: orderNumberText}
+    body:
+      scroll:
+        container:
+          maxWidth: 720
+          child:
+            padding:
+              all: 16
+              child:
+                column:
+                  crossAxisAlignment: stretch
+                  spacing: 16
+                  children:
+                    - OrderStatusCard
+                    - card:
+                        padding: 20
+                        child:
+                          column:
+                            crossAxisAlignment: stretch
+                            spacing: 8
+                            children:
+                              - text: {value: orderDetails, style: {variant: titleMedium}}
+                              - listView: {data: orderLines, itemBuilder: OrderLineRow}
+                              - divider: {}
+                              - row:
+                                  children:
+                                    - expanded:
+                                        text: {value: total, style: {variant: titleMedium}}
+                                    - text: {value: orderTotalText, style: {variant: titleMedium}}
+                              - text: {value: pickupAt, style: {variant: labelMedium, color: ink2}}
+                              - text: {value: orderStoreText, style: {variant: bodyMedium}}
+                              - text: {value: orderPickupText, style: {variant: bodySmall, color: ink2}}
+                              - text: {value: paidWith, style: {variant: labelMedium, color: ink2}}
+                              - text: {value: orderPaymentText, style: {variant: bodyMedium}}
+                              - text: {value: orderPlacedText, style: {variant: bodySmall, color: ink3}}
+                    - outlinedButton: {text: backToMenu, onPressed: goToMenu}

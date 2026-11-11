@@ -1,0 +1,69 @@
+# MenuTab: header, search field, category chips, a responsive grid of item cards and a floating cart bar.
+MenuTab:
+  column:
+    - expanded:
+        scroll:
+          container:
+            maxWidth: 1000
+            child:
+              padding:
+                all: 16
+                child:
+                  column:
+                    crossAxisAlignment: start
+                    spacing: 16
+                    children:
+                      - sizedBox: {height: 8}
+                      - column:
+                          crossAxisAlignment: start
+                          spacing: 4
+                          children:
+                            - text: {value: appTitle, style: {variant: labelLarge, color: accent}}
+                            - text: {value: menuTitle, style: {variant: headlineMedium}}
+                      - container:
+                          color: fill
+                          radius: 999
+                          padding: {horizontal: 16}
+                          child:
+                            row:
+                              crossAxisAlignment: center
+                              spacing: 8
+                              children:
+                                - icon: {name: search, color: ink3}
+                                - expanded:
+                                    textField: {hint: searchHint, onChanged: updateSearch}
+                      - if:
+                          condition: isSearching
+                          else:
+                            scroll:
+                              horizontal: true
+                              child:
+                                row:
+                                  spacing: 8
+                                  children:
+                                    - CategoryChip: {index: 0}
+                                    - CategoryChip: {index: 1}
+                                    - CategoryChip: {index: 2}
+                                    - CategoryChip: {index: 3}
+                      - if:
+                          condition: noItems
+                          then:
+                            text: {value: noResults, style: {variant: bodyMedium, color: ink2}}
+                          else:
+                            responsive:
+                              breakpoint: 720
+                              narrow:
+                                gridView: {data: visibleItems, itemBuilder: MenuItemCard, columns: 2, spacing: 16, aspectRatio: 0.85}
+                              wide:
+                                gridView: {data: visibleItems, itemBuilder: MenuItemCard, columns: 4, spacing: 16, aspectRatio: 0.9}
+    - if:
+        condition: cartHasItems
+        then:
+          padding:
+            horizontal: 16
+            bottom: 12
+            top: 4
+            child:
+              container:
+                maxWidth: 720
+                child: CartBar

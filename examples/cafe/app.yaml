@@ -1,0 +1,57 @@
+# cafe: Ember & Oak, a neighborhood coffee shop ordering app. A short onboarding on first launch (welcome, pick a favorite store, turn on rewards; skippable), then four bottom tabs: Menu (category chips over a grid of colorful item tiles, search by name, a floating cart bar), Rewards (a stars card, 1 star per dollar, 150 stars = a free drink, and the rewards to redeem), Orders (history) and Profile. Tapping an item opens a detail page to pick size, milk, extra shots and quantity with a live price, then add it to the cart (a bottom sheet with steppers). Checkout picks the pickup store (a dialog), time and payment, and placing an order opens its status page, which advances placed -> preparing -> ready on its own. Local state only, no backend, no real payments. Warm, cozy and premium; must look good on a phone and on desktop (wide layouts center content with a max width, the menu grid gets more columns, the item page becomes two columns).
+# Types in app/models/state.yaml. (Written from plan.yaml by the scaffold: change the plan, then scaffold again.)
+name: cafe
+description: "Ember & Oak, a neighborhood coffee shop ordering app. A short onboarding on first launch (welcome, pick a favorite store, turn on rewards; skippable), then four bottom tabs: Menu (category chips over a grid of colorful item tiles, search by name, a floating cart bar), Rewards (a stars card, 1 star per dollar, 150 stars = a free drink, and the rewards to redeem), Orders (history) and Profile. Tapping an item opens a detail page to pick size, milk, extra shots and quantity with a live price, then add it to the cart (a bottom sheet with steppers). Checkout picks the pickup store (a dialog), time and payment, and placing an order opens its status page, which advances placed -> preparing -> ready on its own. Local state only, no backend, no real payments. Warm, cozy and premium; must look good on a phone and on desktop (wide layouts center content with a max width, the menu grid gets more columns, the item page becomes two columns)."
+state:
+  ephemeral:
+    search: ""
+  local:
+    onboarded: false
+    onboardingStep: 0
+    favoriteStore: 0
+    rewardsOn: false
+    currentTab: menu
+    category: coffee
+    selectedItem: 0
+    draftSize: medium
+    draftMilk: whole
+    draftShots: 0
+    draftQuantity: 1
+    checkoutStore: 0
+    pickup: now
+    paymentMethod: card
+    selectedOrder: 0
+    nextOrderNumber: 1043
+    stars: 112
+    lastRedeemed: ""
+    userName: Alex Rivera
+    notificationsOn: true
+    themeChoice: system
+    menu:
+    - {id: latte, name: "Caffè Latte", description: Rich espresso with steamed milk and a thin layer of foam., category: coffee, price: 4.5, color: "#C89F7A", icon: drop, customizable: true}
+    - {id: cappuccino, name: Cappuccino, description: Espresso under a deep cap of velvety foam., category: coffee, price: 4.25, color: "#A9754F", icon: drop, customizable: true}
+    - {id: flatWhite, name: Flat White, description: Two ristretto shots with silky microfoam., category: coffee, price: 4.75, color: "#8C5A3C", icon: sparkle, customizable: true}
+    - {id: mocha, name: Mocha, description: "Espresso, dark chocolate and steamed milk.", category: coffee, price: 5.25, color: "#5C3A28", icon: favorite, customizable: true}
+    - {id: matcha, name: Matcha Latte, description: Ceremonial matcha whisked with steamed milk., category: tea, price: 5.0, color: "#8DA86B", icon: leaf, customizable: true}
+    - {id: chai, name: Chai Latte, description: Spiced black tea with cinnamon and cardamom., category: tea, price: 4.75, color: "#C27C4A", icon: leaf, customizable: true}
+    - {id: earlGrey, name: Earl Grey, description: "Black tea with bergamot, served hot.", category: tea, price: 3.25, color: "#7D6B91", icon: leaf, customizable: true}
+    - {id: coldBrew, name: Cold Brew, description: "Slow-steeped for 18 hours, smooth and bold.", category: coldDrinks, price: 4.95, color: "#3E2A20", icon: drop, customizable: true}
+    - {id: icedLatte, name: Iced Latte, description: Espresso and cold milk over ice., category: coldDrinks, price: 4.95, color: "#B98E6A", icon: drop, customizable: true}
+    - {id: lemonade, name: Berry Lemonade, description: Fresh lemonade with crushed berries., category: coldDrinks, price: 3.95, color: "#D9607A", icon: sparkle, customizable: false}
+    - {id: croissant, name: Butter Croissant, description: "Flaky, golden and baked every morning.", category: bakery, price: 3.5, color: "#E0A85A", icon: restaurant, customizable: false}
+    - {id: muffin, name: Blueberry Muffin, description: Bursting with blueberries and a crumb top., category: bakery, price: 3.25, color: "#6A6FB0", icon: gift, customizable: false}
+    stores:
+    - {name: Downtown, address: "120 Market St", distance: "0.4 mi", hours: "6am - 8pm"}
+    - {name: Riverside, address: "48 Harbor Way", distance: "1.2 mi", hours: "7am - 7pm"}
+    - {name: Old Town, address: "9 Chapel Lane", distance: "2.5 mi", hours: "7am - 6pm"}
+    rewards:
+    - {name: Extra shot or syrup, stars: 25, icon: plusCircle}
+    - {name: Bakery treat, stars: 100, icon: restaurant}
+    - {name: Free drink, stars: 150, icon: gift}
+    - {name: Drink and a pastry, stars: 250, icon: confetti}
+    cart:
+    - {itemId: latte, size: large, milk: oat, shots: 1, quantity: 1}
+    - {itemId: croissant, size: medium, milk: none, shots: 0, quantity: 2}
+    orders:
+    - {number: 1042, lines: [{itemId: flatWhite, size: medium, milk: whole, shots: 0, quantity: 1}, {itemId: muffin, size: medium, milk: none, shots: 0, quantity: 1}], total: 8.0, store: 0, pickup: now, payment: card, status: ready, placedAt: "Nov 10, 8:42 AM"}
+    - {number: 1038, lines: [{itemId: coldBrew, size: large, milk: none, shots: 1, quantity: 2}], total: 13.5, store: 1, pickup: in15, payment: wallet, status: ready, placedAt: "Nov 7, 3:15 PM"}

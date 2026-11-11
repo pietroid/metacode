@@ -1,0 +1,24 @@
+# GroupCard: one group as a tappable card with initials, name, members and my balance.
+GroupCard:
+  padding:
+    horizontal: 16
+    vertical: 6
+    child:
+      card:
+        onTap: openGroup
+        padding: 16
+        child:
+          row:
+            spacing: 12
+            children:
+              - avatar: {text: groupInitials, radius: 22}
+              - expanded:
+                  column:
+                    spacing: 4
+                    crossAxisAlignment: start
+                    children:
+                      - text: {value: groupName, maxLines: 1, style: {variant: titleMedium}}
+                      - text: {value: groupMembersText, maxLines: 1, style: {variant: bodySmall, color: ink2}}
+              - sizedBox:
+                  width: 112
+                  child: {text: {value: groupMyBalanceText, maxLines: 2, align: right, style: {variant: labelLarge, color: groupMyBalanceColor}}}

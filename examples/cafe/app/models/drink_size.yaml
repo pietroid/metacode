@@ -1,0 +1,3 @@
+# drinkSize: one of small, medium, large.
+# (Written from plan.yaml by the scaffold: change the plan, then scaffold again.)
+drinkSize: [small, medium, large]

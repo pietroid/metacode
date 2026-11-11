@@ -308,14 +308,16 @@ class _EngineUi implements Ui {
     return Text(node.toString());
   }
 
-  /// [props] with the colors and numbers that name a value replaced by its
-  /// result: color and number props, and color keys of literal maps
+  /// [props] with the colors, numbers and icons that name a value replaced by
+  /// its result: color, number and icon props, and color keys of literal maps
   /// (`style: {color: chipInk}`).
   Map<String, dynamic> _colors(WidgetSpec spec, Map<String, dynamic> props) {
     Map<String, dynamic>? out;
     for (final MapEntry(:key, :value) in props.entries) {
       final kind = spec.props[key];
-      final resolved = kind == PropKind.color || kind == PropKind.number
+      final resolved = kind == PropKind.color ||
+              kind == PropKind.number ||
+              kind == PropKind.icon
           ? _colorValue(value)
           : value is Map && kind == PropKind.literal
               ? _colorsIn(value)

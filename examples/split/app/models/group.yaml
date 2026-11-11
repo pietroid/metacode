@@ -1,0 +1,6 @@
+# group: a group of people sharing expenses.
+# (Written from plan.yaml by the scaffold: change the plan, then scaffold again.)
+group:
+  id: string
+  name: string
+  members: list(string)

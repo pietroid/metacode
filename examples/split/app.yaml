@@ -1,0 +1,42 @@
+# split: Split is a group expense splitter. Home lists my groups with my balance in each; a group screen shows who I am (picked from the members), the balances, a "Settle up" list of the fewest transfers that zero everyone, and the expenses with filters by member and category and an undo for the last delete. Expenses are added from a bottom sheet (description, amount, currency converted to USD with a live rate, category, who paid, and an equal / shares / exact split). The ledger (groups, expenses, transfers) lives on the backend in shared state so every member sees the same one; the selected group and who I am are local to the device. Calm, precise, money-app feel.
+# Types in app/models/state.yaml. (Written from plan.yaml by the scaffold: change the plan, then scaffold again.)
+name: split
+description: "Split is a group expense splitter. Home lists my groups with my balance in each; a group screen shows who I am (picked from the members), the balances, a \"Settle up\" list of the fewest transfers that zero everyone, and the expenses with filters by member and category and an undo for the last delete. Expenses are added from a bottom sheet (description, amount, currency converted to USD with a live rate, category, who paid, and an equal / shares / exact split). The ledger (groups, expenses, transfers) lives on the backend in shared state so every member sees the same one; the selected group and who I am are local to the device. Calm, precise, money-app feel."
+state:
+  ephemeral:
+    draftDescription: ""
+    draftAmount: ""
+    draftCurrency: usd
+    draftCategory: food
+    draftPaidBy: Ana
+    draftMode: equal
+    draftChosen: [true, true, true, true]
+    draftShares: ["1", "1", "1", "1"]
+    draftExact: ["", "", "", ""]
+    rateStatus: ready
+    rate: 1
+    formError: ""
+    saveStatus: idle
+    syncError: ""
+    filterMember: ""
+    filterCategory: ""
+  local:
+    selectedGroup: g1
+    identities:
+    - {groupId: g1, member: Ana}
+    - {groupId: g2, member: Ana}
+    - {groupId: g3, member: Ana}
+    lastDeleted: []
+  shared:
+    groups:
+    - {id: g1, name: Lisbon trip, members: [Ana, Ben, Carla, Dev]}
+    - {id: g2, name: Flat 3B, members: [Ana, Eli, Fran]}
+    - {id: g3, name: Ski weekend, members: [Ana, Ben, Gus]}
+    expenses:
+    - {id: e1, groupId: g1, description: Dinner at Ramiro, amount: 120, originalAmount: 120, currency: usd, category: food, paidBy: Ana, splitMode: equal, owed: [{member: Ana, amount: 30}, {member: Ben, amount: 30}, {member: Carla, amount: 30}, {member: Dev, amount: 30}]}
+    - {id: e2, groupId: g1, description: Alfama apartment, amount: 400, originalAmount: 400, currency: usd, category: travel, paidBy: Ben, splitMode: shares, owed: [{member: Ana, amount: 200}, {member: Ben, amount: 100}, {member: Carla, amount: 100}]}
+    - {id: e3, groupId: g1, description: Tram 28 tickets, amount: 50.34, originalAmount: 45, currency: eur, category: travel, paidBy: Carla, splitMode: exact, owed: [{member: Ana, amount: 10}, {member: Ben, amount: 15.34}, {member: Carla, amount: 10}, {member: Dev, amount: 15}]}
+    - {id: e4, groupId: g2, description: Groceries, amount: 86.4, originalAmount: 86.4, currency: usd, category: home, paidBy: Eli, splitMode: equal, owed: [{member: Ana, amount: 28.8}, {member: Eli, amount: 28.8}, {member: Fran, amount: 28.8}]}
+    - {id: e5, groupId: g2, description: Internet bill, amount: 60, originalAmount: 60, currency: usd, category: home, paidBy: Ana, splitMode: equal, owed: [{member: Ana, amount: 20}, {member: Eli, amount: 20}, {member: Fran, amount: 20}]}
+    transfers:
+    - {id: t1, groupId: g1, from: Dev, to: Ana, amount: 20}

@@ -1,0 +1,23 @@
+# RateLine: under the amount, the rate loading, failed with retry, or the converted amount.
+RateLine:
+  if:
+    condition: rateLoadingVisible
+    then:
+      row:
+        spacing: 8
+        children:
+          - sizedBox: {width: 16, height: 16, child: {progress: {circular: true}}}
+          - expanded: {text: {value: rateLoading, style: {variant: bodySmall, color: ink2}}}
+    else:
+      if:
+        condition: rateFailedVisible
+        then:
+          row:
+            spacing: 8
+            children:
+              - expanded: {text: {value: rateFailed, style: {variant: bodySmall, color: danger}}}
+              - textButton: {text: retry, onPressed: retryRate}
+        else:
+          if:
+            condition: convertedVisible
+            then: {text: {value: convertedText, style: {variant: bodySmall, color: ink2}}}

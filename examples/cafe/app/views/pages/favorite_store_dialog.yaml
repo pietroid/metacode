@@ -1,0 +1,12 @@
+# FavoriteStoreDialog: a dialog listing the stores to pick the favorite one, with a close button.
+FavoriteStoreDialog:
+  padding:
+    all: 16
+    child:
+      column:
+        crossAxisAlignment: stretch
+        spacing: 12
+        children:
+          - text: {value: favoriteStoreTitle, style: {variant: titleLarge}}
+          - listView: {data: storesList, itemBuilder: FavoritePickerRow}
+          - textButton: {text: close, onPressed: closeSheet}

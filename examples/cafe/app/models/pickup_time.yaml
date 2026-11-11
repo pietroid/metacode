@@ -1,0 +1,3 @@
+# pickupTime: one of now, in15, in30.
+# (Written from plan.yaml by the scaffold: change the plan, then scaffold again.)
+pickupTime: [now, in15, in30]

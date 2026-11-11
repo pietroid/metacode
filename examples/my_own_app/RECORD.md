@@ -64,3 +64,56 @@ Notes:
 | Step | Time | Cost | Tokens | Check runs |
 |---|---|---|---|---|
 | Photos, long trips, Portuguese data | ~23m (from the previous reading) | $2.96 | n/a | 3 |
+
+## 2026-11-10 to 11: app-building pipeline (MCP server, skill, parallel agents)
+
+- Built a pipeline that builds a whole app from a short request: the `metacode` MCP server (`tool/mcp.dart`, also a CLI as `tool/mc`), the `metacode-new-app` skill and two agent types, `metacode-coder` and `metacode-designer`. The orchestrator writes one `plan.yaml`: models, state, labels, routes, and every page, component, action, value and test. `scaffold` writes the contract files and one stub per unit that already compiles. `briefs` cuts the plan into self-contained work orders, and agents fill them in parallel. Coders use `validate` (~0.2s per file) and `test`; the orchestrator runs `check` once.
+- Engine and catalog changes made along the way:
+  - an indeterminate `progress` stands still under reduced motion;
+  - `icon` props accept a value;
+  - new props: `progress.color`, `enabled` on every button, `textField.keyboard`;
+  - `tool/check.sh [app]` takes an app folder;
+  - verified dart_eval limits in REFERENCE.md: `break` in a `for` of an action, `?: null` over a map read, `List.of(..)..add`, and `indexWhere` crash or fail to compile.
+- Benchmarks: each run is a fresh headless `claude -p` session. Opus orchestrates and the agents run on Sonnet unless noted. Each app was checked again independently afterwards.
+
+| Run | App | Units | Time | Cost | Orchestrator / agents | Agents | Check runs | Tests passing |
+|---|---|---|---|---|---|---|---|---|
+| 1 | travel (inside the build session) | 53 | 4m 48s | $4.13* | n/a | 11 | 4 | 68 |
+| 2 | travel | 69 | 3m 43s | $1.78 | $1.05 / $0.74 | 5 | 2 | 85 |
+| 3 | travel, Haiku coders | 72 | 7m 02s | $1.91 | $1.67 / $0.25 | 4 | 5 | 88 |
+| 4 | travel, one-file plan | 63 | 4m 18s | $1.64 | $0.98 / $0.65 | 3 | 2 | 83 |
+| 5 | split (logic-heavy) | 116 | 12m 53s | $3.03 | $1.98 / $1.05 | 4 | 3 | 126 |
+| 6 | cafe (screen-heavy) | 181 | 7m 06s | $2.76 | $1.52 / $1.24 | 5 | 1 | 245 |
+
+\* Inflated: that orchestrator's context was full from building the tools.
+
+Notes:
+- Each agent pays ~30k tokens to start, and each finished agent wakes the orchestrator for a turn over its whole context. Going from 11 small agents to 3-5 full ones roughly halved the cost. Briefs of 30-40 units still finished in ~2 minutes (cafe).
+- Haiku coders cost about 10x less, but they left interpreter crashes for the Opus orchestrator to fix, which cost more than Haiku saved.
+- The orchestrator is 50-65% of every run's cost, and its share grows with the plan (1,297 lines for cafe). Screens are cheap (cafe: 1.5¢ per unit, first check passed). Logic costs (split: 2.6¢ per unit, extra turns for algorithmic fixes and phone overflows).
+- Gaps the runs found:
+  - nullable models in state (`expense?`) don't compile in dart_eval;
+  - the theme can't change while the app runs;
+  - no horizontal `listView` and no navigation rail;
+  - `WhoAmIPicker` becomes `who_am_ipicker.yaml`;
+  - planned values that nothing uses aren't flagged;
+  - designers have no layout check of their own.
+
+## 2026-11-11: split and cafe in the carousel, pipeline improvements
+
+- Moved `split` and `cafe` into `modules/` as carousel examples 4 and 5. Each has a chip, phone colors, a live page with a start-over button, and a chat prompt and reply in en and pt_br. All 811 tests passed on the first check run (1m 48s, $0.49).
+- Pipeline:
+  - a `metacode-planner` agent (Sonnet) writes the plan from a short `spec.md`, so the Opus orchestrator no longer writes it;
+  - designers get a `layout` tool, and layout failures go back to the designer that wrote them;
+  - `check` flags planned names that nothing uses;
+  - `per_agent` defaults to 30;
+  - `WhoAmIPicker` now maps to `who_am_i_picker`.
+- Engine and catalog:
+  - nullable models in state compile (an `if`-based `fromJsonOrNull` replaces the `?:`);
+  - `core.theme.set('dark'|'light'|null)`;
+  - `listView.horizontal`;
+  - a scaffold's `navigationBar` becomes a side rail at 840px and wider (`rail:` to change or turn it off);
+  - a `coffee` icon.
+  All covered by widget and engine tests; `tool/check_engine.sh` passes.
+- The planner agent and the `layout` tool haven't been benchmarked yet.
+- Later the same day: moved `split` and `cafe` back to `examples/` as standalone apps and took them off the website. The root app is back to its committed state. All three apps pass `tool/check.sh` (437, 126 and 245 tests).

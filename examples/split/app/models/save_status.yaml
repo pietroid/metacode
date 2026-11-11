@@ -1,0 +1,3 @@
+# saveStatus: one of idle, saving, failed.
+# (Written from plan.yaml by the scaffold: change the plan, then scaffold again.)
+saveStatus: [idle, saving, failed]

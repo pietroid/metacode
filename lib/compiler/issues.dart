@@ -49,8 +49,10 @@ final camelCase = RegExp(r'^[a-z][a-zA-Z0-9]*$');
 final pascalCase = RegExp(r'^[A-Z][a-zA-Z0-9]*$');
 
 /// The file name for a name: `exampleSlide` / `ExampleSlide` -> `example_slide`,
-/// `step1State` -> `step_1_state`.
+/// `step1State` -> `step_1_state`, `WhoAmIPicker` -> `who_am_i_picker`.
 String snakeCase(String name) => name
+    // A capital run ending in a word: `IPicker` -> `I_Picker`.
+    .replaceAllMapped(RegExp(r'(?<=[A-Z])([A-Z][a-z])'), (m) => '_${m[1]}')
     .replaceAllMapped(RegExp(r'(?<=[a-z0-9])([A-Z])'), (m) => '_${m[1]}')
     .replaceAllMapped(RegExp(r'(?<=[A-Za-z])([0-9]+)'), (m) => '_${m[1]}')
     .toLowerCase();

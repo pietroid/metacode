@@ -1,0 +1,18 @@
+# SplitMemberRow: one member in the split: a checkbox or an input, the name and what they owe.
+SplitMemberRow:
+  row:
+    spacing: 8
+    children:
+      - if:
+          condition: draftCheckVisible
+          then: {checkbox: {value: draftMemberChosen, onChanged: toggleDraftMember}}
+      - expanded: {text: {value: memberName, maxLines: 1, style: {variant: bodyMedium}}}
+      - if:
+          condition: draftInputVisible
+          then:
+            sizedBox:
+              width: 96
+              child: {textField: {hint: draftInputHint, keyboard: decimal, onChanged: setDraftMemberInput}}
+      - sizedBox:
+          width: 72
+          child: {text: {value: draftMemberOwesText, align: right, maxLines: 1, style: {variant: bodySmall, color: ink2}}}

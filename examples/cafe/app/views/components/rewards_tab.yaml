@@ -1,0 +1,50 @@
+# RewardsTab: stars card, last redeemed banner and redeemable rewards; or an off card with a turn-on button.
+RewardsTab:
+  scroll:
+    container:
+      maxWidth: 720
+      child:
+        padding:
+          all: 16
+          child:
+            column:
+              crossAxisAlignment: stretch
+              spacing: 16
+              children:
+                - sizedBox: {height: 8}
+                - text: {value: rewardsTitle, style: {variant: headlineMedium}}
+                - if:
+                    condition: rewardsEnabled
+                    then:
+                      column:
+                        crossAxisAlignment: stretch
+                        spacing: 16
+                        children:
+                          - StarsCard
+                          - if:
+                              condition: hasRedeemed
+                              then:
+                                container:
+                                  color: fill
+                                  radius: 20
+                                  padding: 16
+                                  child:
+                                    row:
+                                      spacing: 12
+                                      children:
+                                        - icon: {name: gift, color: success}
+                                        - expanded:
+                                            text: {value: lastRedeemedText, style: {variant: bodyMedium}}
+                          - text: {value: redeemableTitle, style: {variant: titleMedium}}
+                          - listView: {data: rewardsList, itemBuilder: RewardRow}
+                    else:
+                      card:
+                        padding: 24
+                        child:
+                          column:
+                            crossAxisAlignment: start
+                            spacing: 12
+                            children:
+                              - text: {value: rewardsOffTitle, style: {variant: titleLarge}}
+                              - text: {value: rewardsOffBody, style: {variant: bodyMedium, color: ink2}}
+                              - filledButton: {text: turnOnRewards, onPressed: enableRewards}

@@ -1,0 +1,32 @@
+# CartSheet: bottom sheet with the cart lines, subtotal and a checkout button; an empty message when there is nothing.
+CartSheet:
+  scroll:
+    padding:
+      all: 16
+      child:
+        column:
+          crossAxisAlignment: stretch
+          spacing: 12
+          children:
+            - row:
+                crossAxisAlignment: center
+                children:
+                  - expanded:
+                      text: {value: cartTitle, style: {variant: titleLarge}}
+                  - iconButton: {icon: close, tooltip: close, onPressed: closeSheet}
+            - if:
+                condition: cartIsEmpty
+                then:
+                  text: {value: cartEmpty, style: {variant: bodyMedium, color: ink2}}
+                else:
+                  column:
+                    crossAxisAlignment: stretch
+                    spacing: 12
+                    children:
+                      - listView: {data: cartLines, itemBuilder: CartLineRow}
+                      - row:
+                          children:
+                            - expanded:
+                                text: {value: subtotal, style: {variant: titleMedium}}
+                            - text: {value: subtotalText, style: {variant: titleMedium}}
+                      - filledButton: {text: checkout, onPressed: goToCheckout}

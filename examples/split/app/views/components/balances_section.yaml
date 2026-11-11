@@ -1,0 +1,11 @@
+# BalancesSection: the balances heading and a card with one row per member.
+BalancesSection:
+  column:
+    spacing: 8
+    crossAxisAlignment: stretch
+    children:
+      - text: {value: balancesTitle, style: {variant: titleMedium}}
+      - card:
+          padding: 8
+          child:
+            listView: {data: currentMembers, itemBuilder: BalanceRow}

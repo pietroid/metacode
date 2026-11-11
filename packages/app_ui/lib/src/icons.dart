@@ -120,6 +120,7 @@ const phosphorNames = <String, String>{
   'palette': 'palette',
   'yoga': 'personSimpleTaiChi',
   'confetti': 'confetti',
+  'coffee': 'coffee',
 };
 
 const _thin = <String, IconData>{
@@ -235,6 +236,7 @@ const _thin = <String, IconData>{
   'palette': IconData(0xe6c8, fontFamily: 'PhosphorThin', fontPackage: 'app_ui'),
   'yoga': IconData(0xed5c, fontFamily: 'PhosphorThin', fontPackage: 'app_ui'),
   'confetti': IconData(0xe81a, fontFamily: 'PhosphorThin', fontPackage: 'app_ui'),
+  'coffee': IconData(0xe1c2, fontFamily: 'PhosphorThin', fontPackage: 'app_ui'),
 };
 
 const _light = <String, IconData>{
@@ -350,6 +352,7 @@ const _light = <String, IconData>{
   'palette': IconData(0xe6c8, fontFamily: 'PhosphorLight', fontPackage: 'app_ui'),
   'yoga': IconData(0xed5c, fontFamily: 'PhosphorLight', fontPackage: 'app_ui'),
   'confetti': IconData(0xe81a, fontFamily: 'PhosphorLight', fontPackage: 'app_ui'),
+  'coffee': IconData(0xe1c2, fontFamily: 'PhosphorLight', fontPackage: 'app_ui'),
 };
 
 const _regular = <String, IconData>{
@@ -465,6 +468,7 @@ const _regular = <String, IconData>{
   'palette': IconData(0xe6c8, fontFamily: 'PhosphorRegular', fontPackage: 'app_ui'),
   'yoga': IconData(0xed5c, fontFamily: 'PhosphorRegular', fontPackage: 'app_ui'),
   'confetti': IconData(0xe81a, fontFamily: 'PhosphorRegular', fontPackage: 'app_ui'),
+  'coffee': IconData(0xe1c2, fontFamily: 'PhosphorRegular', fontPackage: 'app_ui'),
 };
 
 const _bold = <String, IconData>{
@@ -580,6 +584,7 @@ const _bold = <String, IconData>{
   'palette': IconData(0xe6c8, fontFamily: 'PhosphorBold', fontPackage: 'app_ui'),
   'yoga': IconData(0xed5c, fontFamily: 'PhosphorBold', fontPackage: 'app_ui'),
   'confetti': IconData(0xe81a, fontFamily: 'PhosphorBold', fontPackage: 'app_ui'),
+  'coffee': IconData(0xe1c2, fontFamily: 'PhosphorBold', fontPackage: 'app_ui'),
 };
 
 const _fill = <String, IconData>{
@@ -695,6 +700,7 @@ const _fill = <String, IconData>{
   'palette': IconData(0xe6c8, fontFamily: 'PhosphorFill', fontPackage: 'app_ui'),
   'yoga': IconData(0xed5c, fontFamily: 'PhosphorFill', fontPackage: 'app_ui'),
   'confetti': IconData(0xe81a, fontFamily: 'PhosphorFill', fontPackage: 'app_ui'),
+  'coffee': IconData(0xe1c2, fontFamily: 'PhosphorFill', fontPackage: 'app_ui'),
 };
 
 /// Icon maps by weight (app/views/style/ `icons.weight`), plus `fill`.

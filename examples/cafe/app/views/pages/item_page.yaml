@@ -1,0 +1,45 @@
+# ItemPage: the selected item. Phone - hero, options and a bottom add-to-cart button; wide - two columns centered.
+ItemPage:
+  scaffold:
+    appBar: {}
+    body:
+      responsive:
+        breakpoint: 720
+        narrow:
+          column:
+            - expanded:
+                scroll:
+                  padding:
+                    all: 16
+                    child:
+                      column:
+                        crossAxisAlignment: stretch
+                        spacing: 24
+                        children:
+                          - ItemHero
+                          - ItemOptions
+            - padding:
+                all: 16
+                child:
+                  filledButton: {text: addToCartText, onPressed: addToCart}
+        wide:
+          container:
+            maxWidth: 1000
+            child:
+              padding:
+                all: 24
+                child:
+                  row:
+                    crossAxisAlignment: start
+                    spacing: 32
+                    children:
+                      - expanded:
+                          scroll: ItemHero
+                      - expanded:
+                          scroll:
+                            column:
+                              crossAxisAlignment: stretch
+                              spacing: 24
+                              children:
+                                - ItemOptions
+                                - filledButton: {text: addToCartText, onPressed: addToCart}

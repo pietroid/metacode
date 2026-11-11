@@ -1,0 +1,46 @@
+# OnboardingFlow: full-screen welcome steps (icon, title, body, store list or rewards toggle), progress and a next button; skippable.
+OnboardingFlow:
+  scaffold:
+    body:
+      container:
+        maxWidth: 560
+        child:
+          padding:
+            all: 24
+            child:
+              column:
+                crossAxisAlignment: stretch
+                spacing: 16
+                children:
+                  - row:
+                      - spacer: {}
+                      - textButton: {text: skip, onPressed: skipOnboarding}
+                  - expanded:
+                      scroll:
+                        column:
+                          crossAxisAlignment: center
+                          spacing: 16
+                          children:
+                            - container:
+                                width: 120
+                                height: 120
+                                radius: 60
+                                color: fill
+                                child:
+                                  center:
+                                    icon: {name: onboardingIcon, size: 56, color: primary}
+                            - text: {value: onboardingTitle, style: {variant: headlineMedium}, align: center}
+                            - text: {value: onboardingBody, style: {variant: bodyLarge, color: ink2}, align: center}
+                            - if:
+                                condition: showStoreStep
+                                then:
+                                  listView: {data: storesList, itemBuilder: FavoriteStoreRow}
+                            - if:
+                                condition: showRewardsStep
+                                then:
+                                  card:
+                                    padding: 16
+                                    child:
+                                      toggle: {value: rewardsEnabled, label: rewardsToggle, onChanged: setRewards}
+                  - progress: {value: onboardingProgress, circular: false}
+                  - filledButton: {text: onboardingNextText, onPressed: nextStep}

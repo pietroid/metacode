@@ -1,0 +1,15 @@
+# UndoBar: a dark bar after a delete, with the deleted expense and an undo button.
+UndoBar:
+  if:
+    condition: undoVisible
+    then:
+      container:
+        padding: 12
+        radius: 16
+        color: ink
+        child:
+          row:
+            spacing: 8
+            children:
+              - expanded: {text: {value: undoText, maxLines: 2, style: {variant: bodyMedium, color: bg}}}
+              - textButton: {text: undo, onPressed: undoDelete}

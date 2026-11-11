@@ -215,6 +215,7 @@ void main() {
     ..writeln('Future<void> core.navigator.pop()                   // closes the page, sheet or dialog on top')
     ..writeln()
     ..writeln("Future<void> core.locale.set('pt_br')   // the whole app (modules too) in pt_br.yaml, saved; null: the device's language again")
+    ..writeln("Future<void> core.theme.set('dark')     // the whole app light or dark, saved; null: back to style/theme.yaml (system: the device's)")
     ..writeln("Future<void> core.modules.reset('food') // starts this app's module modules/food/ over: its state back to its app.yaml's, its contained routes closed")
     ..writeln('```')
     ..writeln()
@@ -457,8 +458,12 @@ void main() {
     ..writeln("| interpolating ints from `DateTime` getters (`'\${d.month}'`) | `toIso8601String()` |")
     ..writeln('| imports other than `dart:` and the app\'s own files (a module can\'t import its parent\'s) | |')
     ..writeln('| `try`/`catch` around an `await` (crashes when nothing is thrown) | check a returned value (`remote.<name>()` returns its error) |')
+    ..writeln('| `break` inside a `for` or `for in` loop in an action (any `async` function): crashes at runtime | `return` from inside the loop, or a guard flag (`var done = false; for (...) { if (!done) ... }`); `break` in `while`, and in values (sync), works |')
+    ..writeln("| a `?:` with a `null` branch over a dynamic map read (`m == null ? null : m['k']`): crashes at runtime | cast in one chain, then one check: `final rate = r.ok ? ((r.json as Map)['rates'] as Map)['EUR'] : null; if (rate is num) ...` |")
+    ..writeln('| `List.of(x)..add(y)` then an index assignment (`list[i] = ...`); `indexWhere` with a closure: compile errors | spreads (`[...state.trips]`, `[...items, item]`) and `copyWith`, or change `state`\'s copy in place and emit it; a `for` loop with a counter for an index |')
+    ..writeln('| `is` checks on values read from a map literal written in the code (`{\'a\': 0.9}[\'a\'] is num` is false) | typed literals (`final Map<String, num> m = ...`); values from `r.json` check fine |')
     ..writeln()
-    ..writeln('Known to work: `for`/`for in`/`while`/`do`, `break`, `switch` statements, `try`/`catch` without an `await` inside, records, `sort` with a typed comparator, `where`/`map`/`firstWhere`/`fold`/`join`/`removeWhere`, collection `if`/`for`, `Set`, `Map` entries, `??`/`??=`, cascades, `~/`, `abs`/`clamp`/`round`, `toStringAsFixed`, `int.parse`/`double.parse`, `padLeft`/`split`/`trim`/`replaceAll`, `Future.delayed`, classes with getters and `static const`.')
+    ..writeln('Known to work: `for`/`for in`/`while`/`do`, `break` (not in a `for` of an action: see above), `return` inside loops, `switch` statements, `try`/`catch` without an `await` inside, records, `sort` with a typed comparator, `where`/`map`/`firstWhere`/`fold`/`join`/`removeWhere`, spreads into new lists with `copyWith`, indexing strings char by char (`s[i]`), `codeUnits`, `double.tryParse`, collection `if`/`for`, `Set`, `Map` entries, `??`/`??=`, cascades, `~/`, `abs`/`clamp`/`round`, `toStringAsFixed`, `int.parse`/`double.parse`, `padLeft`/`split`/`trim`/`replaceAll`, `Future.delayed`, classes with getters and `static const`.')
     ..writeln()
     ..writeln('An app\'s files are bundled into one library, so every name, private helpers included, must be unique across its files; put a helper two files need in `shared/` instead of copying it.');
 

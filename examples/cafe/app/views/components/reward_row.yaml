@@ -1,0 +1,24 @@
+# RewardRow: a reward icon in a circle, name, star cost and a redeem button enabled when affordable.
+RewardRow:
+  padding:
+    vertical: 8
+    child:
+      row:
+        spacing: 12
+        crossAxisAlignment: center
+        children:
+          - container:
+              width: 48
+              height: 48
+              radius: 24
+              color: fill
+              child:
+                center:
+                  icon: {name: rewardIcon, color: primary}
+          - expanded:
+              column:
+                crossAxisAlignment: start
+                children:
+                  - text: {value: rewardName, style: {variant: titleMedium}, maxLines: 1}
+                  - text: {value: rewardStarsText, style: {variant: bodySmall, color: ink2}}
+          - outlinedButton: {text: redeem, onPressed: redeemReward, enabled: rewardAvailable}

@@ -1,0 +1,20 @@
+# ExpensesSection: heading, member and category filter chips, then the expenses or an empty message.
+ExpensesSection:
+  column:
+    spacing: 12
+    crossAxisAlignment: stretch
+    children:
+      - text: {value: expensesTitle, style: {variant: titleMedium}}
+      - responsive:
+          breakpoint: 600
+          narrow: {gridView: {data: filterMemberOptions, itemBuilder: FilterMemberChip, columns: 2, spacing: 8, aspectRatio: 3.6}}
+          wide: {gridView: {data: filterMemberOptions, itemBuilder: FilterMemberChip, columns: 4, spacing: 8, aspectRatio: 3.6}}
+      - responsive:
+          breakpoint: 600
+          narrow: {gridView: {data: filterCategoryOptions, itemBuilder: FilterCategoryChip, columns: 2, spacing: 8, aspectRatio: 3.6}}
+          wide: {gridView: {data: filterCategoryOptions, itemBuilder: FilterCategoryChip, columns: 4, spacing: 8, aspectRatio: 3.6}}
+      - if:
+          condition: noExpensesVisible
+          then: {text: {value: noExpenses, style: {variant: bodyMedium, color: ink2}}}
+          else:
+            listView: {data: filteredExpenses, itemBuilder: ExpenseRow}

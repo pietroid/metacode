@@ -1,0 +1,96 @@
+# en: every text the app shows, in English.
+# (Written from plan.yaml by the scaffold: change the plan, then scaffold again.)
+en:
+  appTitle: "Ember & Oak"
+  skip: Skip
+  next: Next
+  getStarted: Get started
+  welcomeTitle: "Welcome to Ember & Oak"
+  welcomeBody: "Order ahead, skip the line and pick up your coffee warm and ready."
+  storeStepTitle: Pick your favorite store
+  storeStepBody: "We'll use it for your pickups. You can change it anytime."
+  rewardsStepTitle: Turn on rewards
+  rewardsStepBody: Earn 1 star for every dollar. 150 stars is a free drink.
+  rewardsToggle: Collect stars on every order
+  tabMenu: Menu
+  tabRewards: Rewards
+  tabOrders: Orders
+  tabProfile: Profile
+  menuTitle: "What are you craving?"
+  searchHint: Search the menu
+  noResults: Nothing matches your search.
+  catCoffee: Coffee
+  catTea: Tea
+  catColdDrinks: Cold drinks
+  catBakery: Bakery
+  size: Size
+  sizeSmall: Small
+  sizeMedium: Medium
+  sizeLarge: Large
+  milkTitle: Milk
+  milkWhole: Whole
+  milkOat: Oat
+  milkAlmond: Almond
+  milkNone: No milk
+  extraShots: Extra shots
+  quantity: Quantity
+  addToCartLabel: Add to cart
+  shot: shot
+  shots: shots
+  item: item
+  items: items
+  viewCart: View cart
+  cartTitle: Your order
+  cartEmpty: Your cart is empty. Add something tasty.
+  subtotal: Subtotal
+  checkout: Checkout
+  checkoutTitle: Checkout
+  pickupStore: Pickup store
+  change: Change
+  pickupTimeTitle: Pickup time
+  pickupNow: As soon as possible
+  pickupIn15: In 15 minutes
+  pickupIn30: In 30 minutes
+  paymentTitle: Payment
+  payCard: "Visa •••• 4242"
+  payWallet: Mobile wallet
+  payGiftCard: "Ember & Oak gift card"
+  placeOrderLabel: Place order
+  youllEarn: "You'll earn"
+  starsWord: stars
+  chooseStore: Choose a store
+  orderTitle: Order
+  statusPlaced: Order placed
+  statusPreparing: Preparing
+  statusReady: Ready for pickup
+  statusPlacedBody: We got your order and sent it to the baristas.
+  statusPreparingBody: Your drinks are being made right now.
+  statusReadyBody: "Grab it at the pickup counter. Enjoy!"
+  orderDetails: Order details
+  total: Total
+  pickupAt: Pickup at
+  paidWith: Paid with
+  backToMenu: Back to menu
+  rewardsTitle: Rewards
+  starsBalance: Stars balance
+  toFreeDrink: stars to your next free drink
+  freeDrinkReady: "You have a free drink waiting!"
+  redeem: Redeem
+  redeemableTitle: Rewards you can redeem
+  redeemed: Redeemed. Show this at pickup.
+  rewardsOffTitle: Rewards are off
+  rewardsOffBody: Turn them on to earn 1 star for every dollar you spend.
+  turnOnRewards: Turn on rewards
+  ordersTitle: Your orders
+  noOrders: No orders yet. Your first coffee is waiting.
+  profileTitle: Profile
+  nameLabel: Your name
+  favoriteStoreTitle: Favorite store
+  notificationsTitle: Order notifications
+  notificationsBody: Tell me when my order is ready
+  appearance: Appearance
+  themeSystem: System
+  themeLight: Light
+  themeDark: Dark
+  replayOnboarding: Show the welcome tour again
+  close: Close

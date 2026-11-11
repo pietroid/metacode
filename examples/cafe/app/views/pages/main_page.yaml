@@ -1,0 +1,25 @@
+# MainPage: onboarding on first launch, else four tabs (menu, rewards, orders, profile) under a bottom navigationBar.
+MainPage:
+  if:
+    condition: showOnboarding
+    then: OnboardingFlow
+    else:
+      scaffold:
+        body:
+          match:
+            value: tabIndex
+            default: MenuTab
+            cases:
+              0: MenuTab
+              1: RewardsTab
+              2: OrdersTab
+              3: ProfileTab
+        bottomBar:
+          navigationBar:
+            selected: tabIndex
+            onSelected: selectTab
+            destinations:
+              - {icon: restaurant, label: tabMenu}
+              - {icon: star, label: tabRewards}
+              - {icon: receipt, label: tabOrders}
+              - {icon: person, label: tabProfile}

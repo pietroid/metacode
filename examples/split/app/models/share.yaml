@@ -1,0 +1,5 @@
+# share: what one member owes for an expense, in USD.
+# (Written from plan.yaml by the scaffold: change the plan, then scaffold again.)
+share:
+  member: string
+  amount: number

@@ -1,0 +1,11 @@
+# IdentityPicker: who am I, as a grid of member chips (no horizontal list exists).
+IdentityPicker:
+  column:
+    spacing: 8
+    crossAxisAlignment: start
+    children:
+      - text: {value: whoAmI, style: {variant: labelMedium, color: ink2}}
+      - responsive:
+          breakpoint: 600
+          narrow: {gridView: {data: currentMembers, itemBuilder: IdentityChip, columns: 2, spacing: 8, aspectRatio: 3.6}}
+          wide: {gridView: {data: currentMembers, itemBuilder: IdentityChip, columns: 4, spacing: 8, aspectRatio: 3.6}}

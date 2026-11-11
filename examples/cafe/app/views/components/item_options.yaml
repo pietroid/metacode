@@ -1,0 +1,45 @@
+# ItemOptions: size, milk and extra shots (customizable items), and always the quantity stepper.
+ItemOptions:
+  column:
+    crossAxisAlignment: stretch
+    spacing: 16
+    children:
+      - if:
+          condition: selectedCustomizable
+          then:
+            column:
+              crossAxisAlignment: stretch
+              spacing: 16
+              children:
+                - text: {value: size, style: {variant: titleMedium}}
+                - row:
+                    spacing: 8
+                    children:
+                      - expanded: {child: {SizeChip: {index: 0}}}
+                      - expanded: {child: {SizeChip: {index: 1}}}
+                      - expanded: {child: {SizeChip: {index: 2}}}
+                - text: {value: milkTitle, style: {variant: titleMedium}}
+                - wrap:
+                    spacing: 8
+                    runSpacing: 8
+                    children:
+                      - MilkChip: {index: 0}
+                      - MilkChip: {index: 1}
+                      - MilkChip: {index: 2}
+                      - MilkChip: {index: 3}
+                - row:
+                    crossAxisAlignment: center
+                    children:
+                      - expanded:
+                          text: {value: extraShots, style: {variant: titleMedium}}
+                      - iconButton: {icon: remove, onPressed: removeShot}
+                      - text: {value: shotsText, style: {variant: bodyMedium}}
+                      - iconButton: {icon: add, onPressed: addShot}
+      - row:
+          crossAxisAlignment: center
+          children:
+            - expanded:
+                text: {value: quantity, style: {variant: titleMedium}}
+            - iconButton: {icon: remove, onPressed: decQuantity}
+            - text: {value: quantityText, style: {variant: titleMedium}}
+            - iconButton: {icon: add, onPressed: incQuantity}

@@ -1,0 +1,2 @@
+# sheetRateLoading: a layout check state from the plan.
+sheetRateLoading: {"state":{"draftAmount":"45","draftCurrency":"eur","rateStatus":"loading"},"route":"addExpense"}

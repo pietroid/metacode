@@ -17,7 +17,8 @@ import 'sync/remote_backend.dart';
 ///   action was tapped in (see [actionFrom]): the app's [navigatorKey], or
 ///   a contained module's own. Pages, bottom sheets and dialogs are all
 ///   routes, so `pop` closes any of them.
-/// - `core.locale.set` picks the language of the whole app ([locale]).
+/// - `core.locale.set` picks the language of the whole app ([locale]),
+///   `core.theme.set` light or dark (kept by [locale] too).
 /// - `core.modules.reset` starts one of this app's modules over
 ///   ([resetModule]).
 /// - `remote.<name>()` runs a remote action on [remote] (the backend, or
@@ -96,6 +97,9 @@ class CoreHost implements MetacodeHost {
         return null;
       case 'locale.set':
         await locale.set(args['locale'] as String?);
+        return null;
+      case 'theme.set':
+        await locale.setTheme(args['theme'] as String?);
         return null;
       case 'modules.reset':
         resetModule(args['name'] as String);
