@@ -1,0 +1,10 @@
+# history: the project picker with spending on two projects (the current
+# one, food, and travel put away in saved).
+history:
+  state:
+    projectName: food
+    projectCost: 0.63
+    projectMs: 310000
+    projectTurns: 25
+    saved:
+    - {name: travel, project: {files: [], folders: []}, cost: 1.2, ms: 640000, turns: 41}

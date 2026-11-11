@@ -1,14 +1,23 @@
 en:
   editorTitle: Editor
-  liveText: Live
   closeText: Close
-  designText: DESIGN
-  buttonColorText: Button color
-  buttonColorHint: The color of the counter's − and + buttons.
-  liveTitle: Live reload
-  liveHint: The app is a whole project kept in the state. Each change rewrites one of its files and it reloads in place, keeping its count.
+  pickTitle: Pick an app to edit
+  pickHint: Its whole source loads here and runs live. Ask Claude for a change and watch it reload in place.
+  foodTitle: Food
+  foodHint: A pocket meal planner that keeps to a monthly budget.
+  travelTitle: Travel
+  travelHint: A trip planner for tickets, stays and spending.
+  workTitle: Work
+  workHint: Workday priorities across emails, follow-ups and meetings.
   claudeTitle: Ask Claude
-  promptHint: Describe a change, e.g. add a reset button
+  claudeHint: Describe a change. Claude edits the app's files and it reloads live, keeping its state.
+  promptHint: e.g. add a reset button
   askText: Ask
+  lastRunText: Last run
+  minutesText: min
+  sinceResetText: Since loaded or reset
+  allSpentText: All apps, since loaded or reset
+  projectSectionTitle: Project
+  projectSectionHint: Restart runs the app from its first screen. Reset drops every edit.
   restartText: Restart
   resetText: Reset project

@@ -1,0 +1,4 @@
+# editing: the editor on a project after Claude runs (the stats showing).
+editing:
+  state: {projectName: food, runReply: Added a reset button., runCost: 0.21, runMs: 95000, runTurns: 9, projectCost: 0.63, projectMs: 310000, projectTurns: 25}
+  route: editRoute

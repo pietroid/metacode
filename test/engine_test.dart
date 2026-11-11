@@ -42,6 +42,7 @@ void main() {
   Future<StateBloc> pump(
     WidgetTester tester, {
     Map<String, dynamic>? bundleOverride,
+    ProjectConfig? configOverride,
     Size size = const Size(800, 1600),
     bool selectableText = false,
     Brightness brightness = Brightness.light,
@@ -49,7 +50,8 @@ void main() {
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
-    final config = ProjectConfig.fromBundle(bundleOverride ?? bundle);
+    final config =
+        configOverride ?? ProjectConfig.fromBundle(bundleOverride ?? bundle);
     final bloc = StateBloc(config: config, initial: config.initialState);
     await tester.pumpWidget(BlocProvider.value(
       value: bloc,
@@ -83,6 +85,27 @@ void main() {
     await tap(tester, find.text('Add'));
     expect(find.text('Count 1'), findsOneWidget);
     expect(bloc.state['count'], 1);
+  });
+
+  testWidgets('a value reruns only when a state field it reads changes',
+      (tester) async {
+    final config = ProjectConfig.fromBundle(bundle);
+    await pump(tester, configOverride: config);
+    final runs = config.program.runs;
+    int ran(String name) => runs[name] ?? 0;
+    final count = ran('countText'), odd = ran('isOdd'), votes = ran('votesText');
+    // Rename changes only the nickname: countText and isOdd (count, isOdd
+    // through the shared countOf) keep their results, votesText reruns.
+    await tap(tester, find.text('Rename'));
+    expect(find.text('Votes: 0 grace'), findsOneWidget);
+    expect(ran('votesText'), greaterThan(votes));
+    expect(ran('countText'), count);
+    expect(ran('isOdd'), odd);
+    await tap(tester, find.text('Add'));
+    expect(find.text('Count 1'), findsOneWidget);
+    expect(find.text('Odd'), findsOneWidget);
+    expect(ran('countText'), greaterThan(count));
+    expect(ran('isOdd'), greaterThan(odd));
   });
 
   testWidgets('remote.<name>() without a backend runs the remote action on '
@@ -294,6 +317,32 @@ void main() {
       expect(index, contains('## Shared'));
       expect(index, contains('**withLabel(String label, num n) → String**'));
       expect(index, contains('used by: countText'));
+    });
+    test("each value's reads are in the manifest, through shared helpers; "
+        'a value using the whole state has none', () {
+      Map reads(BuildResult r) =>
+          ((jsonDecode(r.bundle!) as Map)['manifest'] as Map)['reads'] as Map;
+      final plain = reads(buildWith({}));
+      expect(plain['countText'], ['count']);
+      expect(plain['isOdd'], ['count']); // through countOf(state)
+      expect(plain['votesText'], ['nickname', 'voteError', 'votes']);
+      for (final body in [
+        'state.copyWith(count: 1).count.round().isOdd',
+        '_odd(state)', // a private helper: followed (none here: whole)
+      ]) {
+        final r = buildWith({
+          'app/views/values/is_odd.dart': '''
+// isOdd: whole state.
+import '../../../.generated/state.dart';
+
+bool _odd(State s) => '\$s'.isEmpty;
+
+bool isOdd(State state) => $body;
+''',
+        });
+        expect(r.issues.errors, isEmpty, reason: body);
+        expect(reads(r).containsKey('isOdd'), isFalse, reason: body);
+      }
     });
     test('a shared file holds one public function, named after it', () {
       expect(

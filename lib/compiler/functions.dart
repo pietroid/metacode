@@ -44,6 +44,16 @@ class UserFunction {
   /// finds what uses each shared function.
   final Set<String> calls = {};
 
+  /// Functions it passes the whole `state` to (`historyOf(state, name)`):
+  /// what it reads through them is theirs (see [stateReads]). Private ones
+  /// are left out: they are in the same file, visited with it.
+  final Set<String> stateTo = {};
+
+  /// Whether it uses the whole `state` in a way [stateReads] can't follow
+  /// (`state.copyWith(..)`, `final s = state`, passed to a non-shared
+  /// function): then it may read any field.
+  bool readsAll = false;
+
   /// For values marked `@Animated(ms:, curve:)`: `{ms, curve}`, else null.
   Map<String, dynamic>? animated;
 
@@ -70,10 +80,80 @@ String headerComment(String source, String name) {
   return doc.startsWith(prefix) ? doc.substring(prefix.length).trim() : doc;
 }
 
-/// Collects [UserFunction.reads], `writes`, `labels`, `routes`, `usesApi`.
+/// The state fields [fn] may read, through the shared helpers and values it
+/// passes `state` to ([shared] by name), or null when that can't be told
+/// ([UserFunction.readsAll], here or in a helper): the engine then gives it
+/// the whole state. Field names only where [isField].
+Set<String>? stateReads(UserFunction fn, Map<String, UserFunction> shared,
+    bool Function(String) isField) {
+  final out = <String>{};
+  final seen = <String>{};
+  bool visit(UserFunction f) {
+    if (!seen.add(f.name)) return true;
+    if (f.readsAll) return false;
+    out.addAll(f.reads.where(isField));
+    for (final name in f.stateTo) {
+      final callee = shared[name];
+      if (callee == null || !visit(callee)) return false;
+    }
+    return true;
+  }
+
+  return visit(fn) ? out : null;
+}
+
+/// Collects [UserFunction.reads], `writes`, `labels`, `routes`, `usesApi`,
+/// `calls`, `stateTo`, `readsAll`.
 class _Touches extends RecursiveAstVisitor<void> {
   final UserFunction fn;
   _Touches(this.fn);
+
+  /// The names the file's functions give their `State` parameter.
+  final Set<String> _stateNames = {'state'};
+
+  @override
+  void visitFunctionDeclaration(FunctionDeclaration node) {
+    for (final p in node.functionExpression.parameters?.parameters ??
+        const <FormalParameter>[]) {
+      final inner = p is DefaultFormalParameter ? p.parameter : p;
+      if (inner is SimpleFormalParameter &&
+          inner.type?.toSource() == 'State' &&
+          inner.name != null) {
+        _stateNames.add(inner.name!.lexeme);
+      }
+    }
+    super.visitFunctionDeclaration(node);
+  }
+
+  /// A bare use of the state (not `state.x`): followed when it is an
+  /// argument of a top-level call, else [UserFunction.readsAll].
+  @override
+  void visitSimpleIdentifier(SimpleIdentifier node) {
+    if (_stateNames.contains(node.name)) _bare(node);
+    super.visitSimpleIdentifier(node);
+  }
+
+  void _bare(SimpleIdentifier node) {
+    final parent = node.parent;
+    if (parent is PrefixedIdentifier && identical(parent.prefix, node)) {
+      return; // state.x: a read
+    }
+    if (parent is PropertyAccess && identical(parent.target, node)) return;
+    if (parent is MethodInvocation && identical(parent.methodName, node)) {
+      return;
+    }
+    if (parent is NamedType) return;
+    var arg = parent;
+    if (arg is NamedExpression) arg = arg.parent;
+    final call = arg?.parent;
+    if (arg is ArgumentList && call is MethodInvocation && call.target == null) {
+      final name = call.methodName.name;
+      // A private helper is in this file, whose reads are this function's.
+      if (!name.startsWith('_')) fn.stateTo.add(name);
+      return;
+    }
+    fn.readsAll = true;
+  }
 
   @override
   void visitPrefixedIdentifier(PrefixedIdentifier node) {
@@ -91,9 +171,11 @@ class _Touches extends RecursiveAstVisitor<void> {
   }
 
   void _record(String target, String member) {
+    if (_stateNames.contains(target)) {
+      fn.reads.add(member);
+      return;
+    }
     switch (target) {
-      case 'state':
-        fn.reads.add(member);
       case 'labels':
         fn.labels.add(member);
       case 'Routes':
@@ -106,10 +188,14 @@ class _Touches extends RecursiveAstVisitor<void> {
   @override
   void visitMethodInvocation(MethodInvocation node) {
     // `StateDelta(...)` parses as a call when types aren't resolved.
-    if (node.target == null && node.methodName.name == 'StateDelta') {
+    final target = node.target;
+    if (target == null && node.methodName.name == 'StateDelta') {
       _writes(node.argumentList);
-    } else if (node.target == null) {
+    } else if (target == null) {
       fn.calls.add(node.methodName.name);
+    } else if (target is SimpleIdentifier &&
+        _stateNames.contains(target.name)) {
+      fn.readsAll = true; // state.copyWith(..), state.toJson()
     }
     super.visitMethodInvocation(node);
   }

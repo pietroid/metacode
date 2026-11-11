@@ -301,7 +301,7 @@ One line per widget: what it is and its props. Details (prop kinds, notes, short
 | `gridView` | A grid. `itemBuilder` is built once per item of `data`. Inside `scroll` it moves with the page; on its own (in `expanded`) it scrolls itself. | data, itemBuilder, empty, columns, spacing, aspectRatio |
 | `listTile` | A list row. | title, subtitle, leading, trailing, onTap |
 | `if` | Shows `then` when the value is true, else `else`. | condition, then, else, fade |
-| `textField` | Text input. | value, hint, label, multiline, keyboard, onChanged, onSubmitted |
+| `textField` | Text input. | value, hint, label, multiline, keyboard, variant, onChanged, onSubmitted |
 | `checkbox` | Checkbox. | value, onChanged |
 | `toggle` | On/off switch, optionally with a label. | value, label, onChanged |
 | `slider` | Pick a number in a range. | value, min, max, divisions, onChanged |

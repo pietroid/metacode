@@ -23,11 +23,15 @@ Widget buildListView(Ui ui, Map<String, dynamic> p) {
     );
   }
   return Builder(
-    builder: (context) => ListView.builder(
+    // Vertical: no gap unless `spacing` is set (lists of rows draw their own
+    // dividers).
+    builder: (context) => ListView.separated(
       shrinkWrap: true,
       primary: false,
       physics: nestedPhysics(context),
       itemCount: items.length,
+      separatorBuilder: (_, _) =>
+          SizedBox(height: parseDouble(p['spacing']) ?? 0),
       itemBuilder: (_, index) =>
           ui.withParams({'index': index}).node(p['itemBuilder']),
     ),

@@ -1,0 +1,3 @@
+# openFailed: the project picker after an app failed to load, one tile loading.
+openFailed:
+  state: {opening: travel, askError: 'The Claude bridge is not running: tool/claude_bridge.sh'}

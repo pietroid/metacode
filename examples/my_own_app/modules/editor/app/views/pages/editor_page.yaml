@@ -1,41 +1,13 @@
-# EditorPage: the editor. A tight app bar (a palette tile, the title and a
-# live badge, then a close button) over the EditorPanel and the draft
-# running live as a dynamic module (`miniApp: {project: draftProject}`) in a
-# PhoneFrame (the landing page's size, scrolling when the screen is shorter):
-# side by side when wide; on a phone, just the
-# SwatchRow and the ClaudeBox on top. The draft is hidden for a moment
-# (showDraft) when it restarts.
+# EditorPage: the editor, opened by openProject. An app bar (the scaffold's
+# own back button to ProjectPage, the project's title: currentTitle) over
+# the draft running live as a dynamic module (`miniApp: {project:
+# draftProject}`) in a PhoneFrame, with the EditorPanel on its right when
+# wide; on a phone, the phone and then the panel, in one scroll. The draft is
+# hidden for a moment (showDraft) when it restarts.
 EditorPage:
   scaffold:
     appBar:
-      title:
-        row:
-          spacing: 10
-          crossAxisAlignment: center
-          children:
-          - container:
-              width: 28
-              height: 28
-              radius: 8
-              color: fill
-              child: {center: {icon: {name: palette, size: 16, color: accent}}}
-          - text: {value: editorTitle, maxLines: 1, style: {variant: titleMedium}}
-          - container:
-              radius: 10
-              color: fill
-              padding: {horizontal: 8, vertical: 3}
-              child:
-                row:
-                  spacing: 5
-                  crossAxisAlignment: center
-                  children:
-                  - container: {width: 6, height: 6, radius: 3, color: success}
-                  - text: {value: liveText, style: {variant: labelSmall, color: ink2}}
-      actions:
-      - padding:
-          right: 8
-          child:
-            iconButton: {icon: close, tooltip: closeText, onPressed: close}
+      title: {text: {value: currentTitle, maxLines: 1, style: {variant: titleMedium}}}
     body:
       container:
         color: bg
@@ -44,27 +16,22 @@ EditorPage:
             breakpoint: 760
             wide:
               padding:
-                all: 24
+                all: 32
                 child:
                   row:
                     crossAxisAlignment: start
-                    spacing: 32
+                    spacing: 40
                     children:
-                    - sizedBox: {width: 320, child: {scroll: EditorPanel}}
                     - expanded: {child: {center: {scroll: {PhoneFrame: {child: {if: {condition: showDraft, then: {miniApp: {project: draftProject}}}}}}}}}
+                    - sizedBox: {width: 360, child: {scroll: EditorPanel}}
             narrow:
-              padding:
-                all: 16
-                child:
-                  column:
-                    crossAxisAlignment: stretch
-                    spacing: 16
-                    children:
-                    - column:
-                        crossAxisAlignment: start
-                        spacing: 8
-                        children:
-                        - text: {value: buttonColorText, style: {variant: labelLarge}}
-                        - SwatchRow
-                        - ClaudeBox
-                    - expanded: {child: {center: {scroll: {PhoneFrame: {child: {if: {condition: showDraft, then: {miniApp: {project: draftProject}}}}}}}}}
+              scroll:
+                padding:
+                  all: 16
+                  child:
+                    column:
+                      crossAxisAlignment: stretch
+                      spacing: 24
+                      children:
+                      - center: {PhoneFrame: {child: {if: {condition: showDraft, then: {miniApp: {project: draftProject}}}}}}
+                      - EditorPanel

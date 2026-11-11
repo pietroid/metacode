@@ -154,6 +154,7 @@ class AppRuntime extends ChangeNotifier {
       moduleNode: _moduleNode,
       onAction: (context) => _host.actionFrom(context),
       readFile: config.readFile,
+      initialState: config.initialState,
     );
     config.program.host = _host = CoreHost(
       bloc: bloc,

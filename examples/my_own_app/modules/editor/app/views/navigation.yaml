@@ -1,5 +1,7 @@
-# navigation: mainRoute is the editor; the root opens it with
+# navigation: mainRoute picks the project; editRoute is the editor, pushed by
+# openProject. The root opens mainRoute with
 # core.modules.editor.navigator.push(EditorRoutes.mainRoute).
 initial: mainRoute
 routes:
-  mainRoute: EditorPage
+  mainRoute: ProjectPage
+  editRoute: EditorPage

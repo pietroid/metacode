@@ -66,7 +66,7 @@ Import the generated files relative to your file (`../../.generated/` from `app/
 1. `modules/<name>/` with `app.yaml` (include `state:`), `app/models/state.yaml` and other models, `app/actions/*.dart`, `app/views/pages/main_page.yaml`, `app/views/components/*.yaml`, `app/views/values/*.dart`, `app/views/labels/en.yaml`, `app/models/sample.dart` (`final app = TestApp();` from `../../.generated/test_app.dart`), tests in a `main()` in each action and value file, and `tests/*.yaml` for screens the initial state doesn't show. Copy `modules/plants/` as a template.
 2. Use it from the parent: its parts as `<name>.<Thing>` (its routes then open over the whole app), or the whole of it as a compact app, `miniApp: <name>` (a phone mockup: its routes open inside it), in a bounded box (`expanded`, not `scroll`); let its main page scroll itself.
 
-A whole app as data (the built-in `metacodeProject` model in the state) runs with `miniApp: {project: <value>}`: compiled in the app, sandboxed (it can't see this app or change its language or theme), hot reloaded when the state changes. `modules/editor/` does this (its shared `withFile`/`fileIn` edit a project).
+A whole app as data (the built-in `metacodeProject` model in the state) runs with `miniApp: {project: <value>}`: compiled in the app, sandboxed (it can't see this app or change its language or theme), hot reloaded when the state changes. `modules/editor/` does this (it loads the food, travel or work module as a project, and Claude edits it).
 3. `tool/check.sh` (no pubspec change needed).
 
 ## Reference

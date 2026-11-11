@@ -1,14 +1,15 @@
-# editor: edits a small app while it runs. `draft` is that whole app as files
-# (a metacodeProject: a plain white counter), in `remote` state: it syncs with
-# the backend (on the device without one). EditorPage runs it as a dynamic
-# module inside a PhoneFrame, next to a palette; picking a color rewrites the
-# draft's CountButton (pickColor), which reloads it in place, its count kept.
-# The root opens EditorPage with core.modules.editor.navigator.
+# editor: edits one of the site's example apps (food, travel, work) while it
+# runs. ProjectPage asks which; openProject loads its source through the
+# remote loadProject (from the Claude bridge, tool/claude_server.dart) into
+# `draft`, the whole app as files (a metacodeProject; a plain counter until
+# then), in `remote` state, and opens EditorPage: the draft running as a
+# dynamic module inside a PhoneFrame, the EditorPanel on its right.
+# The root opens ProjectPage with core.modules.editor.navigator.
 # askClaude asks the remote askClaude (the only code with HTTP) to send the
-# prompt and the draft to the Claude bridge (tool/claude_server.dart), which
-# edits it with the metacode MCP; the draft and the run's cost and time come
-# back as remote fields. resetDraft gets the starter counter (this file's
-# draft) the same way; `draftOn` false for a moment restarts it.
+# prompt and the draft to the bridge, which edits it with the metacode MCP;
+# the draft and the run's cost, time and turns come back as remote fields,
+# and add up per project (projectCost, projectMs, projectTurns) until
+# resetDraft loads its source again, history cleared; `draftOn` false for a moment restarts it.
 name: editor
 description: Edits a small app while it runs.
 state:
@@ -117,13 +118,18 @@ state:
                                         - CountButton: {icon: remove, tap: decrement}
                                         - CountButton: {icon: add, tap: increment}
                   folders: []
+    projectName: ''
+    saved: []
     runReply: ''
     runCost: 0.0
     runMs: 0
     runTurns: 0
-    totalCost: 0.0
+    projectCost: 0.0
+    projectMs: 0
+    projectTurns: 0
   ephemeral:
     draftOn: true
     prompt: ''
     asking: false
     askError: ''
+    opening: ''

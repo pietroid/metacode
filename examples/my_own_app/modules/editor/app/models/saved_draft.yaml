@@ -1,0 +1,10 @@
+# savedDraft: one example app as last edited in the editor: its name (food,
+# travel, work), its whole project, and what Claude has spent on it since it
+# was loaded or reset (cost in USD, time in ms, turns), so reopening it keeps
+# the edits and their history.
+savedDraft:
+  name: string
+  project: metacodeProject
+  cost: number
+  ms: number
+  turns: number

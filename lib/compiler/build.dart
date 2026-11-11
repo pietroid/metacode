@@ -231,10 +231,22 @@ Map<String, dynamic>? _generate(
   }
   outputs[app.at('.generated/program.evc')] = bytecode;
 
+  final sharedFns = {for (final f in [...app.shared, ...app.bindings]) f.name: f};
+  final reads = {
+    for (final f in app.bindings)
+      f.name: stateReads(f, sharedFns, app.scopes.containsKey),
+  };
   final manifest = {
     'actions': [for (final f in app.actions) f.name],
     'remote': [for (final f in app.remoteActions) f.name],
     'bindings': [for (final f in app.bindings) f.name],
+    // The state fields each value reads (through shared helpers too), so
+    // the engine reruns it only when one changes; left out when that can't
+    // be told (it then gets the whole state, every time).
+    'reads': {
+      for (final e in reads.entries)
+        if (e.value != null) e.key: [...e.value!]..sort(),
+    },
     'animated': {
       for (final f in app.bindings)
         if (f.animated != null) f.name: f.animated,

@@ -31,6 +31,6 @@ Future<void> main() async {
     ..mount('/sync', (context) => sync.onRequest(context, context.request.url.path))
     ..mount('/state', (context) => state.onRequest(context, context.request.url.path))
     ..mount('/call', (context) => call.onRequest(context, context.request.url.path));
-  final handler = const Pipeline().addMiddleware(middleware.middleware).addHandler(router);
+  final handler = const Pipeline().addMiddleware(middleware.middleware).addHandler(router.call);
   await entrypoint.run(handler, address, port);
 }

@@ -60,14 +60,28 @@ class UiRenderer {
     required this.moduleNode,
     this.onAction,
     this.readFile,
+    this.initialState = const {},
   }) : widgets = Map<String, dynamic>.from(ui['widgets'] ?? {});
 
   // Values are pure functions of (state, params), so their values are
   // kept until the state changes: rebuilds that don't change the state
   // (resizing, a parent rebuilding, the same value used twice) don't run
   // the interpreter again.
+  //
+  // A value whose reads are known (`program.reads`) is kept across states
+  // too, until one of the fields it reads changes (the state map is
+  // replaced on every change but keeps the unchanged fields' objects), and
+  // gets only those fields: the others hold their initial values, so the
+  // interpreter never decodes what the value doesn't look at. Every scope
+  // reruns its values on every change to `select` them, so without this a
+  // keystroke would rerun each one on the whole state.
   Map<String, dynamic>? _cachedState;
   final _cache = <String, dynamic>{};
+  final _byInputs = <String, (List<Object?>, dynamic)>{};
+
+  /// The app's initial state: what a value gets for the fields it doesn't
+  /// read.
+  final Map<String, dynamic> initialState;
 
   dynamic value(String name, Map<String, dynamic> state,
       Map<String, dynamic> params) {
@@ -77,7 +91,37 @@ class UiRenderer {
     }
     final key = params.isEmpty ? name : '$name ${_paramsKey(params)}';
     if (_cache.containsKey(key)) return _cache[key];
-    return _cache[key] = program.binding(name, state, params);
+    final reads = program.reads[name];
+    if (reads == null) {
+      return _cache[key] = program.binding(name, state, params);
+    }
+    final inputs = [for (final f in reads) state[f]];
+    final last = _byInputs[key];
+    if (last != null && _same(last.$1, inputs)) return _cache[key] = last.$2;
+    final result = program.binding(name, _slice(state, reads), params);
+    _byInputs[key] = (inputs, result);
+    return _cache[key] = result;
+  }
+
+  static bool _same(List<Object?> a, List<Object?> b) {
+    for (var i = 0; i < a.length; i++) {
+      // Same object for maps and lists (== is identity there), equal for
+      // strings, numbers and bools.
+      if (a[i] != b[i]) return false;
+    }
+    return true;
+  }
+
+  /// [state] with only [reads] kept: every other field at its initial value
+  /// (the state's own when it has none).
+  Map<String, dynamic> _slice(Map<String, dynamic> state, List<String> reads) {
+    if (initialState.isEmpty) return state;
+    return {
+      for (final e in state.entries)
+        e.key: reads.contains(e.key) || !initialState.containsKey(e.key)
+            ? e.value
+            : initialState[e.key],
+    };
   }
 
   /// This app's language for the locale Flutter resolved (see

@@ -1,0 +1,45 @@
+# ProjectPage: the editor's first page: which example app to edit. An app
+# bar (the title, a close button) over a centered column: a heading and a
+# hint, what Claude has spent on all of them (RunStats, once it has:
+# hasAnySpent), a ProjectTile per example app (projects), and why the last
+# one failed to open (openError).
+ProjectPage:
+  scaffold:
+    appBar:
+      title: {text: {value: editorTitle, maxLines: 1, style: {variant: titleMedium}}}
+      actions:
+      - padding:
+          right: 8
+          child:
+            iconButton: {icon: close, tooltip: closeText, onPressed: close}
+    body:
+      container:
+        color: bg
+        child:
+          scroll:
+            center:
+              container:
+                maxWidth: 560
+                padding: {horizontal: 24, vertical: 40}
+                child:
+                  column:
+                    crossAxisAlignment: stretch
+                    spacing: 24
+                    children:
+                    - column:
+                        crossAxisAlignment: start
+                        spacing: 8
+                        children:
+                        - text: {value: pickTitle, style: {variant: titleLarge}}
+                        - text: {value: pickHint, style: {variant: bodySmall, color: ink2}}
+                    - if:
+                        condition: hasAnySpent
+                        then:
+                          column:
+                            crossAxisAlignment: start
+                            spacing: 8
+                            children:
+                            - text: {value: allSpentText, style: {variant: labelSmall, color: ink3}}
+                            - RunStats: {cost: allCostText, time: allTimeText, turns: allTurnsText}
+                    - listView: {data: projects, itemBuilder: ProjectTile, spacing: 16}
+                    - text: {value: openError, style: {variant: bodySmall, color: ink2}}

@@ -6,6 +6,8 @@
 //   200           {ok, project, reply, costUsd, durationMs, turns}
 //   GET /starter  the editor's starter draft (state.remote.draft in
 //                 examples/my_own_app/modules/editor/app.yaml), for its reset
+//   GET /project?name=food  one of the root app's modules (food, travel,
+//                 work) as a project, its sources only, for the editor to load
 //
 // The project is written to build/claude_drafts/<id>/ (an app folder in the
 // repo, so the MCP tools take it as `build/claude_drafts/<id>`), Claude runs
@@ -48,6 +50,19 @@ Future<void> _handle(HttpRequest request) async {
         .readAsStringSync()) as Map;
     response.headers.contentType = ContentType.json;
     response.write(jsonEncode(yaml['state']['remote']['draft']));
+    await response.close();
+    return;
+  }
+  if (request.method == 'GET' && request.uri.path == '/project') {
+    final name = request.uri.queryParameters['name'] ?? '';
+    final dir = Directory('$_root/examples/my_own_app/modules/$name');
+    if (!_projects.contains(name) || !dir.existsSync()) {
+      response.statusCode = 404;
+      await response.close();
+      return;
+    }
+    response.headers.contentType = ContentType.json;
+    response.write(jsonEncode(filesToProject(_sources(dir))));
     await response.close();
     return;
   }
@@ -109,16 +124,9 @@ Future<Map<String, dynamic>> _run(String prompt, Object? project) async {
     json = jsonDecode(result.stdout as String) as Map<String, dynamic>;
   } catch (_) {}
   final ok = result.exitCode == 0 && json['is_error'] != true;
-  final files = <String, String>{};
-  for (final entity in dir.listSync(recursive: true)) {
-    if (entity is! File) continue;
-    final path = entity.path.substring(dir.path.length + 1);
-    if (path.startsWith('.') || path.contains('/.')) continue;
-    files[path] = entity.readAsStringSync();
-  }
   final out = {
     'ok': ok,
-    'project': filesToProject(files),
+    'project': filesToProject(_sources(dir)),
     'reply': '${json['result'] ?? result.stderr}'.trim(),
     'costUsd': (json['total_cost_usd'] as num?)?.toDouble() ?? 0.0,
     'durationMs': (json['duration_ms'] as num?)?.toInt() ?? elapsed,
@@ -127,6 +135,23 @@ Future<Map<String, dynamic>> _run(String prompt, Object? project) async {
   stdout.writeln('[$id] ok=$ok \$${out['costUsd']} ${out['durationMs']}ms');
   if (ok) dir.deleteSync(recursive: true);
   return out;
+}
+
+/// The modules the editor may load (GET /project?name=).
+const _projects = {'food', 'travel', 'work'};
+
+/// An app folder's sources by path: text files only, `.generated/` and
+/// `.state/` (any dot path) dropped.
+Map<String, String> _sources(Directory dir) {
+  final files = <String, String>{};
+  for (final entity in dir.listSync(recursive: true)) {
+    if (entity is! File) continue;
+    final path = entity.path.substring(dir.path.length + 1);
+    if (path.startsWith('.') || path.contains('/.')) continue;
+    if (!RegExp(r'\.(ya?ml|dart|md|json)$').hasMatch(path)) continue;
+    files[path] = entity.readAsStringSync();
+  }
+  return files;
 }
 
 String _system(String app) => '''

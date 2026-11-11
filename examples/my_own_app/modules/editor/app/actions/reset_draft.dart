@@ -1,6 +1,6 @@
-// resetDraft: Puts the draft back to the starter counter through the remote
-// resetDraft (local actions have no network) and starts it over, dropping
-// every edit; askError says why when it fails (askErrorText).
+// resetDraft: Puts the draft back to its project's source through the
+// remote resetDraft (local actions have no network) and starts it over,
+// dropping every edit; askError says why when it fails (askErrorText).
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';

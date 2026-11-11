@@ -1,4 +1,5 @@
-// close: Closes the editor.
+// close: Closes the page on top: the editor (back to ProjectPage), or
+// ProjectPage (back to the site).
 import '../../.generated/core.dart';
 import '../../.generated/state.dart';
 

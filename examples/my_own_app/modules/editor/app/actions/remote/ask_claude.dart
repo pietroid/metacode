@@ -1,8 +1,8 @@
 // askClaude: Sends the prompt (`value`) and the draft to the Claude bridge
 // (claudeUrl('claude')), which edits it with the metacode MCP in one
 // awaited run. A run that went through sets the draft (when Claude
-// succeeded), the reply, cost, time and turns, and adds the cost to
-// totalCost; refuses (bridgeDown) when the bridge can't be reached.
+// succeeded), the reply, cost, time and turns, and adds them to the
+// project's (projectCost, projectMs, projectTurns); refuses (bridgeDown) when the bridge can't be reached.
 import '../../../.generated/api.dart';
 import '../../../.generated/remote_state.dart';
 import '../shared/claude_url.dart';
@@ -31,6 +31,8 @@ Future<void> askClaude(
     runMs: ms,
     runTurns: turns,
     // toDouble: dart_eval can't add a JSON number to a state number.
-    totalCost: state.totalCost.toDouble() + cost.toDouble(),
+    projectCost: state.projectCost.toDouble() + cost.toDouble(),
+    projectMs: state.projectMs.toDouble() + ms.toDouble(),
+    projectTurns: state.projectTurns.toDouble() + turns.toDouble(),
   ));
 }

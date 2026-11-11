@@ -45,7 +45,8 @@ void main() {
     expect(app.requests, ['POST http://localhost:8787/claude']);
     expect(state.draft.toJson(), edited);
     expect(state.runReply, 'Done.');
-    expect(state.totalCost, 0.25);
+    expect(state.projectCost, 0.25);
+    expect(state.projectTurns, 5);
     expect(state.prompt, '');
     expect(state.asking, isFalse);
   });

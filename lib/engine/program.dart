@@ -20,6 +20,10 @@ class MetacodeProgram {
   /// Remote actions (the backend's program, app/actions/remote/).
   final Set<String> remoteActions;
 
+  /// The state fields each value reads (manifest `reads`, through shared
+  /// helpers too); a value missing here may read any field.
+  final Map<String, List<String>> reads;
+
   /// Values marked `@Animated`: name -> `{ms, curve}`.
   final Map<String, Map<String, dynamic>> animated;
 
@@ -33,6 +37,10 @@ class MetacodeProgram {
       : actions = Set<String>.from((manifest['actions'] as List?) ?? const []),
         bindings = Set<String>.from((manifest['bindings'] as List?) ?? const []),
         remoteActions = Set<String>.from((manifest['remote'] as List?) ?? const []),
+        reads = {
+          for (final e in ((manifest['reads'] as Map?) ?? const {}).entries)
+            e.key as String: List<String>.from(e.value as List),
+        },
         animated = {
           for (final e in ((manifest['animated'] as Map?) ?? const {}).entries)
             e.key as String: Map<String, dynamic>.from(e.value as Map),
@@ -88,12 +96,17 @@ class MetacodeProgram {
     }
   }
 
+  /// How many times each value ran in the interpreter (for tests: the
+  /// renderer reruns a value only when a field it reads changed).
+  final Map<String, int> runs = {};
+
   /// Evaluates a binding. [context] carries e.g. the list `index`.
   dynamic binding(
     String name,
     Map<String, dynamic> state, [
     Map<String, dynamic> context = const {},
   ]) {
+    runs[name] = (runs[name] ?? 0) + 1;
     final result = _execute('\$binding_$name', state, context);
     return jsonDecode((result is $Value ? result.$reified : result) as String);
   }

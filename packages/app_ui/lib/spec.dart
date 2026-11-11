@@ -424,10 +424,12 @@ const widgetCatalog = <String, WidgetSpec>{
       'label': PropKind.bindingOrLiteral,
       'multiline': PropKind.literal,
       'keyboard': PropKind.literal,
+      'variant': PropKind.literal,
       'onChanged': PropKind.action,
       'onSubmitted': PropKind.action,
     },
     notes: {
+      'variant': 'a text variant (`bodySmall`) for the typed text and the hint',
       'onChanged': 'gets `value` (String)',
       'onSubmitted': 'gets `value` (String)',
       'keyboard': 'text (default), number, decimal, email, phone, url: the on-screen keyboard; `value` is still a String (parse it in the action)',

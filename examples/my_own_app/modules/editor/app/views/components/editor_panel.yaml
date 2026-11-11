@@ -1,31 +1,40 @@
-# EditorPanel: the editing side on wide screens: the draft's button color
-# (SwatchRow), Claude (ClaudeBox) and a note on how editing works.
+# EditorPanel: the editing side, right of the phone (below it on a phone):
+# one card, two sections with the same type scale (titleSmall heading,
+# bodySmall hint): Claude (ClaudeBox), then the project (Restart: the
+# draft's state over, restartDraft; Reset: its source again, resetDraft).
 EditorPanel:
   card:
+    padding: 24
     child:
-      padding:
-        all: 20
-        child:
-          column:
-            crossAxisAlignment: start
-            spacing: 6
+      column:
+        crossAxisAlignment: stretch
+        spacing: 24
+        children:
+        - column:
+            crossAxisAlignment: stretch
+            spacing: 12
             children:
-            - text: {value: designText, style: {variant: labelSmall, color: ink3}}
-            - text: {value: buttonColorText, style: {variant: titleMedium}}
-            - text: {value: buttonColorHint, style: {variant: bodySmall, color: ink2}}
-            - sizedBox: {height: 8}
-            - SwatchRow
-            - sizedBox: {height: 12}
-            - divider: {}
-            - sizedBox: {height: 12}
-            - text: {value: claudeTitle, style: {variant: titleMedium}}
-            - ClaudeBox
-            - sizedBox: {height: 12}
-            - divider: {}
-            - sizedBox: {height: 12}
-            - row:
-                spacing: 8
+            - column:
+                crossAxisAlignment: start
+                spacing: 4
                 children:
-                - icon: {name: refresh, size: 16, color: accent}
-                - text: {value: liveTitle, style: {variant: labelLarge}}
-            - text: {value: liveHint, style: {variant: bodySmall, color: ink2}}
+                - text: {value: claudeTitle, style: {variant: titleSmall}}
+                - text: {value: claudeHint, style: {variant: bodySmall, color: ink2}}
+            - ClaudeBox
+        - divider: {}
+        - column:
+            crossAxisAlignment: stretch
+            spacing: 12
+            children:
+            - column:
+                crossAxisAlignment: start
+                spacing: 4
+                children:
+                - text: {value: projectSectionTitle, style: {variant: titleSmall}}
+                - text: {value: projectSectionHint, style: {variant: bodySmall, color: ink2}}
+            - wrap:
+                spacing: 8
+                runSpacing: 8
+                children:
+                - outlinedButton: {text: restartText, icon: refresh, onPressed: restartDraft}
+                - textButton: {text: resetText, icon: delete, onPressed: resetDraft}

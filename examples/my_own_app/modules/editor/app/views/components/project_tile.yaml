@@ -1,0 +1,42 @@
+# ProjectTile: one example app (by `index`) on ProjectPage: a card with its
+# icon, title, hint and a chevron (a spinner while it loads, isOpening), and
+# under them what Claude has spent on it since it was loaded or reset
+# (RunStats, when it has: hasSpent); tapping it opens it in the editor
+# (openProject).
+ProjectTile:
+  card:
+    onTap: openProject
+    padding: 20
+    child:
+      column:
+        crossAxisAlignment: stretch
+        children:
+        - row:
+            spacing: 16
+            crossAxisAlignment: center
+            children:
+            - container:
+                width: 40
+                height: 40
+                radius: 10
+                color: fill
+                child: {center: {icon: {name: projectIcon, size: 20, color: ink2}}}
+            - expanded:
+                child:
+                  column:
+                    crossAxisAlignment: start
+                    spacing: 4
+                    children:
+                    - text: {value: projectTitle, style: {variant: titleSmall}}
+                    - text: {value: projectHint, maxLines: 2, style: {variant: bodySmall, color: ink2}}
+            - if:
+                condition: isOpening
+                then: {sizedBox: {width: 18, height: 18, child: {progress: {circular: true}}}}
+                else: {icon: {name: chevronRight, size: 18, color: ink3}}
+        - if:
+            condition: hasSpent
+            then:
+              padding:
+                left: 56
+                top: 12
+                child: {RunStats: {cost: spentCostText, time: spentTimeText, turns: spentTurnsText}}

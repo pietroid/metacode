@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../parsers.dart';
 import '../ui.dart';
 
 Widget buildTextField(Ui ui, Map<String, dynamic> p) => _TextField(
@@ -8,6 +9,7 @@ Widget buildTextField(Ui ui, Map<String, dynamic> p) => _TextField(
       label: ui.resolve(p['label'])?.toString(),
       multiline: p['multiline'] == true,
       keyboard: p['keyboard']?.toString(),
+      variant: p['variant']?.toString(),
       onChanged: ui.actionWithValue<String>(p['onChanged']),
       onSubmitted: ui.actionWithValue<String>(p['onSubmitted']),
     );
@@ -20,6 +22,7 @@ class _TextField extends StatefulWidget {
   final String? label;
   final bool multiline;
   final String? keyboard;
+  final String? variant;
   final ValueChanged<String>? onChanged;
   final ValueChanged<String>? onSubmitted;
 
@@ -29,6 +32,7 @@ class _TextField extends StatefulWidget {
     this.label,
     this.multiline = false,
     this.keyboard,
+    this.variant,
     this.onChanged,
     this.onSubmitted,
   });
@@ -54,8 +58,12 @@ class _TextFieldState extends State<_TextField> {
 
   @override
   Widget build(BuildContext context) {
+    final style = widget.variant == null
+        ? null
+        : textVariantStyles(context)[widget.variant];
     final field = TextField(
       controller: controller,
+      style: style,
       onChanged: widget.onChanged,
       onSubmitted: widget.onSubmitted,
       minLines: widget.multiline ? 3 : 1,
@@ -68,7 +76,7 @@ class _TextFieldState extends State<_TextField> {
         'url' => TextInputType.url,
         _ => widget.multiline ? TextInputType.multiline : TextInputType.text,
       },
-      decoration: InputDecoration(hintText: widget.hint),
+      decoration: InputDecoration(hintText: widget.hint, hintStyle: style),
     );
     if (widget.label == null) return field;
     // The label sits above the field, set small in the mono face: steadier

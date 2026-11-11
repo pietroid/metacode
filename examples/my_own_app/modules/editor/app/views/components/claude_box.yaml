@@ -1,13 +1,14 @@
-# ClaudeBox: asks Claude to change the draft: a prompt field and an Ask
-# button (askClaude; a spinner while a run goes), Claude's last reply and the
-# run's cost, time and turns (runStats), then Restart (restartDraft: the
-# draft's state over) and Reset (resetDraft: the starter counter again).
+# ClaudeBox: asks Claude to change the draft: a small-type prompt field and
+# an Ask button (askClaude; a spinner while a run goes), Claude's last reply
+# (lastReply), then the last run's cost, time in minutes and turns (once
+# Claude has run, hasRun) and the project's totals since it was loaded or
+# reset (hasHistory), each as RunStats under a small heading.
 ClaudeBox:
   column:
     crossAxisAlignment: stretch
-    spacing: 8
+    spacing: 12
     children:
-    - textField: {value: promptText, hint: promptHint, multiline: true, onChanged: setPrompt}
+    - textField: {value: promptText, hint: promptHint, multiline: true, variant: bodySmall, onChanged: setPrompt}
     - row:
         spacing: 12
         crossAxisAlignment: center
@@ -17,10 +18,21 @@ ClaudeBox:
             condition: isAsking
             then: {sizedBox: {width: 18, height: 18, child: {progress: {circular: true}}}}
     - text: {value: lastReply, style: {variant: bodySmall, color: ink2}}
-    - text: {value: runStats, style: {variant: labelSmall, color: ink3}}
-    - wrap:
-        spacing: 8
-        runSpacing: 8
-        children:
-        - outlinedButton: {text: restartText, icon: refresh, onPressed: restartDraft}
-        - textButton: {text: resetText, icon: delete, onPressed: resetDraft}
+    - if:
+        condition: hasRun
+        then:
+          column:
+            crossAxisAlignment: start
+            spacing: 8
+            children:
+            - text: {value: lastRunText, style: {variant: labelSmall, color: ink3}}
+            - RunStats: {cost: runCostText, time: runTimeText, turns: runTurnsText}
+    - if:
+        condition: hasHistory
+        then:
+          column:
+            crossAxisAlignment: start
+            spacing: 8
+            children:
+            - text: {value: sinceResetText, style: {variant: labelSmall, color: ink3}}
+            - RunStats: {cost: historyCostText, time: historyTimeText, turns: historyTurnsText}

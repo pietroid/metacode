@@ -1,0 +1,10 @@
+# RunStats: a cost, a time and a count of turns in one row, each after its
+# icon (coins, timer, chat: the turns as a bare count), small and quiet. `.cost`, `.time` and `.turns`
+# are the values to show.
+RunStats:
+  row:
+    spacing: 12
+    children:
+    - row: {spacing: 4, children: [{icon: {name: coins, size: 14, color: ink2}}, {text: {value: .cost, style: {variant: labelSmall, color: ink2}}}]}
+    - row: {spacing: 4, children: [{icon: {name: timer, size: 14, color: ink2}}, {text: {value: .time, style: {variant: labelSmall, color: ink2}}}]}
+    - row: {spacing: 4, children: [{icon: {name: chat, size: 14, color: ink2}}, {text: {value: .turns, style: {variant: labelSmall, color: ink2}}}]}

@@ -1,14 +1,23 @@
 pt_br:
   editorTitle: Editor
-  liveText: Ao vivo
   closeText: Fechar
-  designText: DESIGN
-  buttonColorText: Cor dos botões
-  buttonColorHint: A cor dos botões − e + do contador.
-  liveTitle: Recarga ao vivo
-  liveHint: O app é um projeto inteiro guardado no estado. Cada mudança reescreve um dos seus arquivos e ele recarrega no lugar, mantendo a contagem.
+  pickTitle: Escolha um app para editar
+  pickHint: O código inteiro dele carrega aqui e roda ao vivo. Peça uma mudança ao Claude e veja recarregar no lugar.
+  foodTitle: Comida
+  foodHint: Um planejador de refeições que respeita o orçamento do mês.
+  travelTitle: Viagem
+  travelHint: Um planejador de viagem para passagens, estadias e gastos.
+  workTitle: Trabalho
+  workHint: Prioridades do dia entre emails, retornos e reuniões.
   claudeTitle: Pergunte ao Claude
-  promptHint: Descreva uma mudança, ex. um botão de zerar
+  claudeHint: Descreva uma mudança. O Claude edita os arquivos do app e ele recarrega ao vivo, mantendo o estado.
+  promptHint: ex. um botão de zerar
   askText: Pedir
+  lastRunText: Última execução
+  minutesText: min
+  sinceResetText: Desde que carregou ou resetou
+  allSpentText: Todos os apps, desde que carregaram ou resetaram
+  projectSectionTitle: Projeto
+  projectSectionHint: Reiniciar roda o app desde a primeira tela. Resetar descarta todas as edições.
   restartText: Reiniciar
   resetText: Resetar projeto
