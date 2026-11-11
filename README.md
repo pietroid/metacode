@@ -32,8 +32,13 @@ examples/my_own_app/      the root app (an app is a folder; apps nest)
 Every `.yaml` file contains exactly one top-level key, named after the file;
 files are not merged. Files are `this_case.dart` / `this_case.yaml`, keys and
 functions `thisCase`, pages and components `ThisCase`
-(`app/views/components/example_slide.yaml` holds `ExampleSlide:`). A module is shown
-with the `module: <name>` widget and runs with its own state, actions and values: a change inside it rebuilds only it. Each app (modules included)
+(`app/views/components/example_slide.yaml` holds `ExampleSlide:`). A module runs with
+its own state, actions and values (a change inside it rebuilds only it); its
+parent uses its parts as `<module>.<name>` (`food.MenuCard`, `food.addItem`;
+`core.modules.food` in code) or the whole of it as `miniApp: <name>`. A whole
+app can also live in the state, as a `metacodeProject`, and run with
+`miniApp: {project: <value>}`: compiled in the app and hot reloaded on every
+change. Each app (modules included)
 persists its own state under `.state/`.
 
 Agents: see [AGENTS.md](AGENTS.md) and the skills in `.claude/skills/`.

@@ -1,7 +1,8 @@
-# navigation: one route of each type.
+# navigation: one route of each type, and a module's page (counterHome).
 initial: home
 routes:
   home: MainPage
   details: DetailsPage
   sheet: {bottomSheet: RouteContent}
   dialog: {dialog: RouteContent}
+  counterHome: counter.MainPage

@@ -76,7 +76,7 @@ void main() {
     ..writeln('| Tests | In the same file as the action or value they test, in a `void main() { test(...); }` below it. The tool ignores `main()` and leaves it out of the compiled program. |')
     ..writeln('| `tests/<name>.yaml` | A state worth a layout check that the initial state never shows: `name:` then `state:` (only the fields that differ from app.yaml\'s `state:`) and optionally `route:`. `tool/check.sh` renders it at phone, tablet and desktop sizes and fails on overflow. Add a few, one per screen that needs it (`plan_screen.yaml`: `planScreen: {state: {stage: plan, program: 8}}`), not every combination. |')
     ..writeln('| `app/models/sample.dart` | Sample states: `final app = TestApp();` (runs actions and values through the compiled program) and `State sample(...)`. |')
-    ..writeln('| `modules/<name>/` | A module. Embed it with `module: <name>`: it runs with its own state, actions and values (it can\'t see the parent\'s, and vice versa). |')
+    ..writeln('| `modules/<name>/` | A module: it runs with its own state, actions and values (it can\'t see the parent\'s). The parent uses its parts as `<name>.<thing>` (`food.MenuCard`, `food.addItem`, `food.total`, `food.title`; `core.modules.food` in code), or the whole of it as a compact app with `miniApp: food`. |')
     ..writeln('| `.state/` | Runtime persisted state, written by the engine. Never commit. |')
     ..writeln()
     ..writeln('Images go in `examples/my_own_app/app/views/style/images/` (`src: examples/my_own_app/app/views/style/images/x.jpg` or `x.svg`), for every app.')
@@ -101,6 +101,7 @@ void main() {
     ..writeln('| `t?` | `T?` | may be omitted or `null` |')
     ..writeln('| a model name | its class (`task` -> `Task`) | a map of its fields |')
     ..writeln('| an enum name | its enum (`filter` -> `Filter`) | one of its values |')
+    ..writeln('| `metacodeProject` | `MetacodeProject` (built in) | a whole app as files: `files: [{name, content}]`, `folders: [{name, files, folders}]` (`metacodeFile`, `metacodeFolder`), recursively, like an app folder. Run it with `miniApp: {project: <value returning it>}` |')
     ..writeln()
     ..writeln('```yaml')
     ..writeln('# app/models/task.yaml')
@@ -217,6 +218,10 @@ void main() {
     ..writeln("Future<void> core.locale.set('pt_br')   // the whole app (modules too) in pt_br.yaml, saved; null: the device's language again")
     ..writeln("Future<void> core.theme.set('dark')     // the whole app light or dark, saved; null: back to style/theme.yaml (system: the device's)")
     ..writeln("Future<void> core.modules.reset('food') // starts this app's module modules/food/ over: its state back to its app.yaml's, its contained routes closed")
+    ..writeln('Future<void> core.modules.food.addItem(value) // runs a module\'s action on its own state (value only if it takes one)')
+    ..writeln('Future<int> core.modules.food.total()        // a module\'s value on its current state; a model or enum of the module comes back as JSON (Object?)')
+    ..writeln('Future<void> core.modules.food.navigator.push(FoodRoutes.menu) // opens a module\'s route over this app')
+    ..writeln('Future<void> core.modules.food.reset()       // same as reset(\'food\')')
     ..writeln('```')
     ..writeln()
     ..writeln("The language is the device's by default (Flutter's localization, among the root app's labels files). A language menu is a `dropdown` with `value:` a value returning `labels.locale`, `options: [{value: en, text: english}, {value: pt_br, text: portuguese}]` and `onChanged:` an action calling `core.locale.set(value)`.")
@@ -281,8 +286,9 @@ void main() {
     ..writeln('- A widget is a map with **one key**, its type: `text: {...}`.')
     ..writeln('- A string node is: a page or component (`ThisCase`), else a value (its result is shown as text), else a label, else literal text. Put text in app/views/labels/; the tool warns about literal text.')
     ..writeln('- Labels and values are referenced the same way, by key: `text: joinTitle`.')
-    ..writeln('- Components take parameters: `.name` anywhere in a component (`color: .screen`, `child: .child`) is filled by the caller, which writes the component like a widget: `PhoneFrame: {screen: \'#F4FAF5\', child: {module: food}}`. Parameters are not declared; they are the `.name`s the component uses, their kind is the prop they fill, and all are required. Arguments are anything that prop takes (a value, a label, an action, a widget), resolved where the component is called; `text: .label` passes the caller\'s own parameter on. Pages have no parameters. INDEX.md lists each component\'s. `index: <int>` is always accepted: the component\'s values and actions get it as their `index` param, as a list item\'s do (`ExampleChip: {index: 1, label: work}`, one `showExample(index)` action for every chip).')
-    ..writeln('- `module: food` embeds the module `modules/food/` (its initial page). Use it anywhere a widget goes, e.g. as a `match` case. Module folder names are valid identifiers; use thisCase for new ones.')
+    ..writeln('- Components take parameters: `.name` anywhere in a component (`color: .screen`, `child: .child`) is filled by the caller, which writes the component like a widget: `PhoneFrame: {screen: \'#F4FAF5\', child: {miniApp: food}}`. Parameters are not declared; they are the `.name`s the component uses, their kind is the prop they fill, and all are required. Arguments are anything that prop takes (a value, a label, an action, a widget), resolved where the component is called; `text: .label` passes the caller\'s own parameter on. Pages have no parameters. INDEX.md lists each component\'s. `index: <int>` is always accepted: the component\'s values and actions get it as their `index` param, as a list item\'s do (`ExampleChip: {index: 1, label: work}`, one `showExample(index)` action for every chip).')
+    ..writeln('- A module\'s parts are used as `<module>.<name>` anywhere this app\'s own go: `food.MenuCard` (a component or page, in the module\'s state and theme; arguments `food.Chip: {label: x}` resolve in the module), `onPressed: food.addItem` (runs on the module\'s state), `text: food.total` (a value), `text: food.title` (a label), and in navigation.yaml `menu: food.MenuPage`. Its routes open over this app.')
+    ..writeln('- `miniApp: food` runs the module `modules/food/` as a compact app: its initial page, its routes opening inside its box (its own navigator), so the box needs a bounded size. `miniApp: {project: draft}` runs a dynamic module instead: `draft` is a value returning a `metacodeProject` (usually from the state); it is compiled in the app, sandboxed (no access to this app\'s state, actions or modules; its `core.locale.set` and `core.theme.set` do nothing), and reloaded in place, state kept, on every change. Module folder names are valid identifiers; use thisCase for new ones.')
     ..writeln('- Some widgets have a shorthand (shown below): `column: [a, b]`, `expanded: child`, `text: "Hi"`.')
     ..writeln('- Widgets with no required props are written with an empty map: `divider: {}`.')
     ..writeln()
@@ -313,7 +319,7 @@ void main() {
     final example = switch (spec.shorthand) {
       Shorthand.nodes => '$name: [a, b]',
       Shorthand.node => '$name: child',
-      Shorthand.name => '$name: food',
+      Shorthand.module => '$name: food',
       _ => '$name: "Hello"',
     };
     out.writeln('| `$name` | ${spec.description.split('\n').first} | '

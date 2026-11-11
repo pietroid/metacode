@@ -44,8 +44,8 @@ enum Shorthand {
   /// `text: "Hello"` or `text: someBinding`.
   value('value'),
 
-  /// `module: food`.
-  name('name');
+  /// `miniApp: food`.
+  module('module');
 
   final String? prop;
   const Shorthand(this.prop);
@@ -245,17 +245,23 @@ const widgetCatalog = <String, WidgetSpec>{
     'color': PropKind.color,
   }),
 
-  'module': WidgetSpec(
+  'miniApp': WidgetSpec(
     _layout,
-    'Embeds a module from `modules/<name>/`: its initial page, with its own '
-        'state, actions and values. It inherits the theme unless it has a '
-        'style/ folder. Its routes (pages, sheets, dialogs) open over the '
-        'whole app, unless `contained: true`: then it gets its own navigator '
-        'and they open inside its box (a phone frame), which must have a '
-        'bounded size (e.g. inside `expanded`, not `scroll`).',
-    {'name': PropKind.module, 'contained': PropKind.literal},
-    shorthand: Shorthand.name,
-    notes: {'contained': 'true or false (default); `module: food` is short for `module: {name: food}`'},
+    'A module running as a compact app: its initial page, with its own state, '
+        'actions and values, and its own navigator, so its routes (pages, '
+        'sheets, dialogs) open inside its box (a phone frame), which must have '
+        'a bounded size (e.g. inside `expanded` or a `sizedBox`, not `scroll`). '
+        'It inherits the theme unless it has a style/ folder. `module:` names a '
+        'folder in modules/ (`miniApp: food` is short for `miniApp: {module: food}`); '
+        '`project:` instead names a value returning a `metacodeProject` (a whole '
+        'app as files, usually from the state): it is compiled in the app and '
+        'runs sandboxed (no access to this app\'s state or actions), reloading '
+        'in place, state kept, every time the project changes. To use one part '
+        'of a module instead (a component, a value, an action), write '
+        '`<module>.<name>` anywhere a name goes: `food.MenuCard`, `food.addItem`.',
+    {'module': PropKind.module, 'project': PropKind.binding},
+    shorthand: Shorthand.module,
+    notes: {'project': 'a value returning metacodeProject; give either module or project'},
   ),
 
   // Navigation
@@ -599,7 +605,7 @@ Map<String, dynamic>? normalizeProps(WidgetSpec spec, dynamic value) {
 /// A component parameter reference: `.screen` (a dot, then a thisCase name).
 /// Parameters are not declared: a component's are the ones its widget uses,
 /// and every one is required where the component is called:
-/// `PhoneFrame: {screen: '#F4FAF5', child: {module: food}}`.
+/// `PhoneFrame: {screen: '#F4FAF5', child: {miniApp: food}}`.
 final paramRef = RegExp(r'^\.([a-z][a-zA-Z0-9]*)$');
 
 /// The parameter [value] references (`screen` for `.screen`), else null.

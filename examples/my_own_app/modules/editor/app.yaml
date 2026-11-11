@@ -1,0 +1,114 @@
+# editor: edits a small app while it runs. `draft` is that whole app as files
+# (a metacodeProject: a plain white counter), in `remote` state: it syncs with
+# the backend (on the device without one). EditorPage runs it as a dynamic
+# module inside a PhoneFrame, next to a palette; picking a color rewrites the
+# draft's CountButton (pickColor), which reloads it in place, its count kept.
+# The root opens EditorPage with core.modules.editor.navigator.
+name: editor
+description: Edits a small app while it runs.
+state:
+  remote:
+    draft:
+      files:
+        - name: app.yaml
+          content: |
+            name: counter
+            state:
+              count: 0
+      folders:
+        - name: app
+          files: []
+          folders:
+            - name: models
+              files:
+                - name: state.yaml
+                  content: |
+                    state:
+                      count: number
+              folders: []
+            - name: actions
+              files:
+                - name: increment.dart
+                  content: |
+                    import '../../.generated/state.dart';
+
+                    Future<void> increment(State state, void Function(StateDelta) emit) async {
+                      emit(StateDelta(count: state.count + 1));
+                    }
+                - name: decrement.dart
+                  content: |
+                    import '../../.generated/state.dart';
+
+                    Future<void> decrement(State state, void Function(StateDelta) emit) async {
+                      emit(StateDelta(count: state.count - 1));
+                    }
+              folders: []
+            - name: views
+              files: []
+              folders:
+                - name: values
+                  files:
+                    - name: count_text.dart
+                      content: |
+                        import '../../../.generated/state.dart';
+
+                        String countText(State state) => state.count.toString();
+                  folders: []
+                - name: labels
+                  files:
+                    - name: en.yaml
+                      content: |
+                        en:
+                          title: Counter
+                          caption: Tap + or -
+                  folders: []
+                - name: components
+                  files:
+                    - name: count_button.yaml
+                      content: |
+                        CountButton:
+                          tappable:
+                            onTap: .tap
+                            child:
+                              container:
+                                width: 64
+                                height: 64
+                                radius: 32
+                                color: '#111111'
+                                child: {center: {icon: {name: .icon, size: 26, color: '#FFFFFF'}}}
+                  folders: []
+                - name: pages
+                  files:
+                    - name: main_page.yaml
+                      content: |
+                        MainPage:
+                          container:
+                            color: '#FFFFFF'
+                            child:
+                              column:
+                                crossAxisAlignment: stretch
+                                children:
+                                - padding:
+                                    horizontal: 24
+                                    vertical: 8
+                                    child:
+                                      text: {value: title, style: {variant: titleLarge, fontWeight: w700, color: '#1A1A1A'}}
+                                - expanded:
+                                    child:
+                                      center:
+                                        column:
+                                          mainAxisAlignment: center
+                                          spacing: 4
+                                          children:
+                                          - text: {value: countText, style: {fontSize: 96, fontWeight: w300, color: '#1A1A1A'}}
+                                          - text: {value: caption, style: {variant: bodyMedium, color: '#9A9A9A'}}
+                                - padding:
+                                    all: 32
+                                    child:
+                                      row:
+                                        mainAxisAlignment: center
+                                        spacing: 24
+                                        children:
+                                        - CountButton: {icon: remove, tap: decrement}
+                                        - CountButton: {icon: add, tap: increment}
+                  folders: []

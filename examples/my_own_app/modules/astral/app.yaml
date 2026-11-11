@@ -1,5 +1,5 @@
 # astral: Venus Astrology School, the astral map example embedded in the
-# landing page carousel (`module: astral`). The visitor picks a birth day
+# landing page carousel (`miniApp: astral`). The visitor picks a birth day
 # and month; the map is mocked per week of the month (charts), with the sun
 # sign computed from the date. Insights, a call to book an astrologer, and
 # the school's courses. Images are Wikimedia Commons (credits in

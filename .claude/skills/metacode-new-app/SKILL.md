@@ -56,4 +56,4 @@ What was built (screens, the backend and API pieces), the assumptions you made, 
 
 ## Modules
 
-A module is an app folder in `modules/<name>/` with its own spec.md and plan.yaml. Plan the parent first (where `module: <name>` goes), then run steps 2-3 per module (independent: their planners, then their agents, can all run at once), and `check` the root.
+A module is an app folder in `modules/<name>/` with its own spec.md and plan.yaml. Plan the parent first (where `miniApp: <name>` or its `<name>.<Thing>` parts go), then run steps 2-3 per module (independent: their planners, then their agents, can all run at once), and `check` the root.

@@ -142,7 +142,13 @@ Map<String, dynamic>? _generate(
     '.generated/state.dart': generateState(clientModels,
         deltaFields: app.fieldsIn(clientDeltaScopes)),
     '.generated/remote_state.dart': generateState(remoteModels),
-    '.generated/core.dart': generateCore(app.navigation.routes.keys),
+    '.generated/core.dart': generateCore(app.navigation.routes.keys, modules: [
+      for (final m in app.modules.values)
+        ModuleApi(m.name,
+            routes: m.navigation.routes.keys,
+            actions: m.actions,
+            values: m.bindings),
+    ]),
     '.generated/remote.dart': generateRemote(app.remoteActions, clientModels),
     '.generated/labels.dart':
         generateLabels(app.labels, app.defaultLanguage),

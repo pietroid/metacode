@@ -1,0 +1,4 @@
+# Greeting: `.name` as text, resolved in this module (the fixture's MainPage
+# calls it as counter.Greeting).
+Greeting:
+  text: .name

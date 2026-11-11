@@ -1,5 +1,5 @@
 # WorkLivePage: the `workLive` route, the work example on its own page to try
-# it: a LiveFrame in work's own colors around the live `module: work`, with a
+# it: a LiveFrame in work's own colors around the live `miniApp: work`, with a
 # start over button that resets it (resetWork).
 WorkLivePage:
   LiveFrame:
@@ -9,6 +9,4 @@ WorkLivePage:
     screen: '#EDF1F6'
     ink: '#18181B'
     child:
-      module:
-        name: work
-        contained: true
+      miniApp: work

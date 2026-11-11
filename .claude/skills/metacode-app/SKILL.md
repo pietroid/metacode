@@ -35,7 +35,7 @@ Every app file starts with a header comment: the first line is `name: what it is
 
 ## Files
 
-An app is a folder; `examples/my_own_app/` is the root app. **Modules** live in `modules/<name>/` with the same layout (recursive) and are shown with the `module: <name>` widget. Each app has its own state, actions and values, and can't see its parent's (or vice versa). Work inside the one app the change is about: a change to the food example only touches `modules/food/`.
+An app is a folder; `examples/my_own_app/` is the root app. **Modules** live in `modules/<name>/` with the same layout (recursive) and are used by their parent as `<module>.<name>` (a component, page, action, value or label: `food.MenuCard`, `onPressed: food.addItem`; `core.modules.food.addItem()` in code) or whole as `miniApp: <name>`. Each app has its own state, actions and values, and can't see its parent's (or vice versa). Work inside the one app the change is about: a change to the food example only touches `modules/food/`.
 
 | Path (inside an app) | Holds |
 |---|---|
@@ -59,12 +59,14 @@ An app is a folder; `examples/my_own_app/` is the root app. **Modules** live in 
 
 Every `.yaml` file contains exactly one top-level key, named after the file. **Naming:** files are `this_case.dart` / `this_case.yaml`; keys, functions, models and labels are `thisCase`; pages and components are `ThisCase` (`app/views/components/task_list.yaml` holds `TaskList:`, `app/actions/bump_priority.dart` holds `bumpPriority`). Names must not repeat across files. Read only the file you need.
 
-Import the generated files relative to your file (`../../.generated/` from `app/actions/` and `app/models/`, `../../../.generated/` from `app/views/values/`): `state.dart` for `State`, `StateDelta`, model classes, enums and `copyWith`, `core.dart` for `Core` (`core.api.get/post`, `core.navigator.push/pop`, `core.locale.set`, `core.modules.reset`), `ApiResponse` and `Routes`, and `labels.dart` for `Labels`. Images go in `examples/my_own_app/app/views/style/images/` for every app.
+Import the generated files relative to your file (`../../.generated/` from `app/actions/` and `app/models/`, `../../../.generated/` from `app/views/values/`): `state.dart` for `State`, `StateDelta`, model classes, enums and `copyWith`, `core.dart` for `Core` (`core.api.get/post`, `core.navigator.push/pop`, `core.locale.set`, `core.modules.reset`, `core.modules.<module>.<action|value>()` and `.navigator.push(<Module>Routes.x)`), `ApiResponse` and `Routes`, and `labels.dart` for `Labels`. Images go in `examples/my_own_app/app/views/style/images/` for every app.
 
 ### New module
 
 1. `modules/<name>/` with `app.yaml` (include `state:`), `app/models/state.yaml` and other models, `app/actions/*.dart`, `app/views/pages/main_page.yaml`, `app/views/components/*.yaml`, `app/views/values/*.dart`, `app/views/labels/en.yaml`, `app/models/sample.dart` (`final app = TestApp();` from `../../.generated/test_app.dart`), tests in a `main()` in each action and value file, and `tests/*.yaml` for screens the initial state doesn't show. Copy `modules/plants/` as a template.
-2. Show it from a parent component: `module: <name>`. Its routes open over the whole app; to keep them inside a frame (a phone mockup showing it as a separate app), use `module: {name: <name>, contained: true}` in a bounded box (`expanded`, not `scroll`), and let its main page scroll itself.
+2. Use it from the parent: its parts as `<name>.<Thing>` (its routes then open over the whole app), or the whole of it as a compact app, `miniApp: <name>` (a phone mockup: its routes open inside it), in a bounded box (`expanded`, not `scroll`); let its main page scroll itself.
+
+A whole app as data (the built-in `metacodeProject` model in the state) runs with `miniApp: {project: <value>}`: compiled in the app, sandboxed (it can't see this app or change its language or theme), hot reloaded when the state changes. `modules/editor/` does this (its shared `withFile`/`fileIn` edit a project).
 3. `tool/check.sh` (no pubspec change needed).
 
 ## Reference

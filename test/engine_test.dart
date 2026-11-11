@@ -1,6 +1,6 @@
 // The engine against its own small app, test/fixture_app/ (one of each
 // feature: state, values, labels in two languages, every route type, a module
-// embedded contained and not). Compiled here from its files, so nothing here
+// as a mini app and in parts, a dynamic module). Compiled here from its files, so nothing here
 // depends on the real app (examples/my_own_app/ has its own tests in test/).
 
 import 'dart:convert';
@@ -12,6 +12,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:metacode/compiler/build.dart';
 import 'package:metacode/engine/app.dart';
+import 'package:metacode/engine/core_host.dart';
 import 'package:metacode/engine/project_config.dart';
 import 'package:metacode/engine/state_bloc.dart';
 import 'package:metacode/files/project_files.dart';
@@ -41,7 +42,7 @@ void main() {
   Future<StateBloc> pump(
     WidgetTester tester, {
     Map<String, dynamic>? bundleOverride,
-    Size size = const Size(800, 1000),
+    Size size = const Size(800, 1600),
     bool selectableText = false,
     Brightness brightness = Brightness.light,
   }) async {
@@ -328,7 +329,7 @@ void main() {
           buildWith({
             'app.yaml': 'name: fixture\nstate:\n'
                 '  ephemeral: {voteError: ""}\n'
-                '  local: {count: 1, started: false, a b}\n'
+                '  local: {count: 1, tiny: {files: [], folders: []}, started: false, a b}\n'
                 '  remote: {nickname: ""}\n'
                 '  system: {voters: []}\n'
                 '  shared: {votes: 0}\n',
@@ -453,7 +454,7 @@ void main() {
     expect(moduleNavigator(tester).canPop(), isFalse);
   });
 
-  testWidgets('a module embedded without contained opens over the whole app',
+  testWidgets('a module\'s page used inline opens its routes over the whole app',
       (tester) async {
     await pump(tester);
     await tap(tester, find.text('Module sheet').last);
@@ -461,6 +462,105 @@ void main() {
     expect(moduleNavigator(tester).canPop(), isFalse);
     await tap(tester, find.text('Done'));
     expect(find.byType(BottomSheet), findsNothing);
+  });
+
+  testWidgets('<module>.<name>: a module\'s action, value and component, on '
+      'its own state', (tester) async {
+    final bloc = await pump(tester);
+    expect(find.text('Doubled 0'), findsOneWidget);
+    // counter.Greeting {name: greet}: the argument is the module's label.
+    expect(find.text('Greetings'), findsOneWidget);
+    await tap(tester, find.text('Tap the counter'));
+    expect(find.text('Taps 1'), findsNWidgets(2));
+    // A value of the module, read by this app's page, follows its state.
+    expect(find.text('Doubled 2'), findsOneWidget);
+    expect(bloc.state['count'], 0);
+  });
+
+  testWidgets('core.modules.<name> runs a module\'s action and reads its value '
+      'from code', (tester) async {
+    final bloc = await pump(tester);
+    await tap(tester, find.text('Tap').first);
+    await tap(tester, find.text('Sync'));
+    expect(find.text('Taps 2'), findsNWidgets(2));
+    expect(bloc.state['count'], 2);
+  });
+
+  testWidgets('a route may open a module\'s page', (tester) async {
+    final bloc = await pump(tester);
+    final host = bloc.config.program.host as CoreHost;
+    final pushed = host.push('counterHome');
+    await tester.pumpAndSettle();
+    expect(find.text('Hello').hitTestable(), findsOneWidget);
+    await tap(tester, find.text('Tap').hitTestable());
+    expect(find.text('Taps 1').hitTestable(), findsOneWidget);
+    host.navigatorKey.currentState!.pop();
+    await tester.pumpAndSettle();
+    await pushed;
+  });
+
+  group('a dynamic module (miniApp: {project: ..})', () {
+    /// Lets the compile (a real isolate) finish, until [finder] shows.
+    Future<void> waitFor(WidgetTester tester, Finder finder) async {
+      for (var i = 0; i < 200 && finder.evaluate().isEmpty; i++) {
+        await tester.runAsync(
+            () => Future<void>.delayed(const Duration(milliseconds: 50)));
+        await tester.pump();
+      }
+      expect(finder, findsWidgets);
+    }
+
+    /// The fixture's `tiny` project with the file at [path] replaced.
+    Map<String, dynamic> edit(Map<String, dynamic> project, List<String> path,
+        String content) {
+      final copy = jsonDecode(jsonEncode(project)) as Map<String, dynamic>;
+      var folder = copy;
+      for (final name in path.take(path.length - 1)) {
+        folder = (folder['folders'] as List)
+            .cast<Map<String, dynamic>>()
+            .firstWhere((f) => f['name'] == name);
+      }
+      final file = (folder['files'] as List)
+          .cast<Map<String, dynamic>>()
+          .firstWhere((f) => f['name'] == path.last);
+      file['content'] = content;
+      return copy;
+    }
+
+    testWidgets('runs the project in the state, sandboxed, and reloads in '
+        'place (state kept) when it changes', (tester) async {
+      final bloc = await pump(tester);
+      await waitFor(tester, find.text('Tiny heading'));
+      expect(find.text('Tiny n 0'), findsOneWidget);
+      await tap(tester, find.text('Bump'));
+      expect(find.text('Tiny n 1'), findsOneWidget);
+      // Its state is its own.
+      expect(bloc.state.containsKey('n'), isFalse);
+      // It can't change the app's theme (or language).
+      await tap(tester, find.text('Go dark'));
+      expect(Theme.of(tester.element(find.byType(AppBar).first)).brightness,
+          Brightness.light);
+
+      final tiny = bloc.state['tiny'] as Map<String, dynamic>;
+      await bloc.setState({
+        ...bloc.state,
+        'tiny': edit(tiny, ['app', 'views', 'labels', 'en.yaml'],
+            'en:\n  heading: Edited heading\n  bumpText: Bump\n  goDarkText: Go dark\n'),
+      });
+      await waitFor(tester, find.text('Edited heading'));
+      expect(find.text('Tiny n 1'), findsOneWidget); // state kept
+
+      // A version that doesn't compile: the last one keeps running, with
+      // the error over it.
+      final edited = bloc.state['tiny'] as Map<String, dynamic>;
+      await bloc.setState({
+        ...bloc.state,
+        'tiny': edit(edited, ['app', 'views', 'pages', 'main_page.yaml'],
+            'MainPage:\n  text: count\n  column: []\n'),
+      });
+      await waitFor(tester, find.textContaining('a widget is a single key'));
+      expect(find.text('Edited heading'), findsOneWidget);
+    });
   });
 
   testWidgets('web/desktop: text is selectable, clicks still click',

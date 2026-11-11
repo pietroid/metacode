@@ -1,5 +1,5 @@
 # FoodLivePage: the `foodLive` route, the food example on its own page to try
-# it: a LiveFrame in food's own colors around the live `module: food`, with a
+# it: a LiveFrame in food's own colors around the live `miniApp: food`, with a
 # start over button that resets it (resetFood).
 FoodLivePage:
   LiveFrame:
@@ -9,6 +9,4 @@ FoodLivePage:
     screen: '#F4FAF5'
     ink: '#0F2416'
     child:
-      module:
-        name: food
-        contained: true
+      miniApp: food

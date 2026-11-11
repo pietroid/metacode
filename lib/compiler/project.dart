@@ -152,6 +152,21 @@ class AppProject {
   String get label =>
       prefix.isEmpty ? name : prefix.substring(0, prefix.length - 1);
 
+  /// What the app embedding this one can use of it, as `<name>.<thing>`.
+  ModuleNames get names => ModuleNames(
+        widgets: {
+          for (final id in widgets.keys)
+            id: widgetRefs[id]?.params ?? const {},
+        },
+        pages: {
+          for (final e in widgetFiles.entries)
+            if (e.value.startsWith('app/views/pages/')) e.key,
+        },
+        bindings: {for (final f in bindings) f.name},
+        actions: {for (final f in actions) f.name},
+        labels: defaultLabels.keys.toSet(),
+      );
+
   /// This app and every module, depth first.
   Iterable<AppProject> get tree sync* {
     yield this;
@@ -241,6 +256,16 @@ AppProject loadApp(ProjectFiles files, String path, Issues root,
       }
     }
   }
+  // The built-in models (a whole app as files), when anything uses them.
+  if (_usesProjectModels(app)) {
+    for (final e in projectModels.entries) {
+      if (models.containsKey(e.key)) {
+        issues.error('app/models/${snakeCase(e.key)}.yaml', e.key,
+            'is a built-in model; pick another name');
+      }
+      models[e.key] = e.value;
+    }
+  }
   app.models = parseModels(models, issues, file: 'app/models/');
 
   validateState({'state': app.state}, app.models, issues);
@@ -322,7 +347,7 @@ AppProject loadApp(ProjectFiles files, String path, Issues root,
     app.bindings.map((f) => f.name).toSet(),
     app.defaultLabels.keys.toSet(),
     app.actions.map((f) => f.name).toSet(),
-    app.modules.keys.toSet(),
+    {for (final m in app.modules.values) m.name: m.names},
     issues,
     requireMainPage: navigationDoc == null,
     refs: app.widgetRefs,
@@ -357,7 +382,15 @@ AppProject loadApp(ProjectFiles files, String path, Issues root,
     final parsed =
         Navigation.parse(doc, (path, message) => issues.error(file, path, message));
     for (final route in parsed?.routes.values ?? const <RouteSpec>[]) {
-      if (!pages.widgets.containsKey(route.widget)) {
+      // `food.MenuPage`: a module's page, opened over this app.
+      final q = qualifiedName.firstMatch(route.widget);
+      final module = q == null ? null : app.modules[q.group(1)];
+      if (module != null) {
+        if (!module.names.pages.contains(q!.group(2))) {
+          issues.error(file, 'routes.${route.name}',
+              '"${q.group(2)}" is not a page of the module "${module.name}"');
+        }
+      } else if (!pages.widgets.containsKey(route.widget)) {
         issues.error(file, 'routes.${route.name}',
             '"${route.widget}" is not a page in app/views/pages/');
       }
@@ -380,6 +413,17 @@ AppProject loadApp(ProjectFiles files, String path, Issues root,
   }
 
   return app;
+}
+
+/// Whether any model, the state or any action or value names a built-in
+/// [projectModels] type.
+bool _usesProjectModels(AppProject app) {
+  final names = RegExp(r'\b[mM]etacode(Project|Folder|File)\b');
+  return [
+    app.at('app.yaml'),
+    for (final folder in ['app/models', 'app/actions', 'app/views/values'])
+      ...app.files.list(app.at(folder), recursive: true),
+  ].any((f) => names.hasMatch(app.files.read(f) ?? ''));
 }
 
 /// What each kind of code may touch, by the fields' scopes: local code

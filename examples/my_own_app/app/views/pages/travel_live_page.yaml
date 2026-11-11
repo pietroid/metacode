@@ -1,5 +1,5 @@
 # TravelLivePage: the `travelLive` route, the travel example on its own page to try
-# it: a LiveFrame in travel's own colors around the live `module: travel`, with a
+# it: a LiveFrame in travel's own colors around the live `miniApp: travel`, with a
 # start over button that resets it (resetTravel).
 TravelLivePage:
   LiveFrame:
@@ -9,6 +9,4 @@ TravelLivePage:
     screen: '#FBF5EC'
     ink: '#2B1E16'
     child:
-      module:
-        name: travel
-        contained: true
+      miniApp: travel

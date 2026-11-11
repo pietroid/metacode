@@ -2,8 +2,11 @@
 # animated value, with a component `index`), a typed text fading in (the
 # animated `shown`: opacity and reveal), Parity in an `if` that fades (the
 # leaving branch keeps showing the old state), a button per
-# action (reset starts the counter module over), and the counter module twice:
-# contained in a 300x300 box, then over the whole app.
+# action (reset starts the counter module over), the counter module as a mini
+# app in a 300x300 box, then its parts: its MainPage inline (its routes open
+# over the whole app), its tap action, its doubled value and its Greeting
+# component (with an argument, resolved in the module); syncCount uses it from
+# code. Last, tiny (a project in the state) as a dynamic module. It scrolls.
 MainPage:
   scaffold:
     appBar:
@@ -12,25 +15,35 @@ MainPage:
       - textButton: {text: portuguese, onPressed: usePortuguese}
       - textButton: {text: dark, onPressed: useDark}
     body:
-      column:
-        children:
-        - text: countText
-        - text: votesText
-        - Tag: {label: tagged, tap: increment}
-        - Swatch: {index: 1}
-        - container: {opacity: shown, child: {text: {value: typed, reveal: shown}}}
-        - if: {condition: isOdd, then: Parity, else: Parity, fade: 200}
-        - wrap:
-          - filledButton: {text: add, onPressed: increment}
-          - outlinedButton: {text: details, onPressed: openDetails}
-          - outlinedButton: {text: sheet, onPressed: openSheet}
-          - outlinedButton: {text: dialog, onPressed: openDialog}
-          - outlinedButton: {text: resetText, onPressed: resetCounter}
-          - outlinedButton: {text: voteText, onPressed: vote}
-          - outlinedButton: {text: renameText, onPressed: rename}
-        - sizedBox:
-            width: 300
-            height: 300
-            child:
-              module: {name: counter, contained: true}
-        - module: counter
+      scroll:
+        column:
+          children:
+          - text: countText
+          - text: votesText
+          - Tag: {label: tagged, tap: increment}
+          - Swatch: {index: 1}
+          - container: {opacity: shown, child: {text: {value: typed, reveal: shown}}}
+          - if: {condition: isOdd, then: Parity, else: Parity, fade: 200}
+          - wrap:
+            - filledButton: {text: add, onPressed: increment}
+            - outlinedButton: {text: details, onPressed: openDetails}
+            - outlinedButton: {text: sheet, onPressed: openSheet}
+            - outlinedButton: {text: dialog, onPressed: openDialog}
+            - outlinedButton: {text: resetText, onPressed: resetCounter}
+            - outlinedButton: {text: voteText, onPressed: vote}
+            - outlinedButton: {text: renameText, onPressed: rename}
+          - sizedBox:
+              width: 300
+              height: 300
+              child:
+                miniApp: counter
+          - counter.MainPage
+          - textButton: {text: tapCounter, onPressed: counter.tap}
+          - textButton: {text: syncText, onPressed: syncCount}
+          - text: counter.doubled
+          - counter.Greeting: {name: greet}
+          - sizedBox:
+              width: 300
+              height: 200
+              child:
+                miniApp: {project: tinyProject}

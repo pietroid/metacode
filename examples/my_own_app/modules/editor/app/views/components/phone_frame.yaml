@@ -1,0 +1,37 @@
+# PhoneFrame: a phone around `.child`: a near-black bezel around a white
+# rounded screen with a status bar (the time and the island) and a home
+# indicator, 340 wide at most and 680 tall, like the landing page's Studio phone.
+PhoneFrame:
+  container:
+    maxWidth: 340
+    height: 680
+    color: '#161616'
+    radius: 52
+    padding: 10
+    child:
+      container:
+        color: '#FFFFFF'
+        radius: 42
+        child:
+          column:
+            crossAxisAlignment: stretch
+            children:
+            - sizedBox:
+                height: 46
+                child:
+                  stack:
+                    alignment: center
+                    children:
+                    - container: {width: 96, height: 28, radius: 14, color: '#000000'}
+                    - padding:
+                        horizontal: 28
+                        child:
+                          row:
+                            children:
+                            - text: {value: '9:41', style: {variant: labelLarge, color: '#111111'}}
+            - expanded: .child
+            - sizedBox:
+                height: 24
+                child:
+                  center:
+                    container: {width: 110, height: 5, radius: 3, color: '#111111'}

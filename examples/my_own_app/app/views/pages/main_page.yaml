@@ -1,5 +1,5 @@
-# MainPage: the landing page. An app bar (Logo, LanguagePicker, join
-# button) over one scrolling column of sections: Hero, HowItWorks,
+# MainPage: the landing page. An app bar (Logo, LanguagePicker, an editor
+# button (openEditor), join button) over one scrolling column of sections: Hero, HowItWorks,
 # WaitlistSection, Footer (the Studio "try it" section is
 # out for now). Sections cap at 1120 wide and center.
 MainPage:
@@ -8,6 +8,7 @@ MainPage:
       title: Logo
       actions:
       - LanguagePicker
+      - iconButton: {icon: edit, tooltip: openEditorText, onPressed: openEditor}
       - sizedBox:
           width: 8
       - padding:

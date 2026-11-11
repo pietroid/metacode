@@ -146,8 +146,8 @@ Future<(ProjectConfig, CoreHost)> render(
       const FakeAccessibilityFeatures(disableAnimations: true);
   addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
 
-  // A module is shown by a host root: a scaffold whose body is the module,
-  // contained (so its routes open over that body).
+  // A module is shown by a host root: a scaffold whose body is the module
+  // as a mini app (so its routes open over that body).
   final root = ProjectConfig.fromBundle(label == 'root'
       ? node
       : {
@@ -157,7 +157,7 @@ Future<(ProjectConfig, CoreHost)> render(
               'LayoutHost': {
                 'scaffold': {
                   'body': {
-                    'module': {'name': 'module', 'contained': true}
+                    'miniApp': {'module': 'module'}
                   }
                 }
               },

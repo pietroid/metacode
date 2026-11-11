@@ -8,6 +8,26 @@ const primitives = {
   'datetime': 'DateTime',
 };
 
+/// Built-in models, added to an app whose models, state, actions or values
+/// use them: a whole Metacode project as files, so a project can live in the
+/// state and run as a dynamic module (`miniApp: {project: <value>}`).
+/// Folders hold files and folders, recursively, like the app's folder.
+const projectModels = {
+  'metacodeProject': {
+    'files': 'list(metacodeFile)',
+    'folders': 'list(metacodeFolder)',
+  },
+  'metacodeFolder': {
+    'name': 'string',
+    'files': 'list(metacodeFile)',
+    'folders': 'list(metacodeFolder)',
+  },
+  'metacodeFile': {
+    'name': 'string',
+    'content': 'string',
+  },
+};
+
 /// A field type such as `string`, `task?` or `list(task)`.
 class TypeRef {
   final String name; // a primitive, a model name, or 'list'

@@ -52,8 +52,10 @@ class FakeUi implements Ui {
       : null;
 
   @override
-  Widget module(String name, {bool contained = false}) =>
-      Text('module $name${contained ? ' contained' : ''}');
+  Widget module(String name) => Text('module $name');
+
+  @override
+  Widget dynamicModule(Object? project) => const Text('dynamic module');
 
   @override
   Uint8List? file(String path) => files[path];

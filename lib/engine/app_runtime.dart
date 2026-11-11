@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 import 'core_host.dart';
+import 'dynamic_module.dart';
 import 'locale.dart';
 import 'project_config.dart';
 import 'state_bloc.dart';
@@ -24,14 +25,19 @@ class SyncLink {
 }
 
 /// One running app: its state, program, renderer and host. Apps are
-/// recursive: an `module: <name>` widget embeds the module `modules/<name>/`,
-/// which gets its own [AppRuntime] (created on first use) with its own
-/// state, so a change in a module only rebuilds that module.
+/// recursive: the module `modules/<name>/` gets its own [AppRuntime]
+/// (created on first use) with its own state, so a change in a module only
+/// rebuilds that module. Its parent uses it whole (`miniApp: food`, see
+/// [embed]) or in parts (`food.MenuCard`, `food.addItem`, `food.total` in
+/// app/views/; `core.modules.food` in code), always on its own state.
 ///
 /// All apps share one [navigatorKey]: a module's routes open on top of
-/// the whole app, unless it is embedded with `contained: true`, which
-/// gives it its own navigator (see [embed]). An action's routes go to the
-/// navigator it was tapped in ([CoreHost.actionFrom]).
+/// the whole app, except in a mini app, which has its own navigator. An
+/// action's routes go to the navigator it was tapped in
+/// ([CoreHost.actionFrom]).
+///
+/// A [sandboxed] app (a dynamic module, see dynamic_module.dart) has no
+/// backend link: nothing reaches past it.
 ///
 /// [reload] swaps in a new version of the app in place; everything
 /// [render]ed (the home and pushed routes alike) rebuilds with it.
@@ -60,9 +66,10 @@ class AppRuntime extends ChangeNotifier {
     this.client,
     this.isModule = false,
     this.runStart = true,
+    this.sandboxed = false,
     SyncLink? link,
   }) {
-    _link = link ?? _rootLink();
+    _link = sandboxed ? null : link ?? _rootLink();
     _startRemote();
     _start();
     _runStartAction();
@@ -102,6 +109,12 @@ class AppRuntime extends ChangeNotifier {
     _remote!.start();
   }
 
+  /// Whether this app runs apart from any other: a dynamic module, compiled
+  /// from a project in its parent's state. Its remote actions run on the
+  /// device, it never sees its parent's state or actions, and it can't
+  /// change the app's language or theme (it shows the parent's).
+  final bool sandboxed;
+
   /// Whether app.yaml's `start:` action runs (off in the layout check, which
   /// shows the initial state).
   final bool runStart;
@@ -136,6 +149,9 @@ class AppRuntime extends ChangeNotifier {
       defaultLanguage: config.defaultLanguage,
       bloc: bloc,
       embed: embed,
+      dynamicModule: _dynamicModule,
+      moduleRenderer: (name) => _child(name)?._renderer,
+      moduleNode: _moduleNode,
       onAction: (context) => _host.actionFrom(context),
       readFile: config.readFile,
     );
@@ -147,9 +163,65 @@ class AppRuntime extends ChangeNotifier {
       client: client,
       render: render,
       resetModule: _resetModule,
+      moduleCall: _moduleCall,
+      sandboxed: sandboxed,
       remote: _remote,
     );
   }
+
+  /// `core.modules.<name>.*` from this app's code: runs the module's action
+  /// or value on its own state, or opens its route.
+  Future<Object?> _moduleCall(
+      String name, String op, Map<String, dynamic> args) async {
+    final child = _child(name);
+    if (child == null) {
+      debugPrint('metacode: unknown module "$name"');
+      return null;
+    }
+    final renderer = child._renderer;
+    final language = renderer.language(
+        locale.locale ?? WidgetsBinding.instance.platformDispatcher.locale);
+    final params = {
+      '_locale': ?language,
+      if (args.containsKey('value')) 'value': args['value'],
+    };
+    switch (op) {
+      case 'module.action':
+        await child.config.program
+            .action(args['name'] as String, child.bloc.state, params);
+        return null;
+      case 'module.value':
+        return renderer.value(args['name'] as String, child.bloc.state, params);
+      case 'module.push':
+        await child._host.push(args['route'] as String);
+        return null;
+    }
+    return null;
+  }
+
+  /// The module [name]'s page or component [id] (with [args], when it is
+  /// a component called with arguments), in its own state and theme.
+  Widget _moduleNode(String name, String id, Map? args,
+      Map<String, dynamic> params) {
+    final child = _child(name);
+    if (child == null) {
+      return Text('Unknown module "$name"',
+          style: const TextStyle(color: Colors.red));
+    }
+    return ListenableBuilder(
+      listenable: child,
+      builder: (context, _) => KeyedSubtree(
+        key: ValueKey('$name.$id#${child._generation}'),
+        child: child._themed(
+            context, child._renderer.buildNode(id, args, params)),
+      ),
+    );
+  }
+
+  /// A module compiled from [project] (a `metacodeProject`): sandboxed,
+  /// reloaded in place whenever the project changes.
+  Widget _dynamicModule(Object? project) =>
+      DynamicModule(project: project, locale: locale, client: client);
 
   /// Bumped by [_reset], so the module's embeds start over (a fresh
   /// navigator when contained, fresh widget state either way).
@@ -201,14 +273,22 @@ class AppRuntime extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// A ui/ widget of this app. Each page and component inside it rebuilds
-  /// only when the values it reads change (or the app is reloaded). A
-  /// module's routes opened over the whole app keep the module's style.
-  Widget render(String id) => ListenableBuilder(
+  /// A ui/ widget of this app (or a module's, `food.MenuPage`). Each page
+  /// and component inside it rebuilds only when the values it reads change
+  /// (or the app is reloaded). A module's routes opened over the whole app
+  /// keep the module's style.
+  Widget render(String id) {
+    final dot = id.indexOf('.');
+    if (dot > 0) {
+      return _moduleNode(id.substring(0, dot), id.substring(dot + 1), null,
+          const {});
+    }
+    return ListenableBuilder(
       listenable: this,
       builder: (context, _) => isModule
           ? _themed(context, _renderer.build(id))
           : _renderer.build(id));
+  }
 
   /// [child] in this app's theme, if it has its own style/. Its `theme:`
   /// (light or dark) wins; `system` follows the embedding app's brightness.
@@ -230,28 +310,28 @@ class AppRuntime extends ChangeNotifier {
       listenable: this,
       builder: (_, _) => _renderer.build(config.navigation.initialRoute.widget));
 
-  /// The module [name], themed by its own style/ if it has one. When
-  /// [contained], it gets its own navigator, so its routes open inside
-  /// its box; that box must have a bounded size. A reset
+  /// The module [name] as a mini app (see [miniApp]). A reset
   /// (`core.modules.reset`) rebuilds it from scratch.
-  Widget embed(String name, {bool contained = false}) {
+  Widget embed(String name) {
     final child = _child(name);
     if (child == null) {
       return Text('Unknown module "$name"',
           style: const TextStyle(color: Colors.red));
     }
-    return ListenableBuilder(
-      listenable: child,
-      builder: (context, _) {
-        final key = ValueKey('$name#${child._generation}');
-        return child._themed(
-            context,
-            contained
-                ? _ContainedModule(key: key, home: child.home)
-                : KeyedSubtree(key: key, child: child.home));
-      },
-    );
+    return child.miniApp;
   }
+
+  /// This app as a compact app: its initial route with its own navigator,
+  /// so its routes open inside its box (which must have a bounded size),
+  /// themed by its own style/ if it has one.
+  Widget get miniApp => ListenableBuilder(
+        listenable: this,
+        builder: (context, _) => _themed(
+            context,
+            _ContainedModule(
+                key: ValueKey('${bloc.app.join('/')}#$_generation'),
+                home: home)),
+      );
 
   AppRuntime? _child(String name) {
     final existing = _children[name];
@@ -266,6 +346,7 @@ class AppRuntime extends ChangeNotifier {
       client: client,
       isModule: true,
       runStart: runStart,
+      sandboxed: sandboxed,
       link: _link,
     );
   }

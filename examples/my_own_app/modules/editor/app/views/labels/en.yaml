@@ -1,0 +1,9 @@
+en:
+  editorTitle: Editor
+  liveText: Live
+  closeText: Close
+  designText: DESIGN
+  buttonColorText: Button color
+  buttonColorHint: The color of the counter's − and + buttons.
+  liveTitle: Live reload
+  liveHint: The app is a whole project kept in the state. Each change rewrites one of its files and it reloads in place, keeping its count.

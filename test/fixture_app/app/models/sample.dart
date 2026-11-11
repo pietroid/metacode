@@ -10,6 +10,7 @@ State sample({
   String voteError = '',
   String nickname = '',
   num votes = 0,
+  MetacodeProject? tiny,
 }) =>
     State(
       voteError: voteError,
@@ -17,4 +18,5 @@ State sample({
       started: started,
       nickname: nickname,
       votes: votes,
+      tiny: tiny ?? MetacodeProject(files: [], folders: []),
     );

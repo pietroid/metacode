@@ -1,0 +1,4 @@
+# state: the draft, a whole app as files, on the backend (remote).
+state:
+  remote:
+    draft: metacodeProject

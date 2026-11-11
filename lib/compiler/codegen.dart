@@ -117,7 +117,25 @@ void _writeDelta(StringBuffer out, ClassModel state, Map<String, Model> models) 
   /// Generates `generated/core.dart`: what actions receive as `core`
   /// (`core.api`, `core.navigator`) and the routing/ route names. The
   /// calls go to the engine through `package:metacode/engine/host.dart`.
-String generateCore(Iterable<String> routes) {
+/// What an app's code reaches of one of its modules: `core.modules.food`.
+class ModuleApi {
+  final String name;
+  final Iterable<String> routes;
+  final List<UserFunction> actions;
+  final List<UserFunction> values;
+  const ModuleApi(this.name,
+      {this.routes = const [], this.actions = const [], this.values = const []});
+
+  String get className => '${name[0].toUpperCase()}${name.substring(1)}';
+}
+
+/// Dart types that mean the same in every app (a module's models don't
+/// exist in the app that embeds it).
+final _sharedType =
+    RegExp(r'^(String|int|double|num|bool|DateTime)\??$|^List<(String|int|double|num|bool)\??>\??$');
+
+String generateCore(Iterable<String> routes,
+    {List<ModuleApi> modules = const []}) {
   final out = StringBuffer(_header)
     ..writeln()
     ..writeln("import 'dart:convert';")
@@ -132,7 +150,91 @@ String generateCore(Iterable<String> routes) {
   out
     ..writeln('}')
     ..write(_coreClasses);
+  _writeModules(out, modules);
   return out.toString();
+}
+
+/// `AppModules` (`core.modules`): `reset(name)`, and one typed field per
+/// module whose methods run its actions and values on its own state and
+/// open its routes. Types that only the module knows (its models) are JSON
+/// (`Object?`).
+void _writeModules(StringBuffer out, List<ModuleApi> modules) {
+  String typeOf(String type) => _sharedType.hasMatch(type) ? type : 'Object?';
+  out
+    ..writeln()
+    ..writeln('/// This app\'s modules (modules/<name>/): `core.modules.<name>` runs')
+    ..writeln('/// its actions and values (on its own state) and opens its routes.')
+    ..writeln('class AppModules {');
+  if (modules.isNotEmpty) {
+    out
+      ..writeln('  AppModules()')
+      ..writeln('      : ${modules.map((m) => '${m.name} = ${m.className}Module()').join(',\n        ')};');
+    for (final m in modules) {
+      out
+        ..writeln()
+        ..writeln('  /// modules/${m.name}/.')
+        ..writeln('  final ${m.className}Module ${m.name};');
+    }
+    out.writeln();
+  }
+  out
+    ..writeln('  /// Starts the module [name] over: its state (and its own modules\') back')
+    ..writeln('  /// to its app.yaml\'s, saved, and its contained routes closed.')
+    ..writeln('  Future<void> reset(String name) async {')
+    ..writeln("    await hostCall('modules.reset', jsonEncode({'name': name}));")
+    ..writeln('  }')
+    ..writeln('}');
+  for (final m in modules) {
+    final c = m.className;
+    out
+      ..writeln()
+      ..writeln('/// Route names of modules/${m.name}/, for `core.modules.${m.name}.navigator.push`.')
+      ..writeln('class ${c}Routes {');
+    for (final r in m.routes) {
+      out.writeln("  static const String $r = '$r';");
+    }
+    out
+      ..writeln('}')
+      ..writeln()
+      ..writeln('/// Opens modules/${m.name}/\'s routes (over this app).')
+      ..writeln('class ${c}Navigator {')
+      ..writeln('  /// Opens [route] (use `${c}Routes`). Completes when it closes.')
+      ..writeln('  Future<void> push(String route) async {')
+      ..writeln("    await hostCall('module.push', jsonEncode({'module': '${m.name}', 'route': route}));")
+      ..writeln('  }')
+      ..writeln('}')
+      ..writeln()
+      ..writeln('/// modules/${m.name}/: its actions and values, run on its own state.')
+      ..writeln('class ${c}Module {')
+      ..writeln('  ${c}Module() : navigator = ${c}Navigator();')
+      ..writeln()
+      ..writeln('  final ${c}Navigator navigator;')
+      ..writeln()
+      ..writeln('  /// Starts it over (see `AppModules.reset`).')
+      ..writeln('  Future<void> reset() async {')
+      ..writeln("    await hostCall('modules.reset', jsonEncode({'name': '${m.name}'}));")
+      ..writeln('  }');
+    for (final fn in m.actions) {
+      final value = fn.params.where((p) => p.name == 'value').firstOrNull;
+      out
+        ..writeln()
+        ..writeln('  /// Runs its action `${fn.name}`.')
+        ..writeln('  Future<void> ${fn.name}(${value == null ? '' : '${typeOf(value.type)} value'}) async {')
+        ..writeln("    await hostCall('module.action', jsonEncode({'module': '${m.name}', 'name': '${fn.name}'${value == null ? '' : ", 'value': ${_encodeDart(typeOf(value.type), 'value', const {})}"}}));")
+        ..writeln('  }');
+    }
+    for (final fn in m.values) {
+      final type = typeOf(fn.returnType);
+      out
+        ..writeln()
+        ..writeln('  /// Its value `${fn.name}`, on its current state.')
+        ..writeln('  Future<$type> ${fn.name}() async {')
+        ..writeln("    final result = jsonDecode(await hostCall('module.value', jsonEncode({'module': '${m.name}', 'name': '${fn.name}'})));")
+        ..writeln('    return ${type == 'Object?' ? 'result' : _decodeDart(type, 'result', const {})};')
+        ..writeln('  }');
+    }
+    out.writeln('}');
+  }
 }
 
 const _coreClasses = r'''
@@ -158,17 +260,8 @@ class Core {
   /// Light or dark for the whole app.
   final AppTheme theme;
 
-  /// This app's modules (modules/<name>/).
+  /// This app's modules (modules/<name>/): `core.modules.food.addItem()`.
   final AppModules modules;
-}
-
-/// This app's modules, the folders in modules/ shown with `module: <name>`.
-class AppModules {
-  /// Starts the module [name] over: its state (and its own modules') back
-  /// to its app.yaml's, saved, and its contained routes closed.
-  Future<void> reset(String name) async {
-    await hostCall('modules.reset', jsonEncode({'name': name}));
-  }
 }
 
 /// The language of the whole app (every module too). By default it is the
@@ -795,6 +888,14 @@ const _testAppHead = r'''
   /// Modules the last action reset (`core.modules.reset`), by name.
   final modulesReset = <String>[];
 
+  /// Module actions the last action ran (`core.modules.food.addItem(..)`):
+  /// `food.addItem` (and ` <value JSON>` when it took one).
+  final moduleCalls = <String>[];
+
+  /// What `core.modules.<module>.<value>()` returns, as JSON, by
+  /// `module.value` (`food.total`). Unset ones return null.
+  final moduleValues = <String, Object?>{};
+
   /// The language labels are in (a labels file name, `pt_br`); null is the
   /// default one. `core.locale.set` changes it.
   String? locale;
@@ -811,6 +912,7 @@ const _testAppHead = r'''
     navigation.clear();
     requests.clear();
     modulesReset.clear();
+    moduleCalls.clear();
     _state = jsonDecode(jsonEncode(state.toJson())) as Map<String, dynamic>;
     params = {...params, '_locale': ?locale};
     // Fake time: delays inside actions (animations, demo steps) resolve
@@ -864,6 +966,13 @@ const _testAppHead = r'''
         theme = args['theme'] as String?;
       case 'modules.reset':
         modulesReset.add(args['name'] as String);
+      case 'module.action':
+        moduleCalls.add('${args['module']}.${args['name']}'
+            '${args.containsKey('value') ? ' ${jsonEncode(args['value'])}' : ''}');
+      case 'module.value':
+        return moduleValues['${args['module']}.${args['name']}'];
+      case 'module.push':
+        navigation.add('push ${args['module']}.${args['route']}');
       case 'remote.call':
         return _remoteCall(args['name'] as String, args['value']);
     }

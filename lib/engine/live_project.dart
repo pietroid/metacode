@@ -112,6 +112,25 @@ class LiveProject {
   }
 }
 
+/// [sources] (a project's files by path, the root app's folder) compiled
+/// on a background isolate where there is one, without writing anything:
+/// the app tree, or null and the errors. Dynamic modules
+/// (`miniApp: {project: ..}`) run this on every change to their project.
+Future<({ProjectConfig? config, List<String> errors})> compileSources(
+    Map<String, Uint8List> sources,
+    {String path = 'dynamic'}) async {
+  final result = await compute(_compile, (sources, path));
+  final bundle = result.bundle;
+  if (bundle == null) return (config: null, errors: result.errors);
+  return (
+    config: ProjectConfig.fromBundle(jsonDecode(bundle) as Map,
+        readFile: (repoPath) => repoPath.startsWith('$path/')
+            ? sources[repoPath.substring(path.length + 1)]
+            : null),
+    errors: const <String>[],
+  );
+}
+
 /// What a compile sends back from its isolate (plain data only).
 typedef _Result = ({
   String? bundle,

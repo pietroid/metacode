@@ -1,5 +1,5 @@
 # work: the workday priorities example, embedded in the landing page carousel
-# (`module: work`). `state:` holds the initial state; types in app/models/state.yaml.
+# (`miniApp: work`). `state:` holds the initial state; types in app/models/state.yaml.
 name: work
 description: A page to prioritize my work. Inbox, pending follow-ups, to-dos
   and the week's calendar, with what matters first.

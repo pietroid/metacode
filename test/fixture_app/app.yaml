@@ -1,7 +1,8 @@
 # fixture: the engine's test app (test/engine_test.dart): one of each engine
 # feature, nothing else. Not a real app; change it only with the engine.
 # One field of each state scope; `vote` (app/actions/remote/) is the remote
-# action.
+# action. `tiny` is a whole app as files (a metacodeProject) that MainPage
+# runs as a dynamic module.
 name: fixture
 description: The engine's test app.
 start: markStarted
@@ -11,6 +12,74 @@ state:
   local:
     count: 0
     started: false
+    tiny:
+      files:
+      - name: app.yaml
+        content: |
+          name: tiny
+          state:
+            n: 0
+      folders:
+      - name: app
+        files: []
+        folders:
+        - name: models
+          files:
+          - name: state.yaml
+            content: |
+              state:
+                n: number
+          folders: []
+        - name: actions
+          files:
+          - name: go_dark.dart
+            content: |
+              import '../../.generated/core.dart';
+              import '../../.generated/state.dart';
+
+              Future<void> goDark(State state, Core core) async {
+                await core.theme.set('dark');
+              }
+          - name: bump.dart
+            content: |
+              import '../../.generated/state.dart';
+
+              Future<void> bump(State state, void Function(StateDelta) emit) async {
+                emit(StateDelta(n: state.n + 1));
+              }
+          folders: []
+        - name: views
+          files: []
+          folders:
+          - name: values
+            files:
+            - name: n_text.dart
+              content: |
+                import '../../../.generated/state.dart';
+
+                String nText(State state) => 'Tiny n ${state.n}';
+            folders: []
+          - name: labels
+            files:
+            - name: en.yaml
+              content: |
+                en:
+                  heading: Tiny heading
+                  bumpText: Bump
+                  goDarkText: Go dark
+            folders: []
+          - name: pages
+            files:
+            - name: main_page.yaml
+              content: |
+                MainPage:
+                  column:
+                    children:
+                    - text: heading
+                    - text: nText
+                    - textButton: {text: bumpText, onPressed: bump}
+                    - textButton: {text: goDarkText, onPressed: goDark}
+            folders: []
   remote:
     nickname: ''
   system:

@@ -20,7 +20,8 @@ import 'sync/remote_backend.dart';
 /// - `core.locale.set` picks the language of the whole app ([locale]),
 ///   `core.theme.set` light or dark (kept by [locale] too).
 /// - `core.modules.reset` starts one of this app's modules over
-///   ([resetModule]).
+///   ([resetModule]); `core.modules.<name>.<action|value>()` and its
+///   `navigator.push` run on that module ([moduleCall]).
 /// - `remote.<name>()` runs a remote action on [remote] (the backend, or
 ///   the device without one); `remote` fields emitted go up to it.
 class CoreHost implements MetacodeHost {
@@ -36,12 +37,23 @@ class CoreHost implements MetacodeHost {
   /// Starts this app's module [name] over (`core.modules.reset`).
   final void Function(String name) resetModule;
 
+  /// `core.modules.<module>.*`: `module.action`, `module.value`,
+  /// `module.push` on the module [module] (its own state and navigator).
+  final Future<Object?> Function(
+      String module, String op, Map<String, dynamic> args)? moduleCall;
+
+  /// A dynamic module's host: it can't change anything beyond its own app,
+  /// so `core.locale.set` and `core.theme.set` (app-wide) do nothing.
+  final bool sandboxed;
+
   /// Where `remote` and `shared` state lives and remote actions run; null
   /// when the app has none.
   final RemoteBackend? remote;
 
   CoreHost({
     required this.resetModule,
+    this.moduleCall,
+    this.sandboxed = false,
     required this.bloc,
     required this.navigation,
     required this.navigatorKey,
@@ -95,6 +107,9 @@ class CoreHost implements MetacodeHost {
       case 'navigator.pop':
         _navigator?.maybePop();
         return null;
+      case 'locale.set' || 'theme.set' when sandboxed:
+        debugPrint('metacode: a dynamic module can\'t change the app\'s $op');
+        return null;
       case 'locale.set':
         await locale.set(args['locale'] as String?);
         return null;
@@ -104,6 +119,8 @@ class CoreHost implements MetacodeHost {
       case 'modules.reset':
         resetModule(args['name'] as String);
         return null;
+      case 'module.action' || 'module.value' || 'module.push':
+        return moduleCall?.call(args['module'] as String, op, args);
       case 'remote.call':
         final backend = remote;
         if (backend == null) return 'failed';

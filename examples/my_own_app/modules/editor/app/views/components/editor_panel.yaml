@@ -1,0 +1,26 @@
+# EditorPanel: the editing side on wide screens: the draft's button color
+# (SwatchRow) and a note on how editing works.
+EditorPanel:
+  card:
+    child:
+      padding:
+        all: 20
+        child:
+          column:
+            crossAxisAlignment: start
+            spacing: 6
+            children:
+            - text: {value: designText, style: {variant: labelSmall, color: ink3}}
+            - text: {value: buttonColorText, style: {variant: titleMedium}}
+            - text: {value: buttonColorHint, style: {variant: bodySmall, color: ink2}}
+            - sizedBox: {height: 8}
+            - SwatchRow
+            - sizedBox: {height: 12}
+            - divider: {}
+            - sizedBox: {height: 12}
+            - row:
+                spacing: 8
+                children:
+                - icon: {name: refresh, size: 16, color: accent}
+                - text: {value: liveTitle, style: {variant: labelLarge}}
+            - text: {value: liveHint, style: {variant: bodySmall, color: ink2}}

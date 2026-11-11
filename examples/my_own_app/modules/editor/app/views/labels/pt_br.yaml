@@ -1,0 +1,9 @@
+pt_br:
+  editorTitle: Editor
+  liveText: Ao vivo
+  closeText: Fechar
+  designText: DESIGN
+  buttonColorText: Cor dos botões
+  buttonColorHint: A cor dos botões − e + do contador.
+  liveTitle: Recarga ao vivo
+  liveHint: O app é um projeto inteiro guardado no estado. Cada mudança reescreve um dos seus arquivos e ele recarrega no lugar, mantendo a contagem.

@@ -1,0 +1,11 @@
+# SwatchRow: a Swatch per palette color, in a wrap.
+SwatchRow:
+  wrap:
+    spacing: 10
+    runSpacing: 10
+    children:
+    - Swatch: {index: 0}
+    - Swatch: {index: 1}
+    - Swatch: {index: 2}
+    - Swatch: {index: 3}
+    - Swatch: {index: 4}

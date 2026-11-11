@@ -1,4 +1,5 @@
-# state: a counter, whether the start action ran, and one field of each
+# state: a counter, whether the start action ran, a whole app (tiny, run as
+# a dynamic module), and one field of each
 # other scope: the last vote's error (ephemeral), the user's nickname
 # (remote), who voted (system) and the vote count (shared).
 state:
@@ -7,6 +8,7 @@ state:
   local:
     count: number
     started: boolean
+    tiny: metacodeProject
   remote:
     nickname: string
   system:

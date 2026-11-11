@@ -30,10 +30,16 @@ abstract class Ui {
   /// Like [action], passing the input's new value as the `value` param.
   ValueChanged<T>? actionWithValue<T>(dynamic name);
 
-  /// The module `modules/<name>/`, running with its own state, actions and
-  /// values. When [contained], its routes open inside it (its own
-  /// navigator) instead of over the whole app.
-  Widget module(String name, {bool contained = false});
+  /// The module `modules/<name>/` as a compact app (`miniApp`), running
+  /// with its own state, actions and values and its own navigator: its
+  /// routes open inside it.
+  Widget module(String name);
+
+  /// A module compiled at runtime from [project] (a `metacodeProject` as
+  /// JSON: `{files: [{name, content}], folders: [{name, files, folders}]}`),
+  /// shown like [module], sandboxed, and reloaded (state kept) whenever
+  /// [project] changes.
+  Widget dynamicModule(Object? project);
 
   /// A [Ui] whose bindings and actions also receive [params]
   /// (e.g. `{'index': i}` for list items).

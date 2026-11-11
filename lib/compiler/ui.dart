@@ -20,6 +20,30 @@ class WidgetRefs {
   final params = <String, Set<PropKind>>{};
 }
 
+/// What a host app can use of one of its modules, as `<module>.<name>`:
+/// `food.MenuCard` (a component or page), `food.addItem` (an action),
+/// `food.total` (a value), `food.title` (a label).
+class ModuleNames {
+  /// Pages and components, with each one's parameters (and the kinds of
+  /// the props they fill).
+  final Map<String, Map<String, Set<PropKind>>> widgets;
+  final Set<String> pages;
+  final Set<String> bindings;
+  final Set<String> actions;
+  final Set<String> labels;
+
+  const ModuleNames({
+    this.widgets = const {},
+    this.pages = const {},
+    this.bindings = const {},
+    this.actions = const {},
+    this.labels = const {},
+  });
+}
+
+/// `food.addItem` -> (`food`, `addItem`): a module name, a dot, a name.
+final qualifiedName = RegExp(r'^([a-z][a-zA-Z0-9]*)\.([A-Za-z][a-zA-Z0-9]*)$');
+
 /// Validates app/views/ widgets (pages and components) against the widget catalog,
 /// the values, the labels, the actions and the modules. [widgets] maps each widget id to its
 /// definition; [fileOf] maps each id back to the file that declared it.
@@ -32,7 +56,7 @@ Map<String, dynamic> validateWidgets(
   Set<String> bindings,
   Set<String> labels,
   Set<String> actions,
-  Set<String> modules,
+  Map<String, ModuleNames> modules,
   Issues issues, {
   bool requireMainPage = true, // false when app/views/navigation.yaml names the pages
   Map<String, WidgetRefs>? refs,
@@ -90,7 +114,7 @@ class _UiValidator {
   final Set<String> bindings;
   final Set<String> labels;
   final Set<String> actions;
-  final Set<String> modules;
+  final Map<String, ModuleNames> modules;
   final Issues issues;
   final WidgetRefs refs;
 
@@ -103,6 +127,43 @@ class _UiValidator {
   _UiValidator(this.file, this.widgets, this.bindings, this.labels,
       this.actions, this.modules, this.issues, this.refs, this.params,
       this.self);
+
+  /// The module and name of `food.addItem`, when `food` is a module.
+  (ModuleNames, String)? _qualified(dynamic value) {
+    if (value is! String) return null;
+    final m = qualifiedName.firstMatch(value);
+    if (m == null) return null;
+    final module = modules[m.group(1)];
+    return module == null ? null : (module, m.group(2)!);
+  }
+
+  bool isBinding(dynamic v) =>
+      bindings.contains(v) || (_qualified(v)?.$1.bindings.contains(_qualified(v)!.$2) ?? false);
+  bool isAction(dynamic v) =>
+      actions.contains(v) || (_qualified(v)?.$1.actions.contains(_qualified(v)!.$2) ?? false);
+  bool isLabel(dynamic v) =>
+      labels.contains(v) || (_qualified(v)?.$1.labels.contains(_qualified(v)!.$2) ?? false);
+
+  /// The parameters of `food.MenuCard`, when it is a module's page or
+  /// component.
+  Map<String, Set<PropKind>>? moduleWidget(dynamic v) {
+    final q = _qualified(v);
+    return q?.$1.widgets[q.$2];
+  }
+
+  /// A validator for what a module's component is given: names resolve in
+  /// the module; parameters of the calling widget are still recorded.
+  _UiValidator _inModule(ModuleNames module, String id) => _UiValidator(
+      file,
+      {for (final w in module.widgets.keys) w: null},
+      module.bindings,
+      module.labels,
+      module.actions,
+      const {},
+      issues,
+      WidgetRefs(),
+      {...module.widgets, self: params[self]!},
+      self);
 
   /// Records [value] as a parameter of [self] filling a [kind] prop, if it
   /// is one (`.screen`).
@@ -166,6 +227,22 @@ class _UiValidator {
     if (value == null) return;
     if (_param(value, PropKind.node)) return;
     if (value is String) {
+      final moduleParams = moduleWidget(value);
+      if (moduleParams != null) {
+        refs.widgets.add(value);
+        if (moduleParams.isNotEmpty) {
+          error(path, '$value needs arguments: '
+              '$value: {${moduleParams.keys.map((p) => '$p: ...').join(', ')}}');
+        }
+        return;
+      }
+      final q = _qualified(value);
+      if (q != null &&
+          !q.$1.bindings.contains(q.$2) &&
+          !q.$1.labels.contains(q.$2)) {
+        return error(path, '"${q.$2}" is not a page, component, value or '
+            'label of the module "${value.split('.').first}"');
+      }
       if (pascalCase.hasMatch(value) && !widgets.containsKey(value)) {
         return error(path, '"$value" is not a page or component in app/views/ '
             '(text belongs in app/views/labels/)');
@@ -191,6 +268,11 @@ class _UiValidator {
 
     final type = value.keys.first.toString();
     if (widgets.containsKey(type)) return call(type, value[type], '$path.$type');
+    final q = _qualified(type);
+    if (q != null && q.$1.widgets.containsKey(q.$2)) {
+      refs.widgets.add(type);
+      return _inModule(q.$1, q.$2).call(q.$2, value[type], '$path.$type');
+    }
     final spec = widgetCatalog[type];
     if (spec == null) {
       return error('$path.$type',
@@ -219,6 +301,11 @@ class _UiValidator {
           (identical(spec, widgetCatalog['text']) && prop == 'value');
       if (isText && entry.value is String) text(entry.value, propPath);
     }
+    if (identical(spec, widgetCatalog['miniApp']) &&
+        (props.containsKey('module') == props.containsKey('project'))) {
+      error(path, 'give either module: (a folder in modules/) or project: '
+          '(a value returning a metacodeProject)');
+    }
   }
 
   void property(PropKind kind, dynamic value, String path, String? inline) {
@@ -230,22 +317,22 @@ class _UiValidator {
         if (value is! List) return error(path, 'expected a list of widgets');
         nodes(value, path);
       case PropKind.action:
-        if (actions.contains(value)) refs.actions.add(value);
-        if (!actions.contains(value)) {
+        if (isAction(value)) refs.actions.add(value);
+        if (!isAction(value)) {
           error(path, '"$value" is not an action; '
               'available: ${actions.isEmpty ? '(none)' : actions.join(', ')}');
         }
       case PropKind.binding:
-        if (bindings.contains(value)) refs.values.add(value);
-        if (!bindings.contains(value)) {
+        if (isBinding(value)) refs.values.add(value);
+        if (!isBinding(value)) {
           error(path, '"$value" is not a value (app/views/values/); '
               'available: ${bindings.isEmpty ? '(none)' : bindings.join(', ')}');
         }
       case PropKind.module:
-        if (modules.contains(value)) refs.modules.add(value);
-        if (!modules.contains(value)) {
+        if (modules.containsKey(value)) refs.modules.add(value);
+        if (!modules.containsKey(value)) {
           error(path, '"$value" is not a module (a folder in modules/); '
-              'available: ${modules.isEmpty ? '(none)' : modules.join(', ')}');
+              'available: ${modules.isEmpty ? '(none)' : modules.keys.join(', ')}');
         }
       case PropKind.inline:
         widget(widgetCatalog[inline]!, value, path);
@@ -256,7 +343,7 @@ class _UiValidator {
         }
       case PropKind.icon:
         // A value returning an icon name (`icon: tripIcon`), like a color.
-        if (bindings.contains(value)) {
+        if (isBinding(value)) {
           refs.values.add(value);
         } else if (!iconNames.contains(value)) {
           error(path, 'unknown icon "$value"; use a name from Icons in '
@@ -264,14 +351,14 @@ class _UiValidator {
         }
       case PropKind.color:
         // A value returning a color name or hex (`color: chipFill`).
-        if (bindings.contains(value)) {
+        if (isBinding(value)) {
           refs.values.add(value);
         } else if (!isColor(value)) {
           error(path, 'unknown color "$value"; use #RRGGBB, a name from '
               'Colors in REFERENCE.md, or a value that returns one');
         }
       case PropKind.number:
-        if (bindings.contains(value)) {
+        if (isBinding(value)) {
           refs.values.add(value);
         } else if (value is! num) {
           error(path, 'expected a number or a value returning one, got "$value"');
@@ -289,8 +376,8 @@ class _UiValidator {
   /// variants, not names.
   void _recordNames(dynamic value) {
     if (value is String) {
-      if (bindings.contains(value)) refs.values.add(value);
-      if (labels.contains(value)) refs.labels.add(value);
+      if (isBinding(value)) refs.values.add(value);
+      if (isLabel(value)) refs.labels.add(value);
     } else if (value is List) {
       value.forEach(_recordNames);
     } else if (value is Map) {
@@ -298,7 +385,7 @@ class _UiValidator {
       _recordNames(value['text']);
       // A color from a value (`style: {color: chipInk}`).
       for (final e in value.entries) {
-        if (_isColorKey(e.key) && bindings.contains(e.value)) {
+        if (_isColorKey(e.key) && isBinding(e.value)) {
           refs.values.add(e.value);
         }
       }
@@ -309,9 +396,9 @@ class _UiValidator {
   /// belongs in app/views/labels/).
   void text(String value, String path) {
     if (paramName(value) != null) return;
-    if (bindings.contains(value)) refs.values.add(value);
-    if (labels.contains(value)) refs.labels.add(value);
-    if (bindings.contains(value) || labels.contains(value)) return;
+    if (isBinding(value)) refs.values.add(value);
+    if (isLabel(value)) refs.labels.add(value);
+    if (isBinding(value) || isLabel(value)) return;
     if (camelCase.hasMatch(value)) {
       issues.warn(file, path, '"$value" is not a value or label; '
           'it will show as literal text');

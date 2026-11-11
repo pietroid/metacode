@@ -1,5 +1,5 @@
 # food: Forkcast, a pocket meal planner embedded in the landing page carousel
-# (`module: food`). Onboarding asks for a monthly budget, food prefs and a
+# (`miniApp: food`). Onboarding asks for a monthly budget, food prefs and a
 # goal, matches a program from the matrix (goal x diet), suggests recipes to
 # accept or refuse, then builds a shopping list that fills the budget and
 # kcal bars. All data below is synthetic; prices are in USD (shown as R$ at

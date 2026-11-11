@@ -1,5 +1,5 @@
 # travel: the trip planner example, embedded in the landing page carousel
-# (`module: travel`). `state:` holds the initial state; types in app/models/state.yaml.
+# (`miniApp: travel`). `state:` holds the initial state; types in app/models/state.yaml.
 # Every text is a localized {en, ptBr}; images are Wikimedia Commons photos
 # (credits in modules/travel/IMAGE_CREDITS.md).
 name: travel

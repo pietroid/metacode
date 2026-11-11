@@ -1,0 +1,5 @@
+# navigation: mainRoute is the editor; the root opens it with
+# core.modules.editor.navigator.push(EditorRoutes.mainRoute).
+initial: mainRoute
+routes:
+  mainRoute: EditorPage
