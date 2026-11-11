@@ -4,8 +4,8 @@
 // without a deploy; the state documents live in METACODE_DATA (default
 // .backend), apart from the code.
 //
-//   cd server && flutter pub get && dart_frog dev          (port 8080)
-//   dart_frog build && dart build/bin/server.dart          (production)
+//   cd server && flutter pub get && dart run bin/serve.dart   (port 8080; tool/backend.sh)
+//   dart_frog dev   (hot reload: restarts on any .dart change in the repo, dropping calls)
 //
 // The routes (routes/) are thin: the API is lib/backend/api.dart in the
 // metacode package, shared with the engine's tests.

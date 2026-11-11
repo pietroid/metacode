@@ -14,7 +14,6 @@ state:
     draftShares: ["1", "1", "1", "1"]
     draftExact: ["", "", "", ""]
     rateStatus: ready
-    rate: 1
     formError: ""
     saveStatus: idle
     syncError: ""
@@ -27,6 +26,8 @@ state:
     - {groupId: g2, member: Ana}
     - {groupId: g3, member: Ana}
     lastDeleted: []
+  remote:
+    rate: 1
   shared:
     groups:
     - {id: g1, name: Lisbon trip, members: [Ana, Ben, Carla, Dev]}

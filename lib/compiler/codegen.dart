@@ -237,53 +237,9 @@ void _writeModules(StringBuffer out, List<ModuleApi> modules) {
   }
 }
 
-const _coreClasses = r'''
-
-/// What actions can reach besides the state.
-class Core {
-  Core()
-      : api = Api(),
-        navigator = AppNavigator(),
-        locale = AppLocale(),
-        theme = AppTheme(),
-        modules = AppModules();
-
-  /// HTTP requests.
-  final Api api;
-
-  /// Opens and closes routing/ routes.
-  final AppNavigator navigator;
-
-  /// The language the whole app shows. Read it with `labels.locale`.
-  final AppLocale locale;
-
-  /// Light or dark for the whole app.
-  final AppTheme theme;
-
-  /// This app's modules (modules/<name>/): `core.modules.food.addItem()`.
-  final AppModules modules;
-}
-
-/// The language of the whole app (every module too). By default it is the
-/// device's, when app/views/labels/ has it.
-class AppLocale {
-  /// Shows [language], a labels file name (`en`, `pt_br`; see
-  /// `labels.locales`), from now on and on the next launches. Null goes
-  /// back to the device's language.
-  Future<void> set(String? language) async {
-    await hostCall('locale.set', jsonEncode({'locale': language}));
-  }
-}
-
-/// Light or dark for the whole app (every module too). By default it is
-/// what app/views/style/theme.yaml says (`system`: the device's).
-class AppTheme {
-  /// Shows the app `light` or `dark` from now on and on the next launches.
-  /// Null goes back to the style's (`system`: the device's).
-  Future<void> set(String? mode) async {
-    await hostCall('theme.set', jsonEncode({'theme': mode}));
-  }
-}
+/// `Api` and `ApiResponse`: HTTP, for remote actions only
+/// (`.generated/api.dart`, the `api` param).
+const _apiClasses = r'''
 
 /// An HTTP response. A network error has status 0 and the error as body.
 class ApiResponse {
@@ -320,6 +276,59 @@ class Api {
     final json = jsonDecode(result) as Map;
     return ApiResponse(
         status: json['status'] as int, body: json['body'] as String);
+  }
+}
+''';
+
+/// Generates `.generated/api.dart`: what remote actions take as `api`, HTTP
+/// requests run by whoever runs them (the backend, or the device without
+/// one). Local actions reach the outside only through `remote.<name>()`.
+String generateApi() => '$_header\n'
+    "import 'dart:convert';\n\n"
+    "import 'package:metacode/engine/host.dart';\n"
+    '$_apiClasses';
+
+const _coreClasses = r'''
+
+/// What actions can reach besides the state.
+class Core {
+  Core()
+      : navigator = AppNavigator(),
+        locale = AppLocale(),
+        theme = AppTheme(),
+        modules = AppModules();
+
+  /// Opens and closes routing/ routes.
+  final AppNavigator navigator;
+
+  /// The language the whole app shows. Read it with `labels.locale`.
+  final AppLocale locale;
+
+  /// Light or dark for the whole app.
+  final AppTheme theme;
+
+  /// This app's modules (modules/<name>/): `core.modules.food.addItem()`.
+  final AppModules modules;
+}
+
+/// The language of the whole app (every module too). By default it is the
+/// device's, when app/views/labels/ has it.
+class AppLocale {
+  /// Shows [language], a labels file name (`en`, `pt_br`; see
+  /// `labels.locales`), from now on and on the next launches. Null goes
+  /// back to the device's language.
+  Future<void> set(String? language) async {
+    await hostCall('locale.set', jsonEncode({'locale': language}));
+  }
+}
+
+/// Light or dark for the whole app (every module too). By default it is
+/// what app/views/style/theme.yaml says (`system`: the device's).
+class AppTheme {
+  /// Shows the app `light` or `dark` from now on and on the next launches.
+  /// Null goes back to the style's (`system`: the device's).
+  Future<void> set(String? mode) async {
+    await hostCall('theme.set', jsonEncode({'theme': mode}));
   }
 }
 
@@ -590,6 +599,7 @@ String generateRemoteMain(List<UserFunction> remoteActions, List<String> imports
     ..writeln()
     ..writeln("import 'package:metacode/engine/host.dart';")
     ..writeln()
+    ..writeln("import 'api.dart';")
     ..writeln("import 'remote_state.dart';");
   for (final i in imports) {
     out.writeln("import '../$i';");
@@ -599,7 +609,11 @@ String generateRemoteMain(List<UserFunction> remoteActions, List<String> imports
     final args = [
       'state',
       for (final p in fn.params)
-        p.name == 'emit' ? 'emit' : _decodeDart(p.type, "params['value']", models),
+        switch (p.name) {
+          'emit' => 'emit',
+          'api' => 'Api()',
+          _ => _decodeDart(p.type, "params['value']", models),
+        },
     ];
     out
       ..writeln('Future<String> \$remote_${fn.name}(String stateJson, String paramsJson) async {')
@@ -767,6 +781,7 @@ String generateTestApp(
     ..writeln("import 'package:metacode/engine/program.dart';")
     ..writeln("import 'package:yaml/yaml.dart';")
     ..writeln()
+    ..writeln("import 'api.dart';")
     ..writeln("import 'core.dart';")
     ..writeln("import 'state.dart';")
     ..writeln()
@@ -836,15 +851,19 @@ String generateTestApp(
 
 const _collectClass = r'''
 
-/// Collects a remote action's deltas (kept only if it doesn't refuse).
+/// Collects a remote action's deltas (kept only if it doesn't refuse);
+/// its `api` requests go to [app]'s fake.
 class _Collect implements MetacodeHost {
+  _Collect(this.app);
+  final TestApp app;
   final deltas = <Map<String, dynamic>>[];
 
   @override
   void emit(Map<String, dynamic> delta) => deltas.add(delta);
 
   @override
-  Future<Object?> call(String op, Map<String, dynamic> args) async => null;
+  Future<Object?> call(String op, Map<String, dynamic> args) async =>
+      op == 'api' ? app.call(op, args) : null;
 }
 ''';
 
@@ -860,7 +879,7 @@ const _testAppHead = r'''
           as Map<String, dynamic>,
     )..host = this;
 
-  /// Answers `core.api` requests. Defaults to 404.
+  /// Answers remote actions' `api` requests. Defaults to 404.
   ApiResponse Function(String method, String url, Object? body) api =
       (method, url, body) => ApiResponse(status: 404, body: '');
 
@@ -985,7 +1004,7 @@ const _testAppHead = r'''
   Future<String?> _remoteCall(String name, Object? value) async {
     remoteCalls.add(name);
     if (offline) return 'offline';
-    final deltas = _Collect();
+    final deltas = _Collect(this);
     _remoteProgram.host = deltas;
     final error = await _remoteProgram.remote(name, {
       for (final e in _state.entries)

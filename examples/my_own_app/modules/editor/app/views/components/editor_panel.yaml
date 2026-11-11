@@ -1,5 +1,5 @@
 # EditorPanel: the editing side on wide screens: the draft's button color
-# (SwatchRow) and a note on how editing works.
+# (SwatchRow), Claude (ClaudeBox) and a note on how editing works.
 EditorPanel:
   card:
     child:
@@ -15,6 +15,11 @@ EditorPanel:
             - text: {value: buttonColorHint, style: {variant: bodySmall, color: ink2}}
             - sizedBox: {height: 8}
             - SwatchRow
+            - sizedBox: {height: 12}
+            - divider: {}
+            - sizedBox: {height: 12}
+            - text: {value: claudeTitle, style: {variant: titleMedium}}
+            - ClaudeBox
             - sizedBox: {height: 12}
             - divider: {}
             - sizedBox: {height: 12}

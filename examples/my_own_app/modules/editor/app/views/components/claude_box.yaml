@@ -1,0 +1,26 @@
+# ClaudeBox: asks Claude to change the draft: a prompt field and an Ask
+# button (askClaude; a spinner while a run goes), Claude's last reply and the
+# run's cost, time and turns (runStats), then Restart (restartDraft: the
+# draft's state over) and Reset (resetDraft: the starter counter again).
+ClaudeBox:
+  column:
+    crossAxisAlignment: stretch
+    spacing: 8
+    children:
+    - textField: {value: promptText, hint: promptHint, multiline: true, onChanged: setPrompt}
+    - row:
+        spacing: 12
+        crossAxisAlignment: center
+        children:
+        - filledButton: {text: askText, icon: sparkle, onPressed: askClaude, enabled: canAsk}
+        - if:
+            condition: isAsking
+            then: {sizedBox: {width: 18, height: 18, child: {progress: {circular: true}}}}
+    - text: {value: lastReply, style: {variant: bodySmall, color: ink2}}
+    - text: {value: runStats, style: {variant: labelSmall, color: ink3}}
+    - wrap:
+        spacing: 8
+        runSpacing: 8
+        children:
+        - outlinedButton: {text: restartText, icon: refresh, onPressed: restartDraft}
+        - textButton: {text: resetText, icon: delete, onPressed: resetDraft}

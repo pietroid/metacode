@@ -65,7 +65,6 @@ plan:
         type: list(string)
         initial: ['', '', '', '']
       rateStatus: rateStatus
-      rate: number = 1
       formError: string = ''
       saveStatus: saveStatus
       syncError: string = ''
@@ -80,6 +79,8 @@ plan:
         - {groupId: g2, member: Ana}
         - {groupId: g3, member: Ana}
       lastDeleted: list(expense)
+    remote:
+      rate: number = 1
     shared:
       groups:
         type: list(group)
@@ -334,13 +335,13 @@ plan:
       purpose: >-
         Sets draftCurrency from 'USD'/'EUR'/'BRL'. USD -> rate 1, rateStatus
         ready. Otherwise runs fetchRate.
-      params: [emit, core]
+      params: [emit, remote]
       value: String
       uses: [fetchRate]
       test: USD -> draftCurrency usd, rate 1, rateStatus ready.
     retryRate:
       purpose: Runs fetchRate again for draftCurrency.
-      params: [emit, core]
+      params: [emit, remote]
       uses: [fetchRate]
       test: With draftCurrency eur and a fake rate response, rateStatus becomes ready.
     setDraftCategory:
@@ -409,6 +410,13 @@ plan:
       test: index 2 -> filterCategory travel.
 
   remote:
+    loadRate:
+      purpose: >-
+        GET https://open.er-api.com/v6/latest/<value> (EUR, BRL); json
+        rates.USD -> rate (remote). Refuses (noRate) a failed request or a
+        missing rate.
+      params: [emit, api]
+      value: String
     addExpense:
       purpose: >-
         Appends the expense to shared expenses (replacing one with the same
@@ -796,11 +804,10 @@ plan:
       in: actions
     fetchRate:
       purpose: >-
-        Sets rateStatus loading, then GET
-        https://open.er-api.com/v6/latest/<CODE> (CODE of draftCurrency, e.g.
-        EUR); json rates.USD is the rate -> rate, rateStatus ready. Non-200 or
-        missing -> rateStatus failed.
-      signature: Future<void> fetchRate(State state, void Function(StateDelta) emit, Core core)
+        Sets rateStatus loading, then remote.loadRate with the CODE of
+        draftCurrency (EUR, BRL), which sets rate; rateStatus ready, or
+        failed when it returns an error.
+      signature: Future<void> fetchRate(State state, void Function(StateDelta) emit, Remote remote)
       in: actions
 
   tests:

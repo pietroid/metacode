@@ -1,13 +1,14 @@
 // retryRate: Runs fetchRate again for draftCurrency.
 
 import 'package:flutter_test/flutter_test.dart';
-import '../../.generated/core.dart';
+import '../../.generated/api.dart';
+import '../../.generated/remote.dart';
 import '../../.generated/state.dart';
 import '../models/sample.dart';
 import 'shared/fetch_rate.dart';
 
-Future<void> retryRate(State state, void Function(StateDelta) emit, Core core) async {
-  await fetchRate(state, emit, core);
+Future<void> retryRate(State state, void Function(StateDelta) emit, Remote remote) async {
+  await fetchRate(state, emit, remote);
 }
 
 void main() {

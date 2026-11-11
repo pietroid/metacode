@@ -2,6 +2,9 @@ import 'dart:convert';
 
 import 'package:dart_eval/dart_eval_bridge.dart';
 import 'package:dart_eval/stdlib/core.dart';
+import 'package:http/http.dart' as http;
+
+import 'http_request.dart';
 
 /// What the interpreted program can ask of the engine: apply state deltas
 /// and run host operations (http, navigation). The app implements it in
@@ -10,22 +13,29 @@ abstract class MetacodeHost {
   /// Merges a top-level state delta (JSON, same encoding as the state).
   void emit(Map<String, dynamic> delta);
 
-  /// Runs [op] (`api`, `navigator.push`, `navigator.pop`) and returns a
+  /// Runs [op] (`api` from remote actions, `navigator.push`, `navigator.pop`) and returns a
   /// JSON-encodable result. Should not throw: report failures in the result
   /// (an api failure is `{status: 0, body: error}`).
   Future<Object?> call(String op, Map<String, dynamic> args);
 }
 
 /// A host for remote actions: keeps their deltas (applied only if the
-/// action doesn't refuse). They have no `core`.
+/// action doesn't refuse) and runs their `api` requests with [client]. They
+/// have no `core`.
 class CollectHost implements MetacodeHost {
+  CollectHost({http.Client? client}) : client = client ?? _client;
+
+  static final _client = http.Client();
+
+  final http.Client client;
   final deltas = <Map<String, dynamic>>[];
 
   @override
   void emit(Map<String, dynamic> delta) => deltas.add(delta);
 
   @override
-  Future<Object?> call(String op, Map<String, dynamic> args) async => null;
+  Future<Object?> call(String op, Map<String, dynamic> args) async =>
+      op == 'api' ? httpRequest(client, args) : null;
 }
 
 /// Bridges `package:metacode/engine/host.dart` (see host.dart) into dart_eval.

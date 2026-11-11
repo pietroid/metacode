@@ -2,6 +2,35 @@
   "version": "0.2.0",
   "configurations": [
     {
+      // Everything: generates, starts the backend (:8080) and the Claude
+      // bridge (:8787, `claude -p` + the metacode MCP), then the app synced
+      // with the backend. Open the editor and ask Claude. Both servers keep
+      // running after the app stops (tasks "... stop").
+      "name": "metacode + backend + claude (macOS)",
+      "type": "dart",
+      "request": "launch",
+      "program": "lib/main.dart",
+      "deviceId": "macos",
+      "args": [
+        "--dart-define=METACODE_PROJECT_DIR=${workspaceFolder}/examples/my_own_app",
+        "--dart-define=METACODE_BACKEND=http://localhost:8080"
+      ],
+      "preLaunchTask": "metacode: everything"
+    },
+    {
+      // Same, in Chrome.
+      "name": "metacode + backend + claude (web)",
+      "type": "dart",
+      "request": "launch",
+      "program": "lib/main.dart",
+      "deviceId": "chrome",
+      "args": [
+        "--dart-define=METACODE_RESET_FILES=true",
+        "--dart-define=METACODE_BACKEND=http://localhost:8080"
+      ],
+      "preLaunchTask": "metacode: everything"
+    },
+    {
       // Runs the project from examples/my_own_app (watched): every save
       // recompiles inside the app, no hot reload needed. No backend:
       // remote actions run on the device.

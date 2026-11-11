@@ -3,7 +3,8 @@
 # running live as a dynamic module (`miniApp: {project: draftProject}`) in a
 # PhoneFrame (the landing page's size, scrolling when the screen is shorter):
 # side by side when wide; on a phone, just the
-# SwatchRow on top.
+# SwatchRow and the ClaudeBox on top. The draft is hidden for a moment
+# (showDraft) when it restarts.
 EditorPage:
   scaffold:
     appBar:
@@ -50,7 +51,7 @@ EditorPage:
                     spacing: 32
                     children:
                     - sizedBox: {width: 320, child: {scroll: EditorPanel}}
-                    - expanded: {child: {center: {scroll: {PhoneFrame: {child: {miniApp: {project: draftProject}}}}}}}
+                    - expanded: {child: {center: {scroll: {PhoneFrame: {child: {if: {condition: showDraft, then: {miniApp: {project: draftProject}}}}}}}}}
             narrow:
               padding:
                 all: 16
@@ -65,4 +66,5 @@ EditorPage:
                         children:
                         - text: {value: buttonColorText, style: {variant: labelLarge}}
                         - SwatchRow
-                    - expanded: {child: {center: {scroll: {PhoneFrame: {child: {miniApp: {project: draftProject}}}}}}}
+                        - ClaudeBox
+                    - expanded: {child: {center: {scroll: {PhoneFrame: {child: {if: {condition: showDraft, then: {miniApp: {project: draftProject}}}}}}}}}

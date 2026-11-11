@@ -5,6 +5,9 @@
 # backend answers (or right away if it already does).
 #
 #   tool/backend.sh          # start (if not running) and wait until it's up
+#   tool/backend.sh dev      # the same with dart_frog's hot reload, only to
+#                            # change the backend itself: it restarts on ANY
+#                            # .dart change in the repo, dropping calls in flight
 #   tool/backend.sh stop     # stop it
 #   tool/backend.sh logs     # follow its output (server/.backend.log)
 set -euo pipefail
@@ -14,15 +17,21 @@ log="$server/.backend.log"
 up() { curl -s -m 1 -o /dev/null "http://localhost:$port/"; }
 
 case "${1:-start}" in
-  start)
+  start|dev)
     if up; then echo "metacode backend: already running on :$port"; exit 0; fi
     cd "$server"
     flutter pub get >/dev/null
-    # `script` gives dart_frog a terminal (it fails without one) and nohup
-    # keeps it alive after this script and the VS Code task end.
-    METACODE_CODE=../examples/my_own_app METACODE_DATA=.backend \
+    export METACODE_CODE=../examples/my_own_app METACODE_DATA=.backend PORT="$port"
+    if [ "${1:-start}" = dev ]; then
+      # `script` gives dart_frog a terminal (it fails without one) and nohup
+      # keeps it alive after this script and the VS Code task end.
       nohup script -q /dev/null dart_frog dev --port "$port" </dev/null >"$log" 2>&1 &
-    for _ in $(seq 1 120); do
+    else
+      # No hot reload (bin/serve.dart): the backend recompiles the apps on
+      # its own, and a reload on every .dart change in the repo dropped calls.
+      nohup dart run bin/serve.dart </dev/null >"$log" 2>&1 &
+    fi
+    for _ in $(seq 1 240); do
       if up; then echo "metacode backend: running on :$port (logs: tool/backend.sh logs)"; exit 0; fi
       sleep 0.5
     done
@@ -32,6 +41,7 @@ case "${1:-start}" in
     ;;
   stop)
     pkill -f "dart_frog dev --port $port" || true
+    pkill -f "bin/serve.dart" || true
     lsof -tiTCP:"$port" -sTCP:LISTEN | xargs kill 2>/dev/null || true
     echo "metacode backend: stopped"
     ;;
@@ -39,7 +49,7 @@ case "${1:-start}" in
     tail -f "$log"
     ;;
   *)
-    echo "usage: tool/backend.sh [start|stop|logs]" >&2
+    echo "usage: tool/backend.sh [start|dev|stop|logs]" >&2
     exit 2
     ;;
 esac

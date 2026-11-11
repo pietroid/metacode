@@ -29,7 +29,8 @@ import 'state_bloc.dart';
 class MetacodeApp extends StatefulWidget {
   final ProjectConfig config;
 
-  /// HTTP client for `core.api` (tests pass a fake).
+  /// HTTP client for remote actions' `api` run on the device and the
+  /// backend link (tests pass a fake).
   final http.Client? client;
 
   /// Overrides style/'s theme mode.

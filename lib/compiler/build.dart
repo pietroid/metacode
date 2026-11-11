@@ -142,6 +142,7 @@ Map<String, dynamic>? _generate(
     '.generated/state.dart': generateState(clientModels,
         deltaFields: app.fieldsIn(clientDeltaScopes)),
     '.generated/remote_state.dart': generateState(remoteModels),
+    '.generated/api.dart': generateApi(),
     '.generated/core.dart': generateCore(app.navigation.routes.keys, modules: [
       for (final m in app.modules.values)
         ModuleApi(m.name,
@@ -219,6 +220,7 @@ Map<String, dynamic>? _generate(
     remoteBytecode = compile(
         _bundle([
           generated['.generated/remote_state.dart']!,
+          generated['.generated/api.dart']!,
           for (final name in used) stripTests(app.files.read(app.at(shared[name]!.file))!),
           for (final f in remoteFiles) stripTests(app.files.read(app.at(f))!),
           generated['.generated/remote_main.dart']!,

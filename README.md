@@ -112,12 +112,18 @@ Future<void> toggleTask(State state, void Function(StateDelta) emit, int index) 
 // app/actions/update_draft.dart
 Future<void> updateDraft(State state, void Function(StateDelta) emit, String value) async { ... }
 
-// app/actions/load_rate.dart
-Future<void> loadRate(State state, void Function(StateDelta) emit, Core core) async {
+// app/actions/load_rate.dart (local: no network, asks the backend)
+Future<void> loadRate(State state, void Function(StateDelta) emit, Remote remote) async {
   emit(StateDelta(rateStatus: FetchStatus.loading));
-  final r = await core.api.get('https://open.er-api.com/v6/latest/USD');
+  final error = await remote.loadRate();
+  emit(StateDelta(rateStatus: error == null ? FetchStatus.loaded : FetchStatus.failed));
+}
+
+// app/actions/remote/load_rate.dart (remote: the only code with HTTP)
+Future<void> loadRate(State state, void Function(StateDelta) emit, Api api) async {
+  final r = await api.get('https://open.er-api.com/v6/latest/USD');
   ...
-  emit(StateDelta(rate: rate, rateStatus: FetchStatus.loaded));
+  emit(StateDelta(rate: rate));   // a `remote` field
 }
 
 // app/actions/open_settings.dart
@@ -141,8 +147,10 @@ String tasksLeftText(State state, Labels labels) =>
   over the current state (top-level fields replaced whole). `state` is a
   fresh copy taken at the start, so changing it in place and emitting the
   changed field is fine.
-- `core.api.get/post` make HTTP requests (`ApiResponse`: `status`, `body`,
-  `ok`, `json`; status 0 is a network error). `core.navigator.push/pop` open
+- Only remote actions reach the network: their `api.get/post`
+  (`ApiResponse`: `status`, `body`, `ok`, `json`; status 0 is a network
+  error), run on the backend (on the device without one). A local action
+  calls them with `remote.<name>()`. `core.navigator.push/pop` open
   and close app/views/navigation.yaml routes. `core.locale.set` picks the
   language.
 - Values return a primitive, a model, an enum, or a `List` of those.

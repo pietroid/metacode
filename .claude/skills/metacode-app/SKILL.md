@@ -106,7 +106,7 @@ en:
 
 - Tabs inside one screen: keep the current page in state (an enum), show it with `match`, change it with actions.
 - Things that open on top (detail page, bottom sheet, dialog): a route in app/views/navigation.yaml (its page in app/views/pages/), opened by an action with `core.navigator.push(Routes.x)`, closed with `core.navigator.pop()`.
-- Network: `final r = await core.api.get(url); if (r.ok) ... r.json`. Emit a loading status first, then the result or a failure. Status 0 means a network error.
+- Network: only remote actions (app/actions/remote/) have it, as `api` (`final r = await api.get(url); if (r.ok) ... r.json`; status 0 is a network error), emitting the result into `remote` fields. The local action emits a loading status, awaits `remote.<name>(value)`, then a failure if it returns an error.
 - `index` reaches values and actions inside `listView`/`gridView` items. Inputs pass `value`.
 - Look: widgets are already styled. Use token color names (`ink2`, `success`, `danger`, `accent`) instead of hex, `bodySmall` for metadata, and type size (not boldness or color) for hierarchy. Don't nest cards; list rows separated by `divider` read better than a card per row. See Style in REFERENCE.md.
 

@@ -12,7 +12,7 @@ You fill a few stub files of a Metacode app. Your brief (the path in your prompt
 Rewrite the whole file with one `Write`: the header comment (`// name: what it does`, true to what you wrote), imports, the function (the signature in the brief, unchanged), then `void main() { test(...); }` below. Remove the `TODO(metacode): stub` line.
 
 - State changes only through `emit(StateDelta(field: ...))`; set only what changes. Lists/models: change `state`'s copy and emit it whole (`state.trips.add(t); emit(StateDelta(trips: state.trips));`). `state` doesn't see your own emits.
-- Status first, then the result: `emit(StateDelta(status: Status.loading)); final r = await core.api.get(url); if (r.ok) {...} else {...}` (`r.json` is the parsed body; status 0 = no network).
+- Network only in remote actions (`Api api` param, `.generated/api.dart`): `final r = await api.get(url); if (r.ok) {...} else throw RemoteError('...')` (`r.json` is the parsed body; status 0 = no network), results into `remote` fields. The local action: loading status first, then `final error = await remote.x(value);`.
 - JSON from `r.json`: cast as you go, in one expression, then one `is` check: `final rate = r.ok ? ((r.json as Map)['rates'] as Map)['EUR'] : null; if (rate is num) ...`. (`x == null ? null : x['k']` crashes the interpreter.)
 - Numbers: model fields are `num`; `/` gives `num` in the interpreter, so `final double p = (a / b).toDouble();` when you need a double. Index with `state.selectedTrip.toInt()`.
 - Lists inside models: either change `state`'s copy in place and emit the top-level field (`state.trips[i].items.add(item); emit(StateDelta(trips: state.trips));`), or rebuild with spreads and `copyWith`. Both work.

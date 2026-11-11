@@ -11,6 +11,8 @@
 
 import 'dart:async';
 
+import 'package:http/http.dart' as http;
+
 import '../host_plugin.dart';
 import '../project_config.dart';
 import '../state_bloc.dart';
@@ -44,7 +46,10 @@ class LocalBackend extends RemoteBackend {
   final StateBloc bloc;
   ProjectConfig _config;
 
-  LocalBackend(this.bloc, this._config);
+  LocalBackend(this.bloc, this._config, {this.client});
+
+  /// For the remote actions' `api` (null: a shared default).
+  final http.Client? client;
 
   Map<String, dynamic>? _system;
   Future<void> _queue = Future.value();
@@ -78,7 +83,7 @@ class LocalBackend extends RemoteBackend {
     if (program == null) return 'unknownAction';
     final system = _system ??= await _loadSystem();
     final fields = _config.remoteFields.toSet();
-    final deltas = CollectHost();
+    final deltas = CollectHost(client: client);
     program.host = deltas;
     final code = await program.remote(name, {
       for (final e in bloc.state.entries)

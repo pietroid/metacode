@@ -4,6 +4,11 @@
 # module inside a PhoneFrame, next to a palette; picking a color rewrites the
 # draft's CountButton (pickColor), which reloads it in place, its count kept.
 # The root opens EditorPage with core.modules.editor.navigator.
+# askClaude asks the remote askClaude (the only code with HTTP) to send the
+# prompt and the draft to the Claude bridge (tool/claude_server.dart), which
+# edits it with the metacode MCP; the draft and the run's cost and time come
+# back as remote fields. resetDraft gets the starter counter (this file's
+# draft) the same way; `draftOn` false for a moment restarts it.
 name: editor
 description: Edits a small app while it runs.
 state:
@@ -112,3 +117,13 @@ state:
                                         - CountButton: {icon: remove, tap: decrement}
                                         - CountButton: {icon: add, tap: increment}
                   folders: []
+    runReply: ''
+    runCost: 0.0
+    runMs: 0
+    runTurns: 0
+    totalCost: 0.0
+  ephemeral:
+    draftOn: true
+    prompt: ''
+    asking: false
+    askError: ''

@@ -7,3 +7,8 @@ en:
   buttonColorHint: The color of the counter's − and + buttons.
   liveTitle: Live reload
   liveHint: The app is a whole project kept in the state. Each change rewrites one of its files and it reloads in place, keeping its count.
+  claudeTitle: Ask Claude
+  promptHint: Describe a change, e.g. add a reset button
+  askText: Ask
+  restartText: Restart
+  resetText: Reset project

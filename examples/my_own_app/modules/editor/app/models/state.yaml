@@ -1,4 +1,18 @@
-# state: the draft, a whole app as files, on the backend (remote).
+# state: the editor's state by scope; initial values in app.yaml.
+# ephemeral: draftOn (false for a moment while the draft restarts), the
+# prompt, whether a run goes and why the last call failed (askError).
+# remote: the draft, and the last Claude run (reply, cost in USD, time in
+# ms, turns) and the total spent, written by the remote askClaude.
 state:
+  ephemeral:
+    draftOn: boolean
+    prompt: string
+    asking: boolean
+    askError: string
   remote:
     draft: metacodeProject
+    runReply: string
+    runCost: number
+    runMs: number
+    runTurns: number
+    totalCost: number

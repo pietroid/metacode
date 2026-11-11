@@ -58,6 +58,35 @@
       "dependsOn": ["metacode: generate", "metacode: backend"],
       "dependsOrder": "sequence",
       "problemMatcher": []
+    },
+    {
+      "label": "metacode: claude bridge",
+      "detail": "Starts the Claude bridge (tool/claude_server.dart) on http://localhost:8787 in the background: the editor's askClaude runs `claude -p` with the metacode MCP through it. Keeps running; stop it with \"metacode: claude bridge stop\", logs with \"metacode: claude bridge logs\".",
+      "type": "shell",
+      "command": "tool/claude_bridge.sh",
+      "problemMatcher": [],
+      "presentation": { "reveal": "silent", "revealProblems": "onProblem" }
+    },
+    {
+      "label": "metacode: claude bridge stop",
+      "type": "shell",
+      "command": "tool/claude_bridge.sh stop",
+      "problemMatcher": []
+    },
+    {
+      "label": "metacode: claude bridge logs",
+      "type": "shell",
+      "command": "tool/claude_bridge.sh logs",
+      "isBackground": true,
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "metacode: everything",
+      "detail": "Generates, then starts the backend and the Claude bridge.",
+      "dependsOn": ["metacode: generate", "metacode: backend", "metacode: claude bridge"],
+      "dependsOrder": "sequence",
+      "problemMatcher": []
     }
   ]
 }

@@ -136,13 +136,18 @@ const contextParamTypes = {
 };
 
 /// Params only actions take, with their Dart type: `emit` applies a
-/// StateDelta to the state, `core` reaches the api and the navigator,
-/// `remote` calls the remote actions (app/actions/remote/).
+/// StateDelta to the state, `core` reaches the navigator, the locale, the
+/// theme and the modules, `remote` calls the remote actions
+/// (app/actions/remote/), the only way out of the device.
 const actionParamTypes = {
   'emit': 'void Function(StateDelta)',
   'core': 'Core',
   'remote': 'Remote',
 };
+
+/// What remote actions take as `api`: HTTP (`.generated/api.dart`). Only
+/// remote actions reach the network.
+const remoteApiType = 'Api';
 
 /// The sub-folder of app/actions/ holding the remote actions: they run on
 /// the backend, one endpoint each.
@@ -247,8 +252,8 @@ UserFunction? _readFunction(
     }
 
     if (kind == 'remote') {
-      // A remote action takes `emit` and one `value`, the input its local
-      // action sends (untrusted: validate it).
+      // A remote action takes `emit`, `api` (HTTP) and one `value`, the
+      // input its local action sends (untrusted: validate it).
       if (paramName == 'emit') {
         final normalized = type.replaceAll(RegExp(r'\s+\w+\)$'), ')');
         if (normalized != actionParamTypes['emit']) {
@@ -256,6 +261,12 @@ UserFunction? _readFunction(
           return null;
         }
         params.add(Param('emit', actionParamTypes['emit']!));
+      } else if (paramName == 'api') {
+        if (type != remoteApiType) {
+          fail('"api" must be $remoteApiType, got $type');
+          return null;
+        }
+        params.add(Param('api', remoteApiType));
       } else if (paramName == 'value') {
         if (!isEncodable(type, models)) {
           fail('"value" must be a primitive, model, enum or List of those, '
@@ -264,7 +275,7 @@ UserFunction? _readFunction(
         }
         params.add(Param('value', type));
       } else {
-        fail('remote actions take (State state, [emit], [value]), '
+        fail('remote actions take (State state, [emit], [api], [value]), '
             'got "$paramName"');
         return null;
       }

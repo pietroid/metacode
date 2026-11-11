@@ -99,7 +99,7 @@ class AppRuntime extends ChangeNotifier {
     if (!_config.syncs) return;
     final link = _link;
     _remote = link == null
-        ? LocalBackend(bloc, _config)
+        ? LocalBackend(bloc, _config, client: client)
         : HttpBackend(
             url: link.url,
             bloc: bloc,
@@ -160,7 +160,6 @@ class AppRuntime extends ChangeNotifier {
       navigation: config.navigation,
       navigatorKey: navigatorKey,
       locale: locale,
-      client: client,
       render: render,
       resetModule: _resetModule,
       moduleCall: _moduleCall,

@@ -48,9 +48,11 @@ Future<MetacodeBackend?> openBackend(String codeDir, String dataDir) async {
   final dataRoot = Directory(dataDir).absolute.path;
   Directory(dataDir).watch(recursive: true).listen((event) async {
     if (!event.path.endsWith('shared.yaml')) return;
-    final file = File(event.path);
-    if (!file.existsSync()) return;
-    final path = event.path.substring(dataRoot.length + 1);
+    // The watcher reports paths as the folder was given (often relative):
+    // compare absolute ones.
+    final file = File(event.path).absolute;
+    if (!file.existsSync() || !file.path.startsWith('$dataRoot/')) return;
+    final path = file.path.substring(dataRoot.length + 1);
     final contents = await file.readAsString();
     if (data.read(path) == contents) return; // our own write
     await data.write(path, contents);

@@ -12,7 +12,6 @@ state:
     draftShares: list(string)
     draftExact: list(string)
     rateStatus: rateStatus
-    rate: number
     formError: string
     saveStatus: saveStatus
     syncError: string
@@ -22,6 +21,8 @@ state:
     selectedGroup: string
     identities: list(identity)
     lastDeleted: list(expense)
+  remote:
+    rate: number
   shared:
     groups: list(group)
     expenses: list(expense)
